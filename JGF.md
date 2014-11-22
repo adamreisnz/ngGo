@@ -1,6 +1,6 @@
 # JGF specification
 
-````json
+````javascript
 JGF = {
 	application: "WGo 2.3.1",
 	charset: "UTF-8",
