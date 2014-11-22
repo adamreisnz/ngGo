@@ -1,0 +1,32 @@
+player {
+	display: block;
+	board {
+		width: 100%;
+		height: 100%;
+	}
+}
+board {
+	display: block;
+	position: relative;
+	boardlayer {
+		position: absolute;
+	}
+	.grid {
+		z-index: 10;
+	}
+	.shadow {
+		z-index: 20;
+	}
+	.faded {
+		z-index: 30;
+	}
+	.stones {
+		z-index: 40;
+	}
+	.score {
+		z-index: 50;
+	}
+	.markup {
+		z-index: 60;
+	}
+}
