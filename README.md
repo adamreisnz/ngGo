@@ -6,7 +6,7 @@ ngGo has been based on the excellent work of Jan Prokop, who created the origina
 
 All code has been refactored to fit the Angular framework. In addition, the code was reviewed and improved to provide more flexibility and run more efficiently. All files have also been cleaned up in general, linted and extensively commented to provide for easy to read source code with a consistent layout. Lastly, all the source code files have been organized in a logical manner and split up in sensible classes, making it easy to find all the specific modules and functionality of the library.
 
-Note that some features of WGo were removed, as they were deemed unfitting in this library. This includes player control elements, game info display elements, notification popups, and any other hardcoded layout/HTML elements. The ngGo library is only concerned with handling game records and displaying the Go board. It is assummed that anyone using this library will implement their own player controls and game info display elements.
+Note that some features of WGo were removed, as they did not fit in this library and weren't considered good practice for AngularJS development. This includes player control elements, game info display elements, notification popups, and any other hardcoded layout/HTML elements. The ngGo library is only concerned with handling game records and displaying the Go board. It is assummed that anyone using this library will implement their own player controls and game info display elements.
 
 ## Features
 + Player module to replay game records including variations and edit the board.
