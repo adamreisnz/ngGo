@@ -15,8 +15,8 @@ Note that some features of WGo were removed, as they were deemed unfitting in th
 + Kifu module to store the game nodes and convert to and from SGF or JGF.
 
 ## JGF (JSON Game Format)
-The ngGo library includes a proposal for a standardized JSON file format for game records. It builds on the original specifications of the SGF file format, but has an improved and easier to parse and translate structure. In addition, the format has more flexibility than SGF for saving different/new kinds of markup or other node annotations.
+The ngGo library includes a [JGF.md](proposal) for a standardized JSON file format for game records. It builds on the original specifications of the [http://www.red-bean.com/sgf/](SGF file format), but has an improved and easier to parse and translate structure. In addition, the format has more flexibility than SGF for saving different/new kinds of markup or other node annotations.
 
 ngGo also contains parsers to convert files from SGF to JGF and vice versa.
 
-For the full proposed JGF specifications, please see [JGF.md](JGF.md). SGF specifications can be found [http://www.red-bean.com/sgf/](here).
+For the proposed JGF specification, please see [JGF.md](JGF.md).
