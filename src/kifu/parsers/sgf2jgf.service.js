@@ -479,7 +479,6 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 			}
 
 			//Return jgf
-			console.log(jgf);
 			return jgf;
 		}
 	};

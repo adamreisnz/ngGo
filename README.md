@@ -1,6 +1,6 @@
 # ngGo
 
-ngGo is an AngularJS library for reading, parsing, displaying, editing and replaying Go game records.
+ngGo is an Angular.JS library for reading, parsing, displaying, editing and replaying Go game records.
 
 ngGo has been based on the excellent work of Jan Prokop, who created the original javascript library [WGo.js](http://wgo.waltheri.net/). ngGo is based on WGo version 2.3.1, which was the latest version at the time of conversion.
 
