@@ -20,3 +20,10 @@ The ngGo library includes a [proposal](JGF.md) for a standardized JSON file form
 ngGo also contains parsers to convert files from SGF to JGF and vice versa.
 
 For the proposed JGF specification, please see [JGF.md](JGF.md).
+
+## Todo
++ Improve the game scoring algorithm and event handling
++ Ability to save board edits
++ Improve the drawing of shadows on the canvas
++ Create unit tests
++ Create gruntfile
