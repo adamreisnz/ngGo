@@ -20,38 +20,38 @@ angular.module('ngGo.Player.EventHandlers.Service', [
 .factory('PlayerEventHandlers', function($document, KifuReader, PlayerModes, PlayerTools, StoneColor, Markup, Stone, StoneFaded, GameScorer) {
 
 	/**
-	 * Determine grid coordinatess from event object
-	 */
-	var getCellCoordsFromEvent = function(mouseEvent) {
-
-		//Init
-		var x, y;
-
-		//Determine x
-		x = mouseEvent.offsetX || mouseEvent.originalEvent.offsetX || mouseEvent.originalEvent.layerX;
-		x *= (window.devicePixelRatio || 1);
-		x -= this.board.left;
-		x /= this.board.cellWidth;
-		x = Math.round(x);
-
-		//Determine y
-		y = mouseEvent.offsetY || mouseEvent.originalEvent.offsetY || mouseEvent.originalEvent.layerY;
-		y *= (window.devicePixelRatio || 1);
-		y -= this.board.top;
-		y /= this.board.cellHeight;
-		y = Math.round(y);
-
-		//Return coords
-		return {
-			x: x >= this.size ? -1 : x,
-			y: y >= this.size ? -1 : y
-		};
-	};
-
-	/**
 	 * Define handler
 	 */
 	var PlayerEventHandlers = {
+
+		/**
+		 * Helper to determine grid coordinatess from event object
+		 */
+		getCellCoordsFromEvent: function(mouseEvent) {
+
+			//Init
+			var x, y;
+
+			//Determine x
+			x = mouseEvent.offsetX || mouseEvent.originalEvent.offsetX || mouseEvent.originalEvent.layerX;
+			x *= (window.devicePixelRatio || 1);
+			x -= this.board.left;
+			x /= this.board.cellWidth;
+			x = Math.round(x);
+
+			//Determine y
+			y = mouseEvent.offsetY || mouseEvent.originalEvent.offsetY || mouseEvent.originalEvent.layerY;
+			y *= (window.devicePixelRatio || 1);
+			y -= this.board.top;
+			y /= this.board.cellHeight;
+			y = Math.round(y);
+
+			//Return coords
+			return {
+				x: x >= this.size ? -1 : x,
+				y: y >= this.size ? -1 : y
+			};
+		},
 
 		/**
 		 * Callback for kifu loaded event
@@ -216,7 +216,7 @@ angular.module('ngGo.Player.EventHandlers.Service', [
 		mouseClick: function(event, mouseEvent) {
 
 			//Get grid coordinates
-			var grid = getCellCoordsFromEvent.call(this, mouseEvent);
+			var grid = this.getCellCoordsFromEvent(mouseEvent);
 
 			//Get current node
 			var node = KifuReader.getNode();
@@ -290,7 +290,7 @@ angular.module('ngGo.Player.EventHandlers.Service', [
 		mouseMove: function(event, mouseEvent) {
 
 			//Get grid coordinates
-			var grid = getCellCoordsFromEvent.call(this, mouseEvent);
+			var grid = this.getCellCoordsFromEvent(mouseEvent);
 
 			//Nothing to do?
 			if (this.frozen || (this._lastX == grid.x && this._lastY == grid.y)) {
@@ -320,11 +320,12 @@ angular.module('ngGo.Player.EventHandlers.Service', [
 				else {
 
 					//Create mark
-					this._lastMark = new Markup({
+					//TODO: interferes with existing markup, and should depend on active tool
+					/*this._lastMark = new Markup({
 						type: 'mark',
 						x: grid.x,
 						y: grid.y
-					});
+					});*/
 				}
 
 				//Add to board
