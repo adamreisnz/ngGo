@@ -231,38 +231,32 @@ angular.module('ngGo.Kifu.Node.Service', [
 	var convertMarkupFromJgf = function(markup) {
 
 		//Initialize variables
-		var c, type, kifuMarkup = [];
+		var l, type, kifuMarkup = [];
 
 		//Loop markup types
 		for (type in markup) {
 
 			//Label?
 			if (type == 'label') {
-
-				//Loop coordinates
-				for (c in markup[type]) {
+				for (l = 0; l < markup[type].length; l++) {
 
 					//Validate
-					if (markup[type][c].length < 4) {
+					if (!angular.isArray(markup[type][l]) || markup[type][l].length < 2) {
 						continue;
 					}
 
-					//Get coordinates and label
-					var coords 	=	markup[type][c].substr(0, 2),
-						label 	=	markup[type][c].substr(3);
-
 					//Add to stack
-					kifuMarkup.push(coordinatesObject(coords, {
+					kifuMarkup.push(coordinatesObject(markup[type][l][0], {
 						type: type,
-						text: label
+						text: markup[type][l][1]
 					}));
 				}
 			}
 			else {
 
 				//Loop coordinates
-				for (c in markup[type]) {
-					kifuMarkup.push(coordinatesObject(markup[type][c], {
+				for (l in markup[type]) {
+					kifuMarkup.push(coordinatesObject(markup[type][l], {
 						type: type
 					}));
 				}

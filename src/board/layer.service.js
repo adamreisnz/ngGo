@@ -282,15 +282,10 @@ angular.module('ngGo.Board.Layer.Service', [
 	};
 
 	/**
-	 * Clear layer
+	 * Clear layer (this method doesn't clear objects, as the canvas wipe clears the entire canvas)
 	 */
 	BoardLayer.prototype.clear = function() {
-
-		//Clear canvas
 		this.context.clearRect(0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight);
-
-		//Clear objects
-		this.clearObjects();
 	};
 
 	/**

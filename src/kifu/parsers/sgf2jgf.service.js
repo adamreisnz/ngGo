@@ -7,7 +7,6 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
-	'ngGo.Service',
 	'ngGo.Kifu.Blank.Service'
 ])
 
@@ -34,23 +33,23 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseApp = function(jgf, node, key, value) {
 		var app = value[0].split(':');
 		if (app.length > 1) {
-			jgf.application = app[0] + ' v' + app[1];
+			jgf.sgf.application = app[0] + ' v' + app[1];
 		}
 		else {
-			jgf.application = app[0];
+			jgf.sgf.application = app[0];
 		}
 	};
 
 	/**
-	 * Game parser function
+	 * Game type parser function
 	 */
 	var parseGame = function(jgf, node, key, value) {
 		var game = value[0];
-		if (typeof sgfGames[game] !== 'undefined') {
-			jgf.game = sgfGames[game];
+		if (typeof sgfGames[game] != 'undefined') {
+			jgf.game.type = sgfGames[game];
 		}
 		else {
-			jgf.game = value[0];
+			jgf.game.type = value[0];
 		}
 	};
 
@@ -126,6 +125,28 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	};
 
 	/**
+	 * Scoring parser function
+	 */
+	var parseScore = function(jgf, node, key, value) {
+
+		//Initialize score container on node
+		if (typeof node.score == 'undefined') {
+			node.score = {
+				B: [],
+				W: []
+			};
+		}
+
+		//Remove "T" from setup key
+		key = key.charAt(1);
+
+		//Add values
+		for (var i in value) {
+			node.score[key].push(value[i].toLowerCase());
+		}
+	};
+
+	/**
 	 * Turn parser function
 	 */
 	var parseTurn = function(jgf, node, key, value) {
@@ -154,7 +175,13 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
 		//Add values
 		for (var i in value) {
-			node.markup[key].push(value[i].substr(0, 2).toLowerCase() + ':' + value[i].substr(3));
+
+			//Split coordinates and label
+			var coords = value[i].substr(0, 2).toLowerCase(),
+				label = value[i].substr(3);
+
+			//Add to node
+			node.markup[key].push([coords, label]);
 		}
 	};
 
@@ -188,7 +215,50 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	 * Size parser function
 	 */
 	var parseSize = function(jgf, node, key, value) {
-		jgf.size = parseInt(value[0]);
+		jgf.game.size = parseInt(value[0]);
+	};
+
+	/**
+	 * Komi parser function
+	 */
+	var parseKomi = function(jgf, node, key, value) {
+		jgf.game.komi = parseFloat(value[0]);
+	};
+
+	/**
+	 * Variations handling parser function
+	 */
+	var parseVariations = function(jgf, node, key, value) {
+
+		//Initialize variations property
+		if (!jgf.variations) {
+			jgf.variations = {
+				markup: false,
+				children: false,
+				siblings: false
+			};
+		}
+
+		//Parse as integer
+		var st = parseInt(value[0]);
+
+		//Determine what we want (see SGF specs for details)
+		switch (st) {
+			case 0:
+				jgf.variations.markup = true;
+				jgf.variations.children = true;
+				break;
+			case 1:
+				jgf.variations.markup = true;
+				jgf.variations.siblings = true;
+				break;
+			case 2:
+				jgf.variations.children = true;
+				break;
+			case 3:
+				jgf.variations.siblings = true;
+				break;
+		}
 	};
 
 	/**
@@ -196,9 +266,14 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	 */
 	var parsingMap = {
 
-		//Application, game
+		//Application, game type, board size, komi
 		'AP':	parseApp,
 		'GM':	parseGame,
+		'SZ':	parseSize,
+		'KM':	parseKomi,
+
+		//Variations handling
+		'ST':	parseVariations,
 
 		//Moves
 		'B':	parseMove,
@@ -213,23 +288,22 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		'AW':	parseSetup,
 		'AE':	parseSetup,
 		'PL':	parseTurn,
+		'TW':	parseScore,
+		'TB':	parseScore,
 
 		//Markup
-		'LB':	parseLabel,
 		'CR':	parseMarkup,
 		'SQ':	parseMarkup,
 		'TR':	parseMarkup,
 		'MA':	parseMarkup,
 		'SL':	parseMarkup,
-
-		//Board size
-		'SZ':	parseSize
+		'LB':	parseLabel
 	};
 
 	/**
 	 * These properties need a node object
 	 */
-	var needsNode = ['B', 'W', 'C', 'N', 'AB', 'AW', 'AE', 'PL', 'LB', 'CR', 'SQ', 'TR', 'MA', 'SL'];
+	var needsNode = ['B', 'W', 'C', 'N', 'AB', 'AW', 'AE', 'PL', 'LB', 'CR', 'SQ', 'TR', 'MA', 'SL', 'TW', 'TB'];
 
 	/***********************************************************************************************
 	 * Parser helpers
@@ -282,8 +356,8 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		 */
 		parse: function(sgf, stringified) {
 
-			//Get new JGF object
-			var jgf = KifuBlank.jgf();
+			//Get new JGF object (with SGF node as a base)
+			var jgf = KifuBlank.jgf({sgf: {}});
 
 			//Initialize
 			var stack = [],
@@ -291,7 +365,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
 			//Create first node for game, which is usually an empty board position, but can
 			//contain comments or board setup instructions, which will be added to the node
-			//later if needed
+			//later if needed.
 			var node = {root: true};
 			container.push(node);
 
@@ -405,6 +479,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 			}
 
 			//Return jgf
+			console.log(jgf);
 			return jgf;
 		}
 	};

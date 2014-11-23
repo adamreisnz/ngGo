@@ -83,6 +83,20 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	};
 
 	/**
+	 * Score parser
+	 */
+	var parseScore = function(score, output) {
+
+		//Loop colors
+		for (var color in score)	{
+			var coords = score[color];
+
+			//Write as group
+			writeGroup('T' + color, coords, output);
+		}
+	};
+
+	/**
 	 * Markup parser
 	 */
 	var parseMarkup = function(markup, output) {
@@ -90,6 +104,13 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 		//Loop markup types
 		for (var type in markup)	{
 			var coords = markup[type];
+
+			//Label type has the label text appended to the coords
+			if (type == 'label') {
+				for (var i = 0; i < coords.length; i++) {
+					coords[i] = coords[i][0] + ':' + coords[i][1];
+				}
+			}
 
 			//Convert type
 			if (typeof jgfAliases[type] != 'undefined') {
@@ -152,17 +173,37 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	};
 
 	/**
+	 * Variations handling parser
+	 */
+	var parseVariations = function(variations) {
+		var st = 0;
+		if (!variations.markup)	{
+			st += 2;
+		}
+		if (variations.siblings) {
+			st += 1;
+		}
+		return st;
+	};
+
+	/**
 	 * Parse function to property mapper
 	 */
 	var parsingMap = {
-		'application':	parseApplication,
+
+		//Node properties
 		'move':			parseMove,
 		'setup':		parseSetup,
+		'score':		parseScore,
 		'markup':		parseMarkup,
 		'turn':			parseTurn,
 		'comments':		parseComments,
 		'name':			parseNodeName,
-		'game':			parseGame
+
+		//Info properties
+		'application':	parseApplication,
+		'variations':	parseVariations,
+		'game.type':	parseGame
 	};
 
 	/***********************************************************************************************
@@ -228,6 +269,11 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 		//Loop properties of jgf node
 		for (var subKey in jgf) {
 
+			//Skip SGF signature (as we keep our own)
+			if (subKey == 'sgf') {
+				continue;
+			}
+
 			//Build jgf key
 			var jgfKey = (key === '') ? subKey : key + '.' + subKey;
 
@@ -291,7 +337,6 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 			}
 
 			//Set root properties
-
 			delete root.tree;
 			extractRootProperties(root, rootProperties);
 

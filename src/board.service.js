@@ -30,6 +30,11 @@ angular.module('ngGo.Board.Service', [
 	 */
 	var defaultConfig = {
 
+		//Default size
+		//Note that the default size is left at 0 intentionally, to prevent needless re-draws when loading SGF/JGF data
+		//You can change this via BoardProvider.setConfig() or via a size attribute on the board element in HTML
+		defaultSize: 0,
+
 		//Star point coordinates
 		starPoints: {
 			19:	[{x:3, y:3}, {x:9, y:3}, {x:15,y:3}, {x:3, y:9}, {x:9, y:9}, {x:15,y:9}, {x:3, y:15}, {x:9, y:15}, {x:15,y:15}],
@@ -43,8 +48,8 @@ angular.module('ngGo.Board.Service', [
 		//Section of board to display
 		section: {top: 0, right: 0, bottom: 0, left: 0},
 
-		//Margin
-		margin: 0.04 //Factor of available width/height
+		//Margin (factor of the minimum of either available width or height)
+		margin: 0.04
 	};
 
 	/**
@@ -139,7 +144,7 @@ angular.module('ngGo.Board.Service', [
 			this.layers = {};
 
 			//Initialize size
-			this.size = 0;
+			this.size = parseInt(this.config.defaultSize);
 
 			//Set section of board to display and determine resulting grid
 			this.section = angular.extend(defaultConfig.section, this.config.section);

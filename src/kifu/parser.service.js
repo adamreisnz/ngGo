@@ -1,7 +1,8 @@
 
 /**
  * KifuParser :: This is a wrapper class for all available kifu parsers. Currently, it only
- * wraps the parsers to convert SGF to JGF and vice versa.
+ * wraps the parsers to convert SGF to JGF and vice versa. It also provides constants used
+ * by the parsers to aid conversion.
  */
 
 /**
@@ -39,4 +40,69 @@ angular.module('ngGo.Kifu.Parser.Service', [
 
 	//Return object
 	return KifuParser;
+})
+
+/**
+ * SGF/JGF aliases constant for conversion between the two formats
+ */
+.constant('sgfAliases', {
+
+	//Game record properties
+	'CA': 'charset',
+	'CP': 'copyright',
+	'SO': 'source',
+	'US': 'creator',
+
+	//SGF properties
+	'AP': 'sgf.application',
+	'FF': 'sgf.format',
+
+	//Game info properties
+	'GM': 'game.type',
+	'GN': 'game.name',
+	'SZ': 'game.size',
+	'KM': 'game.komi',
+	'HA': 'game.handicap',
+	'RE': 'game.result',
+	'RU': 'game.rules',
+	'TM': 'game.time.main',
+	'OT': 'game.time.overtime',
+	'DT': 'game.dates',
+	'PC': 'game.location',
+	'EV': 'game.event',
+	'RO': 'game.round',
+	'ON': 'game.opening',
+	'AN': 'game.annotator',
+	'GC': 'game.comment',
+
+	//Player info properties
+	'PB': 'game.black.name',
+	'PW': 'game.white.name',
+	'BT': 'game.black.team',
+	'WT': 'game.white.team',
+	'BR': 'game.black.rank',
+	'WR': 'game.white.rank',
+
+	//Node annotation
+	'N':  'name',
+	'C':  'comments',
+	'CR': 'circle',
+	'TR': 'triangle',
+	'SQ': 'square',
+	'MA': 'mark',
+	'SL': 'select',
+	'LB': 'label'
+})
+
+/**
+ * SGF game definitions
+ */
+.constant('sgfGames', {
+	1: 'go',
+	2: 'othello',
+	3: 'chess',
+	4: 'renju',
+	6: 'backgammon',
+	7: 'chinese chess',
+	8: 'shogi'
 });

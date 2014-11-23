@@ -56,6 +56,11 @@ angular.module('ngGo.Board.Directive', [
 				$scope.Board.toggleCoordinates(value);
 			});
 
+			//Observe the size attribute
+			attrs.$observe('size', function(value) {
+				$scope.Board.setSize(value);
+			});
+
 			//Watch for dimension changes
 			$scope.$watch('dimensions', function(dim) {
 				$scope.Board.setDimensions(dim.width * pixelRatio, dim.height * pixelRatio);

@@ -12,94 +12,21 @@ angular.module('ngGo.Kifu.Service', [
 	'ngGo.Service',
 	'ngGo.Kifu.Node.Service',
 	'ngGo.Kifu.Blank.Service',
-	'ngGo.Kifu.Parser.Service',
-	'ngGo.Kifu.Formatter.Service'
+	'ngGo.Kifu.Parser.Service'
 ])
 
 /**
  * Factory definition
  */
-.factory('Kifu', function(KifuNode, KifuBlank, KifuParser, KifuFormatter) {
-
-	/**
-	 * Info properties categorization
-	 */
-	var infoProperties = {
-		root: [
-			'application', 'charset', 'game', 'size', 'variations', 'sgfformat'
-		],
-		game: [
-			'black', 'white', 'annotator', 'copyright', 'dates', 'event', 'gamename', 'comment',
-			'handicap', 'komi', 'opening', 'overtime', 'location', 'result', 'round', 'rules',
-			'source', 'time', 'user'
-		]
-	};
-
-	/**
-	 * Helper to get properties of a certain type (see object above)
-	 */
-	var getPropertiesOfType = function(type, formatted) {
-
-		//Initialize
-		var info = {};
-
-		//Must have type defined
-		if (typeof infoProperties[type] == 'undefined') {
-			return info;
-		}
-
-		//Loop kifu info
-		for (var key in this.info) {
-
-			//Present in info list?
-			if (infoProperties[type].indexOf(key) == -1) {
-				continue;
-			}
-
-			//Set in info
-			info[key] = this.info[key];
-
-			//Formatted?
-			if (formatted) {
-				info[key] = KifuFormatter.format(key, info[key]);
-			}
-		}
-
-		//Return
-		return info;
-	};
-
-	/**
-	 * Helper to find a property in a node
-	 */
-	var findProperty = function(prop, node) {
-		var res;
-		if (node[prop] !== undefined) {
-			return node[prop];
-		}
-		for (var child in node.children) {
-			res = findProperty(prop, node.children[child]);
-			if (res) {
-				return res;
-			}
-		}
-		return false;
-	};
+.factory('Kifu', function(KifuNode, KifuBlank, KifuParser) {
 
 	/**
 	 * Kifu constructor
 	 */
 	var Kifu = function() {
 
-		//Initialize root properties
-		for (var prop in infoProperties.root) {
-			this[infoProperties.root[prop]] = '';
-		}
-
-		//Set default size
-		this.size = 19;
-
-		//Initialize info object and rootnode
+		//Init
+		this.size = 0;
 		this.info = {};
 		this.root = new KifuNode();
 	};
@@ -117,7 +44,7 @@ angular.module('ngGo.Kifu.Service', [
 			//Create new kifu object
 			var clone = new Kifu();
 
-			//Copy size, info and root node
+			//Copy info and root node
 			clone.size = this.size;
 			clone.info = angular.copy(this.info);
 			clone.root = angular.copy(this.root);
@@ -141,22 +68,28 @@ angular.module('ngGo.Kifu.Service', [
 			//Initialize JGF
 			var jgf = KifuBlank.jgf();
 
-			//Copy root properties
-			for (var i in infoProperties.root) {
-				var prop = infoProperties.root[i];
-				if (this[prop]) {
-					jgf[prop] = this[prop];
+			//Copy info
+			for (var i in this.info) {
+				if (typeof this.info[i] == 'object') {
+					jgf[i] = angular.copy(this.info[i]);
+				}
+				else {
+					jgf[i] = this.info[i];
 				}
 			}
-
-			//Deep copy info
-			jgf.info = angular.copy(this.info);
 
 			//Build tree
 			jgf.tree = this.root.toJgf();
 
 			//Return
 			return stringify ? JSON.stringify(jgf) : jgf;
+		},
+
+		/**
+		 * Get info array from this Kifu
+		 */
+		getInfo: function() {
+			return this.info;
 		},
 
 		/**
@@ -175,7 +108,7 @@ angular.module('ngGo.Kifu.Service', [
 			}
 
 			//Initialize object we're getting info from
-			var obj = this, key;
+			var obj = this.info, key;
 
 			//Loop the position
 			for (var p = 0; p < position.length; p++) {
@@ -197,27 +130,6 @@ angular.module('ngGo.Kifu.Service', [
 				//Move up in tree
 				obj = obj[key];
 			}
-		},
-
-		/**
-		 * Get all game info from this Kifu (as is or formatted)
-		 */
-		gameInfo: function(formatted) {
-			return getPropertiesOfType.call(this, 'game', formatted);
-		},
-
-		/**
-		 * Get all root info from this Kifu (as is or formatted)
-		 */
-		rootInfo: function(formatted) {
-			return getPropertiesOfType.call(this, 'root', formatted);
-		},
-
-		/**
-		 * Check if there are comments in the root node
-		 */
-		hasComments: function() {
-			return !!findProperty('comments', this.root);
 		}
 	});
 
@@ -270,20 +182,25 @@ angular.module('ngGo.Kifu.Service', [
 		}
 
 		//Copy properties
-		for (var prop in jgf) {
+		for (var i in jgf) {
 
 			//Skip moves tree
-			if (prop == 'tree') {
+			if (i == 'tree') {
 				continue;
 			}
 
 			//Deep copy objects
-			if (typeof jgf[prop] == 'object') {
-				kifu[prop] = angular.copy(jgf[prop]);
+			if (typeof jgf[i] == 'object') {
+				kifu.info[i] = angular.copy(jgf[i]);
 			}
 
 			//Simple copy all other properties
-			kifu[prop] = jgf[prop];
+			kifu.info[i] = jgf[i];
+		}
+
+		//Copy game size
+		if (kifu.info.game.size) {
+			kifu.size = kifu.info.game.size;
 		}
 
 		//Create root node and clone the rest of the moves

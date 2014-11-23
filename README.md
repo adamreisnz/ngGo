@@ -10,4 +10,6 @@ builds on the original specifications of the SGF file format, but has an improve
 to parse and translate structure. In addition, the format has more flexibility than SGF for
 saving different/new kinds of markup or other node annotations.
 
-ngGo contains parsers to convert files from SGF to JGF and vice versa.
+The ngGo suite also contains parsers to convert files from SGF to JGF and vice versa.
+
+For the JGF specifications, please see [JGF.md](JGF.md). SGF specifications can be found [http://www.red-bean.com/sgf/](here).

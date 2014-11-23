@@ -20,12 +20,11 @@ angular.module('ngGo.Kifu.Blank.Service', [
 	 */
 	var blankJgf = {
 		application: ngGo.name + ' v' + ngGo.version,
+		version: 1,
 		charset: 'UTF-8',
-		version: '1.0',
-		game: 'go',
-		size: 19,
-		variations: 2,
-		info: {
+		game: {
+			type: 'go',
+			size: 19,
 			black: {
 				name: 'Black'
 			},
@@ -45,7 +44,6 @@ angular.module('ngGo.Kifu.Blank.Service', [
 		FF: '4',
 		GM: '1',
 		SZ: '19',
-		ST: '2',
 		PB: 'Black',
 		PW: 'White'
 	};
@@ -58,15 +56,15 @@ angular.module('ngGo.Kifu.Blank.Service', [
 		/**
 		 * Get blank JGF
 		 */
-		jgf: function() {
-			return angular.copy(blankJgf);
+		jgf: function(base) {
+			return base ? angular.extend({}, blankJgf, base) : angular.copy(blankJgf);
 		},
 
 		/**
 		 * Get blank SGF
 		 */
-		sgf: function() {
-			return angular.copy(blankSgf);
+		sgf: function(base) {
+			return base ? angular.extend({}, blankSgf, base) : angular.copy(blankSgf);
 		}
 	};
 
