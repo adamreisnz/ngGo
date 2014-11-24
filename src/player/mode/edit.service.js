@@ -1,15 +1,13 @@
 
 /**
- * PlayerModeEdit :: This class governs the "edit" mode of the player, e.g. editing a game record
- * and its board positions.
+ * PlayerModeEdit :: This module governs the "edit" mode of the player, e.g. editing
+ * a game record and its board positions.
  */
 
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Player.Mode.Edit.Service', [
-	'ngGo.Service'
-])
+angular.module('ngGo.Player.Mode.Edit.Service', [])
 
 /**
  * Run block
@@ -47,7 +45,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	 */
 	var keyDown = function(event, keyboardEvent) {
 
-		//Don't navigate when we're inside a text field?
+		//Inside a text field?
 		if ($document[0].querySelector(':focus')) {
 			return true;
 		}
@@ -55,28 +53,10 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		//Switch key code
 		switch (keyboardEvent.keyCode) {
 
-			//Right arrow
-			case 39:
-				if (this.config.arrowKeysNavigation) {
-					this.next();
-				}
-				break;
+			//TODO: tool switching via keyboard input
 
-			//Left arrow
-			case 37:
-				if (this.config.arrowKeysNavigation) {
-					this.previous();
-				}
-				break;
-
-			//TODO: up down for variation selection?
 			default:
 				return true;
-		}
-
-		//Don't scroll with arrows
-		if (this.config.lockScroll) {
-			keyboardEvent.preventDefault();
 		}
 	};
 
@@ -226,35 +206,6 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	};
 
 	/**
-	 * Mousewheel handler
-	 */
-	var mouseWheel = function(event, mouseEvent) {
-
-		//Disabled?
-		if (!this.config.scrollWheelNavigation) {
-			return true;
-		}
-
-		//Find delta
-		var delta = mouseEvent.deltaY || mouseEvent.originalEvent.deltaY;
-
-		//Next move
-		if (delta < 0) {
-			this.next();
-		}
-
-		//Previous move
-		else if (delta > 0) {
-			this.previous();
-		}
-
-		//Don't scroll the window
-		if (delta !== 0 && this.config.lockScroll) {
-			mouseEvent.preventDefault();
-		}
-	};
-
-	/**
 	 * Handler for mode switches
 	 */
 	var modeSwitch = function(event) {
@@ -296,5 +247,4 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	Player.listen('click', mouseClick, PlayerModes.EDIT);
 	Player.listen('mousemove', mouseMove, PlayerModes.EDIT);
 	Player.listen('mouseout', mouseOut, PlayerModes.EDIT);
-	Player.listen('mousewheel', mouseWheel, PlayerModes.EDIT);
 });

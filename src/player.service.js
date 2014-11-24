@@ -11,6 +11,7 @@
 angular.module('ngGo.Player.Service', [
 	'ngGo.Service',
 	'ngGo.Player.Directive',
+	'ngGo.Player.Mode.Common.Service',
 	'ngGo.Player.Mode.Replay.Service',
 	'ngGo.Player.Mode.Edit.Service',
 	'ngGo.Board.Service',
