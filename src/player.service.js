@@ -65,6 +65,35 @@ angular.module('ngGo.Player.Service', [
 })
 
 /**
+ * Run block
+ */
+.run(function(Player, PlayerModes, PlayerModeCommon, PlayerModeReplay, PlayerModeEdit) {
+
+	/**
+	 * Common event listeners
+	 */
+	Player.listen('keydown', PlayerModeCommon.keyDown);
+	Player.listen('mousewheel', PlayerModeCommon.mouseWheel);
+
+	/**
+	 * Replay mode
+	 */
+	Player.listen('modeSwitch', PlayerModeReplay.modeSwitch, PlayerModes.REPLAY);
+	Player.listen('click', PlayerModeReplay.mouseClick, PlayerModes.REPLAY);
+	Player.listen('mousemove', PlayerModeReplay.mouseMove, PlayerModes.REPLAY);
+
+	/**
+	 * Edit mode
+	 */
+	Player.listen('modeSwitch', PlayerModeEdit.modeSwitch, PlayerModes.EDIT);
+	Player.listen('toolSwitch', PlayerModeEdit.toolSwitch, PlayerModes.EDIT);
+	Player.listen('keydown', PlayerModeEdit.keyDown, PlayerModes.EDIT);
+	Player.listen('click', PlayerModeEdit.mouseClick, PlayerModes.EDIT);
+	Player.listen('mousemove', PlayerModeEdit.mouseMove, PlayerModes.EDIT);
+	Player.listen('mouseout', PlayerModeEdit.mouseOut, PlayerModes.EDIT);
+})
+
+/**
  * Provider definition
  */
 .provider('Player', function(PlayerModes) {

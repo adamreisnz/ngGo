@@ -10,9 +10,9 @@
 angular.module('ngGo.Player.Mode.Edit.Service', [])
 
 /**
- * Run block
+ * Factory definition
  */
-.run(function(Player, PlayerModes, PlayerTools, MarkupTypes, SetupTypes, KifuReader, GameScorer, StoneFaded, Markup) {
+.factory('PlayerModeEdit', function($document, PlayerTools, MarkupTypes, SetupTypes, KifuReader, GameScorer, StoneColor, Stone, StoneFaded, Markup) {
 
 	/**
 	 * Available tools for this mode
@@ -41,210 +41,210 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 	};
 
 	/**
-	 * Keydown handler
+	 * Player mode definition
 	 */
-	var keyDown = function(event, keyboardEvent) {
+	var PlayerMode = {
 
-		//Inside a text field?
-		if ($document[0].querySelector(':focus')) {
-			return true;
-		}
+		/**
+		 * Keydown handler
+		 */
+		keyDown: function(event, keyboardEvent) {
 
-		//Switch key code
-		switch (keyboardEvent.keyCode) {
-
-			//TODO: tool switching via keyboard input
-
-			default:
+			//Inside a text field?
+			if ($document[0].querySelector(':focus')) {
 				return true;
-		}
-	};
+			}
 
-	/**
-	 * Click handler
-	 */
-	var mouseClick = function(event, mouseEvent) {
+			//Switch key code
+			switch (keyboardEvent.keyCode) {
 
-		//Get current node
-		var node = KifuReader.getNode();
+				//TODO: tool switching via keyboard input
 
-		//Check if anything to do
-		if (!node) {
-			return false;
-		}
+				default:
+					return true;
+			}
+		},
 
-		//What happens, depends on the active tool
-		switch (this.tool) {
+		/**
+		 * Click handler
+		 */
+		mouseClick: function(event, mouseEvent) {
 
-			//When setting up, we can place stones on empty positions
-			case PlayerTools.SETUP:
-				if (!this.board.hasStone(event.x, event.y)) {
+			//Get current node
+			var node = KifuReader.getNode();
 
-					//Add stone to board
-					this.board.addObject(new Stone({
-						x: event.x,
-						y: event.y,
-						color: (this.tool == PlayerTools.WHITE) ? StoneColor.W : StoneColor.B
-					}));
+			//Check if anything to do
+			if (!node) {
+				return false;
+			}
 
-					//Remove last mark if we have one
-					if (this._lastMark) {
-						this.board.removeObject(this._lastMark);
+			//What happens, depends on the active tool
+			switch (this.tool) {
+
+				//When setting up, we can place stones on empty positions
+				case PlayerTools.SETUP:
+					if (!this.board.hasStone(event.x, event.y)) {
+
+						//Add stone to board
+						this.board.addObject(new Stone({
+							x: event.x,
+							y: event.y,
+							color: (this.tool == PlayerTools.WHITE) ? StoneColor.W : StoneColor.B
+						}));
+
+						//Remove last mark if we have one
+						if (this._lastMark) {
+							this.board.removeObject(this._lastMark);
+						}
+
+						//Clear last remembered mouse move coordinates to refresh mouse over image
+						delete this._lastMark;
+						delete this._lastX;
+						delete this._lastY;
+					}
+					break;
+
+				//When scoring, we can mark stones alive or dead
+				case PlayerTools.SCORE:
+
+					//Mark the clicked item
+					GameScorer.mark(event.x, event.y);
+
+					//Restore the board state from pre-scoring
+					if (this.preScoreState) {
+						this.board.restoreState(this.preScoreState);
 					}
 
-					//Clear last remembered mouse move coordinates to refresh mouse over image
-					delete this._lastMark;
-					delete this._lastX;
-					delete this._lastY;
-				}
-				break;
+					//Score the current position
+					scorePosition.call(this);
+					break;
+			}
+		},
 
-			//When scoring, we can mark stones alive or dead
-			case PlayerTools.SCORE:
+		/**
+		 * Mouse move handler
+		 */
+		mouseMove: function(event, mouseEvent) {
 
-				//Mark the clicked item
-				GameScorer.mark(event.x, event.y);
+			//Nothing to do?
+			if (this.frozen || (this._lastX == event.x && this._lastY == event.y)) {
+				return;
+			}
 
-				//Restore the board state from pre-scoring
-				if (this.preScoreState) {
-					this.board.restoreState(this.preScoreState);
-				}
+			//Remember last coordinates
+			this._lastX = event.x;
+			this._lastY = event.y;
 
-				//Score the current position
-				scorePosition.call(this);
-				break;
-		}
-	};
+			//Remove last mark if we have one
+			if (this._lastMark) {
+				this.board.removeObject(this._lastMark);
+			}
 
-	/**
-	 * Mouse move handler
-	 */
-	var mouseMove = function(event, mouseEvent) {
+			//What is shown depends on the active tool
+			switch (this.tool) {
 
-		//Nothing to do?
-		if (this.frozen || (this._lastX == event.x && this._lastY == event.y)) {
-			return;
-		}
+				//We can only make valid moves
+				case PlayerTools.MOVE:
+					if (KifuReader.game && KifuReader.game.isValidMove(event.x, event.y)) {
 
-		//Remember last coordinates
-		this._lastX = event.x;
-		this._lastY = event.y;
+						//Create faded stone object
+						this._lastMark = new StoneFaded({
+							x: event.x,
+							y: event.y,
+							color: KifuReader.game.getTurn()
+						});
 
-		//Remove last mark if we have one
-		if (this._lastMark) {
-			this.board.removeObject(this._lastMark);
-		}
+						//Add to board
+						this.board.addObject(this._lastMark);
+						return;
+					}
+					break;
 
-		//What is shown depends on the active tool
-		switch (this.tool) {
+				//We can place stones on empty spots
+				case PlayerTools.SETUP:
+					if (!this.board.hasStone(event.x, event.y)) {
 
-			//We can only make valid moves
-			case PlayerTools.MOVE:
-				if (KifuReader.game && KifuReader.game.isValidMove(event.x, event.y)) {
+						//Create faded stone object
+						this._lastMark = new StoneFaded({
+							x: event.x,
+							y: event.y,
+							color: StoneColor.B
+						});
 
-					//Create faded stone object
-					this._lastMark = new StoneFaded({
-						x: event.x,
-						y: event.y,
-						color: KifuReader.game.getTurn()
-					});
+						//Add to board
+						this.board.addObject(this._lastMark);
+						return;
+					}
+					break;
 
-					//Add to board
-					this.board.addObject(this._lastMark);
-					return;
-				}
-				break;
+				//We can mark stones as dead or alive
+				case PlayerTools.SCORE:
+					if (this.board.hasStone(event.x, event.y)) {
 
-			//We can place stones on empty spots
-			case PlayerTools.SETUP:
-				if (!this.board.hasStone(event.x, event.y)) {
+						//Create mark
+						this._lastMark = new Markup({
+							type: 'mark',
+							x: event.x,
+							y: event.y
+						});
 
-					//Create faded stone object
-					this._lastMark = new StoneFaded({
-						x: event.x,
-						y: event.y,
-						color: StoneColor[this.tool]
-					});
+						//Add to board
+						this.board.addObject(this._lastMark);
+						return;
+					}
+					break;
+			}
 
-					//Add to board
-					this.board.addObject(this._lastMark);
-				}
-				break;
-
-			//We can mark stones as dead or alive
-			case PlayerTools.SCORE:
-				if (this.board.hasStone(event.x, event.y)) {
-
-					//Create mark
-					this._lastMark = new Markup({
-						type: 'mark',
-						x: event.x,
-						y: event.y
-					});
-
-					//Add to board
-					this.board.addObject(this._lastMark);
-					return;
-				}
-				break;
-		}
-
-		//Clear last mark
-		delete this._lastMark;
-	};
-
-	/**
-	 * Mouse out handler
-	 */
-	var mouseOut = function(event, mouseEvent) {
-		if (this._lastMark) {
-			this.board.removeObject(this._lastMark);
+			//Clear last mark
 			delete this._lastMark;
-			delete this._lastX;
-			delete this._lastY;
-		}
-	};
+		},
 
-	/**
-	 * Handler for mode switches
-	 */
-	var modeSwitch = function(event) {
+		/**
+		 * Mouse out handler
+		 */
+		mouseOut: function(event, mouseEvent) {
+			if (this._lastMark) {
+				this.board.removeObject(this._lastMark);
+				delete this._lastMark;
+				delete this._lastX;
+				delete this._lastY;
+			}
+		},
 
-		//Set default tool
-		this.tool = availableTools[0];
-	};
+		/**
+		 * Handler for mode switches
+		 */
+		modeSwitch: function(event) {
 
-	/**
-	 * Handler for tool switches
-	 */
-	var toolSwitch = function(event) {
-
-		//Invalid tool? Select the first one
-		if (availableTools.indexOf(this.tool) === -1) {
+			//Set default tool
 			this.tool = availableTools[0];
-		}
+		},
 
-		//Switched to scoring?
-		if (this.tool == PlayerTools.SCORE) {
+		/**
+		 * Handler for tool switches
+		 */
+		toolSwitch: function(event) {
 
-			//Remember the current board state
-			this.preScoreState = this.board.getState();
+			//Invalid tool? Select the first one
+			if (availableTools.indexOf(this.tool) === -1) {
+				this.tool = availableTools[0];
+			}
 
-			//Feed the current game
-			GameScorer.setGame(KifuReader.getGame());
+			//Switched to scoring?
+			if (this.tool == PlayerTools.SCORE) {
 
-			//Score the position
-			scorePosition.call(this);
+				//Remember the current board state
+				this.preScoreState = this.board.getState();
+
+				//Feed the current game
+				GameScorer.setGame(KifuReader.getGame());
+
+				//Score the position
+				scorePosition.call(this);
+			}
 		}
 	};
 
-	/**
-	 * Register event listeners
-	 */
-	Player.listen('modeSwitch', modeSwitch, PlayerModes.EDIT);
-	Player.listen('toolSwitch', toolSwitch, PlayerModes.EDIT);
-	Player.listen('keydown', keyDown, PlayerModes.EDIT);
-	Player.listen('click', mouseClick, PlayerModes.EDIT);
-	Player.listen('mousemove', mouseMove, PlayerModes.EDIT);
-	Player.listen('mouseout', mouseOut, PlayerModes.EDIT);
+	//Return
+	return PlayerMode;
 });
