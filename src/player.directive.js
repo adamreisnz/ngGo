@@ -2,7 +2,6 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Player.Directive', [
-	'ngGo.Player.Events.Service',
 	'ngGo.Board.Service',
 	'ngGo.Board.Directive'
 ])
@@ -10,7 +9,7 @@ angular.module('ngGo.Player.Directive', [
 /**
  * Directive definition
  */
-.directive('player', function($window, Player, PlayerEvents, Board) {
+.directive('player', function($window, $document, Player, Board) {
 	return {
 		restrict: 'E',
 
@@ -62,9 +61,18 @@ angular.module('ngGo.Player.Directive', [
 			});
 
 			//Bind other needed event listeners to the element
-			var events = PlayerEvents.getElementEvents();
+			var events = Player.getElementEvents();
 			for (var e = 0; e < events.length; e++) {
-				element.on(events[e] + '.ngGo.player', PlayerEvents.broadcast.bind(PlayerEvents, events[e]));
+
+				//Keydown event is registered on the document to prevent having to focus the board first
+				if (events[e] == 'keydown') {
+					$document.on('keydown.ngGo.player', Player.broadcast.bind(Player, events[e]));
+				}
+
+				//All other events apply on the element
+				else {
+					element.on(events[e] + '.ngGo.player', Player.broadcast.bind(Player, events[e]));
+				}
 			}
 
 			//Observe mode and tool attributes

@@ -11,13 +11,57 @@
 angular.module('ngGo.Player.Service', [
 	'ngGo.Service',
 	'ngGo.Player.Directive',
-	'ngGo.Player.Events.Service',
-	'ngGo.Player.EventHandlers.Service',
+	'ngGo.Player.Mode.Replay.Service',
+	'ngGo.Player.Mode.Edit.Service',
 	'ngGo.Board.Service',
 	'ngGo.Kifu.Service',
 	'ngGo.Kifu.Reader.Service',
 	'ngGo.Game.Scorer.Service'
 ])
+
+/**
+ * Player modes constant
+ */
+.constant('PlayerModes', {
+	REPLAY:	'replay',
+	PLAY:	'play',
+	EDIT:	'edit'
+})
+
+/**
+ * Player tools constant
+ */
+.constant('PlayerTools', {
+	NONE:		'',
+	MOVE:		'move',
+	SCORE:		'score',
+	SETUP:		'setup',
+	MARKUP:		'markup'
+})
+
+/**
+ * Setup types
+ */
+.constant('SetupTypes', {
+	BLACK:		'B',
+	WHITE:		'W',
+	CLEAR:		'E'
+})
+
+/**
+ * Markup types
+ */
+.constant('MarkupTypes', {
+	TRIANGLE:	'triangle',
+	CIRCLE:		'circle',
+	SQUARE:		'square',
+	MARK:		'mark',
+	SELECT:		'select',
+	LABEL:		'label',
+	LAST:		'last',
+	SAD:		'sad',
+	HAPPY:		'happy'
+})
 
 /**
  * Provider definition
@@ -29,8 +73,9 @@ angular.module('ngGo.Player.Service', [
 	 */
 	var defaultConfig = {
 
-		//Starting mode
-		startingMode: PlayerModes.PLAY,
+		//Starting mode and available modes
+		startingMode: PlayerModes.REPLAY,
+		availableModes: [PlayerModes.REPLAY, PlayerModes.EDIT],
 
 		//Keys/scrollwheel navigation
 		arrowKeysNavigation: true,
@@ -57,7 +102,117 @@ angular.module('ngGo.Player.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function(Kifu, KifuReader, GameScorer, Board, PlayerEvents, PlayerEventHandlers, PlayerModes, PlayerTools) {
+	this.$get = function($rootScope, Kifu, KifuReader, GameScorer, Board, PlayerModes, PlayerTools, Stone, Markup) {
+
+		/**
+		 * Helper to append board grid coordinatess to the broadcast event object
+		 */
+		var appendGridCoordinates = function(broadcastEvent, mouseEvent) {
+
+			//Can only do this with a board
+			if (!this.board) {
+				broadcastEvent.x = -1;
+				broadcastEvent.y = -1;
+				return;
+			}
+
+			//Init
+			var x, y;
+
+			//Determine x
+			x = mouseEvent.offsetX || mouseEvent.originalEvent.offsetX || mouseEvent.originalEvent.layerX;
+			x *= (window.devicePixelRatio || 1);
+			x -= this.board.left;
+			x /= this.board.cellWidth;
+			x = Math.round(x);
+
+			//Determine y
+			y = mouseEvent.offsetY || mouseEvent.originalEvent.offsetY || mouseEvent.originalEvent.layerY;
+			y *= (window.devicePixelRatio || 1);
+			y -= this.board.top;
+			y /= this.board.cellHeight;
+			y = Math.round(y);
+
+			//Append coords
+			broadcastEvent.x = x >= this.board.size ? -1 : x;
+			broadcastEvent.y = y >= this.board.size ? -1 : y;
+		};
+
+		/**
+		 * Handler for updating the board
+		 */
+		var updateBoard = function() {
+
+			//Remove existing markup from the board
+			if (this.existingMarkup) {
+				this.board.removeObject(this.existingMarkup, 'markup');
+			}
+
+			//Reset existing markup array
+			this.existingMarkup = [];
+
+			//Get changes to the board's position
+			var i,
+				node = KifuReader.getNode(),
+				changes = KifuReader.getChanges();
+
+			//Changes to the board's position
+			if (changes) {
+
+				//Stones to remove (no need for a class, as just the position is relevant)
+				for (var r in changes.remove) {
+					this.board.removeObject(changes.remove[r], 'stones');
+				}
+
+				//Stone to add
+				for (var a in changes.add) {
+					this.board.addObject(new Stone(changes.add[a]));
+				}
+			}
+
+			//Move made?
+			if (node.move) {
+
+				//Passed?
+				if (node.move.pass) {
+					this.broadcast('notification', 'pass');
+				}
+
+				//Mark last move?
+				else if (this.config.markLastMove) {
+					this.existingMarkup.push(node.move);
+					this.board.addObject(new Markup({
+						type: this.config.lastMoveMarker,
+						x: node.move.x,
+						y: node.move.y
+					}));
+				}
+			}
+
+			//Add variation letters
+			if (node.children.length > 1 && this.config.markVariations) {
+				for (i = 0; i < node.children.length; i++) {
+					if (node.children[i].move && !node.children[i].move.pass) {
+						this.existingMarkup.push(node.children[i].move);
+						this.board.addObject(new Markup({
+							type: 'label',
+							text: String.fromCharCode(65+i),
+							color: this.board.theme.get('markupVariationColor'),
+							x: node.children[i].move.x,
+							y: node.children[i].move.y
+						}));
+					}
+				}
+			}
+
+			//Add any other markup
+			if (node.markup) {
+				for (i in node.markup) {
+					this.existingMarkup.push(node.markup[i]);
+					this.board.addObject(new Markup(node.markup[i]));
+				}
+			}
+		};
 
 		/**
 		 * Player class
@@ -72,14 +227,14 @@ angular.module('ngGo.Player.Service', [
 			kifu: null,
 
 			//Player mode and active tool
-			mode: PlayerModes.PLAY,
+			mode: PlayerModes.REPLAY,
 			tool: PlayerTools.MOVE,
 
 			//Frozen state
 			frozen: false,
 
 		 	/**
-		 	 * Prepare kifu for replaying and fire the kifuLoaded event
+		 	 * Load a kifu game record and prepare the kifu reader
 		 	 */
 			loadKifu: function(kifu, path) {
 
@@ -87,9 +242,16 @@ angular.module('ngGo.Player.Service', [
 				this.kifu = kifu;
 				KifuReader.load(kifu);
 
-				//Dispatch kifu loaded and player update events
-				PlayerEvents.kifuLoaded(this.kifu);
-				PlayerEvents.update('kifu');
+				//Dispatch kifu loaded event
+				this.broadcast('kifuLoaded', this.kifu);
+
+				//Set board size
+				this.board.setSize(this.kifu.size);
+				this.board.removeAllObjects();
+
+				//Update board and broadcast update event
+				updateBoard.call(this);
+				this.broadcast('update', 'kifu');
 
 				//Path given?
 				if (path) {
@@ -134,7 +296,10 @@ angular.module('ngGo.Player.Service', [
 
 				//Go to the next move
 				KifuReader.next(i);
-				PlayerEvents.update('next');
+
+				//Update board and broadcast update event
+				updateBoard.call(this);
+				this.broadcast('update', 'next');
 			},
 
 			/**
@@ -149,7 +314,10 @@ angular.module('ngGo.Player.Service', [
 
 				//Go to the previous position
 				KifuReader.previous();
-				PlayerEvents.update('prev');
+
+				//Update board and broadcast update event
+				updateBoard.call(this);
+				this.broadcast('update', 'prev');
 			},
 
 			/**
@@ -164,7 +332,10 @@ angular.module('ngGo.Player.Service', [
 
 				//Go to last position
 				KifuReader.last();
-				PlayerEvents.update('last');
+
+				//Update board and broadcast update event
+				updateBoard.call(this);
+				this.broadcast('update', 'last');
 			},
 
 			/**
@@ -179,7 +350,10 @@ angular.module('ngGo.Player.Service', [
 
 				//Go to first position
 				KifuReader.first();
-				PlayerEvents.update('first');
+
+				//Update board and broadcast update event
+				updateBoard.call(this);
+				this.broadcast('update', 'first');
 			},
 
 			/**
@@ -211,35 +385,10 @@ angular.module('ngGo.Player.Service', [
 
 				//Go to specified path
 				KifuReader.goTo(path);
-				PlayerEvents.update('goTo');
-			},
 
-			/**
-			 * Get information about the actual game from the kifu
-			 */
-			getGameInfo: function(formatted) {
-
-				//No kifu?
-				if (!this.kifu) {
-					return null;
-				}
-
-				//Return
-				return this.kifu.gameInfo(formatted);
-			},
-
-			/**
-			 * Get root information from the kifu
-			 */
-			getRootInfo: function(formatted) {
-
-				//No kifu?
-				if (!this.kifu) {
-					return null;
-				}
-
-				//Return
-				return this.kifu.rootInfo(formatted);
+				//Update board and broadcast update event
+				updateBoard.call(this);
+				this.broadcast('update', 'goto');
 			},
 
 			/**
@@ -247,7 +396,7 @@ angular.module('ngGo.Player.Service', [
 			 */
 			freeze: function() {
 				this.frozen = true;
-				$rootScope.$broadcast('ngGo.player.frozen');
+				this.broadcast('frozen');
 			},
 
 			/**
@@ -255,33 +404,23 @@ angular.module('ngGo.Player.Service', [
 			 */
 			unFreeze: function() {
 				this.frozen = false;
-				$rootScope.$broadcast('ngGo.player.unfrozen');
+				this.broadcast('unfrozen');
 			},
 
-			/***********************************************************************************************
-			 * Scoring
-			 ***/
+			/**
+			 * Switch player mode
+			 */
+			switchMode: function(mode) {
+				this.mode = mode || PlayerModes.REPLAY;
+				this.broadcast('modeSwitch', this.mode);
+			},
 
 			/**
-			 * Score the current board position
+			 * Switch player tool
 			 */
-			scorePosition: function() {
-
-				//Remember the current board state
-				this.preScoreState = this.board.getState();
-
-				//Feed the current game
-				GameScorer.setGame(KifuReader.getGame());
-
-				//Get changes and score
-				var changes = GameScorer.getChanges(),
-					score = GameScorer.getScore();
-					console.log(score);
-
-				//Remove all markup, and process changes
-				this.board.removeAllObjects('markup');
-				this.board.removeObject(changes.remove, 'stones');
-				this.board.addObject(changes.add);
+			switchTool: function(tool) {
+				this.tool = tool || PlayerTools.NONE;
+				this.broadcast('toolSwitch', this.tool);
 			},
 
 			/***********************************************************************************************
@@ -324,113 +463,49 @@ angular.module('ngGo.Player.Service', [
 			},
 
 			/***********************************************************************************************
-			 * Mode switching
+			 * Event handling
 			 ***/
 
 			/**
-			 * Switch player mode
+			 * Returns the necessary events that the element needs to listen to
 			 */
-			switchMode: function(mode) {
-
-				//Remember
-				this.mode = mode || PlayerModes.PLAY;
-
-				//Set tools and other logic according to player mode
-				switch (this.mode) {
-
-					//Setup mode
-					case PlayerModes.SETUP:
-						this.tool = PlayerTools.BLACK;
-						break;
-
-					//Play mode
-					case PlayerModes.PLAY:
-						this.tool = PlayerTools.MOVE;
-						break;
-
-					//Score mode
-					case PlayerModes.SCORE:
-						this.tool = PlayerTools.SCORE;
-						this.scorePosition();
-						break;
-
-					//Default
-					default:
-						this.mode = PlayerModes.PLAY;
-						this.tool = PlayerTools.MOVE;
-				}
+			getElementEvents: function() {
+				return ['keydown', 'click', 'mousemove', 'mouseout', 'mousewheel'];
 			},
 
 			/**
-			 * Switch player tool
+			 * Event listener
 			 */
-			switchTool: function(tool) {
+			listen: function(type, listener, mode) {
 
-				//Validate
-				var validTools = [];
-				switch (this.mode) {
+				//Get self
+				var self = this;
 
-					//Setup mode
-					case PlayerModes.SETUP:
-						validTools = [
-							PlayerTools.MOVE, PlayerTools.BLACK, PlayerTools.WHITE,
-							PlayerTools.CLEAR, PlayerTools.NONE
-						];
-						break;
+				//Create listener
+				$rootScope.$on('ngGo.player.' + type, function() {
 
-					//Play mode
-					case PlayerModes.PLAY:
-						validTOols = [
-							PlayerTools.MOVE, PlayerTools.NONE
-						];
-						break;
+					//Filter on mode
+					if (mode && mode != self.mode) {
+						return;
+					}
 
-					//Markup mode
-					case PlayerModes.MARKUP:
-						validTools = [
-							PlayerTools.TRIANGLE, PlayerTools.CIRCLE, PlayerTools.SQUARE,
-							PlayerTools.MARK, PlayerTools.SELECT, PlayerTools.LETTER,
-							PlayerTools.NUMBER, PlayerTools.HAPPY, PlayerTools.SAD,
-							PlayerTools.NONE
-						];
-						break;
+					//Append grid coordinates for mouse events
+					if (type == 'click' || type.substr(0, 5) == 'mouse') {
+						appendGridCoordinates.call(self, arguments[0], arguments[1]);
+					}
 
-					//Score mode
-					case PlayerModes.SCORE:
-						validTools = [
-							PlayerTools.SCORE, PlayerTools.NONE
-						];
-						break;
+					//Call listener
+					listener.apply(self, arguments);
+				});
+			},
 
-					//Default
-					default:
-						validTools = [
-							PlayerTools.NONE
-						];
-				}
-
-				//Valid tool selected?
-				if (validTools.indexOf(tool) !== -1) {
-					this.tool = tool;
-				}
-
-				//Otherwise use first valid tool
-				else {
-					this.tool = validTools[0];
-				}
+			/**
+			 * Event broadcaster
+			 */
+			broadcast: function(type, args) {
+				$rootScope.$broadcast('ngGo.player.' + type, args);
 			}
 		};
-
-		/**
-		 * Setup player event listeners
-		 */
-		PlayerEvents.listen('kifuLoaded', PlayerEventHandlers.kifuLoaded.bind(Player));
-		PlayerEvents.listen('update', PlayerEventHandlers.playerUpdate.bind(Player));
-		PlayerEvents.listen('keydown', PlayerEventHandlers.keyDown.bind(Player));
-		PlayerEvents.listen('click', PlayerEventHandlers.mouseClick.bind(Player));
-		PlayerEvents.listen('mousemove', PlayerEventHandlers.mouseMove.bind(Player));
-		PlayerEvents.listen('mouseout', PlayerEventHandlers.mouseOut.bind(Player));
-		PlayerEvents.listen('mousewheel', PlayerEventHandlers.mouseWheel.bind(Player));
 
 		//Return object
 		return Player;
