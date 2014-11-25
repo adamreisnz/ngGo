@@ -33,10 +33,10 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseApp = function(jgf, node, key, value) {
 		var app = value[0].split(':');
 		if (app.length > 1) {
-			jgf.sgf.application = app[0] + ' v' + app[1];
+			jgf.record.sgf.application = app[0] + ' v' + app[1];
 		}
 		else {
-			jgf.sgf.application = app[0];
+			jgf.record.sgf.application = app[0];
 		}
 	};
 
@@ -245,7 +245,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseVariations = function(jgf, node, key, value) {
 
 		//Initialize variations property
-		if (!jgf.variations) {
+		if (typeof jgf.variations == 'undefined') {
 			jgf.variations = {
 				markup: false,
 				children: false,
@@ -276,6 +276,38 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	};
 
 	/**
+	 * Player info parser function
+	 */
+	var parsePlayer = function(jgf, node, key, value) {
+
+		//Initialize players container
+		if (typeof jgf.game.players == 'undefined') {
+			jgf.game.players = [];
+		}
+
+		//Determine player color
+		var color = (key == 'PB' || key == 'BT' || key == 'BR') ? 'black' : 'white';
+
+		//Get key alias
+		if (typeof sgfAliases[key] != 'undefined') {
+			key = sgfAliases[key];
+		}
+
+		//Check if player of this color already exists
+		for (var p = 0; p < jgf.game.players.length; p++) {
+			if (jgf.game.players[p].color == color) {
+				jgf.game.players[p][key] = value[0];
+				return;
+			}
+		}
+
+		//Player of this color not found, initialize
+		var player = {color: color};
+		player[key] = value[0];
+		jgf.game.players.push(player);
+	};
+
+	/**
 	 * Parsing function to property mapper
 	 */
 	var parsingMap = {
@@ -288,6 +320,14 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
 		//Variations handling
 		'ST':	parseVariations,
+
+		//Player info handling
+		'PB':	parsePlayer,
+		'PW':	parsePlayer,
+		'BT':	parsePlayer,
+		'WT':	parsePlayer,
+		'BR':	parsePlayer,
+		'WR':	parsePlayer,
 
 		//Moves
 		'B':	parseMove,
@@ -371,7 +411,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		parse: function(sgf, stringified) {
 
 			//Get new JGF object (with SGF node as a base)
-			var jgf = KifuBlank.jgf({sgf: {}});
+			var jgf = KifuBlank.jgf({record: {sgf: {}}});
 
 			//Initialize
 			var stack = [],

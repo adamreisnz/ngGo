@@ -173,7 +173,7 @@ angular.module('ngGo.Kifu.Reader.Service', [
 			this.path = {m:0};
 
 			//Determine who's turn it is depending on handicap
-			if (this.kifu.info.handicap && this.kifu.info.handicap > 1) {
+			if (this.kifu.game.handicap && this.kifu.game.handicap > 1) {
 				this.game.setTurn(StoneColor.W);
 			}
 
@@ -212,7 +212,7 @@ angular.module('ngGo.Kifu.Reader.Service', [
 				this.game = new Game(this.kifu);
 
 				//Get blank board to compute first changes
-				var blankPosition = new GamePosition(this.kifu.width, this.kifu.height);
+				var blankPosition = new GamePosition(this.kifu.board.width, this.kifu.board.height);
 
 				//Execute first position
 				execFirst.call(this);

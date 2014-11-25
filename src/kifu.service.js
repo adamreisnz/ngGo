@@ -25,10 +25,7 @@ angular.module('ngGo.Kifu.Service', [
 	 */
 	var Kifu = function() {
 
-		//Init
-		this.width = 0;
-		this.height = 0;
-		this.info = {};
+		//Create root node
 		this.root = new KifuNode();
 	};
 
@@ -42,14 +39,14 @@ angular.module('ngGo.Kifu.Service', [
 		 */
 		clone: function() {
 
-			//Create new kifu object
-			var clone = new Kifu();
+			//Create new kifu object and get properties
+			var clone = new Kifu(),
+				props = Object.getOwnPropertyNames(this);
 
-			//Copy info and root node
-			clone.width = this.width;
-			clone.height = this.height;
-			clone.info = angular.copy(this.info);
-			clone.root = angular.copy(this.root);
+			//Copy all properties
+			for (var p = 0; p < props.length; p++) {
+				clone[p] = angular.copy(this[p]);
+			}
 
 			//Return clone
 			return clone;
@@ -67,16 +64,26 @@ angular.module('ngGo.Kifu.Service', [
 		 */
 		toJgf: function(stringify) {
 
-			//Initialize JGF
-			var jgf = KifuBlank.jgf();
+			//Initialize JGF and get properties
+			var jgf = KifuBlank.jgf(),
+				props = Object.getOwnPropertyNames(this);
 
-			//Copy info
-			for (var i in this.info) {
-				if (typeof this.info[i] == 'object') {
-					jgf[i] = angular.copy(this.info[i]);
+			//Copy properties
+			for (var p = 0; p < props.length; p++) {
+
+				//Skip root
+				if (p == 'root') {
+					continue;
 				}
+
+				//Already present on JGF object? Extend
+				if (jgf[p]) {
+					jgf[p] = angular.extend(jgf[p], this[p]);
+				}
+
+				//Otherwise copy
 				else {
-					jgf[i] = this.info[i];
+					jgf[p] = angular.copy(this[p]);
 				}
 			}
 
@@ -85,13 +92,6 @@ angular.module('ngGo.Kifu.Service', [
 
 			//Return
 			return stringify ? JSON.stringify(jgf) : jgf;
-		},
-
-		/**
-		 * Get info array from this Kifu
-		 */
-		getInfo: function() {
-			return this.info;
 		},
 
 		/**
@@ -110,7 +110,7 @@ angular.module('ngGo.Kifu.Service', [
 			}
 
 			//Initialize object we're getting info from
-			var obj = this.info, key;
+			var obj = this, key;
 
 			//Loop the position
 			for (var p = 0; p < position.length; p++) {
@@ -183,27 +183,11 @@ angular.module('ngGo.Kifu.Service', [
 			jgf = JSON.parse(jgf);
 		}
 
-		//Copy properties
+		//Copy properties, but skip moves tree
 		for (var i in jgf) {
-
-			//Skip moves tree
-			if (i == 'tree') {
-				continue;
+			if (i != 'tree') {
+				kifu[i] = angular.copy(jgf[i]);
 			}
-
-			//Deep copy objects
-			if (typeof jgf[i] == 'object') {
-				kifu.info[i] = angular.copy(jgf[i]);
-			}
-
-			//Simple copy all other properties
-			kifu.info[i] = jgf[i];
-		}
-
-		//Copy board size
-		if (kifu.info.board) {
-			kifu.width = kifu.info.board.width || 0;
-			kifu.height = kifu.info.board.height || 0;
 		}
 
 		//Create root node and clone the rest of the moves

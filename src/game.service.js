@@ -66,7 +66,7 @@ angular.module('ngGo.Game.Service', [
 			this.stack = [];
 
 			//Create new position
-			this.stack.push(new GamePosition(this.kifu.width, this.kifu.height));
+			this.stack.push(new GamePosition(this.kifu.board.width, this.kifu.board.height));
 
 			//Define property getter/setter for position
 			Object.defineProperty(this, 'position', {
@@ -205,7 +205,7 @@ angular.module('ngGo.Game.Service', [
 			this.stack = [];
 
 			//Create new position
-			this.stack.push(new GamePosition(this.kifu.width, this.kifu.height));
+			this.stack.push(new GamePosition(this.kifu.board.width, this.kifu.board.height));
 		};
 
 		/**
@@ -246,7 +246,7 @@ angular.module('ngGo.Game.Service', [
 		 * Check if a move is on the board
 		 */
 		Game.prototype.isOnBoard = function(x, y) {
-			return x >= 0 && y >= 0 && x < this.kifu.width && y < this.kifu.height;
+			return x >= 0 && y >= 0 && x < this.kifu.board.width && y < this.kifu.board.height;
 		};
 
 		/**

@@ -187,27 +187,70 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	};
 
 	/**
-	 * Size parser
+	 * Board size parser
 	 */
-	var parseSize = function(size, board) {
+	var parseSize = function(board, rootProperties) {
 
 		//Both width and height should be given
 		if (board.width && board.height) {
 
 			//Same dimensions?
 			if (board.width == board.height) {
-				return board.width;
+				rootProperties['SZ'] = board.width;
 			}
 
 			//Different dimensions are not supported by SGF, but OGS uses the
 			//format w:h, so we will stick with that for anyone who supports it.
 			else {
-				return board.width + ':' + board.height;
+				rootProperties['SZ'] = board.width + ':' + board.height;
 			}
 		}
 
-		//Only width given, just return that
-		return size;
+		//Otherwise, check if only width or height were given at least
+		else if (board.width) {
+			rootProperties['SZ'] = board.width;
+		}
+		else if (board.height) {
+			rootProperties['SZ'] = board.height;
+		}
+
+		//Can't determine size
+		else {
+			rootProperties['SZ'] = '';
+		}
+	};
+
+	/**
+	 * Players parser
+	 */
+	var parsePlayers = function(players, rootProperties) {
+
+		//Loop players
+		for (var p = 0; p < players.length; p++) {
+
+			//Validate color
+			if (!players[p].color || (players[p].color != 'black' && players[p].color != 'white')) {
+				continue;
+			}
+
+			//Get SGF color
+			var color = (players[p].color == 'black') ? 'B' : 'W';
+
+			//Name given?
+			if (players[p].name) {
+				rootProperties['P' + color] = players[p].name;
+			}
+
+			//Rank given?
+			if (players[p].rank) {
+				rootProperties[color + 'R'] = players[p].rank;
+			}
+
+			//Team given?
+			if (players[p].team) {
+				rootProperties[color + 'T'] = players[p].team;
+			}
+		}
 	};
 
 	/**
@@ -225,10 +268,11 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 		'name':			parseNodeName,
 
 		//Info properties
-		'application':	parseApplication,
-		'variations':	parseVariations,
-		'board.width':	parseSize,
-		'game.type':	parseGame
+		'record.application':	parseApplication,
+		'variations':			parseVariations,
+		'board':				parseSize,
+		'game.type':			parseGame,
+		'game.players':			parsePlayers
 	};
 
 	/***********************************************************************************************
@@ -302,9 +346,18 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 			//Build jgf key
 			var jgfKey = (key === '') ? subKey : key + '.' + subKey;
 
-			//If the item is an object, flatten recursively
+			//If the item is an object, handle separately
 			if (typeof jgf[subKey] == 'object') {
-				extractRootProperties(jgf[subKey], rootProperties, jgfKey);
+
+				//Handler for this object present in parsing map?
+				if (typeof parsingMap[jgfKey] !== 'undefined') {
+					parsingMap[jgfKey](jgf[subKey], rootProperties);
+				}
+
+				//Otherwise, just flatten and call this function recursively
+				else {
+					extractRootProperties(jgf[subKey], rootProperties, jgfKey);
+				}
 				continue;
 			}
 
@@ -314,7 +367,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
 				//Handler present in parsing map?
 				if (typeof parsingMap[jgfKey] !== 'undefined') {
-					value = parsingMap[jgfKey](jgf[subKey], jgf);
+					value = parsingMap[jgfKey](jgf[subKey]);
 				}
 				else {
 					value = escapeSgf(jgf[subKey]);

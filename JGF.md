@@ -3,57 +3,39 @@
 ````javascript
 JGF = {
 
-	// The application that created the game record file including version identifier
-	application: "ngGo v3.0.0",
+	// Game record information
+	record: {
 
-	// JGF version
-	version: 1,
+		// The application that created the game record file including version identifier
+		application: "ngGo v3.0.0",
 
-	// Character set of the file
-	charset: "UTF-8",
+		// JGF version
+		version: 1,
 
-	// The creator of the game record
-	creator: "C. Reator",
+		// Character set of the file
+		charset: "UTF-8",
 
-	// The source of the game record
-	source: "Go magazine",
+		// The creator of the game record
+		creator: "C. Reator",
 
-	// Any copyright notice
-	copyright: "Copyright 2014",
+		// The source of the game record
+		source: "Go magazine",
 
-	// Any comment about the game record itself
-	comment: "This is my first JGF game record",
+		// Any copyright notice
+		copyright: "Copyright 2014",
 
-	// Board properties
-	board: {
+		// Any comment about the game record itself
+		comment: "This is my first JGF game record",
 
-		// The board size is specified by width and height separately, to
-		// allow support for non-square boards
-		width: 19,
-		height: 19
-	},
+		// If converted from SGF, this node will contain additional information
+		sgf: {
 
-	// Instructions for how variations should be shown
-	variations: {
+			// The application that created the SGF file
+			application: "wGo v2.3.1",
 
-		// Indicate variations with markup on the board or not
-		markup: true,
-
-		// Show variations of sucessor nodes
-		children: false,
-
-		// Show variations of current node
-		siblings: true
-	},
-
-	// If converted from SGF, this node will contain additional information
-	sgf: {
-
-		// The application that created the SGF file
-		application: "wGo v2.3.1",
-
-		// The SGF file format
-		format: 4
+			// The SGF file format
+			format: 4
+		}
 	},
 
 	// Game information
@@ -65,25 +47,31 @@ JGF = {
 		// The game name
 		name: "Lee Sedol beats Lee Chang-Ho",
 
-		// Black player information
-		black: {
+		// Players involved
+		players: [
 
-			// Player name
-			name: "Lee Chang-Ho",
+			// For maximum flexibility, this is an array with player objects. This allows us
+			// to have more than 2 players, and have colors other than black and white.
+			{
+				// Player color (full color name in english, all lowercase)
+				color: "black",
 
-			// Player rank, e.g. 15k, 4d, 2p
-			rank: "9p",
+				// Player name
+				name: "Lee Chang-Ho",
 
-			// Player team, if any
-			team: ""
-		},
+				// Player rank, e.g. 15k, 4d, 2p
+				rank: "9p",
 
-		// White player information
-		white: {
-			name: "Lee Sedol",
-			rank: "9p",
-			team: ""
-		},
+				// Player team, if any
+				team: ""
+			},
+			{
+				color: "white",
+				name: "Lee Sedol",
+				rank: "9p",
+				team: ""
+			}
+		],
 
 		// Komi used (can be negative)
 		komi: 6.5,
@@ -142,6 +130,28 @@ JGF = {
 
 		// Any general comments about the game
 		comment: "These are general comments about the game"
+	},
+
+	// Board properties
+	board: {
+
+		// The board size is specified by width and height separately, to
+		// allow support for non-square boards
+		width: 19,
+		height: 19
+	},
+
+	// Instructions for how variations should be shown
+	variations: {
+
+		// Indicate variations with markup on the board or not
+		markup: true,
+
+		// Show variations of sucessor nodes
+		children: false,
+
+		// Show variations of current node
+		siblings: true
 	},
 
 	// Moves tree

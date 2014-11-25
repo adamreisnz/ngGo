@@ -44,18 +44,20 @@ angular.module('ngGo.Kifu.Parser.Service', [
 
 /**
  * SGF/JGF aliases constant for conversion between the two formats
+ * Note: not all properties can be translated directly, so some are
+ * not present here in this constant
  */
 .constant('sgfAliases', {
 
 	//Record properties
-	'CA': 'charset',
-	'CP': 'copyright',
-	'SO': 'source',
-	'US': 'creator',
+	'CA': 'record.charset',
+	'CP': 'record.copyright',
+	'SO': 'record.source',
+	'US': 'record.creator',
 
 	//SGF properties
-	'AP': 'sgf.application',
-	'FF': 'sgf.format',
+	'AP': 'record.sgf.application',
+	'FF': 'record.sgf.format',
 
 	//Game properties
 	'GM': 'game.type',
@@ -74,13 +76,13 @@ angular.module('ngGo.Kifu.Parser.Service', [
 	'AN': 'game.annotator',
 	'GC': 'game.comment',
 
-	//Player properties
-	'PB': 'game.black.name',
-	'PW': 'game.white.name',
-	'BT': 'game.black.team',
-	'WT': 'game.white.team',
-	'BR': 'game.black.rank',
-	'WR': 'game.white.rank',
+	//Player info properties
+	'PB': 'name',
+	'PW': 'name',
+	'BT': 'team',
+	'WT': 'team',
+	'BR': 'rank',
+	'WR': 'rank',
 
 	//Node annotation
 	'N':  'name',

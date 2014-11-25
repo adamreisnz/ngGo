@@ -276,7 +276,7 @@ angular.module('ngGo.Player.Service', [
 				this.broadcast('kifuLoaded', this.kifu);
 
 				//Set board size
-				this.board.setSize(this.kifu.size);
+				this.board.setSize(this.kifu.board.width, this.kifu.board.height);
 				this.board.removeAllObjects();
 
 				//Update board and broadcast update event

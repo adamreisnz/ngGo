@@ -19,20 +19,27 @@ angular.module('ngGo.Kifu.Blank.Service', [
 	 * Blank JGF
 	 */
 	var blankJgf = {
-		application: ngGo.name + ' v' + ngGo.version,
-		version: 1,
-		charset: 'UTF-8',
-		board: {
-			size: 19
+		record: {
+			application: ngGo.name + ' v' + ngGo.version,
+			version: 1,
+			charset: 'UTF-8'
 		},
 		game: {
 			type: 'go',
-			black: {
-				name: 'Black'
-			},
-			white: {
-				name: 'White'
-			},
+			players: [
+				{
+					color: 'black',
+					name: 'Black'
+				},
+				{
+					color: 'white',
+					name: 'White'
+				}
+			]
+		},
+		board: {
+			width: 19,
+			height: 19
 		},
 		tree: []
 	};
@@ -59,14 +66,38 @@ angular.module('ngGo.Kifu.Blank.Service', [
 		 * Get blank JGF
 		 */
 		jgf: function(base) {
-			return base ? angular.extend({}, blankJgf, base) : angular.copy(blankJgf);
+
+			//Initialize blank
+			var blank = angular.copy(blankJgf);
+
+			//Base given?
+			if (base) {
+				for (var p in base) {
+					blank[p] = angular.extend(blank[p] || {}, base[p]);
+				}
+			}
+
+			//Return
+			return blank;
 		},
 
 		/**
 		 * Get blank SGF
 		 */
 		sgf: function(base) {
-			return base ? angular.extend({}, blankSgf, base) : angular.copy(blankSgf);
+
+			//Initialize blank
+			var blank = angular.copy(blankSgf);
+
+			//Base given?
+			if (base) {
+				for (var p in base) {
+					blank[p] = angular.extend(blank[p] || {}, base[p]);
+				}
+			}
+
+			//Return
+			return blank;
 		}
 	};
 
