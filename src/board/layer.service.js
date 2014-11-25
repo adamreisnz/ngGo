@@ -26,9 +26,6 @@ angular.module('ngGo.Board.Layer.Service', [
 		this.board = board;
 		this.context = context;
 
-		//Initialize size
-		this.size = 0;
-
 		//Initialize grid for gridded board objects
 		this.grid = new BoardGrid();
 
@@ -43,17 +40,14 @@ angular.module('ngGo.Board.Layer.Service', [
 	/**
 	 * Set grid size
 	 */
-	BoardLayer.prototype.setSize = function(size) {
-
-		//Set the size for ourselves
-		this.size = parseInt(size);
+	BoardLayer.prototype.setSize = function(width, height) {
 
 		//Note: since this method is usually only called upon a global board resize,
 		//which also triggers the redraw method for all layers, the board objects on the grid
 		//are not being cleared here, as it will happen anyway during the redraw cycle.
 
 		//Set it in the grid (removing all objects in the process)
-		this.grid.setSize(this.size);
+		this.grid.setSize(width, height);
 	};
 
 	/**

@@ -164,8 +164,8 @@ angular.module('ngGo.Player.Service', [
 			y = Math.round(y);
 
 			//Append coords
-			broadcastEvent.x = x >= this.board.size ? -1 : x;
-			broadcastEvent.y = y >= this.board.size ? -1 : y;
+			broadcastEvent.x = x >= this.board.width ? -1 : x;
+			broadcastEvent.y = y >= this.board.height ? -1 : y;
 		};
 
 		/**

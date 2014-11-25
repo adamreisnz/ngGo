@@ -22,9 +22,11 @@ angular.module('ngGo.Kifu.Blank.Service', [
 		application: ngGo.name + ' v' + ngGo.version,
 		version: 1,
 		charset: 'UTF-8',
+		board: {
+			size: 19
+		},
 		game: {
 			type: 'go',
-			size: 19,
 			black: {
 				name: 'Black'
 			},

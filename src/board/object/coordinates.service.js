@@ -46,9 +46,9 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 
 		//Get boundary coordinates
 		var xr = board.getAbsX(-0.75);
-			xl = board.getAbsX(board.size - 0.25);
+			xl = board.getAbsX(board.width - 0.25);
 			yt = board.getAbsY(-0.75);
-			yb = board.getAbsY(board.size - 0.25);
+			yb = board.getAbsY(board.height - 0.25);
 
 		//Get A and I character codes
 		var aChar = 'A'.charCodeAt(0),
@@ -67,8 +67,19 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 		ctx.textAlign = 'center';
 		ctx.font = fontSize + 'px ' + font;
 
-		//Loop
-		for (var i = 0; i < board.size; i++) {
+		//Helper vars
+		var i, x, y;
+
+		//Draw vertical coordinates (numbers)
+		for (i = 1; i < board.height - 1; i++) {
+			y = board.getAbsX(i);
+			ctx.fillText(board.height - i, xr, y);
+			ctx.fillText(board.height - i, xl, y);
+		}
+
+		//Draw horizontal coordinates (letters)
+		for (i = 1; i < board.width - 1; i++) {
+			x = board.getAbsY(i);
 
 			//Determine character code
 			var ch = i + aChar;
@@ -76,15 +87,6 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 				ch++;
 			}
 
-			//Get coordinates
-			var x = board.getAbsX(i),
-				y = board.getAbsY(i);
-
-			//Draw vertical coordinates (numbers)
-			ctx.fillText(board.size - i, xr, y);
-			ctx.fillText(board.size - i, xl, y);
-
-			//Draw horizontal coordinates (letters)
 			ctx.fillText(String.fromCharCode(ch), x, yt);
 			ctx.fillText(String.fromCharCode(ch), x, yb);
 		}

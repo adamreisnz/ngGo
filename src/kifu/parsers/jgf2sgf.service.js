@@ -191,28 +191,23 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	 */
 	var parseSize = function(size, board) {
 
-		//If size given, use that
-		if (board.size) {
-			return board.size;
-		}
+		//Both width and height should be given
+		if (board.width && board.height) {
 
-		//Otherwise width and height should be given
-		else if (board.width && board.height) {
-
-			//Same dimensions? Just return the size
+			//Same dimensions?
 			if (board.width == board.height) {
 				return board.width;
 			}
 
-			//Different dimensions are not supported by SGF, but OGS uses the format w:h, so
-			//we will stick with that.
+			//Different dimensions are not supported by SGF, but OGS uses the
+			//format w:h, so we will stick with that for anyone who supports it.
 			else {
 				return board.width + ':' + board.height;
 			}
 		}
 
-		//Unknown size
-		return '';
+		//Only width given, just return that
+		return size;
 	};
 
 	/**
@@ -232,7 +227,6 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 		//Info properties
 		'application':	parseApplication,
 		'variations':	parseVariations,
-		'board.size':	parseSize,
 		'board.width':	parseSize,
 		'game.type':	parseGame
 	};

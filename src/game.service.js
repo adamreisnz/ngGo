@@ -1,8 +1,7 @@
 
 /**
  * Game :: This class represents a game that is being played. It keeps a stack of all board positions
- * in memory, and keeps track of komi. In addition, the class can validate moves to make sure they are
- * not repeating or suicide if desired.
+ * in memory. If desired, the class can validate moves to make sure they are not repeating or suicide.
  */
 
 /**
@@ -22,12 +21,6 @@ angular.module('ngGo.Game.Service', [
 	 * Default configuration
 	 */
 	var defaultConfig = {
-
-		//Default board size
-		defaultSize: 19,
-
-		//Default komi
-		defaultKomi: 0,
 
 		//Check for repeating positions? (KO / ALL / empty)
 		checkRepeat: 'KO',
@@ -54,19 +47,16 @@ angular.module('ngGo.Game.Service', [
 		/**
 		 * Constructor
 		 */
-		var Game = function(size, komi, config) {
+		var Game = function(kifu, config) {
 
 			//Extend config
 			config = config || {};
 			this.config = angular.extend(defaultConfig, config);
 
-			//Set size and komi
-			this.size = size || this.config.defaultSize;
-			this.komi = komi || this.config.defaultKomi;
+			//Remember kifu
+			this.kifu = kifu;
 
-			//Parse size, komi and set turn
-			this.size = parseInt(this.size);
-			this.komi = parseFloat(this.komi);
+			//Set turn
 			this.turn = StoneColor.B;
 
 			//Initialize error
@@ -76,7 +66,7 @@ angular.module('ngGo.Game.Service', [
 			this.stack = [];
 
 			//Create new position
-			this.stack.push(new GamePosition(this.size));
+			this.stack.push(new GamePosition(this.kifu.width, this.kifu.height));
 
 			//Define property getter/setter for position
 			Object.defineProperty(this, 'position', {
@@ -124,14 +114,14 @@ angular.module('ngGo.Game.Service', [
 		 * Set the komi used for this game
 		 */
 		Game.prototype.setKomi = function(komi) {
-			this.komi = parseFloat(komi);
+			this.kifu.set('game.komi', parseFloat(komi));
 		};
 
 		/**
 		 * Get the komi used for this game
 		 */
 		Game.prototype.getKomi = function() {
-			return this.komi;
+			return this.kifu.get('game.komi');
 		};
 
 		/**
@@ -215,7 +205,7 @@ angular.module('ngGo.Game.Service', [
 			this.stack = [];
 
 			//Create new position
-			this.stack.push(new GamePosition(this.size));
+			this.stack.push(new GamePosition(this.kifu.width, this.kifu.height));
 		};
 
 		/**
@@ -256,7 +246,7 @@ angular.module('ngGo.Game.Service', [
 		 * Check if a move is on the board
 		 */
 		Game.prototype.isOnBoard = function(x, y) {
-			return x >= 0 && y >= 0 && x < this.size && y < this.size;
+			return x >= 0 && y >= 0 && x < this.kifu.width && y < this.kifu.height;
 		};
 
 		/**

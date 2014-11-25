@@ -23,10 +23,11 @@ angular.module('ngGo.Game.Position.Service', [
 	/**
 	 * Constructor
 	 */
-	var GamePosition = function(size) {
+	var GamePosition = function(width, height) {
 
 		//Initialize
-		this.size = 0;
+		this.width = 0;
+		this.height = 0;
 		this.grid = new BoardGrid();
 		this.turn = StoneColor.B;
 
@@ -36,18 +37,28 @@ angular.module('ngGo.Game.Position.Service', [
 		this.captures[StoneColor.W] = [];
 
 		//Set size
-		if (size) {
-			this.setSize(size);
+		if (width || height) {
+			this.setSize(width, height);
 		}
 	};
 
 	/**
 	 * Set the grid size
 	 */
-	GamePosition.prototype.setSize = function(size) {
-		size = size || 0;
-		this.size = parseInt(size);
-		this.grid.setSize(size);
+	GamePosition.prototype.setSize = function(width, height) {
+
+		//Check what's given
+		width = width || height || 0;
+		height = height || width || 0;
+
+		//Set
+		this.width = parseInt(width);
+		this.height = parseInt(height);
+
+		//Set in grid
+		this.grid.setSize(width, height);
+
+		//Clear the position (populates it with empty stones)
 		this.clear();
 	};
 
@@ -76,7 +87,7 @@ angular.module('ngGo.Game.Position.Service', [
 		}
 
 		//Initialize tested grid if needed
-		tested = tested || new BoardGrid(this.size);
+		tested = tested || new BoardGrid(this.width, this.height);
 
 		//See what color is present on the coordinates
 		var color = this.get(x, y);
@@ -285,7 +296,8 @@ angular.module('ngGo.Game.Position.Service', [
 		var newPosition = new GamePosition();
 
 		//Set vars manually for maximum efficiency
-		newPosition.size = this.size;
+		newPosition.width = this.width;
+		newPosition.height = this.height;
 		newPosition.grid = this.grid.clone();
 
 		//Return
@@ -298,7 +310,7 @@ angular.module('ngGo.Game.Position.Service', [
 	GamePosition.prototype.isSameAs = function(newPosition) {
 
 		//Must have the same size
-		if (this.size != newPosition.size) {
+		if (this.width != newPosition.width || this.height != newPosition.height) {
 			return false;
 		}
 
@@ -307,8 +319,8 @@ angular.module('ngGo.Game.Position.Service', [
 			newColors = newPosition.grid.getObjects();
 
 		//Loop all objects
-		for (var x = 0; x < this.size; x++) {
-			for (var y = 0; y < this.size; y++) {
+		for (var x = 0; x < this.width; x++) {
+			for (var y = 0; y < this.height; y++) {
 				if (oldColors[x][y] != newColors[x][y]) {
 					return false;
 				}
@@ -328,7 +340,7 @@ angular.module('ngGo.Game.Position.Service', [
 		var changes = new GamePositionChanges();
 
 		//Must have the same size
-		if (this.size != newPosition.size) {
+		if (this.width != newPosition.width || this.height != newPosition.height) {
 			console.warn('Trying to compare positions of a different size');
 			return changes;
 		}
@@ -338,8 +350,8 @@ angular.module('ngGo.Game.Position.Service', [
 			newColors = newPosition.grid.getObjects();
 
 		//Loop all objects
-		for (var x = 0; x < this.size; x++) {
-			for (var y = 0; y < this.size; y++) {
+		for (var x = 0; x < this.width; x++) {
+			for (var y = 0; y < this.height; y++) {
 
 				//Adding a stone?
 				if (oldColors[x][y] === StoneColor.NONE && oldColors[x][y] != newColors[x][y]) {

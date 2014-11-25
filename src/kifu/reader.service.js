@@ -209,10 +209,10 @@ angular.module('ngGo.Kifu.Reader.Service', [
 				}
 
 				//Load game
-				this.game = new Game(this.kifu.size, this.kifu.get('game.komi'));
+				this.game = new Game(this.kifu);
 
 				//Get blank board to compute first changes
-				var blankPosition = new GamePosition(this.kifu.size);
+				var blankPosition = new GamePosition(this.kifu.width, this.kifu.height);
 
 				//Execute first position
 				execFirst.call(this);

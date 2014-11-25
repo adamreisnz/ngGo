@@ -18,15 +18,16 @@ angular.module('ngGo.Board.Grid.Service', [])
 	/**
 	 * Constructor
 	 */
-	var BoardGrid = function(size) {
+	var BoardGrid = function(width, height) {
 
 		//Initialize size and objects array
-		this.size = 0;
+		this.width = 0;
+		this.height = 0;
 		this.objects = [];
 
 		//Size given? Set it
-		if (size) {
-			this.setSize(size);
+		if (width || height) {
+			this.setSize(width, height);
 		}
 	};
 
@@ -39,7 +40,8 @@ angular.module('ngGo.Board.Grid.Service', [])
 		var newGrid = new BoardGrid();
 
 		//Manually set vars for maximum efficiency
-		newGrid.size = this.size;
+		newGrid.width = this.width;
+		newGrid.height = this.height;
 		newGrid.objects = angular.copy(this.objects);
 
 		//Return
@@ -63,8 +65,8 @@ angular.module('ngGo.Board.Grid.Service', [])
 		//Flat array of objects?
 		if (flat) {
 			flat = [];
-			for (var x = 0; x < this.size; x++) {
-				for (var y = 0; y < this.size; y++) {
+			for (var x = 0; x < this.width; x++) {
+				for (var y = 0; y < this.height; y++) {
 					if (this.objects[x][y] !== null) {
 						if (cloned) {
 							flat.push(angular.copy(this.objects[x][y]));
@@ -86,8 +88,8 @@ angular.module('ngGo.Board.Grid.Service', [])
 	 * Populate the whole grid with the same object (clones the object if object given)
 	 */
 	BoardGrid.prototype.populateObjects = function(obj) {
-		for (var x = 0; x < this.size; x++) {
-			for (var y = 0; y < this.size; y++) {
+		for (var x = 0; x < this.width; x++) {
+			for (var y = 0; y < this.height; y++) {
 				this.objects[x][y] = (typeof obj == 'object') ? angular.copy(obj) : obj;
 			}
 		}
@@ -147,8 +149,8 @@ angular.module('ngGo.Board.Grid.Service', [])
 
 		//Keep track of removed objects
 		var objectsRemoved = [];
-		for (var x = 0; x < this.size; x++) {
-			for (var y = 0; y < this.size; y++) {
+		for (var x = 0; x < this.width; x++) {
+			for (var y = 0; y < this.height; y++) {
 				if (this.objects[x][y] !== null) {
 					objectsRemoved.push(this.objects[x][y]);
 					this.objects[x][y] = null;
@@ -202,29 +204,51 @@ angular.module('ngGo.Board.Grid.Service', [])
 		}
 
 		//Validate coordinates
-		return (x >= 0 && y >= 0 && x < this.size && y < this.size);
+		return (x >= 0 && y >= 0 && x < this.width && y < this.height);
 	};
 
 	/**
 	 * Set the grid size
 	 */
-	BoardGrid.prototype.setSize = function(size) {
-		size = size || 0;
-		this.size = parseInt(size);
+	BoardGrid.prototype.setSize = function(width, height) {
+
+		//Check what's given
+		width = width || height || 0;
+		height = height || width || 0;
+
+		//Set
+		this.width = parseInt(width);
+		this.height = parseInt(height);
+
+		//Create objects array
 		this.objects = [];
-		for (var x = 0; x < this.size; x++) {
+		for (var x = 0; x < this.width; x++) {
 			this.objects[x] = [];
-			for (var y = 0; y < this.size; y++) {
+			for (var y = 0; y < this.height; y++) {
 				this.objects[x][y] = null;
 			}
 		}
 	};
 
 	/**
-	 * Get the grid size
+	 * Get the grid size object
 	 */
 	BoardGrid.prototype.getSize = function() {
-		return this.size;
+		return {width: this.width, height: this.height};
+	};
+
+	/**
+	 * Get the grid width
+	 */
+	BoardGrid.prototype.getWidth = function() {
+		return this.width;
+	};
+
+	/**
+	 * Get the grid height
+	 */
+	BoardGrid.prototype.getHeight = function() {
+		return this.height;
 	};
 
 	//Return

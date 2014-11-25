@@ -26,7 +26,8 @@ angular.module('ngGo.Kifu.Service', [
 	var Kifu = function() {
 
 		//Init
-		this.size = 0;
+		this.width = 0;
+		this.height = 0;
 		this.info = {};
 		this.root = new KifuNode();
 	};
@@ -45,7 +46,8 @@ angular.module('ngGo.Kifu.Service', [
 			var clone = new Kifu();
 
 			//Copy info and root node
-			clone.size = this.size;
+			clone.width = this.width;
+			clone.height = this.height;
 			clone.info = angular.copy(this.info);
 			clone.root = angular.copy(this.root);
 
@@ -198,9 +200,10 @@ angular.module('ngGo.Kifu.Service', [
 			kifu.info[i] = jgf[i];
 		}
 
-		//Copy game size
-		if (kifu.info.game.size) {
-			kifu.size = kifu.info.game.size;
+		//Copy board size
+		if (kifu.info.board) {
+			kifu.width = kifu.info.board.width || 0;
+			kifu.height = kifu.info.board.height || 0;
 		}
 
 		//Create root node and clone the rest of the moves

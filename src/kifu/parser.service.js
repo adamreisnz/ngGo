@@ -57,9 +57,6 @@ angular.module('ngGo.Kifu.Parser.Service', [
 	'AP': 'sgf.application',
 	'FF': 'sgf.format',
 
-	//Board properties
-	'SZ': 'board.size',
-
 	//Game properties
 	'GM': 'game.type',
 	'GN': 'game.name',

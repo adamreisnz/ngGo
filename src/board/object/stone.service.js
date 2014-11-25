@@ -208,10 +208,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		if (this.color == StoneColor.W) {
 
 			//Get random shell type
-			var type = shellSeed%(shellTypes.length + this.x * board.size + this.y) % shellTypes.length;
+			var type = shellSeed%(shellTypes.length + this.x * board.width + this.y) % shellTypes.length;
 
 			//Determine random angle
-			var z = board.size * board.size + this.x*board.size + this.y,
+			var z = board.width * board.height + this.x*board.width + this.y,
 				angle = (2/z)*(shellSeed%z);
 
 			//Draw shell pattern

@@ -62,7 +62,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		node.move = {};
 
 		//Pass
-		if (value[0] === '' || (jgf.size <= 19 && value[0].toLowerCase() == 'tt')) {
+		if (value[0] === '' || (jgf.width <= 19 && value[0].toLowerCase() == 'tt')) {
 			node.move[key] = 'pass';
 		}
 
@@ -228,7 +228,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 			jgf.board.height = parseInt(size[1]);
 		}
 		else {
-			jgf.board.size = parseInt(size[0]);
+			jgf.board.width = jgf.board.height = parseInt(size[0]);
 		}
 	};
 

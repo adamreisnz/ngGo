@@ -27,12 +27,10 @@ JGF = {
 	// Board properties
 	board: {
 
-		// The board size can be specified by a single size for square boards
-		size: 19,
-
-		// Or, if the board was not square, specify the width and height separately
+		// The board size is specified by width and height separately, to
+		// allow support for non-square boards
 		width: 19,
-		height: 9
+		height: 19
 	},
 
 	// Instructions for how variations should be shown

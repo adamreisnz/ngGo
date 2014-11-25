@@ -37,9 +37,9 @@ angular.module('ngGo.Board.Service', [
 
 		//Star point coordinates
 		starPoints: {
-			19:	[{x:3, y:3}, {x:9, y:3}, {x:15,y:3}, {x:3, y:9}, {x:9, y:9}, {x:15,y:9}, {x:3, y:15}, {x:9, y:15}, {x:15,y:15}],
-			13:	[{x:3, y:3}, {x:9, y:3}, {x:3, y:9}, {x:9, y:9}],
-			9:	[{x:4, y:4}, {x:2, y:2}, {x:2, y:6}, {x:6, y:2}, {x:6, y:6}]
+			'19x19':	[{x:3, y:3}, {x:9, y:3}, {x:15,y:3}, {x:3, y:9}, {x:9, y:9}, {x:15,y:9}, {x:3, y:15}, {x:9, y:15}, {x:15,y:15}],
+			'13x13':	[{x:3, y:3}, {x:9, y:3}, {x:3, y:9}, {x:9, y:9}],
+			'9x9':		[{x:4, y:4}, {x:2, y:2}, {x:2, y:6}, {x:6, y:2}, {x:6, y:6}]
 		},
 
 		//Show coordinates
@@ -68,7 +68,7 @@ angular.module('ngGo.Board.Service', [
 		 * Helper to calculate cell width
 		 */
 		var calcCellWidth = function() {
-			var availableWidth = Math.min(this.width, this.height) * (1-this.margin),
+			var availableWidth = Math.min(this.drawWidth, this.drawHeight) * (1-this.margin),
 				noCells = this.grid.botX + 1 - this.grid.topX;
 			return Math.round(availableWidth / noCells);
 		};
@@ -77,7 +77,7 @@ angular.module('ngGo.Board.Service', [
 		 * Helper to calculate cell height
 		 */
 		var calcCellHeight = function() {
-			var availableHeight = Math.min(this.width, this.height) * (1-this.margin),
+			var availableHeight = Math.min(this.drawWidth, this.drawHeight) * (1-this.margin),
 				noCells = this.grid.botY + 1 - this.grid.topY;
 			return Math.round(availableHeight / noCells);
 		};
@@ -86,16 +86,16 @@ angular.module('ngGo.Board.Service', [
 		 * Helper to calculate left margin
 		 */
 		var calcLeftMargin = function() {
-			var availableWidth = Math.min(this.width, this.height) * (1-this.margin);
-			return Math.round((this.width - availableWidth) / 2 + this.cellWidth/2);
+			var availableWidth = Math.min(this.drawWidth, this.drawHeight) * (1-this.margin);
+			return Math.round((this.drawWidth - availableWidth) / 2 + this.cellWidth/2);
 		};
 
 		/**
 		 * Helper to calculate top margin
 		 */
 		var calcTopMargin = function() {
-			var availableHeight = Math.min(this.width, this.height) * (1-this.margin);
-			return Math.round((this.height - availableHeight) / 2 + this.cellHeight/2);
+			var availableHeight = Math.min(this.drawWidth, this.drawHeight) * (1-this.margin);
+			return Math.round((this.drawHeight - availableHeight) / 2 + this.cellHeight/2);
 		};
 
 		/**
@@ -119,8 +119,8 @@ angular.module('ngGo.Board.Service', [
 			this.grid = {
 				topX: this.section.left,
 				topY: this.section.top,
-				botX: this.size - 1 - this.section.right,
-				botY: this.size - 1 - this.section.bottom
+				botX: this.width - 1 - this.section.right,
+				botY: this.height - 1 - this.section.bottom
 			};
 		};
 
@@ -136,15 +136,15 @@ angular.module('ngGo.Board.Service', [
 			//Set board theme
 			this.theme = new BoardTheme(this.config.theme);
 
-			//Initialize board dimensions in pixels
-			this.width = 0;
-			this.height = 0;
+			//Initialize board draw dimensions in pixels
+			this.drawWidth = 0;
+			this.drawHeight = 0;
 
 			//Initialize layers
 			this.layers = {};
 
-			//Initialize size
-			this.size = parseInt(this.config.defaultSize);
+			//Initialize grid size
+			this.width = this.height = parseInt(this.config.defaultSize);
 
 			//Set section of board to display and determine resulting grid
 			this.section = angular.extend(defaultConfig.section, this.config.section);
@@ -207,23 +207,24 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/**
-		 * Set board size (eg: 9, 13 or 19). This will clear the board objects.
+		 * Set board size. This will clear the board objects.
 		 */
-		Board.prototype.setSize = function(size) {
+		Board.prototype.setSize = function(width, height) {
 
-			//Validate size
-			size = parseInt(size);
-			size = size || defaultConfig.size;
+			//Check what's given
+			width = parseInt(width || height || defaultConfig.defaultSize);
+			height = parseInt(height || width || defaultConfig.defaultSize);
 
 			//Changing?
-			if (size != this.size) {
+			if (width != this.width || height != this.height) {
 
-				//Set size
-				this.size = size;
+				//Remember size
+				this.width = width;
+				this.height = height;
 
-				//Set grid size in layers
+				//Set size in layers
 				for (var layer in this.layers) {
-					this.layers[layer].setSize(this.size);
+					this.layers[layer].setSize(width, height);
 				}
 
 				//Resized handler
@@ -235,15 +236,15 @@ angular.module('ngGo.Board.Service', [
 		 * Get the board size
 		 */
 		Board.prototype.getSize = function() {
-			return this.size;
+			return {width: this.width, height: this.height};
 		};
 
 		/**
 		 * Set new dimensions
 		 */
 		Board.prototype.setDimensions = function(width, height) {
-			this.width = width;
-			this.height = height;
+			this.drawWidth = width;
+			this.drawHeight = height;
 			this.resized();
 		};
 
