@@ -50,14 +50,11 @@ angular.module('ngGo.Kifu.Parser.Service', [
 .constant('sgfAliases', {
 
 	//Record properties
+	'AP': 'record.application',
 	'CA': 'record.charset',
 	'CP': 'record.copyright',
 	'SO': 'record.source',
 	'US': 'record.creator',
-
-	//SGF properties
-	'AP': 'record.sgf.application',
-	'FF': 'record.sgf.format',
 
 	//Game properties
 	'GM': 'game.type',

@@ -28,15 +28,17 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	 ***/
 
 	/**
-	 * Application parser function
+	 * Application parser function (doesn't overwrite existing signature)
 	 */
 	var parseApp = function(jgf, node, key, value) {
-		var app = value[0].split(':');
-		if (app.length > 1) {
-			jgf.record.sgf.application = app[0] + ' v' + app[1];
-		}
-		else {
-			jgf.record.sgf.application = app[0];
+		if (!jgf.record.application) {
+			var app = value[0].split(':');
+			if (app.length > 1) {
+				jgf.record.application = app[0] + ' v' + app[1];
+			}
+			else {
+				jgf.record.application = app[0];
+			}
 		}
 	};
 

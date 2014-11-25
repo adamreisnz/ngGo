@@ -16,7 +16,7 @@ JGF = {
 		charset: "UTF-8",
 
 		// The creator of the game record
-		creator: "C. Reator",
+		creator: "C. R. Eator",
 
 		// The source of the game record
 		source: "Go magazine",
@@ -25,17 +25,7 @@ JGF = {
 		copyright: "Copyright 2014",
 
 		// Any comment about the game record itself
-		comment: "This is my first JGF game record",
-
-		// If converted from SGF, this node will contain additional information
-		sgf: {
-
-			// The application that created the SGF file
-			application: "wGo v2.3.1",
-
-			// The SGF file format
-			format: 4
-		}
+		comment: "This is my first JGF game record"
 	},
 
 	// Game information
