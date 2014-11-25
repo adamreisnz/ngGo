@@ -24,6 +24,15 @@ JGF = {
 	// Any comment about the game record itself
 	comment: "This is my first JGF game record",
 
+	// Board properties
+	board: {
+
+		// Board size can be an integer (for normal square board) or an object specifying the
+		// width and height separately if the board was not square.
+		size: 19,
+		size: {width: 19, height: 9},
+	},
+
 	// Instructions for how variations should be shown
 	variations: {
 
@@ -75,12 +84,6 @@ JGF = {
 			rank: "9p",
 			team: ""
 		},
-
-		// The board size used
-		// This can be an integer (for normal square board) or an object specifying the
-		// width and height separately if the board was not square.
-		size: 19,
-		size: {width: 19, height: 9},
 
 		// Komi used (can be negative)
 		komi: 6.5,
