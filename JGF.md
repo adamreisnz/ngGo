@@ -224,6 +224,9 @@ JGF = {
 			}
 		},
 
+		// In problems, a node with the correct solution can be marked
+		{ move: {W: "gb"}, solution: true },
+
 		// Variations are contained in a variations container.
 		[
 			// Each variation's nodes are contained in a child moves container.
