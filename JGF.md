@@ -141,17 +141,17 @@ JGF = {
 		height: 19
 	},
 
-	// Instructions for how variations should be shown
-	variations: {
+	// Display instructions for this game record
+	display: {
 
 		// Indicate variations with markup on the board or not
-		markup: true,
+		variation_markup: true,
 
 		// Show variations of sucessor nodes
-		children: false,
+		variation_children: false,
 
 		// Show variations of current node
-		siblings: true
+		variation_siblings: true
 	},
 
 	// Moves tree

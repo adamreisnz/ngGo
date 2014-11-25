@@ -173,23 +173,27 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	};
 
 	/**
-	 * Variations handling parser
+	 * Display instructions parser
 	 */
-	var parseVariations = function(variations) {
+	var parseDisplay = function(display, rootProperties) {
+
+		//Variation handling
 		var st = 0;
-		if (!variations.markup)	{
+		if (!display.variation_markup)	{
 			st += 2;
 		}
-		if (variations.siblings) {
+		if (display.variation_siblings) {
 			st += 1;
 		}
-		return st;
+
+		//Set in root properties
+		rootProperties['ST'] = st;
 	};
 
 	/**
-	 * Board size parser
+	 * Board parser
 	 */
-	var parseSize = function(board, rootProperties) {
+	var parseBoard = function(board, rootProperties) {
 
 		//Both width and height should be given
 		if (board.width && board.height) {
@@ -269,8 +273,8 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
 		//Info properties
 		'record.application':	parseApplication,
-		'variations':			parseVariations,
-		'board':				parseSize,
+		'display':				parseDisplay,
+		'board':				parseBoard,
 		'game.type':			parseGame,
 		'game.players':			parsePlayers
 	};

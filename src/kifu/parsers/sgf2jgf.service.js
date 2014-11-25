@@ -244,14 +244,15 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	 */
 	var parseVariations = function(jgf, node, key, value) {
 
-		//Initialize variations property
-		if (typeof jgf.variations == 'undefined') {
-			jgf.variations = {
-				markup: false,
-				children: false,
-				siblings: false
-			};
+		//Initialize display property
+		if (typeof jgf.display == 'undefined') {
+			jgf.display = {};
 		}
+
+		//Initialize variation display settings
+		jgf.display.variation_markup = false;
+		jgf.display.variation_children = false;
+		jgf.display.variation_siblings = false;
 
 		//Parse as integer
 		var st = parseInt(value[0]);
@@ -259,18 +260,18 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		//Determine what we want (see SGF specs for details)
 		switch (st) {
 			case 0:
-				jgf.variations.markup = true;
-				jgf.variations.children = true;
+				jgf.display.variation_markup = true;
+				jgf.display.variation_children = true;
 				break;
 			case 1:
-				jgf.variations.markup = true;
-				jgf.variations.siblings = true;
+				jgf.display.variation_markup = true;
+				jgf.display.variation_siblings = true;
 				break;
 			case 2:
-				jgf.variations.children = true;
+				jgf.display.variation_children = true;
 				break;
 			case 3:
-				jgf.variations.siblings = true;
+				jgf.display.variation_siblings = true;
 				break;
 		}
 	};
