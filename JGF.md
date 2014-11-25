@@ -15,10 +15,10 @@ JGF = {
 		// Character set of the file
 		charset: "UTF-8",
 
-		// The transcriber of the game record
+		// The person (or program) who created the game record
 		transcriber: "",
 
-		// The annotator of the game record
+		// The annotator/commentator of the game record
 		annotator: "An Younggil",
 
 		// The source of the game record
