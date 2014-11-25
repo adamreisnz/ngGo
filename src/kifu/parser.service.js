@@ -47,7 +47,7 @@ angular.module('ngGo.Kifu.Parser.Service', [
  */
 .constant('sgfAliases', {
 
-	//Game record properties
+	//Record properties
 	'CA': 'charset',
 	'CP': 'copyright',
 	'SO': 'source',
@@ -57,10 +57,12 @@ angular.module('ngGo.Kifu.Parser.Service', [
 	'AP': 'sgf.application',
 	'FF': 'sgf.format',
 
-	//Game info properties
+	//Board properties
+	'SZ': 'board.size',
+
+	//Game properties
 	'GM': 'game.type',
 	'GN': 'game.name',
-	'SZ': 'game.size',
 	'KM': 'game.komi',
 	'HA': 'game.handicap',
 	'RE': 'game.result',
@@ -75,7 +77,7 @@ angular.module('ngGo.Kifu.Parser.Service', [
 	'AN': 'game.annotator',
 	'GC': 'game.comment',
 
-	//Player info properties
+	//Player properties
 	'PB': 'game.black.name',
 	'PW': 'game.white.name',
 	'BT': 'game.black.team',

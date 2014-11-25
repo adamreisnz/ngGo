@@ -187,6 +187,35 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	};
 
 	/**
+	 * Size parser
+	 */
+	var parseSize = function(size, board) {
+
+		//If size given, use that
+		if (board.size) {
+			return board.size;
+		}
+
+		//Otherwise width and height should be given
+		else if (board.width && board.height) {
+
+			//Same dimensions? Just return the size
+			if (board.width == board.height) {
+				return board.width;
+			}
+
+			//Different dimensions are not supported by SGF, but OGS uses the format w:h, so
+			//we will stick with that.
+			else {
+				return board.width + ':' + board.height;
+			}
+		}
+
+		//Unknown size
+		return '';
+	};
+
+	/**
 	 * Parse function to property mapper
 	 */
 	var parsingMap = {
@@ -203,6 +232,8 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 		//Info properties
 		'application':	parseApplication,
 		'variations':	parseVariations,
+		'board.size':	parseSize,
+		'board.width':	parseSize,
 		'game.type':	parseGame
 	};
 
@@ -289,7 +320,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
 				//Handler present in parsing map?
 				if (typeof parsingMap[jgfKey] !== 'undefined') {
-					value = parsingMap[jgfKey](jgf[subKey]);
+					value = parsingMap[jgfKey](jgf[subKey], jgf);
 				}
 				else {
 					value = escapeSgf(jgf[subKey]);

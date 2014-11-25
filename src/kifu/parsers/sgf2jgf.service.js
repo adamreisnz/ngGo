@@ -215,7 +215,21 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	 * Size parser function
 	 */
 	var parseSize = function(jgf, node, key, value) {
-		jgf.game.size = parseInt(value[0]);
+
+		//Initialize board container
+		if (typeof jgf.board == 'undefined') {
+			jgf.board = {};
+		}
+
+		//Add size property (can be width:height or just a single size)
+		var size = value[0].split(':');
+		if (size.length > 1) {
+			jgf.board.width = parseInt(size[0]);
+			jgf.board.height = parseInt(size[1]);
+		}
+		else {
+			jgf.board.size = parseInt(size[0]);
+		}
 	};
 
 	/**
