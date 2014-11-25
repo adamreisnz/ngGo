@@ -311,7 +311,7 @@ angular.module('ngGo.Board.Service', [
 			}
 
 			//Get layer from object if not given
-			layer = layer || obj.getLayer();
+			layer = layer || obj.layer;
 
 			//Validate layer
 			if (typeof this.layers[layer] == 'undefined') {
@@ -336,7 +336,7 @@ angular.module('ngGo.Board.Service', [
 			}
 
 			//Get layer from object if not given
-			layer = layer || obj.getLayer();
+			layer = layer || obj.layer;
 
 			//Validate layer
 			if (typeof this.layers[layer] == 'undefined') {
@@ -370,9 +370,16 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/**
+		 * Check if we have an object at given coordinates and for a given layer
+		 */
+		Board.prototype.hasObjectAt = function(x, y, layer) {
+			return (this.layers[layer] && this.layers[layer].hasObject(x, y));
+		};
+
+		/**
 		 * Check if the board has a stone on a certain position
 		 */
-		Board.prototype.hasStone = function(x, y) {
+		Board.prototype.hasStoneAt = function(x, y) {
 			if (this.layers.stones) {
 				var obj = this.layers.stones.getObject(x, y);
 				if (obj) {

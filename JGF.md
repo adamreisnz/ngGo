@@ -135,13 +135,13 @@ JGF = {
 	display: {
 
 		// Indicate variations with markup on the board or not
-		variation_markup: true,
+		variation_board_markup: true,
 
-		// Show variations of sucessor nodes
-		variation_children: false,
+		// Show variations of successor nodes
+		variation_children: true,
 
 		// Show variations of current node
-		variation_siblings: true
+		variation_siblings: false
 	},
 
 	// Moves tree

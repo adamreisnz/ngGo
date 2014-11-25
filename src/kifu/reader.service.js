@@ -349,6 +349,37 @@ angular.module('ngGo.Kifu.Reader.Service', [
 			 */
 			getChanges: function() {
 				return this.changes;
+			},
+
+			/**
+			 * Check if the current node has any variations (e.g. more than one child node)
+			 */
+			hasVariations: function() {
+				return (this.node && this.node.children.length > 1);
+			},
+
+			/**
+			 * Get all the variation nodes
+			 */
+			getVariations: function() {
+				return this.node ? this.node.children : [];
+			},
+
+			/**
+			 * Check if a move at given coordinates is valid
+			 */
+			isValidMove: function(x, y) {
+				if (this.game && this.game.isValidMove(x, y)) {
+					return true;
+				}
+				return false;
+			},
+
+			/**
+			 * Check if given coordinates are one of the next child node coordinates
+			 */
+			isMoveVariation: function(x, y) {
+				return this.node ? this.node.isMoveVariation(x, y) : -1;
 			}
 		};
 

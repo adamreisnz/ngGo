@@ -71,14 +71,14 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 		var i, x, y;
 
 		//Draw vertical coordinates (numbers)
-		for (i = 1; i < board.height - 1; i++) {
+		for (i = 0; i < board.height; i++) {
 			y = board.getAbsX(i);
 			ctx.fillText(board.height - i, xr, y);
 			ctx.fillText(board.height - i, xl, y);
 		}
 
 		//Draw horizontal coordinates (letters)
-		for (i = 1; i < board.width - 1; i++) {
+		for (i = 0; i < board.width; i++) {
 			x = board.getAbsY(i);
 
 			//Determine character code
@@ -87,6 +87,7 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 				ch++;
 			}
 
+			//Write text
 			ctx.fillText(String.fromCharCode(ch), x, yt);
 			ctx.fillText(String.fromCharCode(ch), x, yb);
 		}

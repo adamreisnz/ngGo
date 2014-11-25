@@ -335,6 +335,10 @@ angular.module('ngGo.Kifu.Node.Service', [
 	 */
 	angular.extend(KifuNode.prototype, {
 
+		/***********************************************************************************************
+		 * Getters
+		 ***/
+
 		/**
 		 * Get node's child specified by index or null if doesn't exist
 		 */
@@ -345,6 +349,88 @@ angular.module('ngGo.Kifu.Node.Service', [
 			}
 			return null;
 		},
+
+		/**
+		 * Get all the children
+		 */
+		getChildren: function() {
+			return this.children;
+		},
+
+		/**
+		 * Check if the node has more than one move variation
+		 */
+		hasMoveVariations: function() {
+
+			//Less than two child nodes?
+			if (this.children.length <= 1) {
+				return false;
+			}
+
+			//Loop children
+			var moveVariations = 0;
+			for (var i = 0; i < this.children.length; i++) {
+
+				//Is this a move node?
+				if (this.children[i].move) {
+					moveVariations++;
+				}
+
+				//More than one move node present?
+				if (moveVariations > 1) {
+					return true;
+				}
+			}
+
+			//No move variations
+			return false;
+		},
+
+		/**
+		 * Get all the move variation nodes
+		 */
+		getMoveVariations: function() {
+
+			//No child nodes?
+			if (this.children.length === 0) {
+				return false;
+			}
+
+			//Initialize
+			var moveVariations = [];
+
+			//Loop child nodes
+			for (var i = 0; i < this.children.length; i++) {
+
+				//Is this a move node?
+				if (this.children[i].move) {
+					moveVariations.push(this.children[i]);
+				}
+			}
+
+			//Return
+			return moveVariations;
+		},
+
+		/**
+		 * Check if given coordinates are one of the next child node coordinates
+		 */
+		isMoveVariation: function(x, y) {
+
+			//Loop the child nodes
+			for (var i in this.children) {
+				if (this.children[i].move && this.children[i].move.x == x && this.children[i].move.y == y) {
+					return i;
+				}
+			}
+
+			//Not found
+			return -1;
+		},
+
+		/***********************************************************************************************
+		 * Node manipulation
+		 ***/
 
 		/**
 		 * Remove this node (node is removed from its parent and children are passed to parent)
@@ -399,18 +485,9 @@ angular.module('ngGo.Kifu.Node.Service', [
 			this.children.push(node);
 		},
 
-		/**
-		 * Get properties as object
-		 */
-		getProperties: function() {
-			var props = {};
-			for (var key in this) {
-				if (this.hasOwnProperty(key) && key != 'children' && key != 'parent' && key[0] != '_') {
-					props[key] = this[key];
-				}
-			}
-			return props;
-		},
+		/***********************************************************************************************
+		 * JGF conversion
+		 ***/
 
 		/**
 		 * Build a Kifu Node from a given JGF tree

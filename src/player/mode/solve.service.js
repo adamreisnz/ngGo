@@ -1,26 +1,30 @@
 
 /**
- * PlayerModeReplay :: This module governs the "replay" mode of the player, e.g. traversing through an
- * existing game record without the ability to deviate from the tree or its variations.
+ * PlayerModeSolve :: This module governs the "solve" mode of the player, e.g. trying to solve
+ * go problems and finding the right move or variations.
  */
 
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Player.Mode.Replay.Service', [])
+angular.module('ngGo.Player.Mode.Solve.Service', [])
 
 /**
  * Factory definition
  */
-.factory('PlayerModeReplay', function(PlayerTools, KifuReader, StoneFaded) {
+.factory('PlayerModeSolve', function(PlayerTools, KifuReader, StoneFaded) {
 
 	/**
 	 * Available tools for this mode
 	 */
 	var availableTools = [
-		PlayerTools.MOVE,
-		PlayerTools.NONE
+		PlayerTools.MOVE
 	];
+
+	/**
+	 * Remembering the variation board markup setting
+	 */
+	var variationBoardMarkup;
 
 	/**
 	 * Player mode definition
@@ -60,7 +64,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 				this.board.removeObject(this._lastMark);
 			}
 
-			//When replaying, we can place stones only on valid locations
+			//When in solve mode, we are allowed to place stones on all valid move locations
 			if (KifuReader.isValidMove(event.x, event.y)) {
 
 				//Create faded stone object
@@ -86,6 +90,19 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 
 			//Set default tool
 			this.tool = availableTools[0];
+
+			//Disable variation marking
+			variationBoardMarkup = this.config.variationBoardMarkup;
+			this.setVariationBoardMarkup(false);
+		},
+
+		/**
+		 * Handler for mode exit
+		 */
+		modeExit: function(event) {
+
+			//Reset variation marking to remembered setting
+			this.setVariationBoardMarkup(variationBoardMarkup);
 		}
 	};
 

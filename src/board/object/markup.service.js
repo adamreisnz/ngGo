@@ -349,7 +349,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 			canvasTranslate = board.theme.get('canvasTranslate');
 
 		//First, clear grid square below for clarity
-		if (!board.hasStone(this.x, this.y)) {
+		if (!board.hasStoneAt(this.x, this.y)) {
 			board.layers.grid.clearCell(this.x, this.y);
 		}
 
@@ -386,7 +386,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 	var clearLabel = function(board) {
 
 		//No stone on location? Redraw the grid square, as we cleared it
-		if (!board.hasStone(this.x, this.y))  {
+		if (!board.hasStoneAt(this.x, this.y))  {
 			var r = board.theme.get('stoneRadius', board.getCellSize());
 			board.layers.grid.redrawCell(this.x, this.y);
 		}

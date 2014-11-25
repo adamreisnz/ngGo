@@ -81,6 +81,13 @@ angular.module('ngGo.Board.Layer.Service', [
 	};
 
 	/**
+	 * Check if we have an object at specific coordinates
+	 */
+	BoardLayer.prototype.hasObject = function(x, y) {
+		return this.grid.hasObject(x, y);
+	};
+
+	/**
 	 * Add object
 	 */
 	BoardLayer.prototype.addObject = function(obj) {

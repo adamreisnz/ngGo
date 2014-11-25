@@ -183,6 +183,16 @@ angular.module('ngGo.Kifu.Service', [
 			jgf = JSON.parse(jgf);
 		}
 
+		//Parse tree from string
+		if (typeof jgf.tree == 'string') {
+			if (jgf.tree.charAt(0) == '[') {
+				jgf.tree = JSON.parse(jgf.tree);
+			}
+			else {
+				jgf.tree = [];
+			}
+		}
+
 		//Copy properties, but skip moves tree
 		for (var i in jgf) {
 			if (i != 'tree') {

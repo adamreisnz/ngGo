@@ -91,15 +91,16 @@ angular.module('ngGo.Player.Directive', [
 				Player.setScrollWheelNavigation(value);
 			});
 
-			//Observe marking attributes
+			//Observe last move attributes
 			attrs.$observe('lastMoveMarker', function(value) {
 				Player.setLastMoveMarker(value);
 			});
 			attrs.$observe('markLastMove', function(value) {
 				Player.setMarkLastMove(value);
 			});
-			attrs.$observe('markVariations', function(value) {
-				Player.setMarkVariations(value);
+
+			attrs.$observe('variationBoardMarkup', function(value) {
+				Player.setVariationBoardMarkup(value);
 			});
 		}
 	};

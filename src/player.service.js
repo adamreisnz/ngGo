@@ -14,6 +14,7 @@ angular.module('ngGo.Player.Service', [
 	'ngGo.Player.Mode.Common.Service',
 	'ngGo.Player.Mode.Replay.Service',
 	'ngGo.Player.Mode.Edit.Service',
+	'ngGo.Player.Mode.Solve.Service',
 	'ngGo.Board.Service',
 	'ngGo.Kifu.Service',
 	'ngGo.Kifu.Reader.Service',
@@ -24,9 +25,10 @@ angular.module('ngGo.Player.Service', [
  * Player modes constant
  */
 .constant('PlayerModes', {
-	REPLAY:	'replay',
-	PLAY:	'play',
-	EDIT:	'edit'
+	PLAY:		'play',
+	REPLAY:		'replay',
+	EDIT:		'edit',
+	SOLVE:		'solve'
 })
 
 /**
@@ -67,7 +69,7 @@ angular.module('ngGo.Player.Service', [
 /**
  * Run block
  */
-.run(function(Player, PlayerModes, PlayerModeCommon, PlayerModeReplay, PlayerModeEdit) {
+.run(function(Player, PlayerModes, PlayerModeCommon, PlayerModeReplay, PlayerModeEdit, PlayerModeSolve) {
 
 	/**
 	 * Common event listeners
@@ -78,19 +80,27 @@ angular.module('ngGo.Player.Service', [
 	/**
 	 * Replay mode
 	 */
-	Player.listen('modeSwitch', PlayerModeReplay.modeSwitch, PlayerModes.REPLAY);
+	Player.listen('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
 	Player.listen('click', PlayerModeReplay.mouseClick, PlayerModes.REPLAY);
 	Player.listen('mousemove', PlayerModeReplay.mouseMove, PlayerModes.REPLAY);
 
 	/**
 	 * Edit mode
 	 */
-	Player.listen('modeSwitch', PlayerModeEdit.modeSwitch, PlayerModes.EDIT);
+	Player.listen('modeEnter', PlayerModeEdit.modeEnter, PlayerModes.EDIT);
 	Player.listen('toolSwitch', PlayerModeEdit.toolSwitch, PlayerModes.EDIT);
 	Player.listen('keydown', PlayerModeEdit.keyDown, PlayerModes.EDIT);
 	Player.listen('click', PlayerModeEdit.mouseClick, PlayerModes.EDIT);
 	Player.listen('mousemove', PlayerModeEdit.mouseMove, PlayerModes.EDIT);
 	Player.listen('mouseout', PlayerModeEdit.mouseOut, PlayerModes.EDIT);
+
+	/**
+	 * Solve mode
+	 */
+	Player.listen('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
+	Player.listen('modeExit', PlayerModeSolve.modeExit, PlayerModes.SOLVE);
+	Player.listen('click', PlayerModeSolve.mouseClick, PlayerModes.SOLVE);
+	Player.listen('mousemove', PlayerModeSolve.mouseMove, PlayerModes.SOLVE);
 })
 
 /**
@@ -105,7 +115,7 @@ angular.module('ngGo.Player.Service', [
 
 		//Starting mode and available modes
 		startingMode: PlayerModes.REPLAY,
-		availableModes: [PlayerModes.REPLAY, PlayerModes.EDIT],
+		availableModes: [PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE],
 
 		//Keys/scrollwheel navigation
 		arrowKeysNavigation: true,
@@ -114,12 +124,21 @@ angular.module('ngGo.Player.Service', [
 		//Disable window scrolling when scrolling player
 		lockScroll: true,
 
-		//Last move handling
+		//Last move marking
 		markLastMove: true,
 		lastMoveMarker: 'last',
 
-		//Variations handling
-		markVariations: true
+		//Allow the display instructions from the Kifu to overwrite standard settings
+		kifuDisplayInstructions: true,
+
+		//Indicate variations with markup on the board or not
+		variationBoardMarkup: true,
+
+		//Show variations of successor nodes
+		variationChildren: true,
+
+		//Show variations of current node
+		variationSiblings: false
 	};
 
 	/**
@@ -169,21 +188,80 @@ angular.module('ngGo.Player.Service', [
 		};
 
 		/**
+		 * Helper to remove move variations from the board
+		 */
+		var removeMoveVariations = function(nodes) {
+			for (var i = 0; i < nodes.length; i++) {
+				this.board.removeObject({
+					x: nodes[i].move.x,
+					y: nodes[i].move.y
+				}, 'markup');
+			}
+		};
+
+		/**
+		 * Helper to add move variations to the board
+		 */
+		var addMoveVariations = function(nodes) {
+			for (var i = 0; i < nodes.length; i++) {
+
+				//Auto variation markup should never overwrite existing markup
+				if (this.board.hasObjectAt(nodes[i].move.x, nodes[i].move.y, 'markup')) {
+					continue;
+				}
+
+				//Add to board
+				this.board.addObject(new Markup({
+					type: 'label',
+					text: String.fromCharCode(65+i),
+					color: this.board.theme.get('markupVariationColor'),
+					x: nodes[i].move.x,
+					y: nodes[i].move.y
+				}));
+			}
+		};
+
+		/**
+		 * Helper to add or remove the appropriate move variations
+		 */
+		var toggleMoveVariations = function() {
+
+			//Get the current node
+			var node = KifuReader.getNode(), variations;
+
+			//Child variations?
+			if (this.config.variationChildren && node.hasMoveVariations()) {
+				variations = node.getMoveVariations();
+				if (this.config.variationBoardMarkup) {
+					addMoveVariations.call(this, variations);
+				}
+				else {
+					removeMoveVariations.call(this, variations);
+				}
+			}
+
+			//Sibling variations?
+			if (this.config.variationSiblings && node.parent && node.parent.hasMoveVariations()) {
+				variations = node.parent.getMoveVariations();
+				if (this.config.variationBoardMarkup) {
+					addMoveVariations.call(this, variations);
+				}
+				else {
+					removeMoveVariations.call(this, variations);
+				}
+			}
+		};
+
+		/**
 		 * Handler for updating the board
 		 */
 		var updateBoard = function() {
 
 			//Remove existing markup from the board
-			if (this.existingMarkup) {
-				this.board.removeObject(this.existingMarkup, 'markup');
-			}
-
-			//Reset existing markup array
-			this.existingMarkup = [];
+			this.board.removeAllObjects('markup');
 
 			//Get changes to the board's position
-			var i,
-				node = KifuReader.getNode(),
+			var i, node = KifuReader.getNode(),
 				changes = KifuReader.getChanges();
 
 			//Changes to the board's position
@@ -210,7 +288,6 @@ angular.module('ngGo.Player.Service', [
 
 				//Mark last move?
 				else if (this.config.markLastMove) {
-					this.existingMarkup.push(node.move);
 					this.board.addObject(new Markup({
 						type: this.config.lastMoveMarker,
 						x: node.move.x,
@@ -220,17 +297,10 @@ angular.module('ngGo.Player.Service', [
 			}
 
 			//Add variation letters
-			if (node.children.length > 1 && this.config.markVariations) {
+			if (node.children.length > 1 && this.config.variationBoardMarkup) {
 				for (i = 0; i < node.children.length; i++) {
 					if (node.children[i].move && !node.children[i].move.pass) {
-						this.existingMarkup.push(node.children[i].move);
-						this.board.addObject(new Markup({
-							type: 'label',
-							text: String.fromCharCode(65+i),
-							color: this.board.theme.get('markupVariationColor'),
-							x: node.children[i].move.x,
-							y: node.children[i].move.y
-						}));
+
 					}
 				}
 			}
@@ -238,10 +308,12 @@ angular.module('ngGo.Player.Service', [
 			//Add any other markup
 			if (node.markup) {
 				for (i in node.markup) {
-					this.existingMarkup.push(node.markup[i]);
 					this.board.addObject(new Markup(node.markup[i]));
 				}
 			}
+
+			//Toggle move variations
+			toggleMoveVariations.call(this);
 		};
 
 		/**
@@ -271,6 +343,11 @@ angular.module('ngGo.Player.Service', [
 				//Remember kifu and load in kifu reader
 				this.kifu = kifu;
 				KifuReader.load(kifu);
+
+				//Process display instructions
+				if (kifu.display && !this.config.kifuDisplayInstructions) {
+					this.processDisplayInstructions(kifu.display);
+				}
 
 				//Dispatch kifu loaded event
 				this.broadcast('kifuLoaded', this.kifu);
@@ -308,6 +385,27 @@ angular.module('ngGo.Player.Service', [
 			 */
 			getKifu: function() {
 				return this.kifu;
+			},
+
+			/**
+			 * Process display instructions (can be given in Kifu)
+			 */
+			processDisplayInstructions: function(display) {
+
+				//Show board markup for variations?
+				if (typeof display.variation_board_markup != 'undefined') {
+					this.variationBoardMarkup = display.variation_board_markup;
+				}
+
+				//Show variations of successor nodes?
+				if (typeof display.variation_children != 'undefined') {
+					this.variationChildren = display.variation_children;
+				}
+
+				//Show variations of current node?
+				if (typeof display.variation_siblings != 'undefined') {
+					this.variationSiblings = display.variation_siblings;
+				}
 			},
 
 			/***********************************************************************************************
@@ -441,8 +539,20 @@ angular.module('ngGo.Player.Service', [
 			 * Switch player mode
 			 */
 			switchMode: function(mode) {
-				this.mode = mode || PlayerModes.REPLAY;
-				this.broadcast('modeSwitch', this.mode);
+
+				//Validate input
+				mode = mode || PlayerModes.REPLAY;
+
+				//Check if mode is available
+				if (this.config.availableModes && this.config.availableModes.indexOf(mode) === -1) {
+					return false;
+				}
+
+				//Set and broadcast
+				this.broadcast('modeExit', this.mode);
+				this.mode = mode;
+				this.broadcast('modeEnter', this.mode);
+				return true;
 			},
 
 			/**
@@ -486,10 +596,11 @@ angular.module('ngGo.Player.Service', [
 			},
 
 			/**
-			 * Set whether to mark variations
+			 * Set whether to mark variations on the board
 			 */
-			setMarkVariations: function(markVariations) {
-				this.config.markVariations = (markVariations === true || markVariations === 'true');
+			setVariationBoardMarkup: function(mark) {
+				this.config.variationBoardMarkup = (mark === true || mark === 'true');
+				toggleMoveVariations.call(this);
 			},
 
 			/***********************************************************************************************

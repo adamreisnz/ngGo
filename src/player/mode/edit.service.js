@@ -83,7 +83,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 
 				//When setting up, we can place stones on empty positions
 				case PlayerTools.SETUP:
-					if (!this.board.hasStone(event.x, event.y)) {
+					if (!this.board.hasStoneAt(event.x, event.y)) {
 
 						//Add stone to board
 						this.board.addObject(new Stone({
@@ -162,7 +162,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 
 				//We can place stones on empty spots
 				case PlayerTools.SETUP:
-					if (!this.board.hasStone(event.x, event.y)) {
+					if (!this.board.hasStoneAt(event.x, event.y)) {
 
 						//Create faded stone object
 						this._lastMark = new StoneFaded({
@@ -179,7 +179,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 
 				//We can mark stones as dead or alive
 				case PlayerTools.SCORE:
-					if (this.board.hasStone(event.x, event.y)) {
+					if (this.board.hasStoneAt(event.x, event.y)) {
 
 						//Create mark
 						this._lastMark = new Markup({
@@ -212,9 +212,9 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 		},
 
 		/**
-		 * Handler for mode switches
+		 * Handler for mode entry
 		 */
-		modeSwitch: function(event) {
+		modeEnter: function(event) {
 
 			//Set default tool
 			this.tool = availableTools[0];
