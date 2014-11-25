@@ -15,8 +15,11 @@ JGF = {
 		// Character set of the file
 		charset: "UTF-8",
 
-		// The creator of the game record
-		creator: "C. R. Eator",
+		// The transcriber of the game record
+		transcriber: "",
+
+		// The annotator of the game record
+		annotator: "An Younggil",
 
 		// The source of the game record
 		source: "Go magazine",
@@ -114,9 +117,6 @@ JGF = {
 
 		// Opening used
 		opening: "Low chinese",
-
-		// The annotator of the game
-		annotator: "A. N. Notator",
 
 		// Any general comments about the game
 		comment: "These are general comments about the game"

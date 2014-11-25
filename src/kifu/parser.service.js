@@ -54,7 +54,8 @@ angular.module('ngGo.Kifu.Parser.Service', [
 	'CA': 'record.charset',
 	'CP': 'record.copyright',
 	'SO': 'record.source',
-	'US': 'record.creator',
+	'US': 'record.transcriber',
+	'AN': 'record.annotator',
 
 	//Game properties
 	'GM': 'game.type',
@@ -70,7 +71,6 @@ angular.module('ngGo.Kifu.Parser.Service', [
 	'EV': 'game.event',
 	'RO': 'game.round',
 	'ON': 'game.opening',
-	'AN': 'game.annotator',
 	'GC': 'game.comment',
 
 	//Player info properties
