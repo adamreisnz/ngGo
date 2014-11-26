@@ -21,6 +21,14 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 	 */
 	var drawStarPoint = function(gridX, gridY, starRadius, starColor) {
 
+		//Don't draw if it falls outsize of the board grid section
+		if (gridX < this.board.grid.xLeft || gridX > this.board.grid.xRight) {
+			return;
+		}
+		if (gridY < this.board.grid.yTop || gridY > this.board.grid.yBot) {
+			return;
+		}
+
 		//Get absolute coordinates and star point radius
 		var x = this.board.getAbsX(gridX),
 			y = this.board.getAbsY(gridY);
@@ -51,11 +59,33 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 	 */
 	GridLayer.prototype.draw = function() {
 
-		//Determine coordinates
-		var tx = Math.round(this.board.left),
-			ty = Math.round(this.board.top),
-			bw = Math.round(this.board.cellWidth * (this.board.width - 1)),
-			bh = Math.round(this.board.cellHeight * (this.board.height - 1));
+		//Determine top x and y margin
+		var tx = Math.round(this.board.drawMargin),
+			ty = Math.round(this.board.drawMargin);
+
+		//Determine number of visible cells
+		var cellsVer = this.board.grid.yBot - this.board.grid.yTop,
+			cellsHor = this.board.grid.xRight - this.board.grid.xLeft;
+
+		//If we are displaying a section, add some line height/width to indicate the cut off
+		if (this.board.section.top) {
+			cellsVer += 0.5;
+			ty += Math.round((this.board.grid.yBot - cellsVer) * this.board.cellSize);
+		}
+		if (this.board.section.bottom) {
+			cellsVer += 0.5;
+		}
+		if (this.board.section.left) {
+			cellsHor += 0.5;
+			tx += Math.round((this.board.grid.xRight - cellsHor) * this.board.cellSize);
+		}
+		if (this.board.section.right) {
+			cellsHor += 0.5;
+		}
+
+		//Determine grid lines width/height
+		var gridWidth = Math.round(this.board.cellSize * cellsHor),
+			gridHeight = Math.round(this.board.cellSize * cellsVer);
 
 		//Get theme properties
 		var cellSize = this.board.getCellSize(),
@@ -63,10 +93,8 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 			strokeStyle = this.board.theme.get('gridLineColor'),
 			starRadius = this.board.theme.get('starRadius', cellSize),
 			starColor = this.board.theme.get('starColor'),
-			canvasTranslate = this.board.theme.get('canvasTranslate', cellSize, lineWidth);
-
-		//Get star points
-		var starPoints = this.board.config.starPoints[this.board.width + 'x' + this.board.height] || [];
+			canvasTranslate = this.board.theme.get('canvasTranslate', cellSize, lineWidth),
+			starPoints = this.board.theme.get('starPoints', this.board.width, this.board.height);
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -76,24 +104,21 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 		this.context.lineWidth = lineWidth;
 		this.context.strokeStyle = strokeStyle;
 
-		//Draw container rectangle
-		this.context.strokeRect(tx, ty, bw, bh);
-
 		//Helper vars
 		var i, x, y;
 
 		//Draw vertical lines
-		for (i = 1; i < this.board.width - 1; i++) {
+		for (i = this.board.grid.xLeft; i <= this.board.grid.xRight; i++) {
 			x = this.board.getAbsX(i);
 			this.context.moveTo(x, ty);
-			this.context.lineTo(x, ty + bh);
+			this.context.lineTo(x, ty + gridHeight);
 		}
 
 		//Draw horizontal lines
-		for (i = 1; i < this.board.height - 1; i++) {
+		for (i = this.board.grid.yTop; i <= this.board.grid.yBot; i++) {
 			y = this.board.getAbsY(i);
 			this.context.moveTo(tx, y);
-			this.context.lineTo(tx + bw, y);
+			this.context.lineTo(tx + gridWidth, y);
 		}
 
 		//Draw grid lines
@@ -152,10 +177,8 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 			strokeStyle = this.board.theme.get('gridLineColor'),
 			starRadius = this.board.theme.get('starRadius', s),
 			starColor = this.board.theme.get('starColor'),
-			canvasTranslate = this.board.theme.get('canvasTranslate', s, lineWidth);
-
-		//Get star points
-		var starPoints = this.board.config.starPoints[this.board.width + 'x' + this.board.height] || [];
+			canvasTranslate = this.board.theme.get('canvasTranslate', s, lineWidth),
+			starPoints = this.board.theme.get('starPoints', this.board.width, this.board.height);
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);

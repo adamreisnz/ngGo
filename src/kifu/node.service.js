@@ -20,11 +20,6 @@ angular.module('ngGo.Kifu.Node.Service', [
 .factory('KifuNode', function(StoneColor) {
 
 	/**
-	 * Node properties to copy to/from JGF
-	 */
-	var nodeProperties = ['name', 'move', 'setup', 'markup', 'turn', 'comments'];
-
-	/**
 	 * Character index of "a"
 	 */
 	var aChar = 'a'.charCodeAt(0);
@@ -88,7 +83,7 @@ angular.module('ngGo.Kifu.Node.Service', [
 	var convertMoveToJgf = function(move) {
 
 		//Initialize JGF move object and determine color
-		var jgfMove = {},
+		var jgfMove = angular.copy(move),
 			color = toStringColor(move.color);
 
 		//No color?
@@ -105,6 +100,11 @@ angular.module('ngGo.Kifu.Node.Service', [
 		else {
 			jgfMove[color] = flattenCoordinates(move.x, move.y);
 		}
+
+		//Delete coordinates and color
+		delete jgfMove.x;
+		delete jgfMove.y;
+		delete jgfMove.color;
 
 		//Return move
 		return jgfMove;
@@ -133,10 +133,12 @@ angular.module('ngGo.Kifu.Node.Service', [
 			return null;
 		}
 
+		//Set new color property
+		delete move[color];
+		move.color = toColorConstant(color);
+
 		//Return coordinates object
-		return coordinatesObject(coords, {
-			color: toColorConstant(color)
-		});
+		return coordinatesObject(coords, move);
 	};
 
 	/**
@@ -526,21 +528,22 @@ angular.module('ngGo.Kifu.Node.Service', [
 				//Regular node
 				else {
 
-					//Copy node properties
-					for (var key in nodeProperties) {
-						var prop = nodeProperties[key];
-						if (typeof jgf[i][prop] != 'undefined') {
+					//Get properties to copy
+					var properties = Object.getOwnPropertyNames(jgf[i]);
 
-							//Conversion function present?
-							if (typeof conversionMap.fromJgf[prop] != 'undefined') {
-								kifuNode[prop] = conversionMap.fromJgf[prop](jgf[i][prop]);
-							}
-							else if (typeof jgf[i][prop] == 'object') {
-								kifuNode[prop] = angular.copy(jgf[i][prop]);
-							}
-							else {
-								kifuNode[prop] = jgf[i][prop];
-							}
+					//Copy node properties
+					for (var key in properties) {
+						var prop = properties[key];
+
+						//Conversion function present?
+						if (typeof conversionMap.fromJgf[prop] != 'undefined') {
+							kifuNode[prop] = conversionMap.fromJgf[prop](jgf[i][prop]);
+						}
+						else if (typeof jgf[i][prop] == 'object') {
+							kifuNode[prop] = angular.copy(jgf[i][prop]);
+						}
+						else {
+							kifuNode[prop] = jgf[i][prop];
 						}
 					}
 				}
@@ -564,24 +567,28 @@ angular.module('ngGo.Kifu.Node.Service', [
 			//Initialize container to add nodes to
 			container = container || [];
 
-			//Initialize node
-			var node = {};
+			//Initialize node and get properties
+			var node = {},
+				properties = Object.getOwnPropertyNames(this);
 
 			//Copy node properties
-			for (var key in nodeProperties) {
-				var prop = nodeProperties[key];
-				if (typeof this[prop] != 'undefined') {
+			for (var key in properties) {
+				var prop = properties[key];
 
-					//Conversion function present?
-					if (typeof conversionMap.toJgf[prop] != 'undefined') {
-						node[prop] = conversionMap.toJgf[prop](this[prop]);
-					}
-					else if (typeof this[prop] == 'object') {
-						node[prop] = angular.copy(this[prop]);
-					}
-					else {
-						node[prop] = this[prop];
-					}
+				//Skip some properties
+				if (prop == 'parent' || prop == 'children') {
+					continue;
+				}
+
+				//Conversion function present?
+				if (typeof conversionMap.toJgf[prop] != 'undefined') {
+					node[prop] = conversionMap.toJgf[prop](this[prop]);
+				}
+				else if (typeof this[prop] == 'object') {
+					node[prop] = angular.copy(this[prop]);
+				}
+				else {
+					node[prop] = this[prop];
 				}
 			}
 

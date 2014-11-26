@@ -23,14 +23,6 @@ angular.module('ngGo.Board.Directive', [
 				$scope.Board = new Board();
 			}
 
-			//Set dimensions in scope if not set yet
-			if (!$scope.dimensions) {
-				$scope.dimensions = {
-					width: 0,
-					height: 0
-				};
-			}
-
 			/**
 			 * Helper to add a new layer
 			 */
@@ -62,9 +54,9 @@ angular.module('ngGo.Board.Directive', [
 				$scope.Board.setSize(size[0], size[1]);
 			});
 
-			//Watch for dimension changes
-			$scope.$watch('dimensions', function(dim) {
-				$scope.Board.setDimensions(dim.width * pixelRatio, dim.height * pixelRatio);
+			//Listen for board resize events
+			$scope.$on('ngGo.board.resize', function(event, width, height) {
+				$scope.Board.setDimensions(width * pixelRatio, height * pixelRatio);
 			});
 		}
 	};

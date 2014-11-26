@@ -41,13 +41,18 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 	 */
 	Coordinates.prototype.draw = function(board) {
 
+		//Can only draw when we have dimensions
+		if (board.drawWidth === 0 || board.drawheight === 0) {
+			return;
+		}
+
 		//Get context
 		var ctx = board.layers[this.layer].getContext();
 
 		//Get boundary coordinates
-		var xr = board.getAbsX(-0.75);
-			xl = board.getAbsX(board.width - 0.25);
-			yt = board.getAbsY(-0.75);
+		var xl = board.getAbsX(-0.75),
+			xr = board.getAbsX(board.width - 0.25),
+			yt = board.getAbsY(-0.75),
 			yb = board.getAbsY(board.height - 0.25);
 
 		//Get A and I character codes
@@ -82,7 +87,7 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 			x = board.getAbsY(i);
 
 			//Determine character code
-			var ch = i + aChar;
+			var ch = aChar + i;
 			if (ch >= iChar) {
 				ch++;
 			}

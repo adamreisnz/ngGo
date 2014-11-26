@@ -212,6 +212,11 @@ angular.module('ngGo.Board.Layer.Service', [
 	 */
 	BoardLayer.prototype.drawObjects = function(x, y) {
 
+		//Can only draw when we have dimensions
+		if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+			return;
+		}
+
 		//Coordinates given?
 		if (typeof x != 'undefined' && typeof y != 'undefined') {
 			var obj = this.grid.getObject(x, y);

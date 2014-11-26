@@ -23,6 +23,9 @@ angular.module('ngGo.Board.Theme.Service', [
 	 */
 	var defaultTheme = {
 
+		//Font for markup, coordinates
+		font: 'Calibri',
+
 		//Stones
 		stoneStyle: 'shell', //shell, glass, mono, or specify a custom handler service
 		stoneShadow: true,
@@ -66,27 +69,54 @@ angular.module('ngGo.Board.Theme.Service', [
 		},
 
 		//Grid
-		gridLineColor: 'rgba(101,69,37,1)',
+		gridLineColor: 'rgba(101,69,37,0.4)',
 		gridLineWidth: 1,
 
 		//Star points
-		starColor: 'rgba(85,51,17,1)',
+		starPoints: function(width, height) {
+
+			//19x19
+			if (width == height && width == 19) {
+				return [
+					{x:3, y:3}, {x:9, y:3}, {x:15,y:3},
+					{x:3, y:9}, {x:9, y:9}, {x:15,y:9},
+					{x:3, y:15}, {x:9, y:15}, {x:15,y:15}
+				];
+			}
+
+			//13x13
+			if (width == height && width == 13) {
+				return [
+					{x:3, y:3}, {x:9, y:3},
+					{x:3, y:9}, {x:9, y:9}
+				];
+			}
+
+			//9x9
+			if (width == height && width == 9) {
+				return [
+					{x:4, y:4}, {x:2, y:2},
+					{x:2, y:6}, {x:6, y:2},
+					{x:6, y:6}
+				];
+			}
+
+			//No star points
+			return [];
+		},
+		starColor: 'rgba(168,132,81,1)',
 		starRadius: function(cellSize) {
 			return Math.floor((cellSize / 16) + 1);
 		},
 
 		//Coordinates
-		coordinatesColor: 'rgba(85,51,17,0.5)',
+		coordinatesColor: 'rgba(101,69,37,0.4)',
 		coordinatesSize: function(cellSize) {
 			return Math.floor((cellSize / 3) + 1);
 		},
 
-		//Font
-		font: 'Calibri',
-
 		//To combat 2d canvas blurry lines, we translate the canvas prior to drawing elements
 		//See: http://www.mobtowers.com/html5-canvas-crisp-lines-every-time/
-		canvasTranslateFactor: 0.5,
 		canvasTranslate: function(cellSize, lineWidth) {
 
 			//If no linewidth specified, use the grid line width as a reference
@@ -96,7 +126,7 @@ angular.module('ngGo.Board.Theme.Service', [
 			}
 
 			//Return a translation for uneven widths
-			return (lineWidth % 2) * this.get('canvasTranslateFactor');
+			return (lineWidth % 2) * 0.5;
 		}
 	};
 

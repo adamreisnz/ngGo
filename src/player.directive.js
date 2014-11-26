@@ -24,12 +24,6 @@ angular.module('ngGo.Player.Directive', [
 			//Create a new board for the player and set it in scope for the
 			//child board and layer directives to use
 			$scope.Board = Player.board = new Board();
-
-			//Initialize dimensions
-			$scope.dimensions = {
-				width: 0,
-				height: 0
-			};
 		},
 
 		/**
@@ -41,23 +35,26 @@ angular.module('ngGo.Player.Directive', [
 			var parent = element.parent(),
 				parentSize = Math.min(parent[0].clientWidth, parent[0].clientHeight);
 
-			//Set dimensions
-			element.css({width: parentSize, height: parentSize});
-			$scope.dimensions = {
-				width: parentSize,
-				height: parentSize
-			};
+			//Set initial dimensions
+			if (parentSize > 0) {
+				element.css({width: parentSize, height: parentSize});
+				$scope.$broadcast('ngGo.board.resize', parentSize, parentSize);
+			}
 
-			//On resize, change the board dimensions
+			//On resize event, change the board dimensions
+			$scope.$on('ngGo.player.resize', function() {
+
+				//Determine and set our size
+				parentSize = Math.min(parent[0].clientWidth, parent[0].clientHeight);
+				element.css({width: parentSize, height: parentSize});
+
+				//Propagate to board and layers
+				$scope.$broadcast('ngGo.board.resize', parentSize, parentSize);
+			});
+
+			//On window resize, change the board dimensions
 			angular.element($window).on('resize.ngGo.player', function() {
-				$scope.$apply(function() {
-					parentSize = Math.min(parent[0].clientWidth, parent[0].clientHeight);
-					element.css({width: parentSize, height: parentSize});
-					$scope.dimensions = {
-						width: parentSize,
-						height: parentSize
-					};
-				});
+				$scope.$broadcast('ngGo.player.resize');
 			});
 
 			//Bind other needed event listeners to the element

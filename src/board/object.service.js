@@ -47,7 +47,11 @@ angular.module('ngGo.Board.Object.Service', [
 	 * Draw
 	 */
 	BoardObject.prototype.draw = function(board) {
-		/* \o/ */
+
+		//Can only draw when we have dimensions
+		if (board.drawWidth === 0 || board.drawheight === 0) {
+			return;
+		}
 	};
 
 	/**

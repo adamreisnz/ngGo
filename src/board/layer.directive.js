@@ -30,13 +30,13 @@ angular.module('ngGo.Board.Layer.Directive', [
 				context.scale(pixelRatio, pixelRatio);
 			}
 
-			//Watch the scope dimensions for changes
-			$scope.$watch('dimensions', function(dim) {
-				canvas.attr('width', dim.width * pixelRatio);
-				canvas.attr('height', dim.height * pixelRatio);
+			//Listen for board resize events
+			$scope.$on('ngGo.board.resize', function(event, width, height) {
+				canvas.attr('width', width * pixelRatio);
+				canvas.attr('height', height * pixelRatio);
 				canvas.css({
-					width: dim.width,
-					height: dim.height
+					width: width,
+					height: height
 				});
 			});
 

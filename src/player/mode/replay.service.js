@@ -46,8 +46,13 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		 */
 		mouseMove: function(event, mouseEvent) {
 
-			//Nothing to do?
-			if (this.frozen || (this._lastX == event.x && this._lastY == event.y)) {
+			//Frozen player or no game?
+			if (this.frozen || !KifuReader.game) {
+				return;
+			}
+
+			//If a mark is already showing, and the grid coordinates are the same, we're done
+			if (this._lastMark && this._lastX == event.x && this._lastY == event.y) {
 				return;
 			}
 

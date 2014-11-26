@@ -35,20 +35,18 @@ angular.module('ngGo.Board.Service', [
 		//You can change this via BoardProvider.setConfig() or via a size attribute on the board element in HTML
 		defaultSize: 0,
 
-		//Star point coordinates
-		starPoints: {
-			'19x19':	[{x:3, y:3}, {x:9, y:3}, {x:15,y:3}, {x:3, y:9}, {x:9, y:9}, {x:15,y:9}, {x:3, y:15}, {x:9, y:15}, {x:15,y:15}],
-			'13x13':	[{x:3, y:3}, {x:9, y:3}, {x:3, y:9}, {x:9, y:9}],
-			'9x9':		[{x:4, y:4}, {x:2, y:2}, {x:2, y:6}, {x:6, y:2}, {x:6, y:6}]
-		},
-
 		//Show coordinates
 		showCoordinates: false,
 
 		//Section of board to display
-		section: {top: 0, right: 0, bottom: 0, left: 0},
+		section: {
+			top: 0,
+			right: 0,
+			bottom: 0,
+			left: 0
+		},
 
-		//Margin (factor of the minimum of either available width or height)
+		//Margin size (factor of the lesser of available width and height)
 		margin: 0.04
 	};
 
@@ -65,51 +63,20 @@ angular.module('ngGo.Board.Service', [
 	this.$get = function(BoardTheme, Coordinates, StoneColor, Stone) {
 
 		/**
-		 * Helper to calculate cell width
-		 */
-		var calcCellWidth = function() {
-			var availableWidth = Math.min(this.drawWidth, this.drawHeight) * (1-this.margin),
-				noCells = this.grid.botX + 1 - this.grid.topX;
-			return Math.round(availableWidth / noCells);
-		};
-
-		/**
-		 * Helper to calculate cell height
-		 */
-		var calcCellHeight = function() {
-			var availableHeight = Math.min(this.drawWidth, this.drawHeight) * (1-this.margin),
-				noCells = this.grid.botY + 1 - this.grid.topY;
-			return Math.round(availableHeight / noCells);
-		};
-
-		/**
-		 * Helper to calculate left margin
-		 */
-		var calcLeftMargin = function() {
-			var availableWidth = Math.min(this.drawWidth, this.drawHeight) * (1-this.margin);
-			return Math.round((this.drawWidth - availableWidth) / 2 + this.cellWidth/2);
-		};
-
-		/**
-		 * Helper to calculate top margin
-		 */
-		var calcTopMargin = function() {
-			var availableHeight = Math.min(this.drawWidth, this.drawHeight) * (1-this.margin);
-			return Math.round((this.drawHeight - availableHeight) / 2 + this.cellHeight/2);
-		};
-
-		/**
 		 * Helper to (re)calculate cellsize and margins
 		 */
 		var calcCellSizeAndMargins = function() {
 
-			//Calculate cell sizes
-			this.cellWidth = calcCellWidth.call(this);
-			this.cellHeight = calcCellHeight.call(this);
+			//Get draw size, available size and number of cells
+			var drawSize = Math.min(this.drawWidth, this.drawHeight),
+				availableSize = drawSize * (1-this.margin),
+				noCells = Math.max(this.width, this.height);
 
-			//Determine top and left margins
-			this.top = calcTopMargin.call(this);
-			this.left = calcLeftMargin.call(this);
+			//Determine cell size
+			this.cellSize = Math.round(availableSize / noCells);
+
+			//Determine draw margin
+			this.drawMargin = Math.round((drawSize - availableSize) / 2 + this.cellSize/2);
 		};
 
 		/**
@@ -117,10 +84,10 @@ angular.module('ngGo.Board.Service', [
 		 */
 		var determineGrid = function() {
 			this.grid = {
-				topX: this.section.left,
-				topY: this.section.top,
-				botX: this.width - 1 - this.section.right,
-				botY: this.height - 1 - this.section.bottom
+				xLeft: 0 + this.section.left,
+				xRight: this.width - 1 - this.section.right,
+				yTop: 0 + this.section.top,
+				yBot: this.height - 1 - this.section.bottom
 			};
 		};
 
@@ -147,7 +114,7 @@ angular.module('ngGo.Board.Service', [
 			this.width = this.height = parseInt(this.config.defaultSize);
 
 			//Set section of board to display and determine resulting grid
-			this.section = angular.extend(defaultConfig.section, this.config.section);
+			this.section = angular.extend({}, defaultConfig.section, this.config.section);
 			this.margin = this.config.margin;
 			determineGrid.call(this);
 
@@ -496,25 +463,37 @@ angular.module('ngGo.Board.Service', [
 		 * Get the current cell size
 		 */
 		Board.prototype.getCellSize = function() {
-			return Math.min(this.cellWidth, this.cellHeight);
+			return this.cellSize;
 		};
 
 		/**
 		 * Convert grid coordinate to pixel coordinate
-		 *
-		 * @param	int		Grid x coordinate
 		 */
 		Board.prototype.getAbsX = function(gridX) {
-			return this.left + gridX * this.cellWidth;
+			return this.drawMargin + Math.round((gridX) * this.cellSize);
 		};
 
 		/**
 		 * Convert grid coordinate to pixel coordinate
-		 *
-		 * @param	int		Grid y coordinate
 		 */
 		Board.prototype.getAbsY = function(gridY) {
-			return this.top + gridY * this.cellHeight;
+			return this.drawMargin + Math.round((gridY) * this.cellSize);
+		};
+
+		/**
+		 * Convert pixel coordinate to grid coordinate
+		 */
+		Board.prototype.getGridX = function(absX) {
+			var gridX = Math.round((absX - this.drawMargin) / this.cellSize);
+			return (gridX > this.grid.xRight || gridX < this.grid.xLeft) ? -1 : gridX;
+		};
+
+		/**
+		 * Convert pixel coordinate to grid coordinate
+		 */
+		Board.prototype.getGridY = function(absY) {
+			var gridY = Math.round((absY - this.drawMargin) / this.cellSize);
+			return (gridY > this.grid.yBot || gridY < this.grid.yTop) ? -1 : gridY;
 		};
 
 		//Return object

@@ -415,6 +415,11 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 	 */
 	Markup.prototype.draw = function(board) {
 
+		//Can only draw when we have dimensions
+		if (board.drawWidth === 0 || board.drawheight === 0) {
+			return;
+		}
+
 		//Drawing depends on type
 		switch (this.type) {
 

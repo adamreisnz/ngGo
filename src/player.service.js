@@ -74,33 +74,39 @@ angular.module('ngGo.Player.Service', [
 	/**
 	 * Common event listeners
 	 */
-	Player.listen('keydown', PlayerModeCommon.keyDown);
-	Player.listen('mousewheel', PlayerModeCommon.mouseWheel);
+	Player.on('keydown', PlayerModeCommon.keyDown, [
+		PlayerModes.REPLAY, PlayerModes.EDIT
+	]);
+	Player.on('mousewheel', PlayerModeCommon.mouseWheel, [
+		PlayerModes.REPLAY, PlayerModes.EDIT
+	]);
 
 	/**
 	 * Replay mode
 	 */
-	Player.listen('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
-	Player.listen('click', PlayerModeReplay.mouseClick, PlayerModes.REPLAY);
-	Player.listen('mousemove', PlayerModeReplay.mouseMove, PlayerModes.REPLAY);
+	Player.on('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
+	Player.on('click', PlayerModeReplay.mouseClick, PlayerModes.REPLAY);
+	Player.on('mousemove', PlayerModeReplay.mouseMove, PlayerModes.REPLAY);
 
 	/**
 	 * Edit mode
 	 */
-	Player.listen('modeEnter', PlayerModeEdit.modeEnter, PlayerModes.EDIT);
-	Player.listen('toolSwitch', PlayerModeEdit.toolSwitch, PlayerModes.EDIT);
-	Player.listen('keydown', PlayerModeEdit.keyDown, PlayerModes.EDIT);
-	Player.listen('click', PlayerModeEdit.mouseClick, PlayerModes.EDIT);
-	Player.listen('mousemove', PlayerModeEdit.mouseMove, PlayerModes.EDIT);
-	Player.listen('mouseout', PlayerModeEdit.mouseOut, PlayerModes.EDIT);
+	Player.on('modeEnter', PlayerModeEdit.modeEnter, PlayerModes.EDIT);
+	Player.on('toolSwitch', PlayerModeEdit.toolSwitch, PlayerModes.EDIT);
+	Player.on('keydown', PlayerModeEdit.keyDown, PlayerModes.EDIT);
+	Player.on('click', PlayerModeEdit.mouseClick, PlayerModes.EDIT);
+	Player.on('mousemove', PlayerModeEdit.mouseMove, PlayerModes.EDIT);
+	Player.on('mouseout', PlayerModeEdit.mouseOut, PlayerModes.EDIT);
 
 	/**
 	 * Solve mode
 	 */
-	Player.listen('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
-	Player.listen('modeExit', PlayerModeSolve.modeExit, PlayerModes.SOLVE);
-	Player.listen('click', PlayerModeSolve.mouseClick, PlayerModes.SOLVE);
-	Player.listen('mousemove', PlayerModeSolve.mouseMove, PlayerModes.SOLVE);
+	Player.on('kifuLoaded', PlayerModeSolve.kifuLoaded, PlayerModes.SOLVE);
+	Player.on('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
+	Player.on('modeExit', PlayerModeSolve.modeExit, PlayerModes.SOLVE);
+	Player.on('keydown', PlayerModeSolve.keyDown, PlayerModes.SOLVE);
+	Player.on('click', PlayerModeSolve.mouseClick, PlayerModes.SOLVE);
+	Player.on('mousemove', PlayerModeSolve.mouseMove, PlayerModes.SOLVE);
 })
 
 /**
@@ -138,7 +144,10 @@ angular.module('ngGo.Player.Service', [
 		variationChildren: true,
 
 		//Show variations of current node
-		variationSiblings: false
+		variationSiblings: false,
+
+		//Solve mode computer move timeout
+		solveModeTimeout: 500
 	};
 
 	/**
@@ -166,25 +175,16 @@ angular.module('ngGo.Player.Service', [
 			}
 
 			//Init
-			var x, y;
+			var x = mouseEvent.offsetX || mouseEvent.originalEvent.offsetX || mouseEvent.originalEvent.layerX,
+				y = mouseEvent.offsetY || mouseEvent.originalEvent.offsetY || mouseEvent.originalEvent.layerY;
 
-			//Determine x
-			x = mouseEvent.offsetX || mouseEvent.originalEvent.offsetX || mouseEvent.originalEvent.layerX;
+			//Apply pixel ratio factor
 			x *= (window.devicePixelRatio || 1);
-			x -= this.board.left;
-			x /= this.board.cellWidth;
-			x = Math.round(x);
-
-			//Determine y
-			y = mouseEvent.offsetY || mouseEvent.originalEvent.offsetY || mouseEvent.originalEvent.layerY;
 			y *= (window.devicePixelRatio || 1);
-			y -= this.board.top;
-			y /= this.board.cellHeight;
-			y = Math.round(y);
 
 			//Append coords
-			broadcastEvent.x = x >= this.board.width ? -1 : x;
-			broadcastEvent.y = y >= this.board.height ? -1 : y;
+			broadcastEvent.x = this.board.getGridX(x);
+			broadcastEvent.y = this.board.getGridY(y);
 		};
 
 		/**
@@ -228,6 +228,9 @@ angular.module('ngGo.Player.Service', [
 
 			//Get the current node
 			var node = KifuReader.getNode(), variations;
+			if (!node) {
+				return;
+			}
 
 			//Child variations?
 			if (this.config.variationChildren && node.hasMoveVariations()) {
@@ -352,9 +355,20 @@ angular.module('ngGo.Player.Service', [
 				//Dispatch kifu loaded event
 				this.broadcast('kifuLoaded', this.kifu);
 
-				//Set board size
-				this.board.setSize(this.kifu.board.width, this.kifu.board.height);
-				this.board.removeAllObjects();
+				//Set board size and section if given
+				if (this.kifu.board) {
+
+					//Remove all objects
+					this.board.removeAllObjects();
+
+					//Set size
+					this.board.setSize(this.kifu.board.width, this.kifu.board.height);
+
+					//Set section
+					if (this.kifu.board.section) {
+						this.board.setSection(this.kifu.board.section);
+					}
+				}
 
 				//Update board and broadcast update event
 				updateBoard.call(this);
@@ -378,6 +392,39 @@ angular.module('ngGo.Player.Service', [
 			 */
 			loadJgf: function(jgf, path) {
 				this.loadKifu(Kifu.fromJgf(jgf), path);
+			},
+
+			/**
+			 * Load and auto detect format
+			 */
+			load: function(data, path) {
+
+				//No data, can't do much
+				if (!data) {
+					return;
+				}
+
+				//String given, could be stringified JGF or an SGF file
+				if (typeof data == 'string') {
+					var c = data.charAt(0);
+					if (c == '(') {
+						this.loadSgf(data, path);
+					}
+					else if (c == '{') {
+						this.loadJgf(data, path);
+					}
+					return;
+				}
+
+				//Object given? Could be kifu object or JGF object
+				if (typeof data == 'object') {
+					if (data.tree) {
+						this.loadJgf(data, path);
+					}
+					else if (data.node) {
+						this.loadKifu(data, path);
+					}
+				}
 			},
 
 			/**
@@ -563,6 +610,13 @@ angular.module('ngGo.Player.Service', [
 				this.broadcast('toolSwitch', this.tool);
 			},
 
+			/**
+			 * Toggle board coordinates wrapper
+			 */
+			toggleCoordinates: function(show) {
+				this.board.toggleCoordinates(show);
+			},
+
 			/***********************************************************************************************
 			 * Configuration
 			 ***/
@@ -617,7 +671,7 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Event listener
 			 */
-			listen: function(type, listener, mode) {
+			on: function(type, listener, mode) {
 
 				//Get self
 				var self = this;
@@ -626,8 +680,10 @@ angular.module('ngGo.Player.Service', [
 				$rootScope.$on('ngGo.player.' + type, function() {
 
 					//Filter on mode
-					if (mode && mode != self.mode) {
-						return;
+					if (mode) {
+						if ((typeof mode == 'string' && mode != self.mode) || mode.indexOf(self.mode) === -1) {
+							return;
+						}
 					}
 
 					//Append grid coordinates for mouse events
@@ -644,7 +700,16 @@ angular.module('ngGo.Player.Service', [
 			 * Event broadcaster
 			 */
 			broadcast: function(type, args) {
-				$rootScope.$broadcast('ngGo.player.' + type, args);
+
+				//Make sure we are in a digest cycle
+				if (!$rootScope.$$phase) {
+					$rootScope.$apply(function() {
+						$rootScope.$broadcast('ngGo.player.' + type, args);
+					});
+				}
+				else {
+					$rootScope.$broadcast('ngGo.player.' + type, args);
+				}
 			}
 		};
 

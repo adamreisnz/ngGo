@@ -43,6 +43,13 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	};
 
 	/**
+	 * SGF format parser
+	 */
+	var parseSgfFormat = function(jgf, node, key, value) {
+		return;
+	};
+
+	/**
 	 * Game type parser function
 	 */
 	var parseGame = function(jgf, node, key, value) {
@@ -317,6 +324,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
 		//Application, game type, board size, komi
 		'AP':	parseApp,
+		'FF':	parseSgfFormat,
 		'GM':	parseGame,
 		'SZ':	parseSize,
 		'KM':	parseKomi,

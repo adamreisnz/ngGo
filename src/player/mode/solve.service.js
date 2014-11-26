@@ -12,24 +12,77 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 /**
  * Factory definition
  */
-.factory('PlayerModeSolve', function(PlayerTools, KifuReader, StoneFaded) {
+.factory('PlayerModeSolve', function($document, $timeout, PlayerTools, KifuReader, StoneFaded) {
 
 	/**
 	 * Available tools for this mode
 	 */
 	var availableTools = [
-		PlayerTools.MOVE
+		PlayerTools.MOVE,
+		PlayerTools.NONE
 	];
 
 	/**
-	 * Remembering the variation board markup setting
+	 * Remember the variation board markup setting
 	 */
 	var variationBoardMarkup;
+
+	/**
+	 * Remember the player color
+	 */
+	var playerColor;
+
+	/**
+	 * Block navigation while in timeout
+	 */
+	var navigationBlocked = false;
 
 	/**
 	 * Player mode definition
 	 */
 	var PlayerMode = {
+
+		/**
+		 * Handler for keydown events
+		 */
+		keyDown: function(event, keyboardEvent) {
+
+			//Inside a text field?
+			if ($document[0].querySelector(':focus')) {
+				return true;
+			}
+
+			//Switch key code
+			switch (keyboardEvent.keyCode) {
+
+				//Right arrow
+				case 39:
+
+					break;
+
+				//Left arrow
+				case 37:
+					if (this.config.arrowKeysNavigation && !navigationBlocked) {
+
+						//Go back one move
+						this.previous();
+
+						//Go back one more if this is not the player's turn
+						if (KifuReader.game.getTurn() == -playerColor) {
+							this.previous();
+						}
+					}
+					break;
+
+				default:
+					return true;
+			}
+
+			//Don't scroll with arrows
+			if (this.config.lockScroll) {
+				keyboardEvent.preventDefault();
+			}
+		},
 
 		/**
 		 * Handler for mouse click events
@@ -39,9 +92,47 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 			//Check if we clicked a move variation
 			var i = KifuReader.isMoveVariation(event.x, event.y);
 
-			//Advance to the next position
+			//A valid variation
 			if (i != -1) {
+
+				//Advance to the next position and get the next node
 				this.next(i);
+				var node = KifuReader.getNode();
+
+				//No children left? Check if we solved it or not
+				if (node.children.length === 0) {
+					if (node.move.solution) {
+						this.broadcast('solutionFound', node);
+					}
+					else {
+						this.broadcast('solutionWrong', node);
+					}
+					return;
+				}
+
+				//Children left, pick a random one and make a move
+				i = Math.floor(Math.random() * node.children.length), self = this;
+
+				//Using timeouts?
+				if (this.config.solveModeTimeout) {
+
+					//Block navigation and run the timeout
+					navigationBlocked = true;
+					$timeout(function() {
+						self.next(i);
+						navigationBlocked = false;
+					}, this.config.solveModeTimeout);
+					return;
+				}
+
+				//Just move to the next node immediately
+				this.next(i);
+				return;
+			}
+
+			//Unknown, but valid move
+			if (KifuReader.isValidMove(event.x, event.y)) {
+				//TODO: add move to kifu!
 			}
 		},
 
@@ -50,8 +141,13 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 		 */
 		mouseMove: function(event, mouseEvent) {
 
-			//Nothing to do?
-			if (this.frozen || (this._lastX == event.x && this._lastY == event.y)) {
+			//Frozen player or no game?
+			if (this.frozen || !KifuReader.game) {
+				return;
+			}
+
+			//If a mark is already showing, and the grid coordinates are the same, we're done
+			if (this._lastMark && this._lastX == event.x && this._lastY == event.y) {
 				return;
 			}
 
@@ -65,7 +161,8 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 			}
 
 			//When in solve mode, we are allowed to place stones on all valid move locations
-			if (KifuReader.isValidMove(event.x, event.y)) {
+			//and only when it's our turn
+			if (KifuReader.game.getTurn() == playerColor && KifuReader.isValidMove(event.x, event.y)) {
 
 				//Create faded stone object
 				this._lastMark = new StoneFaded({
@@ -81,6 +178,13 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 
 			//Clear last mark
 			delete this._lastMark;
+		},
+
+		/**
+		 * Handler for kifu loaded
+		 */
+		kifuLoaded: function(event) {
+			playerColor = KifuReader.game.getTurn();
 		},
 
 		/**

@@ -224,8 +224,13 @@ JGF = {
 			}
 		},
 
-		// In problems, a node with the correct solution can be marked
-		{ move: {W: "gb"}, solution: true },
+		// For problems, a move with the correct solution can be marked as follows
+		{
+			move: {
+				W: "gb",
+				solution: true
+			}
+		},
 
 		// Variations are contained in a variations container.
 		[

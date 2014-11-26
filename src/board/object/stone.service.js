@@ -260,8 +260,8 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 	 */
 	var drawShadow = function(board) {
 
-		//Don't draw shadows if we have transparency
-		if (this.alpha && this.alpha < 1) {
+		//Don't draw shadows if we have transparency or if there is no shadows layer
+		if ((this.alpha && this.alpha < 1) || !board.layers.shadow) {
 			return;
 		}
 
@@ -300,8 +300,8 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 	 */
 	var clearShadow = function(board) {
 
-		//Don't draw shadows if we have transparency
-		if (this.alpha && this.alpha < 1) {
+		//Don't draw shadows if we have transparency or if there is no shadow layer
+		if ((this.alpha && this.alpha < 1) || !board.layers.shadow) {
 			return;
 		}
 
@@ -340,6 +340,11 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 	 * Draw
 	 */
 	Stone.prototype.draw = function(board) {
+
+		//Can only draw when we have dimensions
+		if (board.drawWidth === 0 || board.drawheight === 0) {
+			return;
+		}
 
 		//Determine style of stone
 		var style = board.theme.get('stoneStyle');

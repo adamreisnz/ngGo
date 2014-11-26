@@ -173,7 +173,7 @@ angular.module('ngGo.Kifu.Reader.Service', [
 			this.path = {m:0};
 
 			//Determine who's turn it is depending on handicap
-			if (this.kifu.game.handicap && this.kifu.game.handicap > 1) {
+			if (this.kifu.game && this.kifu.game.handicap && this.kifu.game.handicap > 1) {
 				this.game.setTurn(StoneColor.W);
 			}
 
@@ -212,7 +212,10 @@ angular.module('ngGo.Kifu.Reader.Service', [
 				this.game = new Game(this.kifu);
 
 				//Get blank board to compute first changes
-				var blankPosition = new GamePosition(this.kifu.board.width, this.kifu.board.height);
+				var blankPosition = new GamePosition();
+				if (this.kifu.board) {
+					blankPosition.setSize(this.kifu.board.width, this.kifu.board.height);
+				}
 
 				//Execute first position
 				execFirst.call(this);
@@ -349,20 +352,6 @@ angular.module('ngGo.Kifu.Reader.Service', [
 			 */
 			getChanges: function() {
 				return this.changes;
-			},
-
-			/**
-			 * Check if the current node has any variations (e.g. more than one child node)
-			 */
-			hasVariations: function() {
-				return (this.node && this.node.children.length > 1);
-			},
-
-			/**
-			 * Get all the variation nodes
-			 */
-			getVariations: function() {
-				return this.node ? this.node.children : [];
 			},
 
 			/**
