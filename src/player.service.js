@@ -15,9 +15,9 @@ angular.module('ngGo.Player.Service', [
 	'ngGo.Player.Mode.Replay.Service',
 	'ngGo.Player.Mode.Edit.Service',
 	'ngGo.Player.Mode.Solve.Service',
-	'ngGo.Board.Service',
 	'ngGo.Kifu.Service',
-	'ngGo.Kifu.Reader.Service',
+	'ngGo.Board.Service',
+	'ngGo.Game.Service',
 	'ngGo.Game.Scorer.Service'
 ])
 
@@ -146,8 +146,9 @@ angular.module('ngGo.Player.Service', [
 		//Show variations of current node
 		variationSiblings: false,
 
-		//Solve mode computer move timeout
-		solveModeTimeout: 500
+		//Solve mode auto play settings
+		solveAutoPlay: true,
+		solveAutoPlayTimeout: 500
 	};
 
 	/**
@@ -160,7 +161,7 @@ angular.module('ngGo.Player.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function($rootScope, Kifu, KifuReader, GameScorer, Board, PlayerModes, PlayerTools, Stone, Markup) {
+	this.$get = function($rootScope, Kifu, Game, GameScorer, Board, PlayerModes, PlayerTools, Stone, Markup) {
 
 		/**
 		 * Helper to append board grid coordinatess to the broadcast event object
@@ -227,7 +228,7 @@ angular.module('ngGo.Player.Service', [
 		var toggleMoveVariations = function() {
 
 			//Get the current node
-			var node = KifuReader.getNode(), variations;
+			var node = Game.getNode(), variations;
 			if (!node) {
 				return;
 			}
@@ -264,8 +265,8 @@ angular.module('ngGo.Player.Service', [
 			this.board.removeAllObjects('markup');
 
 			//Get changes to the board's position
-			var i, node = KifuReader.getNode(),
-				changes = KifuReader.getChanges();
+			var i, node = Game.getNode(),
+				changes = Game.getChanges();
 
 			//Changes to the board's position
 			if (changes) {
@@ -343,9 +344,9 @@ angular.module('ngGo.Player.Service', [
 		 	 */
 			loadKifu: function(kifu, path) {
 
-				//Remember kifu and load in kifu reader
+				//Remember kifu and load in game
 				this.kifu = kifu;
-				KifuReader.load(kifu);
+				Game.load(kifu);
 
 				//Process display instructions
 				if (kifu.display && !this.config.kifuDisplayInstructions) {
@@ -470,7 +471,7 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Go to the next move
-				KifuReader.next(i);
+				Game.next(i);
 
 				//Update board and broadcast update event
 				updateBoard.call(this);
@@ -488,7 +489,7 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Go to the previous position
-				KifuReader.previous();
+				Game.previous();
 
 				//Update board and broadcast update event
 				updateBoard.call(this);
@@ -506,7 +507,7 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Go to last position
-				KifuReader.last();
+				Game.last();
 
 				//Update board and broadcast update event
 				updateBoard.call(this);
@@ -524,7 +525,7 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Go to first position
-				KifuReader.first();
+				Game.first();
 
 				//Update board and broadcast update event
 				updateBoard.call(this);
@@ -551,7 +552,7 @@ angular.module('ngGo.Player.Service', [
 
 				//Simple move number? Convert to path
 				if (typeof move == 'number') {
-					path = angular.copy(KifuReader.getPath());
+					path = angular.copy(Game.getPath());
 					path.m = move || 0;
 				}
 				else {
@@ -559,7 +560,7 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Go to specified path
-				KifuReader.goTo(path);
+				Game.goTo(path);
 
 				//Update board and broadcast update event
 				updateBoard.call(this);

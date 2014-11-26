@@ -12,7 +12,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 /**
  * Factory definition
  */
-.factory('PlayerModeReplay', function(PlayerTools, KifuReader, StoneFaded) {
+.factory('PlayerModeReplay', function(PlayerTools, Game, StoneFaded) {
 
 	/**
 	 * Available tools for this mode
@@ -33,7 +33,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		mouseClick: function(event, mouseEvent) {
 
 			//Check if we clicked a move variation
-			var i = KifuReader.isMoveVariation(event.x, event.y);
+			var i = Game.isMoveVariation(event.x, event.y);
 
 			//Advance to the next position
 			if (i != -1) {
@@ -46,8 +46,8 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		 */
 		mouseMove: function(event, mouseEvent) {
 
-			//Frozen player or no game?
-			if (this.frozen || !KifuReader.game) {
+			//Frozen player?
+			if (this.frozen) {
 				return;
 			}
 
@@ -66,13 +66,13 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 			}
 
 			//When replaying, we can place stones only on valid locations
-			if (KifuReader.isValidMove(event.x, event.y)) {
+			if (Game.isValidMove(event.x, event.y)) {
 
 				//Create faded stone object
 				this._lastMark = new StoneFaded({
 					x: event.x,
 					y: event.y,
-					color: KifuReader.game.getTurn()
+					color: Game.getTurn()
 				});
 
 				//Add to board

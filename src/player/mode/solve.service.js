@@ -12,30 +12,25 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 /**
  * Factory definition
  */
-.factory('PlayerModeSolve', function($document, $timeout, PlayerTools, KifuReader, StoneFaded) {
+.factory('PlayerModeSolve', function($document, $timeout, PlayerTools, Game, StoneFaded) {
 
-	/**
-	 * Available tools for this mode
-	 */
+	//Available tools for this mode
 	var availableTools = [
 		PlayerTools.MOVE,
 		PlayerTools.NONE
 	];
 
-	/**
-	 * Remember the variation board markup setting
-	 */
-	var variationBoardMarkup;
+	//Remember the variation board markup setting
+	var variationBoardMarkup = false;
 
-	/**
-	 * Remember the player color
-	 */
+	//Block navigation while in timeout
+	var navigationBlocked = false;
+
+	//Remember the player color for this problem
 	var playerColor;
 
-	/**
-	 * Block navigation while in timeout
-	 */
-	var navigationBlocked = false;
+	//Solved flag
+	var solved = false;
 
 	/**
 	 * Player mode definition
@@ -58,6 +53,10 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 				//Right arrow
 				case 39:
 
+					//Go forward one move if solved
+					if (this.config.arrowKeysNavigation && solved) {
+						this.next();
+					}
 					break;
 
 				//Left arrow
@@ -67,8 +66,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 						//Go back one move
 						this.previous();
 
-						//Go back one more if this is not the player's turn
-						if (KifuReader.game.getTurn() == -playerColor) {
+						//Go back one more if this is not the player's turn and if
+						//the problem hasn't been solved yet
+						if (!solved && this.config.solveAutoPlay && Game.getTurn() == -playerColor) {
 							this.previous();
 						}
 					}
@@ -90,18 +90,19 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 		mouseClick: function(event, mouseEvent) {
 
 			//Check if we clicked a move variation
-			var i = KifuReader.isMoveVariation(event.x, event.y);
+			var i = Game.isMoveVariation(event.x, event.y);
 
 			//A valid variation
 			if (i != -1) {
 
 				//Advance to the next position and get the next node
 				this.next(i);
-				var node = KifuReader.getNode();
+				var node = Game.getNode();
 
 				//No children left? Check if we solved it or not
 				if (node.children.length === 0) {
 					if (node.move.solution) {
+						solved = true;
 						this.broadcast('solutionFound', node);
 					}
 					else {
@@ -110,18 +111,23 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 					return;
 				}
 
+				//Stop auto-playing if solved
+				if (solved || !this.config.solveAutoPlay) {
+					return;
+				}
+
 				//Children left, pick a random one and make a move
 				i = Math.floor(Math.random() * node.children.length), self = this;
 
 				//Using timeouts?
-				if (this.config.solveModeTimeout) {
+				if (this.config.solveAutoPlayTimeout) {
 
 					//Block navigation and run the timeout
 					navigationBlocked = true;
 					$timeout(function() {
 						self.next(i);
 						navigationBlocked = false;
-					}, this.config.solveModeTimeout);
+					}, this.config.solveAutoPlayTimeout);
 					return;
 				}
 
@@ -131,7 +137,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 			}
 
 			//Unknown, but valid move
-			if (KifuReader.isValidMove(event.x, event.y)) {
+			if (Game.play(event.x, event.y)) {
 				//TODO: add move to kifu!
 			}
 		},
@@ -141,8 +147,8 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 		 */
 		mouseMove: function(event, mouseEvent) {
 
-			//Frozen player or no game?
-			if (this.frozen || !KifuReader.game) {
+			//Frozen player?
+			if (this.frozen) {
 				return;
 			}
 
@@ -161,19 +167,21 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 			}
 
 			//When in solve mode, we are allowed to place stones on all valid move locations
-			//and only when it's our turn
-			if (KifuReader.game.getTurn() == playerColor && KifuReader.isValidMove(event.x, event.y)) {
+			//and only when it's our turn, unless we've solved the problem
+			if (solved || !this.config.solveAutoPlay || Game.getTurn() == playerColor) {
+				if (Game.isValidMove(event.x, event.y)) {
 
-				//Create faded stone object
-				this._lastMark = new StoneFaded({
-					x: event.x,
-					y: event.y,
-					color: KifuReader.game.getTurn()
-				});
+					//Create faded stone object
+					this._lastMark = new StoneFaded({
+						x: event.x,
+						y: event.y,
+						color: Game.getTurn()
+					});
 
-				//Add to board
-				this.board.addObject(this._lastMark);
-				return;
+					//Add to board
+					this.board.addObject(this._lastMark);
+					return;
+				}
 			}
 
 			//Clear last mark
@@ -184,7 +192,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 		 * Handler for kifu loaded
 		 */
 		kifuLoaded: function(event) {
-			playerColor = KifuReader.game.getTurn();
+			playerColor = Game.getTurn();
 		},
 
 		/**

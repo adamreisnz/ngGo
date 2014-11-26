@@ -78,8 +78,13 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 		//Draw vertical coordinates (numbers)
 		for (i = 0; i < board.height; i++) {
 			y = board.getAbsX(i);
-			ctx.fillText(board.height - i, xr, y);
-			ctx.fillText(board.height - i, xl, y);
+
+			//Determine number
+			var num = (board.section.bottom === 0) ? board.height - i : i + 1;
+
+			//Write text
+			ctx.fillText(num, xr, y);
+			ctx.fillText(num, xl, y);
 		}
 
 		//Draw horizontal coordinates (letters)

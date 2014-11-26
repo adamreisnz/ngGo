@@ -18,7 +18,7 @@ angular.module('ngGo.Game.Scorer.Service', [
 /**
  * Factory definition
  */
-.factory('GameScorer', function(StoneColor, Stone, StoneMini, StoneFaded, GamePositionChanges) {
+.factory('GameScorer', function(StoneColor, Stone, StoneMini, StoneFaded, Game, GamePositionChanges) {
 
 	/**
 	 * Possible score states
@@ -92,20 +92,24 @@ angular.module('ngGo.Game.Scorer.Service', [
 	 */
 	var determineScoreAndChanges = function() {
 
+		//Get komi and captures
+		var komi = Game.getKomi(),
+			captures = Game.getCaptureCount();
+
 		//Initialize score and changes
 		this.changes = new GamePositionChanges();
 		this.score = {
 			black: {
 				stones: 0,
 				territory: 0,
-				captures: this.captures[StoneColor.B],
-				komi: this.komi < 0 ? this.komi : 0
+				captures: captures[StoneColor.B],
+				komi: komi < 0 ? komi : 0
 			},
 			white: {
 				stones: 0,
 				territory: 0,
-				captures: this.captures[StoneColor.W],
-				komi: this.komi > 0 ? this.komi : 0
+				captures: captures[StoneColor.W],
+				komi: komi > 0 ? komi : 0
 			}
 		};
 
@@ -168,11 +172,6 @@ angular.module('ngGo.Game.Scorer.Service', [
 	 */
 	var GameScorer = {
 
-		//Initialize game placeholder and komi
-		game: null,
-		komi: 0,
-		captures: null,
-
 		//Position placeholders
 		origPosition: null,
 		countPosition: null,
@@ -180,24 +179,6 @@ angular.module('ngGo.Game.Scorer.Service', [
 		//Score and changes
 		score: null,
 		changes: null,
-
-		/**
-		 * Set a game to work with
-		 */
-		setGame: function(game) {
-
-			//Initialize
-			this.game = game;
-			this.komi = game.getKomi();
-			this.captures = game.getCaptureCount();
-
-			//Clone position to work with
-			this.origPosition	=	game.getPosition();
-			this.countPosition	= 	this.origPosition.clone();
-
-			//Calculate score
-			this.calculate();
-		},
 
 		/**
 		 * Get the calculated score
@@ -218,11 +199,9 @@ angular.module('ngGo.Game.Scorer.Service', [
 		 */
 		calculate: function() {
 
-			//No game?
-			if (!this.game)	{
-				console.warn('No game loaded in GameScorer, cant calculate.');
-				return;
-			}
+			//Clone position to work with
+			this.origPosition	=	Game.getPosition();
+			this.countPosition	= 	this.origPosition.clone();
 
 			//Initialize vars
 			var change = true, curState, newState, adjacent, b, w, a, x, y;

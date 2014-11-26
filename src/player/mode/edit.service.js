@@ -12,7 +12,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 /**
  * Factory definition
  */
-.factory('PlayerModeEdit', function($document, PlayerTools, MarkupTypes, SetupTypes, KifuReader, GameScorer, StoneColor, Stone, StoneFaded, Markup) {
+.factory('PlayerModeEdit', function($document, PlayerTools, MarkupTypes, SetupTypes, Game, GameScorer, StoneColor, Stone, StoneFaded, Markup) {
 
 	/**
 	 * Available tools for this mode
@@ -71,7 +71,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 		mouseClick: function(event, mouseEvent) {
 
 			//Get current node
-			var node = KifuReader.getNode();
+			var node = Game.getNode();
 
 			//Check if anything to do
 			if (!node) {
@@ -145,13 +145,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 
 				//We can only make valid moves
 				case PlayerTools.MOVE:
-					if (KifuReader.game && KifuReader.game.isValidMove(event.x, event.y)) {
+					if (Game.isValidMove(event.x, event.y)) {
 
 						//Create faded stone object
 						this._lastMark = new StoneFaded({
 							x: event.x,
 							y: event.y,
-							color: KifuReader.game.getTurn()
+							color: Game.getTurn()
 						});
 
 						//Add to board
@@ -235,9 +235,6 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 
 				//Remember the current board state
 				this.preScoreState = this.board.getState();
-
-				//Feed the current game
-				GameScorer.setGame(KifuReader.getGame());
 
 				//Score the position
 				scorePosition.call(this);
