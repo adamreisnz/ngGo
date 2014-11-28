@@ -1,13 +1,32 @@
 
 /**
  * PlayerModeCommon :: This class governs common event handling of the player shared by
- * various player modes.
+ * various player modes. It's basically an abstract player mode and it can't be actively set.
  */
 
 /**
  * Module definition and dependencies
  */
 angular.module('ngGo.Player.Mode.Common.Service', [])
+
+/**
+ * Run block
+ */
+.run(function(Player, PlayerModes, PlayerModeCommon) {
+
+	/**
+	 * Register common event handlers
+	 */
+	Player.on('keydown', PlayerModeCommon.keyDown, [
+		PlayerModes.REPLAY, PlayerModes.EDIT
+	]);
+	Player.on('mousewheel', PlayerModeCommon.mouseWheel, [
+		PlayerModes.REPLAY//, PlayerModes.EDIT
+	]);
+	Player.on('mouseout', PlayerModeCommon.mouseOut, [
+		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+	]);
+})
 
 /**
  * Factory definition
@@ -83,6 +102,18 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 			//Don't scroll the window
 			if (delta !== 0 && this.config.lockScroll) {
 				mouseEvent.preventDefault();
+			}
+		},
+
+		/**
+		 * Mouse out handler
+		 */
+		mouseOut: function(event, mouseEvent) {
+			if (this._hoverMark) {
+				this.board.removeObject(this._hoverMark);
+				delete this._hoverMark;
+				delete this._lastX;
+				delete this._lastY;
 			}
 		}
 	};

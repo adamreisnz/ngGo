@@ -10,22 +10,177 @@
 angular.module('ngGo.Player.Mode.Replay.Service', [])
 
 /**
- * Factory definition
+ * Run block
  */
-.factory('PlayerModeReplay', function(PlayerTools, Game, StoneFaded) {
+.run(function(Player, PlayerModes, PlayerModeReplay, Markup) {
 
 	/**
-	 * Available tools for this mode
+	 * Register mode
 	 */
-	var availableTools = [
-		PlayerTools.MOVE,
-		PlayerTools.NONE
-	];
+	Player.modes[PlayerModes.REPLAY] = PlayerModeReplay;
+
+	/**
+	 * Register event handlers for this mode
+	 */
+	Player.on('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
+	Player.on('modeExit', PlayerModeReplay.modeExit, PlayerModes.REPLAY);
+	Player.on('click', PlayerModeReplay.mouseClick, PlayerModes.REPLAY);
+	Player.on('mousemove', PlayerModeReplay.mouseMove, PlayerModes.REPLAY);
+	Player.on('update', PlayerModeReplay.update, PlayerModes.REPLAY);
+
+	/**
+	 * Helper to remove move variations from the board
+	 */
+	var removeMoveVariations = function(nodes) {
+		for (var i = 0; i < nodes.length; i++) {
+			this.board.removeObject({
+				x: nodes[i].move.x,
+				y: nodes[i].move.y
+			}, 'markup');
+		}
+	};
+
+	/**
+	 * Helper to add move variations to the board
+	 */
+	var addMoveVariations = function(nodes) {
+		for (var i = 0; i < nodes.length; i++) {
+
+			//Auto variation markup should never overwrite existing markup
+			if (this.board.hasObjectAt(nodes[i].move.x, nodes[i].move.y, 'markup')) {
+				continue;
+			}
+
+			//Add to board
+			this.board.addObject(new Markup({
+				type: 'label',
+				text: String.fromCharCode(65+i),
+				color: this.board.theme.get('markupVariationColor'),
+				x: nodes[i].move.x,
+				y: nodes[i].move.y
+			}));
+		}
+	};
+
+	/**
+	 * Set whether to mark variations on the board
+	 */
+	Player.setVariationBoardMarkup = function(mark) {
+
+		//Set the config parameter
+		this.config.variationBoardMarkup = (mark === true || mark === 'true');
+
+		//If we're in replay mode toggle the variations
+		if (this.mode == PlayerModes.REPLAY) {
+			this.toggleMoveVariations(this.config.variationBoardMarkup);
+		}
+	};
+
+	/**
+	 * Show or hide move variations
+	 */
+	Player.toggleMoveVariations = function(show) {
+
+		//Not the right mode, or disabled via configuration?
+		if (this.mode != PlayerModes.REPLAY || !this.config.variationBoardMarkup) {
+			return;
+		}
+
+		//Get the current node
+		var node = this.game.getNode(), variations;
+		if (!node) {
+			return;
+		}
+
+		//Child variations?
+		if (this.config.variationChildren && node.hasMoveVariations()) {
+			variations = node.getMoveVariations();
+			if (show) {
+				addMoveVariations.call(this, variations);
+			}
+			else {
+				removeMoveVariations.call(this, variations);
+			}
+		}
+
+		//Sibling variations?
+		if (this.config.variationSiblings && node.parent && node.parent.hasMoveVariations()) {
+			variations = node.parent.getMoveVariations();
+			if (show) {
+				addMoveVariations.call(this, variations);
+			}
+			else {
+				removeMoveVariations.call(this, variations);
+			}
+		}
+	};
+})
+
+/**
+ * Factory definition
+ */
+.factory('PlayerModeReplay', function(PlayerTools, StoneFaded) {
+
+	/**
+	 * Helper to update the hover mark
+	 */
+	var updateHoverMark = function(x, y) {
+
+		//Remove hover mark if we have one
+		if (this._hoverMark) {
+			this.board.removeObject(this._hoverMark);
+			delete this._hoverMark;
+		}
+
+		//What happens, depends on the active tool
+		switch (this.tool) {
+
+			//Move tool
+			case PlayerTools.MOVE:
+
+				//Hovering over empty spot where we can make a move?
+				if (!this.game.hasStone(x, y) && this.game.isValidMove(x, y)) {
+					this._hoverMark = new StoneFaded({
+						x: x,
+						y: y,
+						color: this.game.getTurn()
+					});
+				}
+				break;
+
+			//Score tool
+			case PlayerTools.SCORE:
+
+				//Hovering over a stone means it can be marked dead or alive
+				if (this.game.hasStone(x, y)) {
+					this._hoverMark = new Markup({
+						type: 'mark',
+						x: x,
+						y: y
+					});
+				}
+				break;
+		}
+
+		//Add hover mark
+		if (this._hoverMark) {
+			this.board.addObject(this._hoverMark);
+		}
+	};
 
 	/**
 	 * Player mode definition
 	 */
-	var PlayerMode = {
+	var PlayerModeReplay = {
+
+		/**
+		 * Board update event handler
+		 */
+		update: function() {
+
+			//Show move variations
+			this.toggleMoveVariations(true);
+		},
 
 		/**
 		 * Handler for mouse click events
@@ -33,12 +188,15 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		mouseClick: function(event, mouseEvent) {
 
 			//Check if we clicked a move variation
-			var i = Game.isMoveVariation(event.x, event.y);
+			var i = this.game.isMoveVariation(event.x, event.y);
 
 			//Advance to the next position
 			if (i != -1) {
 				this.next(i);
 			}
+
+			//Update hover mark
+			updateHoverMark.call(this, event.x, event.y);
 		},
 
 		/**
@@ -46,13 +204,8 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		 */
 		mouseMove: function(event, mouseEvent) {
 
-			//Frozen player?
-			if (this.frozen) {
-				return;
-			}
-
-			//If a mark is already showing, and the grid coordinates are the same, we're done
-			if (this._lastMark && this._lastX == event.x && this._lastY == event.y) {
+			//Nothing to do?
+			if (this.frozen || (this._lastX == event.x && this._lastY == event.y)) {
 				return;
 			}
 
@@ -60,28 +213,8 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 			this._lastX = event.x;
 			this._lastY = event.y;
 
-			//Remove last mark if we have one
-			if (this._lastMark) {
-				this.board.removeObject(this._lastMark);
-			}
-
-			//When replaying, we can place stones only on valid locations
-			if (Game.isValidMove(event.x, event.y)) {
-
-				//Create faded stone object
-				this._lastMark = new StoneFaded({
-					x: event.x,
-					y: event.y,
-					color: Game.getTurn()
-				});
-
-				//Add to board
-				this.board.addObject(this._lastMark);
-				return;
-			}
-
-			//Clear last mark
-			delete this._lastMark;
+			//Update hover mark
+			updateHoverMark.call(this, event.x, event.y);
 		},
 
 		/**
@@ -89,11 +222,29 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		 */
 		modeEnter: function(event) {
 
+			//Set available tools for this mode
+			this.tools = [
+				PlayerTools.MOVE,
+				PlayerTools.SCORE
+			];
+
 			//Set default tool
-			this.tool = availableTools[0];
+			this.tool = this.tools[0];
+
+			//Show move variations
+			this.toggleMoveVariations(true);
+		},
+
+		/**
+		 * Handler for mode exit
+		 */
+		modeExit: function(event) {
+
+			//Hide move variations
+			this.toggleMoveVariations(false);
 		}
 	};
 
 	//Return
-	return PlayerMode;
+	return PlayerModeReplay;
 });

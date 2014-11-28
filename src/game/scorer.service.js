@@ -93,7 +93,7 @@ angular.module('ngGo.Game.Scorer.Service', [
 	var determineScoreAndChanges = function() {
 
 		//Get komi and captures
-		var komi = Game.getKomi(),
+		var komi = Game.get('game.komi'),
 			captures = Game.getCaptureCount();
 
 		//Initialize score and changes

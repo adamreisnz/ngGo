@@ -7,22 +7,61 @@
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Player.Mode.Edit.Service', [])
+angular.module('ngGo.Player.Mode.Edit.Service', [
+	'ngGo.Service'
+])
+
+/**
+ * Run block
+ */
+.run(function(Player, PlayerModes, PlayerModeEdit, StoneColor) {
+
+	/**
+	 * Register mode
+	 */
+	Player.modes[PlayerModes.EDIT] = PlayerModeEdit;
+
+	/**
+	 * Register event handlers for this mode
+	 */
+	Player.on('modeEnter', PlayerModeEdit.modeEnter, PlayerModes.EDIT);
+	Player.on('toolSwitch', PlayerModeEdit.toolSwitch, PlayerModes.EDIT);
+	Player.on('keydown', PlayerModeEdit.keyDown, PlayerModes.EDIT);
+	Player.on('click', PlayerModeEdit.mouseClick, PlayerModes.EDIT);
+	Player.on('mousemove', PlayerModeEdit.mouseMove, PlayerModes.EDIT);
+
+	//Setup stone color
+	Player.setupStoneColor = StoneColor.B;
+
+	/**
+	 * Set the setup color
+	 */
+	Player.setSetupStoneColor = function(color) {
+
+		//No color
+		if (!color) {
+			return;
+		}
+
+		//Handle string color
+		if (typeof color == 'string') {
+			color = color.charAt(0).toLowerCase();
+		}
+
+		//Set color
+		if (color == 'w' || color == StoneColor.W) {
+			this.setupStoneColor = StoneColor.W;
+		}
+		else {
+			this.setupStoneColor = StoneColor.B;
+		}
+	};
+})
 
 /**
  * Factory definition
  */
-.factory('PlayerModeEdit', function($document, PlayerTools, MarkupTypes, SetupTypes, Game, GameScorer, StoneColor, Stone, StoneFaded, Markup) {
-
-	/**
-	 * Available tools for this mode
-	 */
-	var availableTools = [
-		PlayerTools.MOVE,
-		PlayerTools.SETUP,
-		PlayerTools.MARKUP,
-		PlayerTools.SCORE
-	];
+.factory('PlayerModeEdit', function($document, PlayerTools, MarkupTypes, SetupTypes, GameScorer, StoneColor, Stone, StoneFaded, Markup) {
 
 	/**
 	 * Helper to score the current position
@@ -41,9 +80,78 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 	};
 
 	/**
+	 * Helper to update the hover mark
+	 */
+	var updateHoverMark = function(x, y) {
+
+		//Remove hover mark if we have one
+		if (this._hoverMark) {
+			this.board.removeObject(this._hoverMark);
+			delete this._hoverMark;
+		}
+
+		//What happens, depends on the active tool
+		switch (this.tool) {
+
+			//Setup tool
+			case PlayerTools.SETUP:
+
+				//Hovering over a stone? We can remove it
+				if (this.game.hasStone(x, y)) {
+					this._hoverMark = new Markup({
+						type: 'mark',
+						x: x,
+						y: y
+					});
+				}
+
+				//Empty spot, we can add a stone
+				else {
+					this._hoverMark = new StoneFaded({
+						x: x,
+						y: y,
+						color: this.setupStoneColor
+					});
+				}
+				break;
+
+			//Move tool
+			case PlayerTools.MOVE:
+
+				//Hovering over empty spot where we can make a move?
+				if (!this.game.hasStone(x, y) && this.game.isValidMove(x, y)) {
+					this._hoverMark = new StoneFaded({
+						x: x,
+						y: y,
+						color: this.game.getTurn()
+					});
+				}
+				break;
+
+			//Score tool
+			case PlayerTools.SCORE:
+
+				//Hovering over a stone means it can be marked dead or alive
+				if (this.game.hasStone(x, y)) {
+					this._hoverMark = new Markup({
+						type: 'mark',
+						x: x,
+						y: y
+					});
+				}
+				break;
+		}
+
+		//Add hover mark
+		if (this._hoverMark) {
+			this.board.addObject(this._hoverMark);
+		}
+	};
+
+	/**
 	 * Player mode definition
 	 */
-	var PlayerMode = {
+	var PlayerModeEdit = {
 
 		/**
 		 * Keydown handler
@@ -71,36 +179,44 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 		mouseClick: function(event, mouseEvent) {
 
 			//Get current node
-			var node = Game.getNode();
+			var node = this.game.getNode();
 
 			//Check if anything to do
 			if (!node) {
 				return false;
 			}
 
+			//Initialize changes
+			var changes;
+
 			//What happens, depends on the active tool
 			switch (this.tool) {
 
+				//When moving, we can create new moves
+				case PlayerTools.MOVE:
+					changes = this.game.play(event.x, event.y);
+					break;
+
 				//When setting up, we can place stones on empty positions
 				case PlayerTools.SETUP:
-					if (!this.board.hasStoneAt(event.x, event.y)) {
 
-						//Add stone to board
-						this.board.addObject(new Stone({
-							x: event.x,
-							y: event.y,
-							color: (this.tool == PlayerTools.WHITE) ? StoneColor.W : StoneColor.B
-						}));
+					//Trying to remove a stone
+					if (this.setupColor === StoneColor.NONE) {
+						changes = this.game.setup(event.x, event.y, StoneColor.NONE);
+					}
 
-						//Remove last mark if we have one
-						if (this._lastMark) {
-							this.board.removeObject(this._lastMark);
+					//Adding a stone
+					else {
+
+						//Already a stone in place? Remove it first
+						if (this.game.hasStone(event.x, event.y)) {
+							changes = this.game.setup(event.x, event.y, StoneColor.NONE);
 						}
 
-						//Clear last remembered mouse move coordinates to refresh mouse over image
-						delete this._lastMark;
-						delete this._lastX;
-						delete this._lastY;
+						//Set it up
+						else {
+							changes = this.game.setup(event.x, event.y, this.setupColor);
+						}
 					}
 					break;
 
@@ -119,6 +235,10 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 					scorePosition.call(this);
 					break;
 			}
+
+			//Update board with changes and update the hover mark
+			this.updateBoard.call(this, changes);
+			updateHoverMark.call(this, event.x, event.y);
 		},
 
 		/**
@@ -135,80 +255,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 			this._lastX = event.x;
 			this._lastY = event.y;
 
-			//Remove last mark if we have one
-			if (this._lastMark) {
-				this.board.removeObject(this._lastMark);
-			}
-
-			//What is shown depends on the active tool
-			switch (this.tool) {
-
-				//We can only make valid moves
-				case PlayerTools.MOVE:
-					if (Game.isValidMove(event.x, event.y)) {
-
-						//Create faded stone object
-						this._lastMark = new StoneFaded({
-							x: event.x,
-							y: event.y,
-							color: Game.getTurn()
-						});
-
-						//Add to board
-						this.board.addObject(this._lastMark);
-						return;
-					}
-					break;
-
-				//We can place stones on empty spots
-				case PlayerTools.SETUP:
-					if (!this.board.hasStoneAt(event.x, event.y)) {
-
-						//Create faded stone object
-						this._lastMark = new StoneFaded({
-							x: event.x,
-							y: event.y,
-							color: StoneColor.B
-						});
-
-						//Add to board
-						this.board.addObject(this._lastMark);
-						return;
-					}
-					break;
-
-				//We can mark stones as dead or alive
-				case PlayerTools.SCORE:
-					if (this.board.hasStoneAt(event.x, event.y)) {
-
-						//Create mark
-						this._lastMark = new Markup({
-							type: 'mark',
-							x: event.x,
-							y: event.y
-						});
-
-						//Add to board
-						this.board.addObject(this._lastMark);
-						return;
-					}
-					break;
-			}
-
-			//Clear last mark
-			delete this._lastMark;
-		},
-
-		/**
-		 * Mouse out handler
-		 */
-		mouseOut: function(event, mouseEvent) {
-			if (this._lastMark) {
-				this.board.removeObject(this._lastMark);
-				delete this._lastMark;
-				delete this._lastX;
-				delete this._lastY;
-			}
+			//Update hover mark
+			updateHoverMark.call(this, event.x, event.y);
 		},
 
 		/**
@@ -216,19 +264,22 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 		 */
 		modeEnter: function(event) {
 
+			//Set available tools for this mode
+			this.tools = [
+				PlayerTools.MOVE,
+				PlayerTools.SETUP,
+				PlayerTools.MARKUP,
+				PlayerTools.SCORE
+			];
+
 			//Set default tool
-			this.tool = availableTools[0];
+			this.tool = this.tools[0];
 		},
 
 		/**
 		 * Handler for tool switches
 		 */
 		toolSwitch: function(event) {
-
-			//Invalid tool? Select the first one
-			if (availableTools.indexOf(this.tool) === -1) {
-				this.tool = availableTools[0];
-			}
 
 			//Switched to scoring?
 			if (this.tool == PlayerTools.SCORE) {
@@ -243,5 +294,5 @@ angular.module('ngGo.Player.Mode.Edit.Service', [])
 	};
 
 	//Return
-	return PlayerMode;
+	return PlayerModeEdit;
 });

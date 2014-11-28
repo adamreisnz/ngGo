@@ -107,6 +107,9 @@ angular.module('ngGo.Board.Service', [
 			this.drawWidth = 0;
 			this.drawHeight = 0;
 
+			//Color multiplier (to allow color swapping)
+			this.colorMultiplier = 1;
+
 			//Initialize layers
 			this.layers = {};
 
@@ -152,6 +155,11 @@ angular.module('ngGo.Board.Service', [
 		 * Set section of the board to be displayed
 		 */
 		Board.prototype.setSection = function(section) {
+
+			//Nothing given?
+			if (!section) {
+				return;
+			}
 
 			//Expand on default
 			section = angular.extend(defaultConfig.section, section);
@@ -456,8 +464,28 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/***********************************************************************************************
-		 * Drawing helpers
+		 * Drawing helpers and control methods
 		 ***/
+
+		/**
+		 * Swap colors on the board
+		 */
+		Board.prototype.swapColors = function() {
+			this.colorMultiplier = -this.colorMultiplier;
+			if (this.layers.stones)	{
+
+				//Clear shadows
+				//TODO: this would belong in a stone layer redraw method, but there is no distinct
+				//stone layer class. This might be obsolete anyway when we find a better way to handle
+				//shadows
+				if (this.layers.shadow)	{
+					this.layers.shadow.clear();
+				}
+
+				//Redraw stones
+				this.layers.stones.redraw();
+			}
+		};
 
 		/**
 		 * Get the current cell size

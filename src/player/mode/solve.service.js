@@ -10,32 +10,112 @@
 angular.module('ngGo.Player.Mode.Solve.Service', [])
 
 /**
+ * Run block
+ */
+.run(function(Player, PlayerModes, PlayerModeSolve) {
+
+	/**
+	 * Register mode
+	 */
+	Player.modes[PlayerModes.SOLVE] = PlayerModeSolve;
+
+	/**
+	 * Register event handlers for this mode
+	 */
+	Player.on('gameLoaded', PlayerModeSolve.gameLoaded, PlayerModes.SOLVE);
+	Player.on('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
+	Player.on('modeExit', PlayerModeSolve.modeExit, PlayerModes.SOLVE);
+	Player.on('keydown', PlayerModeSolve.keyDown, PlayerModes.SOLVE);
+	Player.on('click', PlayerModeSolve.mouseClick, PlayerModes.SOLVE);
+	Player.on('mousemove', PlayerModeSolve.mouseMove, PlayerModes.SOLVE);
+
+	//Remember the player color for this problem
+	Player.problemPlayerColor = 0;
+
+	//Solved flag
+	Player.problemSolved = false;
+
+	//Off path flag
+	Player.problemOffPath = false;
+})
+
+/**
  * Factory definition
  */
-.factory('PlayerModeSolve', function($document, $timeout, PlayerTools, Game, StoneFaded) {
-
-	//Available tools for this mode
-	var availableTools = [
-		PlayerTools.MOVE,
-		PlayerTools.NONE
-	];
-
-	//Remember the variation board markup setting
-	var variationBoardMarkup = false;
+.factory('PlayerModeSolve', function($document, $timeout, PlayerTools, StoneFaded) {
 
 	//Block navigation while in timeout
 	var navigationBlocked = false;
 
-	//Remember the player color for this problem
-	var playerColor;
+	/**
+	 * Check if we can make a move
+	 */
+	var canMakeMove = function() {
 
-	//Solved flag
-	var solved = false;
+		//We can make a move when...
+
+		//...there is no auto play going on
+		if (!this.config.solveAutoPlay) {
+			return true;
+		}
+
+		//...we solved the puzzle already
+		if (this.problemSolved) {
+			return true;
+		}
+
+		//...we are off path
+		if (this.problemOffPath) {
+			return true;
+		}
+
+		//...it's our turn
+		if (this.game.getTurn() == this.problemPlayerColor) {
+			return true;
+		}
+
+		//Otherwise, we can't make a move
+		return false;
+	};
+
+	/**
+	 * Helper to update the hover mark
+	 */
+	var updateHoverMark = function(x, y) {
+
+		//Remove hover mark if we have one
+		if (this._hoverMark) {
+			this.board.removeObject(this._hoverMark);
+			delete this._hoverMark;
+		}
+
+		//What happens, depends on the active tool
+		switch (this.tool) {
+
+			//Move tool
+			case PlayerTools.MOVE:
+
+				//Check if we can make a move and if it's a valid move location
+				if (canMakeMove.call(this) && this.game.isValidMove(x, y)) {
+					this._hoverMark = new StoneFaded({
+						x: x,
+						y: y,
+						color: this.game.getTurn()
+					});
+				}
+				break;
+		}
+
+		//Add hover mark
+		if (this._hoverMark) {
+			this.board.addObject(this._hoverMark);
+		}
+	};
 
 	/**
 	 * Player mode definition
 	 */
-	var PlayerMode = {
+	var PlayerModeSolve = {
 
 		/**
 		 * Handler for keydown events
@@ -68,7 +148,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 
 						//Go back one more if this is not the player's turn and if
 						//the problem hasn't been solved yet
-						if (!solved && this.config.solveAutoPlay && Game.getTurn() == -playerColor) {
+						if (!this.problemSolved && this.config.solveAutoPlay && this.game.getTurn() == -this.problemPlayerColor) {
 							this.previous();
 						}
 					}
@@ -90,19 +170,19 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 		mouseClick: function(event, mouseEvent) {
 
 			//Check if we clicked a move variation
-			var i = Game.isMoveVariation(event.x, event.y);
+			var i = this.game.isMoveVariation(event.x, event.y);
 
 			//A valid variation
 			if (i != -1) {
 
 				//Advance to the next position and get the next node
 				this.next(i);
-				var node = Game.getNode();
+				var node = this.game.getNode();
 
 				//No children left? Check if we solved it or not
 				if (node.children.length === 0) {
 					if (node.move.solution) {
-						solved = true;
+						this.problemSolved = true;
 						this.broadcast('solutionFound', node);
 					}
 					else {
@@ -112,7 +192,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 				}
 
 				//Stop auto-playing if solved
-				if (solved || !this.config.solveAutoPlay) {
+				if (this.problemSolved || !this.config.solveAutoPlay) {
 					return;
 				}
 
@@ -136,9 +216,12 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 				return;
 			}
 
-			//Unknown, but valid move
-			if (Game.play(event.x, event.y)) {
-				//TODO: add move to kifu!
+			//Unknown variation, try to play
+			var changes = this.game.play(event.x, event.y);
+			if (changes) {
+				this.problemOffPath = true;
+				this.updateBoard.call(this, changes);
+				this.broadcast('solutionWrong', this.game.getNode());
 			}
 		},
 
@@ -147,13 +230,8 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 		 */
 		mouseMove: function(event, mouseEvent) {
 
-			//Frozen player?
-			if (this.frozen) {
-				return;
-			}
-
-			//If a mark is already showing, and the grid coordinates are the same, we're done
-			if (this._lastMark && this._lastX == event.x && this._lastY == event.y) {
+			//Nothing to do?
+			if (this.frozen || (this._lastX == event.x && this._lastY == event.y)) {
 				return;
 			}
 
@@ -161,38 +239,17 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 			this._lastX = event.x;
 			this._lastY = event.y;
 
-			//Remove last mark if we have one
-			if (this._lastMark) {
-				this.board.removeObject(this._lastMark);
-			}
-
-			//When in solve mode, we are allowed to place stones on all valid move locations
-			//and only when it's our turn, unless we've solved the problem
-			if (solved || !this.config.solveAutoPlay || Game.getTurn() == playerColor) {
-				if (Game.isValidMove(event.x, event.y)) {
-
-					//Create faded stone object
-					this._lastMark = new StoneFaded({
-						x: event.x,
-						y: event.y,
-						color: Game.getTurn()
-					});
-
-					//Add to board
-					this.board.addObject(this._lastMark);
-					return;
-				}
-			}
-
-			//Clear last mark
-			delete this._lastMark;
+			//Update hover mark
+			updateHoverMark.call(this, event.x, event.y);
 		},
 
 		/**
-		 * Handler for kifu loaded
+		 * Handler for game loaded
 		 */
-		kifuLoaded: function(event) {
-			playerColor = Game.getTurn();
+		gameLoaded: function(event) {
+
+			//Set player color
+			this.problemPlayerColor = this.game.getTurn();
 		},
 
 		/**
@@ -200,12 +257,16 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 		 */
 		modeEnter: function(event) {
 
-			//Set default tool
-			this.tool = availableTools[0];
+			//Set available tools for this mode
+			this.tools = [
+				PlayerTools.MOVE
+			];
 
-			//Disable variation marking
-			variationBoardMarkup = this.config.variationBoardMarkup;
-			this.setVariationBoardMarkup(false);
+			//Set default tool
+			this.tool = this.tools[0];
+
+			//Initialize player color
+			this.problemPlayerColor = this.game.getTurn();
 		},
 
 		/**
@@ -213,11 +274,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 		 */
 		modeExit: function(event) {
 
-			//Reset variation marking to remembered setting
-			this.setVariationBoardMarkup(variationBoardMarkup);
 		}
 	};
 
 	//Return
-	return PlayerMode;
+	return PlayerModeSolve;
 });

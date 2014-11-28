@@ -62,6 +62,9 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 			r = Math.round(r * this.scale);
 		}
 
+		//Apply color multiplier
+		var color = this.color * board.colorMultiplier;
+
 		//Get theme properties
 		var lineWidth = board.theme.get('markupLinesWidth', s) || 1;
 			canvasTranslate = board.theme.get('canvasTranslate');
@@ -75,7 +78,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		}
 
 		//Configure context
-		ctx.fillStyle = (this.color == StoneColor.W) ? board.theme.get('stoneColorMonoWhite') : board.theme.get('stoneColorMonoBlack');
+		ctx.fillStyle = (color == StoneColor.W) ? board.theme.get('stoneColorMonoWhite') : board.theme.get('stoneColorMonoBlack');
 
 		//Draw stone
 		ctx.beginPath();
@@ -117,6 +120,9 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 			r = Math.round(r * this.scale);
 		}
 
+		//Apply color multiplier
+		var color = this.color * board.colorMultiplier;
+
 		//Get theme variables
 		var canvasTranslate = board.theme.get('canvasTranslate');
 
@@ -132,7 +138,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		ctx.beginPath();
 
 		//Determine stone texture
-		if (this.color == StoneColor.W) {
+		if (color == StoneColor.W) {
 			ctx.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
 			ctx.fillStyle.addColorStop(0, '#fff');
 			ctx.fillStyle.addColorStop(1, '#aaa');
@@ -178,6 +184,9 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		//Get random seed
 		shellSeed = shellSeed || Math.ceil(Math.random() * 9999999);
 
+		//Apply color multiplier
+		var color = this.color * board.colorMultiplier;
+
 		//Get theme variables
 		var canvasTranslate = board.theme.get('canvasTranslate');
 
@@ -193,7 +202,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		ctx.beginPath();
 
 		//Determine fill color
-		if (this.color == StoneColor.W) {
+		if (color == StoneColor.W) {
 			ctx.fillStyle = '#aaa';
 		}
 		else {
@@ -205,7 +214,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		ctx.fill();
 
 		//Shell stones
-		if (this.color == StoneColor.W) {
+		if (color == StoneColor.W) {
 
 			//Get random shell type
 			var type = shellSeed%(shellTypes.length + this.x * board.width + this.y) % shellTypes.length;

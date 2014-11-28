@@ -52,5 +52,12 @@ angular.module('ngGo.Game.PositionChanges.Service', [])
 			this.add = setSubtract(this.add, newChanges.remove).concat(newChanges.add);
 			this.remove = setSubtract(this.remove, newChanges.add).concat(newChanges.remove);
 		};
+
+		/**
+		 * Check if there are changes
+		 */
+		this.has = function() {
+			return !!(this.add.length || this.remove.length);
+		};
 	};
 });

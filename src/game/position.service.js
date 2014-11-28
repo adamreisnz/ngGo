@@ -26,6 +26,7 @@ angular.module('ngGo.Game.Position.Service', [
 	var GamePosition = function(width, height) {
 
 		//Initialize
+		this.error = 0;
 		this.width = 0;
 		this.height = 0;
 		this.grid = new BoardGrid();
@@ -74,6 +75,13 @@ angular.module('ngGo.Game.Position.Service', [
 	 */
 	GamePosition.prototype.set = function(x, y, color) {
 		this.grid.setObject(x, y, color || StoneColor.NONE);
+	};
+
+	/**
+	 * Check if a stone at given coordinates matches the given color
+	 */
+	GamePosition.prototype.is = function(x, y, color) {
+		return (this.grid.getObject(x, y) === color);
 	};
 
 	/**
@@ -296,6 +304,7 @@ angular.module('ngGo.Game.Position.Service', [
 		var newPosition = new GamePosition();
 
 		//Set vars manually for maximum efficiency
+		newPosition.turn = this.turn;
 		newPosition.width = this.width;
 		newPosition.height = this.height;
 		newPosition.grid = this.grid.clone();
