@@ -1,20 +1,21 @@
 
 /**
  * GridLayer :: This class represents the grid layer of the board, and it is responsible for drawing
- * gridlines and starpoints. The coordinates object can also be attached to this layer.
+ * gridlines, starpoints and coordinates via the Coordinates class.
  */
 
 /**
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Layer.GridLayer.Service', [
-	'ngGo.Board.Layer.Service'
+	'ngGo.Board.Layer.Service',
+	'ngGo.Board.Object.Coordinates.Service'
 ])
 
 /**
  * Factory definition
  */
-.factory('GridLayer', function(BoardLayer) {
+.factory('GridLayer', function(BoardLayer, Coordinates) {
 
 	/**
 	 * Helper for drawing starpoints
@@ -45,6 +46,10 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 	 */
 	var GridLayer = function(board, context) {
 
+		//Set coordinates setting
+		this.coordinates = false;
+		this.coordinatesMargin = board.theme.get('coordinatesMargin');
+
 		//Call parent constructor
 		BoardLayer.call(this, board, context);
 	};
@@ -53,6 +58,54 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 	 * Prototype extension
 	 */
 	angular.extend(GridLayer.prototype, BoardLayer.prototype);
+
+	/**
+	 * Coordinates toggling
+	 */
+	GridLayer.prototype.toggleCoordinates = function() {
+
+		//Toggle
+		this.coordinates = !this.coordinates;
+
+		//Showing? Set the board margin, otherwise reset it
+		if (this.coordinates) {
+			this.board.setMargin(this.coordinatesMargin);
+		}
+		else {
+			this.board.resetMargin();
+		}
+
+		//No need for a redraw due to the board margin change triggering one already!
+	};
+
+	/***********************************************************************************************
+	 * Object handling
+	 ***/
+
+	/**
+	 * Get all has nothing to return
+	 */
+	GridLayer.prototype.getAll = function() {
+		return null;
+	};
+
+	/**
+	 * Set all has nothing to set
+	 */
+	GridLayer.prototype.setAll = function(grid) {
+		return;
+	};
+
+	/**
+	 * Remove all has nothing to remove
+	 */
+	GridLayer.prototype.removeAll = function() {
+		return;
+	};
+
+	/***********************************************************************************************
+	 * Drawing
+	 ***/
 
 	/**
 	 * Draw method
@@ -132,8 +185,10 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 		//Undo translation
 		this.context.translate(-canvasTranslate, -canvasTranslate);
 
-		//Call parent method
-		BoardLayer.prototype.draw.call(this);
+		//Draw coordinates
+		if (this.coordinates) {
+			Coordinates.draw.call(this);
+		}
 	};
 
 	/**
@@ -180,6 +235,12 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 			canvasTranslate = this.board.theme.get('canvasTranslate', s, lineWidth),
 			starPoints = this.board.theme.get('starPoints', this.board.width, this.board.height);
 
+		//Determine draw coordinates
+		var x1 = (gridX === 0) ? x : x-r,
+			x2 = (gridX === this.board.width - 1) ? x : x+r,
+			y1 = (gridY === 0) ? y : y-r,
+			y2 = (gridY === this.board.height - 1) ? y : y+r;
+
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
 
@@ -189,10 +250,10 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 		this.context.strokeStyle = strokeStyle;
 
 		//Patch up grid lines
-		this.context.moveTo(x-r, y);
-		this.context.lineTo(x+r, y);
-		this.context.moveTo(x, y+r);
-		this.context.lineTo(x, y-r);
+		this.context.moveTo(x1, y);
+		this.context.lineTo(x2, y);
+		this.context.moveTo(x, y1);
+		this.context.lineTo(x, y2);
 		this.context.stroke();
 
 		//Check if we need to draw a star point here

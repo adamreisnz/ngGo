@@ -1,33 +1,180 @@
 
 /**
  * BoardGrid :: This class represents a board grid of a given size. It acts as a container for
- * board objects for the layer classes, as well as a container for stone color values for the game
- * position class. It has built in validation of coordinates.
+ * values (e.g. stone colors, markup types) for the layer classes, as well as a container for
+ * stone color values for the game position class. It has built in validation of coordinates.
  */
 
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Grid.Service', [])
+angular.module('ngGo.Board.Grid.Service', [
+	'ngGo.Board.GridChanges.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('BoardGrid', function() {
+.factory('BoardGrid', function(BoardGridChanges) {
+
+	/**
+	 * Helper to convert a value at given coordinates to an object
+	 */
+	var toObject = function(x, y, valueKey) {
+
+		//Create coordinates object
+		var obj = {
+			x: x,
+			y: y
+		};
+
+		//Already an object?
+		if (typeof this.grid[x][y] == 'object') {
+			return angular.extend(obj, this.grid[x][y]);
+		}
+
+		//Not an object, set value with given value key and return
+		obj[valueKey] = this.grid[x][y];
+		return obj;
+	};
 
 	/**
 	 * Constructor
 	 */
-	var BoardGrid = function(width, height) {
+	var BoardGrid = function(width, height, emptyValue) {
 
-		//Initialize size and objects array
+		//Initialize size and grid array
 		this.width = 0;
 		this.height = 0;
-		this.objects = [];
+		this.grid = [];
+		this.emptyValue = null;
+
+		//Set empty value if given
+		if (typeof emptyValue != 'undefined') {
+			this.emptyValue = emptyValue;
+		}
 
 		//Size given? Set it
 		if (width || height) {
 			this.setSize(width, height);
+		}
+	};
+
+	/**
+	 * Set a value
+	 */
+	BoardGrid.prototype.set = function(x, y, value) {
+		if (this.isOnGrid(x, y)) {
+			this.grid[x][y] = value;
+		}
+	};
+
+	/**
+	 * Unset a value
+	 */
+	BoardGrid.prototype.unset = function(x, y) {
+		if (this.isOnGrid(x, y)) {
+			this.grid[x][y] = this.emptyValue;
+		}
+	};
+
+	/**
+	 * Check if we have a non null value on the coordinates
+	 */
+	BoardGrid.prototype.has = function(x, y) {
+		return (this.isOnGrid(x, y) && this.grid[x][y] !== this.emptyValue);
+	};
+
+	/**
+	 * Check if we have a specific value on the coordinates
+	 */
+	BoardGrid.prototype.is = function(x, y, value) {
+		return (this.isOnGrid(x, y) && this.grid[x][y] === value);
+	};
+
+	/**
+	 * Get a value, or an object with coordinates and the value in the given value key
+	 */
+	BoardGrid.prototype.get = function(x, y, valueKey) {
+
+		//Validate
+		if (!this.isOnGrid(x, y) || this.grid[x][y] === this.emptyValue) {
+			return this.emptyValue;
+		}
+
+		//Return as is?
+		if (!valueKey) {
+			return this.grid[x][y];
+		}
+
+		//Return as object
+		return toObject.call(this, x, y, valueKey);
+	};
+
+	/*******************************************************************************************************************************
+	 * Mass operations
+	 ***/
+
+	/**
+	 * Get all items in the grid. If you specify a value key, a list of objects with coordinates
+	 * and the value in the given value key will be returned.
+	 */
+	BoardGrid.prototype.all = function(valueKey) {
+
+		//Just get the grid?
+		if (!valueKey) {
+			return this.grid;
+		}
+
+		//Initialize objects list
+		var objects = [];
+
+		//Loop coordinates
+		for (var x = 0; x < this.width; x++) {
+			for (var y = 0; y < this.height; y++) {
+				if (this.grid[x][y] !== this.emptyValue) {
+					objects.push(toObject.call(this, x, y, valueKey));
+				}
+			}
+		}
+
+		//Return objects list
+		return objects;
+	};
+
+	/**
+	 * Check if there is anything
+	 */
+	BoardGrid.prototype.isEmpty = function() {
+		for (var x = 0; x < this.width; x++) {
+			for (var y = 0; y < this.height; y++) {
+				if (this.grid[x][y] !== this.emptyValue) {
+					return false;
+				}
+			}
+		}
+		return true;
+	};
+
+	/**
+	 * Populate the whole grid with a given value
+	 */
+	BoardGrid.prototype.populate = function(value) {
+		for (var x = 0; x < this.width; x++) {
+			for (var y = 0; y < this.height; y++) {
+				this.grid[x][y] = value;
+			}
+		}
+	};
+
+	/**
+	 * Clear all values from the grid
+	 */
+	BoardGrid.prototype.clear = function() {
+		for (var x = 0; x < this.width; x++) {
+			for (var y = 0; y < this.height; y++) {
+				this.grid[x][y] = this.emptyValue;
+			}
 		}
 	};
 
@@ -40,171 +187,92 @@ angular.module('ngGo.Board.Grid.Service', [])
 		var newGrid = new BoardGrid();
 
 		//Manually set vars for maximum efficiency
+		newGrid.grid = angular.copy(this.grid);
+		newGrid.emptyValue = this.emptyValue;
 		newGrid.width = this.width;
 		newGrid.height = this.height;
-		newGrid.objects = angular.copy(this.objects);
 
 		//Return
 		return newGrid;
 	};
 
-	/**
-	 * Add multiple objects at once
-	 */
-	BoardGrid.prototype.addObjects = function(objects) {
-		for (var i = 0; i < objects.length; i++) {
-			this.addObject(objects[i]);
-		}
-	};
+	/*******************************************************************************************************************************
+	 * Comparison
+	 ***/
 
 	/**
-	 * Get all objects
+	 * Checks if a given grid is the same as the current grid
 	 */
-	BoardGrid.prototype.getObjects = function(flat, cloned) {
+	BoardGrid.prototype.isSameAs = function(grid) {
 
-		//Flat array of objects?
-		if (flat) {
-			flat = [];
-			for (var x = 0; x < this.width; x++) {
-				for (var y = 0; y < this.height; y++) {
-					if (this.objects[x][y] !== null) {
-						if (cloned) {
-							flat.push(angular.copy(this.objects[x][y]));
-						}
-						else {
-							flat.push(this.objects[x][y]);
-						}
-					}
-				}
-			}
-			return flat;
+		//Must have the same size
+		if (this.width != grid.width || this.height != grid.height) {
+			return false;
 		}
 
-		//Return grid array
-		return cloned ? angular.copy(this.objects) : this.objects;
-	};
-
-	/**
-	 * Populate the whole grid with the same object (clones the object if object given)
-	 */
-	BoardGrid.prototype.populateObjects = function(obj) {
+		//Loop all coordinates
 		for (var x = 0; x < this.width; x++) {
 			for (var y = 0; y < this.height; y++) {
-				this.objects[x][y] = (typeof obj == 'object') ? angular.copy(obj) : obj;
-			}
-		}
-	};
-
-	/**
-	 * Add an object and return the replace object, if any
-	 */
-	BoardGrid.prototype.addObject = function(obj) {
-
-		//Must have coordinates
-		if (typeof obj.x == 'undefined' || typeof obj.y == 'undefined') {
-			return;
-		}
-
-		//Must be on grid
-		if (!this.isOnGrid(obj)) {
-			return;
-		}
-
-		//Replaced object?
-		var objReplaced = this.objects[obj.x][obj.y];
-
-		//Add object
-		this.objects[obj.x][obj.y] = obj;
-		return objReplaced;
-	};
-
-	/**
-	 * Remove an object (first param can be an object)
-	 */
-	BoardGrid.prototype.removeObject = function(x, y) {
-
-		//Object given?
-		if (typeof x == 'object') {
-			y = x.y;
-			x = x.x;
-		}
-
-		//Must be on grid
-		if (!this.isOnGrid(x, y)) {
-			return;
-		}
-
-		//Removed object?
-		var objRemoved = this.objects[x][y];
-
-		//Remove object
-		this.objects[x][y] = null;
-		return objRemoved;
-	};
-
-	/**
-	 * Remove all objects from the grid
-	 */
-	BoardGrid.prototype.removeObjects = function() {
-
-		//Keep track of removed objects
-		var objectsRemoved = [];
-		for (var x = 0; x < this.width; x++) {
-			for (var y = 0; y < this.height; y++) {
-				if (this.objects[x][y] !== null) {
-					objectsRemoved.push(this.objects[x][y]);
-					this.objects[x][y] = null;
+				if (this.grid[x][y] != grid[x][y]) {
+					return false;
 				}
 			}
 		}
 
-		//Return them
-		return objectsRemoved;
+		//No differences found
+		return true;
 	};
 
 	/**
-	 * Check if we have an object
+	 * Compares this position with another position and return change object
 	 */
-	BoardGrid.prototype.hasObject = function(x, y) {
-		return (this.isOnGrid(x, y) && this.objects[x][y] !== null);
-	};
+	BoardGrid.prototype.compare = function(newGrid, valueKey) {
 
-	/**
-	 * Manually set an item on the grid
-	 */
-	BoardGrid.prototype.setObject = function(x, y, obj) {
-		if (this.isOnGrid(x, y)) {
-			this.objects[x][y] = obj;
-		}
-	};
+		//Initialize board grid changes object
+		var change, changes = new BoardGridChanges();
 
-	/**
-	 * Get an object
-	 */
-	BoardGrid.prototype.getObject = function(x, y, ifInvalid) {
-
-		//If on grid, return the object
-		if (this.isOnGrid(x, y)) {
-			return this.objects[x][y];
+		//Must have the same size
+		if (this.width != newGrid.width || this.height != newGrid.height) {
+			console.warn('Trying to compare grids of a different size');
+			return changes;
 		}
 
-		//Not a valid position
-		return (typeof ifInvalid == 'undefined') ? null : ifInvalid;
+		//Loop all coordinates
+		for (var x = 0; x < this.width; x++) {
+			for (var y = 0; y < this.height; y++) {
+
+				//Something to add?
+				if (this.grid[x][y] === this.emptyValue && newGrid.grid[x][y] !== this.grid[x][y]) {
+					changes.add.push(toObject.call(newGrid, x, y, valueKey));
+				}
+
+				//Something to remove?
+				if (newGrid.grid[x][y] === this.emptyValue && newGrid.grid[x][y] !== this.grid[x][y]) {
+					changes.remove.push(toObject.call(this, x, y, valueKey));
+				}
+			}
+		}
+
+		//Return changes grid
+		return changes;
 	};
+
+	/*******************************************************************************************************************************
+	 * Helpers
+	 ***/
 
 	/**
 	 * Helper to validate coordinates (first param can be an object)
 	 */
 	BoardGrid.prototype.isOnGrid = function(x, y) {
-
-		//Object given?
-		if (typeof x == 'object') {
-			y = x.y;
-			x = x.x;
-		}
-
-		//Validate coordinates
 		return (x >= 0 && y >= 0 && x < this.width && y < this.height);
+	};
+
+	/**
+	 * Helper to set the empty value
+	 */
+	BoardGrid.prototype.whenEmpty = function(emptyValue) {
+		this.emptyValue = emptyValue;
 	};
 
 	/**
@@ -220,12 +288,12 @@ angular.module('ngGo.Board.Grid.Service', [])
 		this.width = parseInt(width);
 		this.height = parseInt(height);
 
-		//Create objects array
-		this.objects = [];
+		//Create grid array
+		this.grid = [];
 		for (var x = 0; x < this.width; x++) {
-			this.objects[x] = [];
+			this.grid[x] = [];
 			for (var y = 0; y < this.height; y++) {
-				this.objects[x][y] = null;
+				this.grid[x][y] = this.emptyValue;
 			}
 		}
 	};
@@ -235,20 +303,6 @@ angular.module('ngGo.Board.Grid.Service', [])
 	 */
 	BoardGrid.prototype.getSize = function() {
 		return {width: this.width, height: this.height};
-	};
-
-	/**
-	 * Get the grid width
-	 */
-	BoardGrid.prototype.getWidth = function() {
-		return this.width;
-	};
-
-	/**
-	 * Get the grid height
-	 */
-	BoardGrid.prototype.getHeight = function() {
-		return this.height;
 	};
 
 	//Return

@@ -1,8 +1,9 @@
 
 /**
  * Player :: This class brings the board to life and allows a user to interact with it. It
- * handles user input, can load Kifu's, places markup and allows the user to edit the board or score
- * a position. Unless you want to display static positions, this is the class you'd use by default.
+ * handles user input, controls objects going to the board, can load game records, and allows the
+ * user to manipulate the board according to the current player mode.
+ * Unless you want to display static positions, this is the class you'd use by default.
  */
 
 /**
@@ -36,15 +37,6 @@ angular.module('ngGo.Player.Service', [
 	SCORE:		'score',
 	SETUP:		'setup',
 	MARKUP:		'markup'
-})
-
-/**
- * Setup types
- */
-.constant('SetupTypes', {
-	BLACK:		'B',
-	WHITE:		'W',
-	CLEAR:		'E'
 })
 
 /**
@@ -113,7 +105,7 @@ angular.module('ngGo.Player.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function($rootScope, Game, GameScorer, Board, PlayerModes, PlayerTools, Stone, Markup) {
+	this.$get = function($rootScope, Game, GameScorer, Board, PlayerModes, PlayerTools) {
 
 		/**
 		 * Helper to append board grid coordinatess to the broadcast event object
@@ -152,6 +144,9 @@ angular.module('ngGo.Player.Service', [
 			board: null,
 			game: new Game(),
 
+			//Remembered current path
+			path: null,
+
 			//Frozen state
 			frozen: false,
 
@@ -182,7 +177,7 @@ angular.module('ngGo.Player.Service', [
 				var board = this.game.get('board');
 
 				//Remove all objects, set size and section
-				this.board.removeAllObjects();
+				this.board.removeAll();
 				this.board.setSize(board.width, board.height);
 				this.board.setSection(board.section);
 
@@ -241,8 +236,8 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Go to the next position and update board
-				var changes = this.game.next(i);
-				this.updateBoard.call(this, changes);
+				this.game.next(i);
+				this.updateBoard();
 			},
 
 			/**
@@ -256,8 +251,8 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Go to the previous position and update board
-				var changes = this.game.previous();
-				this.updateBoard.call(this, changes);
+				this.game.previous();
+				this.updateBoard();
 			},
 
 			/**
@@ -271,8 +266,8 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Go to last position and update board
-				var changes = this.game.last();
-				this.updateBoard.call(this, changes);
+				this.game.last();
+				this.updateBoard();
 			},
 
 			/**
@@ -286,8 +281,8 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Go to first position and update board
-				var changes = this.game.first();
-				this.updateBoard.call(this, changes);
+				this.game.first();
+				this.updateBoard();
 			},
 
 			/**
@@ -301,34 +296,30 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Go to specified path and update board
-				var changes = this.game.goto(path);
-				this.updateBoard.call(this, changes);
+				this.game.goto(path);
+				this.updateBoard();
 			},
 
 			/**
-			 * Update the board with given changes
+			 * Update the board
 			 */
-			updateBoard: function(changes) {
+			updateBoard: function() {
 
-				//Remove existing markup from the board
-				this.board.removeAllObjects('markup');
+				//Get current node and game position
+				var i,
+					node = this.game.getNode(),
+					path = this.game.getPath(),
+					position = this.game.getPosition();
 
-				//Get current node
-				var i, node = this.game.getNode();
-
-				//Changes to the board's position
-				if (changes) {
-
-					//Stones to remove (no need for a class, as just the position is relevant)
-					for (var r in changes.remove) {
-						this.board.removeObject(changes.remove[r], 'stones');
-					}
-
-					//Stone to add
-					for (var a in changes.add) {
-						this.board.addObject(new Stone(changes.add[a]));
-					}
+				//Path change? That means a whole new board position
+				if (!angular.equals(this.path, path)) {
+					this.path = angular.copy(path);
+					this.board.removeAll('markup');
 				}
+
+				//Set new stones and markup grids
+				this.board.setAll('stones', position.stones);
+				this.board.setAll('markup', position.markup);
 
 				//Move made?
 				if (node.move) {
@@ -340,18 +331,7 @@ angular.module('ngGo.Player.Service', [
 
 					//Mark last move?
 					else if (this.config.markLastMove) {
-						this.board.addObject(new Markup({
-							type: this.config.lastMoveMarker,
-							x: node.move.x,
-							y: node.move.y
-						}));
-					}
-				}
-
-				//Add any other markup
-				if (node.markup) {
-					for (i in node.markup) {
-						this.board.addObject(new Markup(node.markup[i]));
+						this.board.add('markup', node.move.x, node.move.y, this.config.lastMoveMarker);
 					}
 				}
 

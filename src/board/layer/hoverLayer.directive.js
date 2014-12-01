@@ -1,25 +1,28 @@
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Layer.Directive', [
-	'ngGo.Board.Layer.Service',
-	'ngGo.Board.Layer.GridLayer.Service',
-	'ngGo.Board.Layer.ShadowLayer.Service'
+angular.module('ngGo.Board.Layer.HoverLayer.Directive', [
+	'ngGo.Board.Layer.HoverLayer.Service'
 ])
 
 /**
  * Directive definition
  */
-.directive('boardlayer', function($injector) {
+.directive('hoverlayer', function(HoverLayer) {
 	return {
 		restrict: 'E',
 		template: '<canvas></canvas>',
 		link: function($scope, element, attrs) {
 
-			//Get name and type of layer
-			var name = attrs.class || '',
-				type = attrs.layerType || 'board',
-				pixelRatio = window.pixelRatio || 1;
+			//Must have board
+			if (!$scope.Board) {
+				console.warn('No board present in scope for hover layer');
+				return;
+			}
+
+			//Get pixel ratio and name of layer
+			var pixelRatio = window.pixelRatio || 1,
+				name = attrs.name || 'hover';
 
 			//Get canvas element and context
 			var canvas = element.find('canvas'),
@@ -41,11 +44,7 @@ angular.module('ngGo.Board.Layer.Directive', [
 			});
 
 			//Add layer to board
-			type = type.charAt(0).toUpperCase() + type.substr(1) + 'Layer';
-			if ($injector.has(type)) {
-				var boardLayer = $injector.get(type);
-				$scope.Board.layers[name] = new boardLayer($scope.Board, context);
-			}
+			$scope.Board.layers[name] = new HoverLayer($scope.Board, context);
 		}
 	};
 });

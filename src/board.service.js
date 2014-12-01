@@ -3,7 +3,7 @@
  * Board :: This class represents the Go board. It is a placeholder for all the various board layers
  * and is used for placing and removing objects on the board. The class has helpers to figure out the
  * correct size of the grid cells and to toggle coordinates on or off. This class is responsible for
- * drawing all layers that exist on the board.
+ * drawing all layers on the board.
  */
 
 /**
@@ -16,8 +16,7 @@ angular.module('ngGo.Board.Service', [
 	'ngGo.Board.Object.Markup.Service',
 	'ngGo.Board.Object.Stone.Service',
 	'ngGo.Board.Object.StoneMini.Service',
-	'ngGo.Board.Object.StoneFaded.Service',
-	'ngGo.Board.Object.Coordinates.Service'
+	'ngGo.Board.Object.StoneFaded.Service'
 ])
 
 /**
@@ -34,9 +33,6 @@ angular.module('ngGo.Board.Service', [
 		//Note that the default size is left at 0 intentionally, to prevent needless re-draws when loading SGF/JGF data
 		//You can change this via BoardProvider.setConfig() or via a size attribute on the board element in HTML
 		defaultSize: 0,
-
-		//Show coordinates
-		showCoordinates: false,
 
 		//Section of board to display
 		section: {
@@ -60,7 +56,7 @@ angular.module('ngGo.Board.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function(BoardTheme, Coordinates, StoneColor, Stone) {
+	this.$get = function(BoardTheme, StoneColor, Stone, Markup) {
 
 		/**
 		 * Helper to (re)calculate cellsize and margins
@@ -97,8 +93,7 @@ angular.module('ngGo.Board.Service', [
 		var Board = function(config) {
 
 			//Extend config
-			config = config || {};
-			this.config = angular.extend(defaultConfig, config);
+			this.config = angular.extend({}, defaultConfig, config || {});
 
 			//Set board theme
 			this.theme = new BoardTheme(this.config.theme);
@@ -120,9 +115,6 @@ angular.module('ngGo.Board.Service', [
 			this.section = angular.extend({}, defaultConfig.section, this.config.section);
 			this.margin = this.config.margin;
 			determineGrid.call(this);
-
-			//Toggle coordinates
-			this.toggleCoordinates(this.config.showCoordinates);
 		};
 
 		/***********************************************************************************************
@@ -162,7 +154,7 @@ angular.module('ngGo.Board.Service', [
 			}
 
 			//Expand on default
-			section = angular.extend(defaultConfig.section, section);
+			section = angular.extend({}, defaultConfig.section, section);
 
 			//No changes?
 			if (this.section.top == section.top && this.section.bottom == section.bottom && this.section.left == section.left && this.section.right == section.right) {
@@ -172,13 +164,6 @@ angular.module('ngGo.Board.Service', [
 			//Set section and call resized handler
 			this.section = section;
 			this.resized();
-		};
-
-		/**
-		 * Get currently visible section of the board
-		 */
-		Board.prototype.getSection = function() {
-			return this.section;
 		};
 
 		/**
@@ -208,16 +193,9 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/**
-		 * Get the board size
+		 * Set new draw size
 		 */
-		Board.prototype.getSize = function() {
-			return {width: this.width, height: this.height};
-		};
-
-		/**
-		 * Set new dimensions
-		 */
-		Board.prototype.setDimensions = function(width, height) {
+		Board.prototype.setDrawSize = function(width, height) {
 			this.drawWidth = width;
 			this.drawHeight = height;
 			this.resized();
@@ -233,148 +211,64 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/***********************************************************************************************
-		 * Layers and drawing
-		 ***/
-
-		/**
-		 * Add a layer to the board
-		 */
-		Board.prototype.addLayer = function(name, layer) {
-			this.layers[name] = layer;
-		};
-
-		/**
-		 * Redraw specific layer
-		 *
-		 * @param	string	Layer name
-		 */
-		Board.prototype.redrawLayer = function(layer) {
-
-			//Not defined?
-			if (typeof this.layers[layer] == 'undefined') {
-				return;
-			}
-
-			//Redraw layer
-			this.layers[layer].redraw();
-		};
-
-		/**
-		 * Redraw everything
-		 */
-		Board.prototype.redraw = function() {
-			for (var layer in this.layers) {
-				this.layers[layer].redraw();
-			}
-		};
-
-		/***********************************************************************************************
 		 * Object handling
 		 ***/
 
 		/**
-		 * Add object or objects to the board (can be static)
+		 * Add an object to a board layer
 		 */
-		Board.prototype.addObject = function(obj, layer) {
-
-			//Multiple objects given?
-			if (angular.isArray(obj)) {
-				for (var key in obj) {
-					this.addObject(obj[key], layer);
-				}
-				return;
-			}
-
-			//Get layer from object if not given
-			layer = layer || obj.layer;
-
-			//Validate layer
-			if (typeof this.layers[layer] == 'undefined') {
-				return;
-			}
-
-			//Add object to the layer (the addObject method can filter static objects)
-			this.layers[layer].addObject(obj);
-		};
-
-		/**
-		 * Remove object or objects to the board, pass a string identifier for static objects
-		 */
-		Board.prototype.removeObject = function(obj, layer) {
-
-			//Multiple objects given?
-			if (angular.isArray(obj)) {
-				for (var key in obj) {
-					this.removeObject(obj[key], layer);
-				}
-				return;
-			}
-
-			//Get layer from object if not given
-			layer = layer || obj.layer;
-
-			//Validate layer
-			if (typeof this.layers[layer] == 'undefined') {
-				return;
-			}
-
-			//Remove object from layer
-			this.layers[layer].removeObject(obj);
-		};
-
-		/**
-		 * Remove objects from specific coordinates
-		 */
-		Board.prototype.removeObjectsAt = function(x, y, restrictLayer) {
-			for (var layer in this.layers) {
-				if (!restrictLayer || layer == restrictLayer) {
-					this.layers[layer].removeObject(x, y);
-				}
+		Board.prototype.add = function(layer, x, y, value) {
+			if (typeof this.layers[layer] != 'undefined') {
+				this.layers[layer].add(x, y, value);
 			}
 		};
 
 		/**
-		 * Remove all objects from the board
+		 * Remove an object from a board layer
 		 */
-		Board.prototype.removeAllObjects = function(restrictLayer) {
-			for (var layer in this.layers) {
-				if (!restrictLayer || layer == restrictLayer) {
-					this.layers[layer].removeObjects();
-				}
+		Board.prototype.remove = function(layer, x, y) {
+			if (typeof this.layers[layer] != 'undefined') {
+				this.layers[layer].remove(x, y);
 			}
 		};
 
 		/**
-		 * Check if we have an object at given coordinates and for a given layer
+		 * Get something from a board layer
 		 */
-		Board.prototype.hasObjectAt = function(x, y, layer) {
-			return (this.layers[layer] && this.layers[layer].hasObject(x, y));
+		Board.prototype.get = function(layer, x, y) {
+			return (this.layers[layer] && this.layers[layer].get(x, y));
 		};
 
 		/**
-		 * Check if the board has a stone on a certain position
+		 * Check if we have something at given coordinates for a given layer
 		 */
-		Board.prototype.hasStoneAt = function(x, y) {
-			if (this.layers.stones) {
-				var obj = this.layers.stones.getObject(x, y);
-				if (obj) {
-					return (obj.color == StoneColor.B || obj.color == StoneColor.W);
-				}
-			}
-			return false;
+		Board.prototype.has = function(layer, x, y) {
+			return (this.layers[layer] && this.layers[layer].has(x, y));
 		};
 
 		/**
-		 * Get the stone color for a certain coordinate
+		 * Set all objects (grid) for a given layer
 		 */
-		Board.prototype.getStoneColor = function(x, y) {
-			if (this.layers.stones) {
-				var obj = this.layers.stones.getObject(x, y);
-				if (obj) {
-					return obj.color;
+		Board.prototype.setAll = function(layer, grid) {
+			if (typeof this.layers[layer] != 'undefined') {
+				this.layers[layer].setAll(grid);
+			}
+		};
+
+		/**
+		 * Remove all objects from the board, optionally for a given layer
+		 */
+		Board.prototype.removeAll = function(layer) {
+			if (layer) {
+				if (typeof this.layers[layer] != 'undefined') {
+					this.layers[layer].removeAll();
 				}
 			}
-			return StoneColor.NONE;
+			else {
+				for (layer in this.layers) {
+					this.layers[layer].removeAll();
+				}
+			}
 		};
 
 		/***********************************************************************************************
@@ -382,33 +276,11 @@ angular.module('ngGo.Board.Service', [
 		 ***/
 
 		/**
-		 * Toggle board coordinates
-		 *
-		 * @return 	void
+		 * Toggle the coordinates
 		 */
-		Board.prototype.toggleCoordinates = function(show) {
-
-			//Toggling?
-			if (typeof show == 'undefined') {
-				show = !this.coordinates;
-			}
-
-			//Show coordinates?
-			if (show === true || show === 'true') {
-				if (!this.coordinates) {
-					this.coordinates = new Coordinates();
-					this.setMargin(0.12);
-					this.addObject(this.coordinates);
-				}
-			}
-
-			//Hide them
-			else {
-				if (this.coordinates) {
-					this.removeObject(this.coordinates);
-					this.resetMargin();
-					this.coordinates = null;
-				}
+		Board.prototype.toggleCoordinates = function() {
+			if (this.layers.grid) {
+				this.layers.grid.toggleCoordinates();
 			}
 		};
 
@@ -424,17 +296,17 @@ angular.module('ngGo.Board.Service', [
 			//Only specific layer?
 			if (layer) {
 				if (this.layers[layer]) {
-					return this.layers[layer].getObjects(true, true);
+					return this.layers[layer].getAll();
 				}
-				return [];
+				return null;
 			}
 
 			//All layers
-			var state = {}, objects;
+			var state = {};
 			for (layer in this.layers) {
-				objects = this.layers[layer].getObjects(true, true);
-				if (objects.length) {
-					state[layer] = objects;
+				var grid = this.layers[layer].getAll();
+				if (grid && !grid.isEmpty()) {
+					state[layer] = grid;
 				}
 			}
 			return state;
@@ -448,17 +320,16 @@ angular.module('ngGo.Board.Service', [
 			//Only specific layer?
 			if (layer) {
 				if (this.layers[layer]) {
-					this.layers[layer].removeObjects();
-					this.layers[layer].addObjects(state);
+					this.layers[layer].setAll(state);
 				}
 				return;
 			}
 
 			//All layers
 			for (layer in this.layers) {
-				this.layers[layer].removeObjects();
+				this.layers[layer].removeAll();
 				if (state[layer]) {
-					this.layers[layer].addObjects(state[layer]);
+					this.layers[layer].setAll(state[layer]);
 				}
 			}
 		};
@@ -466,6 +337,15 @@ angular.module('ngGo.Board.Service', [
 		/***********************************************************************************************
 		 * Drawing helpers and control methods
 		 ***/
+
+		/**
+		 * Redraw everything
+		 */
+		Board.prototype.redraw = function() {
+			for (var layer in this.layers) {
+				this.layers[layer].redraw();
+			}
+		};
 
 		/**
 		 * Swap colors on the board
@@ -485,6 +365,16 @@ angular.module('ngGo.Board.Service', [
 				//Redraw stones
 				this.layers.stones.redraw();
 			}
+		};
+
+		/**
+		 * Get the stone color for a certain coordinate
+		 */
+		Board.prototype.getStoneColor = function(x, y) {
+			if (this.layers.stones) {
+				return this.layers.stones.get(x, y);
+			}
+			return StoneColor.NONE;
 		};
 
 		/**

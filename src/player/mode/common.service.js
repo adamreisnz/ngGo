@@ -21,7 +21,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 		PlayerModes.REPLAY, PlayerModes.EDIT
 	]);
 	Player.on('mousewheel', PlayerModeCommon.mouseWheel, [
-		PlayerModes.REPLAY//, PlayerModes.EDIT
+		PlayerModes.REPLAY, PlayerModes.EDIT
 	]);
 	Player.on('mouseout', PlayerModeCommon.mouseOut, [
 		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
@@ -31,7 +31,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 /**
  * Factory definition
  */
-.factory('PlayerModeCommon', function($document) {
+.factory('PlayerModeCommon', function($document, PlayerTools) {
 
 	/**
 	 * Player mode definition
@@ -53,14 +53,16 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 
 				//Right arrow
 				case 39:
-					if (this.config.arrowKeysNavigation) {
+					if (this.config.arrowKeysNavigation && this.tool == PlayerTools.MOVE) {
+						this.board.layers.hover.remove();
 						this.next();
 					}
 					break;
 
 				//Left arrow
 				case 37:
-					if (this.config.arrowKeysNavigation) {
+					if (this.config.arrowKeysNavigation && this.tool == PlayerTools.MOVE) {
+						this.board.layers.hover.remove();
 						this.previous();
 					}
 					break;
@@ -81,8 +83,8 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 		 */
 		mouseWheel: function(event, mouseEvent) {
 
-			//Disabled?
-			if (!this.config.scrollWheelNavigation) {
+			//Disabled or not using move tool?
+			if (!this.config.scrollWheelNavigation || this.tool != PlayerTools.MOVE) {
 				return true;
 			}
 
@@ -91,11 +93,13 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 
 			//Next move
 			if (delta < 0) {
+				this.board.layers.hover.remove();
 				this.next();
 			}
 
 			//Previous move
 			else if (delta > 0) {
+				this.board.layers.hover.remove();
 				this.previous();
 			}
 
@@ -109,12 +113,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 		 * Mouse out handler
 		 */
 		mouseOut: function(event, mouseEvent) {
-			if (this._hoverMark) {
-				this.board.removeObject(this._hoverMark);
-				delete this._hoverMark;
-				delete this._lastX;
-				delete this._lastY;
-			}
+			this.board.layers.hover.remove();
 		}
 	};
 

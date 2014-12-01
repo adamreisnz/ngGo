@@ -1,13 +1,12 @@
 
 /**
- * Markup :: This class represents markup elements and is repsonsible for drawing them.
+ * Markup :: This class is used for drawing markup
  */
 
 /**
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Object.Markup.Service', [
-	'ngGo.Service',
 	'ngGo.Board.Object.Service'
 ])
 
@@ -25,463 +24,429 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 	/**
 	 * Triangle draw handler
 	 */
-	var drawTriangle = function(board) {
-
-		//Get context
-		var ctx = board.layers[this.layer].getContext();
+	var drawTriangle = function(markup) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = Math.round(board.theme.get('stoneRadius', s) * board.theme.get('markupTriangleScale'));
+		var x = this.board.getAbsX(markup.x),
+			y = this.board.getAbsY(markup.y),
+			s = this.board.getCellSize(),
+			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupTriangleScale'));
 
 		//Get theme properties
-		var lineWidth = this.lineWidth || board.theme.get('markupLineWidth', s) || 1,
-			strokeStyle = this.color || board.theme.get('markupColor', board.getStoneColor(this.x, this.y)),
-			canvasTranslate = board.theme.get('canvasTranslate', s, lineWidth);
+		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
+			strokeStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
+			canvasTranslate = this.board.theme.get('canvasTranslate', s, lineWidth);
 
 		//Translate canvas
-		ctx.translate(canvasTranslate, canvasTranslate);
+		this.context.translate(canvasTranslate, canvasTranslate);
 
 		//Configure context
-		ctx.strokeStyle = strokeStyle;
-		ctx.lineWidth = lineWidth;
+		this.context.strokeStyle = strokeStyle;
+		this.context.lineWidth = lineWidth;
 
 		//Draw element
-		ctx.beginPath();
-		ctx.moveTo(x, y-r);
-		ctx.lineTo(x - Math.round(r*cosPi6), y + Math.round(r/2));
-		ctx.lineTo(x + Math.round(r*cosPi6), y + Math.round(r/2));
-		ctx.closePath();
-		ctx.stroke();
+		this.context.beginPath();
+		this.context.moveTo(x, y-r);
+		this.context.lineTo(x - Math.round(r*cosPi6), y + Math.round(r/2));
+		this.context.lineTo(x + Math.round(r*cosPi6), y + Math.round(r/2));
+		this.context.closePath();
+		this.context.stroke();
 
 		//Undo translation
-		ctx.translate(-canvasTranslate, -canvasTranslate);
+		this.context.translate(-canvasTranslate, -canvasTranslate);
 	};
 
 	/**
 	 * Square draw handler
 	 */
-	var drawSquare = function(board) {
-
-		//Get context
-		var ctx = board.layers[this.layer].getContext();
+	var drawSquare = function(markup) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = Math.round(board.theme.get('stoneRadius', s) * board.theme.get('markupSquareScale')),
+		var x = this.board.getAbsX(markup.x),
+			y = this.board.getAbsY(markup.y),
+			s = this.board.getCellSize(),
+			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupSquareScale')),
 			rcos = Math.round(r*cosPi4);
 
 		//Get theme properties
-		var lineWidth = this.lineWidth || board.theme.get('markupLineWidth', s) || 1,
-			strokeStyle = this.color || board.theme.get('markupColor', board.getStoneColor(this.x, this.y)),
-			canvasTranslate = board.theme.get('canvasTranslate', s, lineWidth);
+		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
+			strokeStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
+			canvasTranslate = this.board.theme.get('canvasTranslate', s, lineWidth);
 
 		//Translate canvas
-		ctx.translate(canvasTranslate, canvasTranslate);
+		this.context.translate(canvasTranslate, canvasTranslate);
 
 		//Configure context
-		ctx.strokeStyle = strokeStyle;
-		ctx.lineWidth = lineWidth;
+		this.context.strokeStyle = strokeStyle;
+		this.context.lineWidth = lineWidth;
 
 		//Draw element
-		ctx.beginPath();
-		ctx.rect(x - rcos, y - rcos, 2*rcos, 2*rcos);
-		ctx.stroke();
+		this.context.beginPath();
+		this.context.rect(x - rcos, y - rcos, 2*rcos, 2*rcos);
+		this.context.stroke();
 
 		//Undo translation
-		ctx.translate(-canvasTranslate, -canvasTranslate);
+		this.context.translate(-canvasTranslate, -canvasTranslate);
 	};
 
 	/**
 	 * Draw circle handler
 	 */
-	var drawCircle = function(board) {
-
-		//Get context
-		var ctx = board.layers[this.layer].getContext();
+	var drawCircle = function(markup) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = Math.round(board.theme.get('stoneRadius', s) * board.theme.get('markupCircleScale'));
+		var x = this.board.getAbsX(markup.x),
+			y = this.board.getAbsY(markup.y),
+			s = this.board.getCellSize(),
+			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupCircleScale'));
 
 		//Get theme properties
-		var lineWidth = this.lineWidth || board.theme.get('markupLineWidth', s) || 1,
-			strokeStyle = this.color || board.theme.get('markupColor', board.getStoneColor(this.x, this.y)),
-			canvasTranslate = board.theme.get('canvasTranslate');
+		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
+			strokeStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
+			canvasTranslate = this.board.theme.get('canvasTranslate');
 
 		//Translate canvas
-		ctx.translate(canvasTranslate, canvasTranslate);
+		this.context.translate(canvasTranslate, canvasTranslate);
 
 		//Configure context
-		ctx.strokeStyle = strokeStyle;
-		ctx.lineWidth = lineWidth;
+		this.context.strokeStyle = strokeStyle;
+		this.context.lineWidth = lineWidth;
 
 		//Draw element
-		ctx.beginPath();
-		ctx.arc(x, y, r, 0, 2*Math.PI, true);
-		ctx.stroke();
+		this.context.beginPath();
+		this.context.arc(x, y, r, 0, 2*Math.PI, true);
+		this.context.stroke();
 
 		//Undo translation
-		ctx.translate(-canvasTranslate, -canvasTranslate);
+		this.context.translate(-canvasTranslate, -canvasTranslate);
 	};
 
 	/**
 	 * Draw mark handler
 	 */
-	var drawMark = function(board) {
-
-		//Get context
-		var ctx = board.layers[this.layer].getContext();
+	var drawMark = function(markup) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = Math.round(board.theme.get('stoneRadius', s) * board.theme.get('markupMarkScale')),
+		var x = this.board.getAbsX(markup.x),
+			y = this.board.getAbsY(markup.y),
+			s = this.board.getCellSize(),
+			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupMarkScale')),
 			rcos = Math.round(r*cosPi4);
 
 		//Get theme properties
-		var lineWidth = this.lineWidth || board.theme.get('markupLineWidth', s) || 1,
-			lineCap = this.lineCap || board.theme.get('markupLineCap'),
-			strokeStyle = this.color || board.theme.get('markupColor', board.getStoneColor(this.x, this.y)),
-			canvasTranslate = board.theme.get('canvasTranslate', s, lineWidth);
+		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
+			lineCap = markup.lineCap || this.board.theme.get('markupLineCap'),
+			strokeStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
+			canvasTranslate = this.board.theme.get('canvasTranslate', s, lineWidth);
 
 		//Translate canvas
-		ctx.translate(canvasTranslate, canvasTranslate);
+		this.context.translate(canvasTranslate, canvasTranslate);
 
 		//Configure context
-		ctx.strokeStyle = strokeStyle;
-		ctx.lineWidth = lineWidth;
-		ctx.lineCap = lineCap;
+		this.context.strokeStyle = strokeStyle;
+		this.context.lineWidth = lineWidth;
+		this.context.lineCap = lineCap;
 
 		//Draw element
-		ctx.beginPath();
-		ctx.moveTo(x - rcos, y - rcos);
-		ctx.lineTo(x + rcos, y + rcos);
-		ctx.moveTo(x + rcos, y - rcos);
-		ctx.lineTo(x - rcos, y + rcos);
-		ctx.stroke();
+		this.context.beginPath();
+		this.context.moveTo(x - rcos, y - rcos);
+		this.context.lineTo(x + rcos, y + rcos);
+		this.context.moveTo(x + rcos, y - rcos);
+		this.context.lineTo(x - rcos, y + rcos);
+		this.context.stroke();
 
 		//Undo translation
-		ctx.translate(-canvasTranslate, -canvasTranslate);
+		this.context.translate(-canvasTranslate, -canvasTranslate);
 	};
 
 	/**
 	 * Draw select handler
 	 */
-	var drawSelect = function(board) {
-
-		//Get context
-		var ctx = board.layers[this.layer].getContext();
+	var drawSelect = function(markup) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = Math.round(board.theme.get('stoneRadius', s) * board.theme.get('markupCircleScale'));
+		var x = this.board.getAbsX(markup.x),
+			y = this.board.getAbsY(markup.y),
+			s = this.board.getCellSize(),
+			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupCircleScale'));
 
 		//Get theme properties
-		var lineWidth = this.lineWidth || board.theme.get('markupLineWidth', s) || 1,
-			fillStyle = this.color || board.theme.get('markupColor', board.getStoneColor(this.x, this.y)),
-			canvasTranslate = board.theme.get('canvasTranslate');
+		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
+			fillStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
+			canvasTranslate = this.board.theme.get('canvasTranslate');
 
 		//Translate canvas
-		ctx.translate(canvasTranslate, canvasTranslate);
+		this.context.translate(canvasTranslate, canvasTranslate);
 
 		//Configure context
-		ctx.fillStyle = fillStyle;
-		ctx.lineWidth = lineWidth;
+		this.context.fillStyle = fillStyle;
+		this.context.lineWidth = lineWidth;
 
 		//Draw element
-		ctx.beginPath();
-		ctx.arc(x, y, r, 0, 2*Math.PI, true);
-		ctx.fill();
+		this.context.beginPath();
+		this.context.arc(x, y, r, 0, 2*Math.PI, true);
+		this.context.fill();
 
 		//Undo translation
-		ctx.translate(-canvasTranslate, -canvasTranslate);
+		this.context.translate(-canvasTranslate, -canvasTranslate);
 	};
 
 	/**
 	 * Last move draw handler
 	 */
-	var drawLast = function(board) {
-
-		//Get context
-		var ctx = board.layers[this.layer].getContext();
+	var drawLast = function(markup) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = Math.round(board.theme.get('stoneRadius', s) * board.theme.get('markupLastScale'));
+		var x = this.board.getAbsX(markup.x),
+			y = this.board.getAbsY(markup.y),
+			s = this.board.getCellSize(),
+			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupLastScale'));
 
 		//Get theme properties
-		var fillStyle = this.color || board.theme.get('markupColor', board.getStoneColor(this.x, this.y)),
-			canvasTranslate = board.theme.get('canvasTranslate', s);
+		var fillStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
+			canvasTranslate = this.board.theme.get('canvasTranslate', s);
 
 		//Translate canvas
-		ctx.translate(canvasTranslate, canvasTranslate);
+		this.context.translate(canvasTranslate, canvasTranslate);
 
 		//Configure context
-		ctx.fillStyle = fillStyle;
+		this.context.fillStyle = fillStyle;
 
 		//Draw element
-		ctx.beginPath();
-		ctx.moveTo(x, y);
-		ctx.lineTo(x + r, y);
-		ctx.lineTo(x, y + r);
-		ctx.closePath();
-		ctx.fill();
+		this.context.beginPath();
+		this.context.moveTo(x, y);
+		this.context.lineTo(x + r, y);
+		this.context.lineTo(x, y + r);
+		this.context.closePath();
+		this.context.fill();
 
 		//Undo translation
-		ctx.translate(-canvasTranslate, -canvasTranslate);
+		this.context.translate(-canvasTranslate, -canvasTranslate);
 	};
 
 	/**
 	 * Draw happy smiley handler
 	 */
-	var drawHappySmiley = function(board) {
-
-		//Get context
-		var ctx = board.layers[this.layer].getContext();
+	var drawHappySmiley = function(markup) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = Math.round(board.theme.get('stoneRadius', s) * board.theme.get('markupSmileyScale'));
+		var x = this.board.getAbsX(markup.x),
+			y = this.board.getAbsY(markup.y),
+			s = this.board.getCellSize(),
+			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupSmileyScale'));
 
 		//Get theme properties
-		var lineWidth = this.lineWidth || board.theme.get('markupLineWidth', s) || 1,
-			strokeStyle = this.color || board.theme.get('markupColor', board.getStoneColor(this.x, this.y)),
-			canvasTranslate = board.theme.get('canvasTranslate');
+		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
+			strokeStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
+			canvasTranslate = this.board.theme.get('canvasTranslate');
 
 		//Translate canvas
-		ctx.translate(canvasTranslate, canvasTranslate);
+		this.context.translate(canvasTranslate, canvasTranslate);
 
 		//Configure context
-		ctx.strokeStyle = strokeStyle;
-		ctx.lineWidth = lineWidth;
-		ctx.lineCap = 'round';
+		this.context.strokeStyle = strokeStyle;
+		this.context.lineWidth = lineWidth;
+		this.context.lineCap = 'round';
 
 		//Draw element
-		ctx.beginPath();
-		ctx.arc(x - r/3, y - r/3, r/6, 0, 2*Math.PI, true);
-		ctx.stroke();
-		ctx.beginPath();
-		ctx.arc(x + r/3, y - r/3, r/6, 0, 2*Math.PI, true);
-		ctx.stroke();
-		ctx.beginPath();
-		ctx.moveTo(x - r/1.6, y + r/8);
-		ctx.bezierCurveTo(x - r/1.8, y + r/1.5, x + r/1.8, y + r/1.5, x + r/1.6, y + r/8);
-		ctx.stroke();
+		this.context.beginPath();
+		this.context.arc(x - r/3, y - r/3, r/6, 0, 2*Math.PI, true);
+		this.context.stroke();
+		this.context.beginPath();
+		this.context.arc(x + r/3, y - r/3, r/6, 0, 2*Math.PI, true);
+		this.context.stroke();
+		this.context.beginPath();
+		this.context.moveTo(x - r/1.6, y + r/8);
+		this.context.bezierCurveTo(x - r/1.8, y + r/1.5, x + r/1.8, y + r/1.5, x + r/1.6, y + r/8);
+		this.context.stroke();
 
 		//Undo translation
-		ctx.translate(-canvasTranslate, -canvasTranslate);
+		this.context.translate(-canvasTranslate, -canvasTranslate);
 	};
 
 	/**
 	 * Draw sad smiley handler
 	 */
-	var drawSadSmiley = function(board) {
-
-		//Get context
-		var ctx = board.layers[this.layer].getContext();
+	var drawSadSmiley = function(markup) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = Math.round(board.theme.get('stoneRadius', s) * board.theme.get('markupSmileyScale'));
+		var x = this.board.getAbsX(markup.x),
+			y = this.board.getAbsY(markup.y),
+			s = this.board.getCellSize(),
+			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupSmileyScale'));
 
 		//Get theme properties
-		var lineWidth = this.lineWidth || board.theme.get('markupLineWidth', s) || 1,
-			strokeStyle = this.color || board.theme.get('markupColor', board.getStoneColor(this.x, this.y)),
-			canvasTranslate = board.theme.get('canvasTranslate');
+		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
+			strokeStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
+			canvasTranslate = this.board.theme.get('canvasTranslate');
 
 		//Translate canvas
-		ctx.translate(canvasTranslate, canvasTranslate);
+		this.context.translate(canvasTranslate, canvasTranslate);
 
 		//Configure context
-		ctx.strokeStyle = strokeStyle;
-		ctx.lineWidth = lineWidth;
-		ctx.lineCap = 'round';
+		this.context.strokeStyle = strokeStyle;
+		this.context.lineWidth = lineWidth;
+		this.context.lineCap = 'round';
 
 		//Draw element
-		ctx.beginPath();
-		ctx.arc(x - r/3, y - r/3, r/6, 0, 2*Math.PI, true);
-		ctx.stroke();
-		ctx.beginPath();
-		ctx.arc(x + r/3, y - r/3, r/6, 0, 2*Math.PI, true);
-		ctx.stroke();
-		ctx.beginPath();
-		ctx.moveTo(x - r/1.6, y + r/1.5 -1);
-		ctx.bezierCurveTo(x - r/1.8, y + r/8 -1, x + r/1.8, y + r/8 -1, x + r/1.6, y + r/1.5 -1);
-		ctx.stroke();
+		this.context.beginPath();
+		this.context.arc(x - r/3, y - r/3, r/6, 0, 2*Math.PI, true);
+		this.context.stroke();
+		this.context.beginPath();
+		this.context.arc(x + r/3, y - r/3, r/6, 0, 2*Math.PI, true);
+		this.context.stroke();
+		this.context.beginPath();
+		this.context.moveTo(x - r/1.6, y + r/1.5 -1);
+		this.context.bezierCurveTo(x - r/1.8, y + r/8 -1, x + r/1.8, y + r/8 -1, x + r/1.6, y + r/1.5 -1);
+		this.context.stroke();
 
 		//Undo translation
-		ctx.translate(-canvasTranslate, -canvasTranslate);
+		this.context.translate(-canvasTranslate, -canvasTranslate);
 	};
 
 	/**
 	 * Draw label
 	 */
-	var drawLabel = function(board) {
-
-		//Get context
-		var ctx = board.layers[this.layer].getContext();
+	var drawLabel = function(markup) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = board.theme.get('stoneRadius', s);
+		var x = this.board.getAbsX(markup.x),
+			y = this.board.getAbsY(markup.y),
+			s = this.board.getCellSize(),
+			r = this.board.theme.get('stoneRadius', s);
 
 		//Get theme properties
-		var font = this.font || board.theme.get('font') || '',
-			fillStyle = this.color || board.theme.get('markupColor', board.getStoneColor(this.x, this.y)),
-			canvasTranslate = board.theme.get('canvasTranslate');
+		var font = markup.font || this.board.theme.get('font') || '',
+			fillStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
+			canvasTranslate = this.board.theme.get('canvasTranslate');
 
 		//First, clear grid square below for clarity
-		if (!board.hasStoneAt(this.x, this.y)) {
-			board.layers.grid.clearCell(this.x, this.y);
+		if (this.board.layers.grid && !this.board.layers.stones.has(markup.x, markup.y)) {
+			this.board.layers.grid.clearCell(markup.x, markup.y);
 		}
 
 		//Translate canvas
-		ctx.translate(canvasTranslate, canvasTranslate);
+		this.context.translate(canvasTranslate, canvasTranslate);
 
 		//Configure context
-		ctx.fillStyle = fillStyle;
-		ctx.textBaseline = 'middle';
-		ctx.textAlign = 'center';
+		this.context.fillStyle = fillStyle;
+		this.context.textBaseline = 'middle';
+		this.context.textAlign = 'center';
+
+		//Convert to text
+		if (typeof markup.text == 'number') {
+			markup.text = markup.text.toString();
+		}
 
 		//Determine font size
-		if (this.text.length == 1) {
-			ctx.font = Math.round(r * 1.5) + 'px ' + font;
+		if (markup.text.length == 1) {
+			this.context.font = Math.round(r * 1.5) + 'px ' + font;
 		}
-		else if (this.text.length == 2) {
-			ctx.font = Math.round(r * 1.2) + 'px ' + font;
+		else if (markup.text.length == 2) {
+			this.context.font = Math.round(r * 1.2) + 'px ' + font;
 		}
 		else {
-			ctx.font = r + 'px ' + font;
+			this.context.font = r + 'px ' + font;
 		}
 
 		//Draw element
-		ctx.beginPath();
-		ctx.fillText(this.text, x, y, 2*r);
+		this.context.beginPath();
+		this.context.fillText(markup.text, x, y, 2*r);
 
 		//Undo translation
-		ctx.translate(-canvasTranslate, -canvasTranslate);
+		this.context.translate(-canvasTranslate, -canvasTranslate);
 	};
 
 	/**
 	 * Clear label
 	 */
-	var clearLabel = function(board) {
+	var clearLabel = function(markup) {
 
-		//No stone on location? Redraw the grid square, as we cleared it
-		if (!board.hasStoneAt(this.x, this.y))  {
-			var r = board.theme.get('stoneRadius', board.getCellSize());
-			board.layers.grid.redrawCell(this.x, this.y);
+		//No stone on location? Redraw the grid square, if we cleared it
+		if (this.board.layers.grid && !this.board.layers.stones.has(markup.x, markup.y)) {
+			var r = this.board.theme.get('stoneRadius', this.board.getCellSize());
+			this.board.layers.grid.redrawCell(markup.x, markup.y);
 		}
 	};
 
 	/**
-	 * Constructor
+	 * Markup class
 	 */
-	var Markup = function(properties, layer) {
+	var Markup = {
 
-		//Initialize specific vars
-		this.type = '';
-		layer = layer || 'markup';
+		/**
+		 * Draw
+		 */
+		draw: function(markup) {
 
-		//Call parent constructor
-		BoardObject.call(this, properties, layer);
-	};
+			//Can only draw when we have dimensions
+			if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+				return;
+			}
 
-	/**
-	 * Extend prototype
-	 */
-	angular.extend(Markup.prototype, BoardObject.prototype);
+			//Drawing depends on type
+			switch (markup.type) {
 
-	/**
-	 * Draw
-	 */
-	Markup.prototype.draw = function(board) {
+				//Triangle
+				case MarkupTypes.TRIANGLE:
+					drawTriangle.call(this, markup);
+					break;
 
-		//Can only draw when we have dimensions
-		if (board.drawWidth === 0 || board.drawheight === 0) {
-			return;
-		}
+				//Square
+				case MarkupTypes.SQUARE:
+					drawSquare.call(this, markup);
+					break;
 
-		//Drawing depends on type
-		switch (this.type) {
+				//Circle
+				case MarkupTypes.CIRCLE:
+					drawCircle.call(this, markup);
+					break;
 
-			//Triangle
-			case MarkupTypes.TRIANGLE:
-				drawTriangle.call(this, board);
-				break;
+				//Mark
+				case MarkupTypes.MARK:
+					drawMark.call(this, markup);
+					break;
 
-			//Square
-			case MarkupTypes.SQUARE:
-				drawSquare.call(this, board);
-				break;
+				//Select
+				case MarkupTypes.SELECT:
+					drawSelect.call(this, markup);
+					break;
 
-			//Circle
-			case MarkupTypes.CIRCLE:
-				drawCircle.call(this, board);
-				break;
+				//happy
+				case MarkupTypes.HAPPY:
+					drawHappySmiley.call(this, markup);
+					break;
 
-			//Mark
-			case MarkupTypes.MARK:
-				drawMark.call(this, board);
-				break;
+				//Sad
+				case MarkupTypes.SAD:
+					drawSadSmiley.call(this, markup);
+					break;
 
-			//Select
-			case MarkupTypes.SELECT:
-				drawSelect.call(this, board);
-				break;
+				//Last move marker
+				case MarkupTypes.LAST:
+					drawLast.call(this, markup);
+					break;
 
-			//happy
-			case MarkupTypes.HAPPY:
-				drawHappySmiley.call(this, board);
-				break;
+				//Label
+				case MarkupTypes.LABEL:
+					markup.text = markup.text || '';
+					drawLabel.call(this, markup);
+					break;
+			}
+		},
 
-			//Sad
-			case MarkupTypes.SAD:
-				drawSadSmiley.call(this, board);
-				break;
+		/**
+		 * Clear
+		 */
+		clear: function(markup) {
 
-			//Last move marker
-			case MarkupTypes.LAST:
-				drawLast.call(this, board);
-				break;
+			//Call parent method
+			BoardObject.clear.call(this, markup);
 
-			//Label
-			case MarkupTypes.LABEL:
-				this.text = this.text || '';
-				drawLabel.call(this, board);
-				break;
-		}
-	};
-
-	/**
-	 * Clear
-	 */
-	Markup.prototype.clear = function(board) {
-
-		//Call parent method
-		BoardObject.prototype.clear.call(this, board);
-
-		//Special handling for label
-		if (this.type == MarkupTypes.LABEL) {
-			clearLabel.call(this, board);
+			//Special handling for label
+			if (markup.type == MarkupTypes.LABEL) {
+				clearLabel.call(this, markup);
+			}
 		}
 	};
 

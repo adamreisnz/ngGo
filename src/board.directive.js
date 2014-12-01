@@ -3,36 +3,32 @@
  */
 angular.module('ngGo.Board.Directive', [
 	'ngGo.Board.Service',
-	'ngGo.Board.Layer.Directive'
+	'ngGo.Board.Layer.Directive',
+	'ngGo.Board.Layer.GridLayer.Directive',
+	'ngGo.Board.Layer.StonesLayer.Directive',
+	'ngGo.Board.Layer.MarkupLayer.Directive',
+	'ngGo.Board.Layer.ShadowLayer.Directive',
+	'ngGo.Board.Layer.ScoreLayer.Directive',
+	'ngGo.Board.Layer.HoverLayer.Directive'
 ])
 
 /**
  * Directive definition
  */
-.directive('board', function($injector, Board) {
+.directive('board', function(Board) {
 	return {
-		restrict: 'E',
-
+		restrict:	'E',
+		template:	"\n<gridlayer></gridlayer>" +
+					"\n<shadowlayer></shadowlayer>" +
+					"\n<stoneslayer></stoneslayer>" +
+					"\n<scorelayer></scorelayer>" +
+					"\n<markuplayer></markuplayer>" +
+					"\n<hoverlayer></hoverlayer>",
 		/**
 		 * Controller
 		 */
 		controller: function($scope) {
-
-			//Set board in scope if not set yet
-			if (!$scope.Board) {
-				$scope.Board = new Board();
-			}
-
-			/**
-			 * Helper to add a new layer
-			 */
-			$scope.addLayer = function(name, type, context) {
-				type = type.charAt(0).toUpperCase() + type.substr(1) + 'Layer';
-				if ($injector.has(type)) {
-					var boardLayer = $injector.get(type);
-					$scope.Board.addLayer(name, new boardLayer($scope.Board, context));
-				}
-			};
+			$scope.Board = new Board();
 		},
 
 		/**
@@ -43,11 +39,6 @@ angular.module('ngGo.Board.Directive', [
 			//Get pixel ratio
 			var pixelRatio = window.pixelRatio || 1;
 
-			//Observe the coordinates attribute
-			attrs.$observe('showCoordinates', function(value) {
-				$scope.Board.toggleCoordinates(value);
-			});
-
 			//Observe the board size attributes (should be 19x19 format)
 			attrs.$observe('size', function(size) {
 				size = size.split('x');
@@ -56,7 +47,12 @@ angular.module('ngGo.Board.Directive', [
 
 			//Listen for board resize events
 			$scope.$on('ngGo.board.resize', function(event, width, height) {
-				$scope.Board.setDimensions(width * pixelRatio, height * pixelRatio);
+				$scope.Board.setDrawSize(width * pixelRatio, height * pixelRatio);
+			});
+
+			//Observe the coordinates attribute
+			attrs.$observe('coordinates', function(show) {
+				$scope.Board.toggleCoordinates((show === true || show == 'true'));
 			});
 		}
 	};

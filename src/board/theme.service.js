@@ -30,7 +30,14 @@ angular.module('ngGo.Board.Theme.Service', [
 		stoneStyle: 'shell', //shell, glass, mono, or specify a custom handler service
 		stoneShadow: true,
 		stoneMiniScale: 0.5,
-		stoneFadedAlpha: 0.4,
+		stoneFadedAlpha: function(color) {
+			if (color == StoneColor.B) {
+				return 0.3;
+			}
+			else {
+				return 0.4;
+			}
+		},
 		stoneColorMonoBlack: '#000',
 		stoneColorMonoWhite: '#fff',
 		stoneRadius: function(cellSize) {
@@ -110,6 +117,7 @@ angular.module('ngGo.Board.Theme.Service', [
 		},
 
 		//Coordinates
+		coordinatesMargin: 0.12,
 		coordinatesColor: 'rgba(101,69,37,0.4)',
 		coordinatesSize: function(cellSize) {
 			return Math.floor((cellSize / 3) + 1);
@@ -147,9 +155,8 @@ angular.module('ngGo.Board.Theme.Service', [
 		 */
 		var BoardTheme = function(theme) {
 
-			//Set the theme
-			theme = theme || {};
-			this.theme = angular.extend(defaultTheme, theme);
+			//Set our theme
+			this.theme = angular.extend({}, defaultTheme, theme || {});
 		};
 
 		/**

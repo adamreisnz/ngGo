@@ -1,7 +1,6 @@
 
 /**
- * BoardObject :: This class represents a board object. It is the base class for all other objects which
- * are to be placed on the board, e.g. stones, markup, coordinates, etc.
+ * BoardObject :: Base class for drawing board objects
  */
 
 /**
@@ -19,48 +18,23 @@ angular.module('ngGo.Board.Object.Service', [
 	/**
 	 * Constructor
 	 */
-	var BoardObject = function(properties, layer) {
+	var BoardObject = {
 
-		//Set layer
-		this.layer = layer;
-
-		//Initialize x, y coords
-		this.x = 0;
-		this.y = 0;
-
-		//Set properties given
-		if (typeof properties == 'object') {
-			for (var p in properties) {
-				this[p] = properties[p];
+		/**
+		 * Draw method
+		 */
+		draw: function(obj) {
+			if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+				return;
 			}
+		},
+
+		/**
+		 * Clear method
+		 */
+		clear: function(obj) {
+			DefaultClearHandler.call(this, this.context, obj);
 		}
-	};
-
-	/**
-	 * Get the layer this object is on
-	 */
-	BoardObject.prototype.getLayer = function() {
-		return this.layer;
-	};
-
-	/**
-	 * Draw
-	 */
-	BoardObject.prototype.draw = function(board) {
-
-		//Can only draw when we have dimensions
-		if (board.drawWidth === 0 || board.drawheight === 0) {
-			return;
-		}
-	};
-
-	/**
-	 * Clear
-	 */
-	BoardObject.prototype.clear = function(board) {
-
-		//Call default clear handler
-		DefaultClearHandler.call(this, board.layers[this.layer].getContext(), board);
 	};
 
 	//Return

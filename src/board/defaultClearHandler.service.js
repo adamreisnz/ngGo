@@ -18,16 +18,16 @@ angular.module('ngGo.Board.DefaultClearHandler.Service', [])
 	/**
 	 * Clear handler definition
 	 *
-	 * All external handlers are called from the context of the object that is being drawn.
-	 * First parameter is the canvas2d context, second parameter is the board object.
+	 * All external handlers are called from the context of the layer that contains the object.
+	 * First parameter is the canvas2d context, second parameter is the object itself.
 	 */
-	return function(ctx, board) {
+	return function(ctx, obj) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = board.theme.get('stoneRadius', s);
+		var x = this.board.getAbsX(obj.x),
+			y = this.board.getAbsY(obj.y),
+			s = this.board.getCellSize(),
+			r = this.board.theme.get('stoneRadius', s);
 
 		//Clear rectangle the size of the stone radius
 		ctx.clearRect(x-r, y-r, 2*r, 2*r);

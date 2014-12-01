@@ -3,13 +3,14 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
-	'ngGo.Board.Layer.Service'
+	'ngGo.Board.Layer.Service',
+	'ngGo.Board.Object.StoneShadow.Service',
 ])
 
 /**
  * Factory definition
  */
-.factory('ShadowLayer', function(BoardLayer) {
+.factory('ShadowLayer', function(BoardLayer, StoneShadow) {
 
 	/**
 	 * Constructor
@@ -26,9 +27,43 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
 	angular.extend(ShadowLayer.prototype, BoardLayer.prototype);
 
 	/**
+	 * Add a stone
+	 */
+	ShadowLayer.prototype.add = function(stone) {
+
+		//Don't add if no shadow
+		if (stone.shadow === false || (typeof stone.alpha != 'undefined' && stone.alpha < 1)) {
+			return;
+		}
+
+		//Add to grid
+		this.grid.set(stone.x, stone.y, stone.color);
+
+		//Draw it
+		StoneShadow.draw.call(this, stone);
+	};
+
+	/**
+	 * Remove a stone
+	 */
+	ShadowLayer.prototype.remove = function(stone) {
+
+		//Remove from grid
+		this.grid.unset(stone.x, stone.y);
+
+		//Redraw whole layer
+		this.redraw();
+	};
+
+	/**
 	 * Draw layer
 	 */
 	ShadowLayer.prototype.draw = function() {
+
+		//Can only draw when we have dimensions
+		if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+			return;
+		}
 
 		//Get shadowsize from theme
 		var shadowSize = this.board.theme.get('shadowSize', this.board.getCellSize());
@@ -36,8 +71,13 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
 		//Apply shadow transformation
 		this.context.setTransform(1, 0, 0, 1, shadowSize, shadowSize);
 
-		//Call parent method
-		BoardLayer.prototype.draw.call(this);
+		//Get all stones as objects
+		var stones = this.grid.all('color');
+
+		//Draw them
+		for (var i = 0; i < stones.length; i++) {
+			StoneShadow.draw.call(this, stones[i]);
+		}
 	};
 
 	//Return

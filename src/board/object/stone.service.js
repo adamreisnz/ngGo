@@ -1,6 +1,6 @@
 
 /**
- * Stone :: This class represents stones on the board and is repsonsible for drawing them.
+ * Stone :: This class is used for drawing stones on the board.
  */
 
 /**
@@ -46,361 +46,272 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 	/**
 	 * Mono colored stones
 	 */
-	var drawMono = function(board) {
-
-		//Get context
-		var ctx = board.layers[this.layer].getContext();
+	var drawMono = function(stone) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = board.theme.get('stoneRadius', s);
+		var x = this.board.getAbsX(stone.x),
+			y = this.board.getAbsY(stone.y),
+			s = this.board.getCellSize(),
+			r = this.board.theme.get('stoneRadius', s);
 
 		//Apply scaling factor?
-		if (this.scale) {
-			r = Math.round(r * this.scale);
+		if (stone.scale) {
+			r = Math.round(r * stone.scale);
 		}
 
 		//Apply color multiplier
-		var color = this.color * board.colorMultiplier;
+		var color = stone.color * this.board.colorMultiplier;
 
 		//Get theme properties
-		var lineWidth = board.theme.get('markupLinesWidth', s) || 1;
-			canvasTranslate = board.theme.get('canvasTranslate');
+		var lineWidth = this.board.theme.get('markupLinesWidth', s) || 1;
+			canvasTranslate = this.board.theme.get('canvasTranslate');
 
 		//Translate canvas
-		ctx.translate(canvasTranslate, canvasTranslate);
+		this.context.translate(canvasTranslate, canvasTranslate);
 
 		//Apply transparency?
-		if (this.alpha && this.alpha < 1) {
-			ctx.globalAlpha = this.alpha;
+		if (stone.alpha && stone.alpha < 1) {
+			this.context.globalAlpha = stone.alpha;
 		}
 
 		//Configure context
-		ctx.fillStyle = (color == StoneColor.W) ? board.theme.get('stoneColorMonoWhite') : board.theme.get('stoneColorMonoBlack');
+		this.context.fillStyle = (color == StoneColor.W) ? this.board.theme.get('stoneColorMonoWhite') : this.board.theme.get('stoneColorMonoBlack');
 
 		//Draw stone
-		ctx.beginPath();
-		ctx.arc(x, y, Math.max(0, r - lineWidth), 0, 2*Math.PI, true);
-		ctx.fill();
+		this.context.beginPath();
+		this.context.arc(x, y, Math.max(0, r - lineWidth), 0, 2*Math.PI, true);
+		this.context.fill();
 
 		//Configure context
-		ctx.lineWidth = lineWidth;
-		ctx.strokeStyle = '#000';
+		this.context.lineWidth = lineWidth;
+		this.context.strokeStyle = '#000';
 
 		//Draw outline
-		ctx.stroke();
+		this.context.stroke();
 
 		//Undo transparency?
-		if (this.alpha && this.alpha < 1) {
-			ctx.globalAlpha = 1;
+		if (stone.alpha && stone.alpha < 1) {
+			this.context.globalAlpha = 1;
 		}
 
 		//Undo translation
-		ctx.translate(-canvasTranslate, -canvasTranslate);
+		this.context.translate(-canvasTranslate, -canvasTranslate);
 	};
 
 	/**
 	 * Glass stones
 	 */
-	var drawGlass = function(board) {
-
-		//Get context
-		var ctx = board.layers[this.layer].getContext();
+	var drawGlass = function(stone) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = board.theme.get('stoneRadius', s);
+		var x = this.board.getAbsX(stone.x),
+			y = this.board.getAbsY(stone.y),
+			s = this.board.getCellSize(),
+			r = this.board.theme.get('stoneRadius', s);
 
 		//Apply scaling factor?
-		if (this.scale) {
-			r = Math.round(r * this.scale);
+		if (stone.scale) {
+			r = Math.round(r * stone.scale);
 		}
 
 		//Apply color multiplier
-		var color = this.color * board.colorMultiplier;
+		var color = stone.color * this.board.colorMultiplier;
 
 		//Get theme variables
-		var canvasTranslate = board.theme.get('canvasTranslate');
+		var canvasTranslate = this.board.theme.get('canvasTranslate');
 
 		//Translate canvas
-		ctx.translate(canvasTranslate, canvasTranslate);
+		this.context.translate(canvasTranslate, canvasTranslate);
 
 		//Apply transparency?
-		if (this.alpha && this.alpha < 1) {
-			ctx.globalAlpha = this.alpha;
+		if (stone.alpha && stone.alpha < 1) {
+			this.context.globalAlpha = stone.alpha;
 		}
 
 		//Begin path
-		ctx.beginPath();
+		this.context.beginPath();
 
 		//Determine stone texture
 		if (color == StoneColor.W) {
-			ctx.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
-			ctx.fillStyle.addColorStop(0, '#fff');
-			ctx.fillStyle.addColorStop(1, '#aaa');
+			this.context.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
+			this.context.fillStyle.addColorStop(0, '#fff');
+			this.context.fillStyle.addColorStop(1, '#aaa');
 		}
 		else {
-			ctx.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/5, y - r/5, 4*r/5);
-			ctx.fillStyle.addColorStop(0, '#666');
-			ctx.fillStyle.addColorStop(1, '#000');
+			this.context.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/5, y - r/5, 4*r/5);
+			this.context.fillStyle.addColorStop(0, '#666');
+			this.context.fillStyle.addColorStop(1, '#000');
 		}
 
 		//Complete drawing
-		ctx.arc(x, y, Math.max(0, r - 0.5), 0, 2*Math.PI, true);
-		ctx.fill();
+		this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2*Math.PI, true);
+		this.context.fill();
 
 		//Undo transparency?
-		if (this.alpha && this.alpha < 1) {
-			ctx.globalAlpha = 1;
+		if (stone.alpha && stone.alpha < 1) {
+			this.context.globalAlpha = 1;
 		}
 
 		//Undo translation
-		ctx.translate(-canvasTranslate, -canvasTranslate);
+		this.context.translate(-canvasTranslate, -canvasTranslate);
 	};
 
 	/**
 	 * Slate and shell stones
 	 */
-	var drawSlateShell = function(board) {
-
-		//Get context
-		var ctx = board.layers[this.layer].getContext();
+	var drawSlateShell = function(stone) {
 
 		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = board.theme.get('stoneRadius', s);
+		var x = this.board.getAbsX(stone.x),
+			y = this.board.getAbsY(stone.y),
+			s = this.board.getCellSize(),
+			r = this.board.theme.get('stoneRadius', s);
 
 		//Apply scaling factor?
-		if (this.scale) {
-			r = Math.round(r * this.scale);
+		if (stone.scale) {
+			r = Math.round(r * stone.scale);
 		}
 
 		//Get random seed
 		shellSeed = shellSeed || Math.ceil(Math.random() * 9999999);
 
 		//Apply color multiplier
-		var color = this.color * board.colorMultiplier;
+		var color = stone.color * this.board.colorMultiplier;
 
 		//Get theme variables
-		var canvasTranslate = board.theme.get('canvasTranslate');
+		var canvasTranslate = this.board.theme.get('canvasTranslate');
 
 		//Translate canvas
-		ctx.translate(canvasTranslate, canvasTranslate);
+		this.context.translate(canvasTranslate, canvasTranslate);
 
 		//Apply transparency?
-		if (this.alpha && this.alpha < 1) {
-			ctx.globalAlpha = this.alpha;
+		if (stone.alpha && stone.alpha < 1) {
+			this.context.globalAlpha = stone.alpha;
 		}
 
 		//Begin path
-		ctx.beginPath();
+		this.context.beginPath();
 
 		//Determine fill color
 		if (color == StoneColor.W) {
-			ctx.fillStyle = '#aaa';
+			this.context.fillStyle = '#aaa';
 		}
 		else {
-			ctx.fillStyle = '#000';
+			this.context.fillStyle = '#000';
 		}
 
 		//Draw filler
-		ctx.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
-		ctx.fill();
+		this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
+		this.context.fill();
 
 		//Shell stones
 		if (color == StoneColor.W) {
 
 			//Get random shell type
-			var type = shellSeed%(shellTypes.length + this.x * board.width + this.y) % shellTypes.length;
+			var type = shellSeed%(shellTypes.length + stone.x * this.board.width + stone.y) % shellTypes.length;
 
 			//Determine random angle
-			var z = board.width * board.height + this.x*board.width + this.y,
+			var z = this.board.width * this.board.height + stone.x * this.board.width + stone.y,
 				angle = (2/z)*(shellSeed%z);
 
 			//Draw shell pattern
-			ShellPattern.call(shellTypes[type], ctx, x, y, r, angle);
+			ShellPattern.call(shellTypes[type], this.context, x, y, r, angle);
 
 			//Add radial gradient
-			ctx.beginPath();
-			ctx.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
-			ctx.fillStyle.addColorStop(0, 'rgba(255,255,255,0.9)');
-			ctx.fillStyle.addColorStop(1, 'rgba(255,255,255,0)');
-			ctx.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
-			ctx.fill();
+			this.context.beginPath();
+			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
+			this.context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.9)');
+			this.context.fillStyle.addColorStop(1, 'rgba(255,255,255,0)');
+			this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
+			this.context.fill();
 		}
 
 		//Slate stones
 		else {
 
 			//Add radial gradient
-			ctx.beginPath();
-			ctx.fillStyle = ctx.createRadialGradient(x + 2*r/5, y + 2*r/5, 0, x + r/2, y + r/2, r);
-			ctx.fillStyle.addColorStop(0, 'rgba(32,32,32,1)');
-			ctx.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
-			ctx.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
-			ctx.fill();
+			this.context.beginPath();
+			this.context.fillStyle = this.context.createRadialGradient(x + 2*r/5, y + 2*r/5, 0, x + r/2, y + r/2, r);
+			this.context.fillStyle.addColorStop(0, 'rgba(32,32,32,1)');
+			this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
+			this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
+			this.context.fill();
 
 			//Add radial gradient
-			ctx.beginPath();
-			ctx.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/2, y - r/2, 3*r/2);
-			ctx.fillStyle.addColorStop(0, 'rgba(64,64,64,1)');
-			ctx.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
-			ctx.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
-			ctx.fill();
+			this.context.beginPath();
+			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/2, y - r/2, 3*r/2);
+			this.context.fillStyle.addColorStop(0, 'rgba(64,64,64,1)');
+			this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
+			this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
+			this.context.fill();
 		}
 
 		//Undo transparency?
-		if (this.alpha && this.alpha < 1) {
-			ctx.globalAlpha = 1;
+		if (stone.alpha && stone.alpha < 1) {
+			this.context.globalAlpha = 1;
 		}
 
 		//Undo translation
-		ctx.translate(-canvasTranslate, -canvasTranslate);
-	};
-
-	/**
-	 * Generic shadow drawer
-	 */
-	var drawShadow = function(board) {
-
-		//Don't draw shadows if we have transparency or if there is no shadows layer
-		if ((this.alpha && this.alpha < 1) || !board.layers.shadow) {
-			return;
-		}
-
-		//Get context
-		var ctx = board.layers.shadow.getContext();
-
-		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = Math.max(0, board.theme.get('stoneRadius', s) - 0.5);
-
-		//Apply scaling factor?
-		if (this.scale) {
-			r = Math.round(r * this.scale);
-		}
-
-		//Get theme properties
-		var blur = board.theme.get('shadowBlur', s),
-			shadowColor = board.theme.get('shadowColor'),
-			shadowTransparentColor = board.theme.get('shadowTransparentColor');
-
-		//Configure context
-		ctx.fillStyle = ctx.createRadialGradient(x, y, r-1-blur, x, y, r+blur);
-		ctx.fillStyle.addColorStop(0, shadowColor);
-		ctx.fillStyle.addColorStop(1, shadowTransparentColor);
-
-		//Draw shadow
-		ctx.beginPath();
-		ctx.arc(x, y, r+blur, 0, 2*Math.PI, true);
-		ctx.fill();
-	};
-
-	/**
-	 * Generic shadow clearer
-	 */
-	var clearShadow = function(board) {
-
-		//Don't draw shadows if we have transparency or if there is no shadow layer
-		if ((this.alpha && this.alpha < 1) || !board.layers.shadow) {
-			return;
-		}
-
-		//Get context
-		var ctx = board.layers.shadow.getContext();
-
-		//Get coordinates and stone radius
-		var x = board.getAbsX(this.x),
-			y = board.getAbsY(this.y),
-			s = board.getCellSize(),
-			r = board.theme.get('stoneRadius', s);
-
-		//Clear a generous rectangle on the shadow layer
-		ctx.clearRect(x - 1.2*r, y - 1.2*r, 2.4*r, 2.4*r);
+		this.context.translate(-canvasTranslate, -canvasTranslate);
 	};
 
 	/**
 	 * Constructor
 	 */
-	var Stone = function(properties, layer) {
+	var Stone = {
 
-		//Initialize specific vars
-		this.color = 0;
-		layer = layer || 'stones';
+		/**
+		 * Draw a stone
+		 */
+		draw: function(stone) {
 
-		//Parent constructor
-		BoardObject.call(this, properties, layer);
-	};
+			//Determine style of stone
+			var style = this.board.theme.get('stoneStyle');
 
-	/**
-	 * Extend prototype
-	 */
-	angular.extend(Stone.prototype, BoardObject.prototype);
+			//Draw using the appropriate handler
+			switch (style) {
 
-	/**
-	 * Draw
-	 */
-	Stone.prototype.draw = function(board) {
+				//Slate and shell
+				case 'shell':
+					drawSlateShell.call(this, stone);
+					break;
 
-		//Can only draw when we have dimensions
-		if (board.drawWidth === 0 || board.drawheight === 0) {
-			return;
-		}
+				//Glass stones
+				case 'glass':
+					drawGlass.call(this, stone);
+					break;
 
-		//Determine style of stone
-		var style = board.theme.get('stoneStyle');
+				//Mono stones
+				case 'mono':
+					drawMono.call(this, stone);
+					break;
 
-		//Draw using the appropriate handler
-		switch (style) {
+				//Custom type
+				default:
+					var handler = $injector.get(style);
+					if (handler) {
+						handler.call(this, stone);
+					}
+			}
 
-			//Slate and shell
-			case 'shell':
-				drawSlateShell.call(this, board);
-				break;
+			//Draw shadow
+			if (this.board.theme.get('stoneShadow') && stone.shadow !== false) {
+				this.board.layers.shadow.add(stone);
+			}
+		},
 
-			//Glass stones
-			case 'glass':
-				drawGlass.call(this, board);
-				break;
+		/**
+		 * Clear a stone
+		 */
+		clear: function(stone) {
 
-			//Mono stones
-			case 'mono':
-				drawMono.call(this, board);
-				break;
+			//Call parent method
+			BoardObject.clear.call(this, stone);
 
-			//Custom type
-			default:
-				var handler = $injector.get(style);
-				if (handler) {
-					handler.call(this, board);
-				}
-		}
-
-		//Draw shadow
-		if (board.theme.get('stoneShadow')) {
-			drawShadow.call(this, board);
-		}
-	};
-
-	/**
-	 * Clear
-	 */
-	Stone.prototype.clear = function(board) {
-
-		//Call parent method
-		BoardObject.prototype.clear.call(this, board);
-
-		//Clear shadow
-		if (board.theme.get('stoneShadow')) {
-			clearShadow.call(this, board);
+			//Redraw shadow layer
+			if (this.board.theme.get('stoneShadow') && stone.shadow !== false) {
+				this.board.layers.shadow.remove(stone);
+			}
 		}
 	};
 

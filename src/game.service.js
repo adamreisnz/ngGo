@@ -1,9 +1,10 @@
 
 /**
- * Game :: This class represents a game that is being played. The class traverses the nodes of a kifu
- * and keeps track of the changes between the previous and new game positions. These changes can then
- * be fed to the board, to add or remove stones. The class also keeps a stack of all board positions
- * in memory and can validate moves to make sure they are not repeating or suicide.
+ * Game :: This class represents a game record or a game that is being played/edited. The class
+ * traverses the move tree nodes and keeps track of the changes between the previous and new game
+ * positions. These changes can then be fed to the board, to add or remove stones and markup.
+ * The class also keeps a stack of all board positions in memory and can validate moves to make
+ * sure they are not repeating or suicide.
  */
 
 /**
@@ -13,7 +14,6 @@ angular.module('ngGo.Game.Service', [
 	'ngGo.Service',
 	'ngGo.Game.Node.Service',
 	'ngGo.Game.Position.Service',
-	'ngGo.Game.PositionChanges.Service',
 	'ngGo.Kifu.Blank.Service',
 	'ngGo.Kifu.Parser.Service'
 ])
@@ -58,7 +58,7 @@ angular.module('ngGo.Game.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function(ngGo, StoneColor, GameNode, GamePosition, GamePositionChanges, KifuParser, KifuBlank) {
+	this.$get = function(ngGo, StoneColor, GameNode, GamePosition, KifuParser, KifuBlank) {
 
 		/***********************************************************************************************
 		 * General helpers
@@ -238,22 +238,20 @@ angular.module('ngGo.Game.Service', [
 				this.node.parent._remembered_path = this.node.parent.children.indexOf(this.node);
 			}
 
-			//Initialize new position var
-			var newPosition;
+			//Initialize new position
+			var i, newPosition = this.position.clone();
 
-			//Handle move nodes
+			//Handle moves
 			if (this.node.move) {
-				newPosition = executeMove.call(this, this.node.move);
-			}
-
-			//Handle setup nodes
-			else if (this.node.setup) {
-				newPosition = executeSetup.call(this, this.node.setup);
-			}
-
-			//No move or setup instructions? Simply clone current position
-			else {
-				newPosition = this.position.clone();
+				if (this.node.move.pass) {
+					newPosition.setTurn(-this.node.move.color);
+				}
+				else {
+					if (!this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition)) {
+						console.warn('Invalid move detected in game record');
+						return;
+					}
+				}
 			}
 
 			//Handle turn instructions
@@ -261,47 +259,22 @@ angular.module('ngGo.Game.Service', [
 				newPosition.setTurn(this.node.turn);
 			}
 
+			//Handle setup instructions
+			if (this.node.setup) {
+				for (i in this.node.setup) {
+					newPosition.stones.set(this.node.setup[i].x, this.node.setup[i].y, this.node.setup[i].color);
+				}
+			}
+
+			//Handle markup
+			if (this.node.markup) {
+				for (i in this.node.markup) {
+					newPosition.markup.set(this.node.markup[i].x, this.node.markup[i].y, this.node.markup[i]);
+				}
+			}
+
 			//Push the new position into the history now
 			pushPosition.call(this, newPosition);
-		};
-
-		/**
-		 * Parse move instructions
-		 */
-		var executeMove = function(move) {
-
-			//Initialize new position
-			var newPosition = this.position.clone();
-
-			//Pass
-			if (move.pass) {
-				newPosition.setTurn(-move.color);
-			}
-
-			//Regular move
-			else {
-				newPosition = this.isValidMove(move.x, move.y, move.color, newPosition);
-			}
-
-			//Return the new position
-			return newPosition;
-		};
-
-		/**
-		 * Parse setup instructions
-		 */
-		var executeSetup = function(setup) {
-
-			//Initialize new position
-			var newPosition = this.position.clone();
-
-			//Loop setup instructions
-			for (var i in setup) {
-				newPosition.set(setup[i].x, setup[i].y, setup[i].color);
-			}
-
-			//Return new position
-			return newPosition;
 		};
 
 		/***********************************************************************************************
@@ -314,7 +287,7 @@ angular.module('ngGo.Game.Service', [
 		var Game = function(data, config) {
 
 			//Extend config
-			this.config = angular.extend(defaultConfig, config || {});
+			this.config = angular.extend({}, defaultConfig, config || {});
 
 			//Load data
 			this.load(data);
@@ -556,6 +529,20 @@ angular.module('ngGo.Game.Service', [
 		};
 
 		/**
+		 * Check if a given path is the same as the current one
+		 */
+		Game.prototype.isPath = function(path) {
+			return this.path == path;
+		};
+
+		/**
+		 * Get the current game position
+		 */
+		Game.prototype.getPosition = function() {
+			return this.position;
+		};
+
+		/**
 		 * Get the game komi
 		 */
 		Game.prototype.getKomi = function() {
@@ -729,7 +716,7 @@ angular.module('ngGo.Game.Service', [
 			}
 
 			//Something already here?
-			if (!this.allowRewrite && this.position.get(x, y) != StoneColor.NONE) {
+			if (!this.allowRewrite && this.position.stones.get(x, y) != StoneColor.NONE) {
 				this.error = ngGo.error.MOVE_ALREADY_HAS_STONE;
 				return false;
 			}
@@ -741,7 +728,7 @@ angular.module('ngGo.Game.Service', [
 			newPosition = newPosition || this.position.clone();
 
 			//Place the stone
-			newPosition.set(x, y, color);
+			newPosition.stones.set(x, y, color);
 
 			//Capture adjacent stones if possible
 			var captures = newPosition.captureAdjacent(x, y);
@@ -779,160 +766,18 @@ angular.module('ngGo.Game.Service', [
 		};
 
 		/***********************************************************************************************
-		 * Stone handling
+		 * Stone and markup handling
 		 ***/
 
 		/**
-		 * Add a stone to the board (used for position setup) (won't overwrite)
+		 * Add a stone
 		 */
 		Game.prototype.addStone = function(x, y, color) {
-			if (this.isOnBoard(x, y) && this.position.get(x, y) === StoneColor.NONE) {
-				this.position.set(x, y, color || StoneColor.NONE);
-				return true;
-			}
-			return false;
-		};
-
-		/**
-		 * Remove a stone from the board at given coordinates for the current position
-		 */
-		Game.prototype.removeStone = function(x, y) {
-			if (this.isOnBoard(x, y) && this.position.get(x, y) !== StoneColor.NONE) {
-				this.position.set(x, y, StoneColor.NONE);
-				return true;
-			}
-			return false;
-		};
-
-		/**
-		 * Set the stone color for given coordinates to the current position (will overwrite)
-		 */
-		Game.prototype.setStone = function(x, y, color) {
-			if (this.isOnBoard(x, y)) {
-				this.position.set(x, y, color || StoneColor.NONE);
-				return true;
-			}
-			return false;
-		};
-
-		/**
-		 * Get stone color at given coordinates for the current position
-		 */
-		Game.prototype.getStone = function(x, y) {
-			if (this.isOnBoard(x, y)) {
-				return this.position.get(x, y);
-			}
-			return StoneColor.NONE;
-		};
-
-		/**
-		 * Check if there is a stone at the given coordinates for the current position
-		 */
-		Game.prototype.hasStone = function(x, y) {
-			if (this.isOnBoard(x, y)) {
-				return this.position.get(x, y) !== StoneColor.NONE;
-			}
-			return false;
-		};
-
-		/***********************************************************************************************
-		 * Move handling
-		 ***/
-
-		/**
-		 * Play move
-		 */
-		Game.prototype.play = function(x, y, color) {
-
-			//Color defaults to current turn
-			color = color || this.position.getTurn();
-
-			//Create move object
-			var move = {
-				x: x,
-				y: y,
-				color: color
-			};
-
-			//Remember current position and obtain new position
-			var currentPosition = this.position.clone(),
-				newPosition = executeMove.call(this, move);
-
-			//No new position? Means invalid move, no changes
-			if (!newPosition) {
-				return new GamePositionChanges();
-			}
-
-			//Push new position
-			pushPosition.call(this, newPosition);
-
-			//Create new move node
-			var node = new GameNode({move: move});
-
-			//Append it to the current node, remember the path, and change the pointer
-			this.node._remembered_path = node.appendTo(this.node);
-			this.node = node;
-
-			//Return changes compared to the new position
-			return currentPosition.compare(this.position);
-		};
-
-		/**
-		 * Play pass
-		 */
-		Game.prototype.pass = function(color) {
-
-			//Color defaults to current turn
-			color = color || this.position.getTurn();
-
-			//Create move object
-			var move = {
-				pass: true,
-				color: color
-			};
-
-			//Remember current position and obtain new position
-			var currentPosition = this.position.clone(),
-				newPosition = executeMove.call(this, move);
-
-			//No new position? Means invalid move, no changes
-			if (!newPosition) {
-				return new GamePositionChanges();
-			}
-
-			//Create new move node
-			var node = new GameNode({move: move});
-
-			//Append it to the current node, remember the path, and change the pointer
-			this.node._remembered_path = node.appendTo(this.node);
-			this.node = node;
-
-			//Add the new position to the stack
-			pushPosition.call(this, newPosition);
-
-			//Return changes compared to the new position
-			return currentPosition.compare(this.position);
-		};
-
-		/**
-		 * Give the game a setup instruction
-		 */
-		Game.prototype.setup = function(x, y, color) {
 
 			//Check if there's anything to do at all
-			if (this.position.is(x, y, color)) {
+			if (this.position.stones.has(x, y, color)) {
 				return;
 			}
-
-			//Remember current position to compute changes
-			var currentPosition = this.position.clone();
-
-			//Create setup instruction
-			var setup = {
-				x: x,
-				y: y,
-				color: color
-			};
 
 			//No setup instructions container in this node?
 			if (typeof this.node.setup == 'undefined') {
@@ -955,18 +800,161 @@ angular.module('ngGo.Game.Service', [
 				this.node.setup = [];
 			}
 
-			//Add setup instructions to node
-			this.node.setup.push(setup);
-
 			//Set it in the position
-			this.position.set(x, y, color);
+			this.position.stones.set(x, y, color);
 
-			//Return changes compared to the new position
-			return currentPosition.compare(this.position);
+			//Add setup instructions to node
+			this.node.setup.push(this.position.stones.get(x, y, 'color'));
+		};
+
+		/**
+		 * Add markup
+		 */
+		Game.prototype.addMarkup = function(x, y, markup) {
+
+			//No markup instructions container in this node?
+			if (typeof this.node.markup == 'undefined') {
+				this.node.markup = [];
+			}
+
+			//Add markup to game position
+			this.position.markup.set(x, y, markup);
+
+			//Add markup instructions to node
+			this.node.markup.push(this.position.markup.get(x, y, 'type'));
+		};
+
+		/**
+		 * Remove a stone
+		 */
+		Game.prototype.removeStone = function(x, y) {
+
+			//Check if the stone is found in setup instructions
+			var foundInSetup = false;
+
+			//Remove from node setup instruction
+			if (typeof this.node.setup != 'undefined') {
+				for (var i = 0; i < this.node.setup.length; i++) {
+					if (x == this.node.setup[i].x && y == this.node.setup[i].y) {
+
+						//Remove from node and unset in position
+						this.node.setup.splice(i, 1);
+						this.position.stones.unset(x, y);
+
+						//Mark as found
+						foundInSetup = true;
+						break;
+					}
+				}
+			}
+
+			//Not found in setup? Add as no stone color
+			if (!foundInSetup) {
+				this.addStone(x, y, StoneColor.NONE);
+			}
+		};
+
+		/**
+		 * Remove markup
+		 */
+		Game.prototype.removeMarkup = function(x, y) {
+
+			//Remove from node
+			if (typeof this.node.markup != 'undefined') {
+				for (var i = 0; i < this.node.markup.length; i++) {
+					if (x == this.node.markup[i].x && y == this.node.markup[i].y) {
+						this.node.markup.splice(i, 1);
+						this.position.markup.unset(x, y);
+						break;
+					}
+				}
+			}
+		};
+
+		/**
+		 * Check if there is a stone at the given coordinates for the current position
+		 */
+		Game.prototype.hasStone = function(x, y) {
+			return this.position.stones.has(x, y);
+		};
+
+		/**
+		 * Check if there is markup at the given coordinate for the current position
+		 */
+		Game.prototype.hasMarkup = function(x, y) {
+			return this.position.markup.has(x, y);
 		};
 
 		/***********************************************************************************************
-		 * Game navigation
+		 * Move handling
+		 ***/
+
+		/**
+		 * Play move
+		 */
+		Game.prototype.play = function(x, y, color) {
+
+			//Color defaults to current turn
+			color = color || this.position.getTurn();
+
+			//Validate move and get new position
+			var newPosition = this.isValidMove(x, y, color);
+
+			//No new position? Means invalid move, no changes
+			if (!newPosition) {
+				return false;
+			}
+
+			//Push new position
+			pushPosition.call(this, newPosition);
+
+			//Create new move node
+			var node = new GameNode({
+				move: {
+					x: x,
+					y: y,
+					color: color
+				}
+			});
+
+			//Append it to the current node, remember the path, and change the pointer
+			this.node._remembered_path = node.appendTo(this.node);
+			this.node = node;
+
+			//Valid move
+			return true;
+		};
+
+		/**
+		 * Play pass
+		 */
+		Game.prototype.pass = function(color) {
+
+			//Color defaults to current turn
+			color = color || this.position.getTurn();
+
+			//Initialize new position and switch the turn
+			var newPosition = this.position.clone();
+			newPosition.setTurn(-color);
+
+			//Push new position
+			pushPosition.call(this, newPosition);
+
+			//Create new move node
+			var node = new GameNode({
+				move: {
+					pass: true,
+					color: color
+				}
+			});
+
+			//Append it to the current node, remember the path, and change the pointer
+			this.node._remembered_path = node.appendTo(this.node);
+			this.node = node;
+		};
+
+		/***********************************************************************************************
+		 * Game tree navigation
 		 ***/
 
 		/**
@@ -974,16 +962,10 @@ angular.module('ngGo.Game.Service', [
 		 */
 		Game.prototype.next = function(i) {
 
-			//Remember current position
-			var currentPosition = this.position.clone();
-
 			//Go to the next node
 			if (nextNode.call(this, i)) {
 				executeNode.call(this);
 			}
-
-			//Return changes compared to the new position
-			return currentPosition.compare(this.position);
 		};
 
 		/**
@@ -991,16 +973,10 @@ angular.module('ngGo.Game.Service', [
 		 */
 		Game.prototype.previous = function() {
 
-			//Remember current position
-			var currentPosition = this.position.clone();
-
 			//Go to the previous node
 			if (previousNode.call(this)) {
 				popPosition.call(this);
 			}
-
-			//Return changes compared to the new position
-			return currentPosition.compare(this.position);
 		};
 
 		/**
@@ -1008,25 +984,16 @@ angular.module('ngGo.Game.Service', [
 		 */
 		Game.prototype.last = function() {
 
-			//Remember current position
-			var currentPosition = this.position.clone();
-
 			//Keep going to the next node until we reach the end
 			while (nextNode.call(this)) {
 				executeNode.call(this);
 			}
-
-			//Return changes compared to the new position
-			return currentPosition.compare(this.position);
 		};
 
 		/**
 		 * Go to the first position
 		 */
 		Game.prototype.first = function() {
-
-			//Remember current position
-			var currentPosition = this.position.clone();
 
 			//Go to the first node
 			firstNode.call(this);
@@ -1035,9 +1002,6 @@ angular.module('ngGo.Game.Service', [
 			initializeHistory.call(this);
 			pushPosition.call(this);
 			executeNode.call(this);
-
-			//Return changes compared to the new position
-			return currentPosition.compare(this.position);
 		};
 
 		/**
@@ -1062,9 +1026,6 @@ angular.module('ngGo.Game.Service', [
 				path.m = move || 0;
 			}
 
-			//Remember current position
-			var currentPosition = this.position.clone();
-
 			//Go to the first node
 			firstNode.call(this);
 
@@ -1082,24 +1043,15 @@ angular.module('ngGo.Game.Service', [
 					break;
 				}
 			}
-
-			//Return changes compared to the new position
-			return currentPosition.compare(this.position);
 		};
 
 		/**
-		 * Go to the last fork (a node with more than one child)
+		 * Go to the last fork
 		 */
 		Game.prototype.lastFork = function() {
 
-			//Remember current position
-			var currentPosition = this.position.clone();
-
-			//Loop
+			//Loop until we find a node with more than one child
 			while (execPrevious.call(this) && this.node.children.length == 1) {}
-
-			//Return changes compared to the new position
-			return currentPosition.compare(this.position);
 		};
 
 		//Return object

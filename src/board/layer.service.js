@@ -1,8 +1,8 @@
 
 /**
  * BoardLayer :: This class represents a layer on the board and is the base class for all board layers.
- * Each layer can contain it's own objects on a grid with coordinates, as well as static objects
- * without coordinates. Each layer is responsible for drawing itself as well as its objects.
+ * Each layer can contain it's own objects on a grid with coordinates and is responsible for drawing
+ * itself as well as its objects onto the canvas.
  */
 
 /**
@@ -26,15 +26,12 @@ angular.module('ngGo.Board.Layer.Service', [
 		this.board = board;
 		this.context = context;
 
-		//Initialize grid for gridded board objects
+		//Initialize grid for board objects
 		this.grid = new BoardGrid();
-
-		//Initialize static objects container (for non-grid objects)
-		this.staticObjects = [];
 	};
 
 	/***********************************************************************************************
-	 * Object handling
+	 * Generic grid and object handling
 	 ***/
 
 	/**
@@ -51,240 +48,67 @@ angular.module('ngGo.Board.Layer.Service', [
 	};
 
 	/**
-	 * Get the grid
+	 * Get all items
 	 */
-	BoardLayer.prototype.getGrid = function() {
-		return this.grid;
+	BoardLayer.prototype.getAll = function() {
+		return this.grid.clone();
 	};
 
 	/**
-	 * Add multiple objects
+	 * Set all items at once
 	 */
-	BoardLayer.prototype.addObjects = function(objects) {
-		for (var i = 0; i < objects.length; i++) {
-			this.addObject(objects[i]);
-		}
+	BoardLayer.prototype.setAll = function(grid) {
+		this.grid = grid.clone();
 	};
 
 	/**
-	 * Get all gridded objects for this layer
+	 * Remove all (clear grid)
 	 */
-	BoardLayer.prototype.getObjects = function(flat, cloned) {
-		return this.grid.getObjects(flat, cloned);
+	BoardLayer.prototype.removeAll = function() {
+		this.clear();
+		this.grid.clear();
 	};
 
 	/**
-	 * Get object from specific coordinates
+	 * Add a single item
 	 */
-	BoardLayer.prototype.getObject = function(x, y) {
-		return this.grid.getObject(x, y);
+	BoardLayer.prototype.add = function(x, y, value) {
+		this.clearCell(x, y);
+		this.grid.set(x, y, value);
+		this.drawCell(x, y);
 	};
 
 	/**
-	 * Check if we have an object at specific coordinates
+	 * Remove a single item
 	 */
-	BoardLayer.prototype.hasObject = function(x, y) {
-		return this.grid.hasObject(x, y);
+	BoardLayer.prototype.remove = function(x, y) {
+		this.clearCell(x, y);
+		this.grid.unset(x, y);
 	};
 
 	/**
-	 * Add object
+	 * Get an item
 	 */
-	BoardLayer.prototype.addObject = function(obj) {
-
-		//Static object?
-		if (obj.static) {
-			this.addStaticObject(obj);
-			return;
-		}
-
-		//Must be on grid
-		if (!this.grid.isOnGrid(obj)) {
-			return;
-		}
-
-		//Try to add and get replaced object
-		var objReplaced = this.grid.addObject(obj);
-
-		//Object replaced? Clear it
-		if (objReplaced && objReplaced.clear) {
-			objReplaced.clear(this.board);
-		}
-
-		//Draw the new object
-		if (obj.draw) {
-			obj.draw(this.board);
-		}
+	BoardLayer.prototype.get = function(x, y) {
+		return this.grid.get(x, y);
 	};
 
 	/**
-	 * Remove given object (will just remove from object's coordinates)
+	 * Check if there is an item
 	 */
-	BoardLayer.prototype.removeObject = function(x, y) {
-
-		//Object given?
-		if (typeof x == 'object') {
-			var obj = x;
-
-			//Static object?
-			if (obj.static) {
-				this.removeStaticObject(obj);
-				return;
-			}
-
-			//Get coordinates
-			y = obj.y;
-			x = obj.x;
-		}
-
-		//Remove and get removed object
-		var objRemoved = this.grid.removeObject(x, y);
-
-		//Object removed? Clear it
-		if (objRemoved && objRemoved.clear) {
-			objRemoved.clear(this.board);
-		}
-	};
-
-	/**
-	 * Remove all objects
-	 */
-	BoardLayer.prototype.removeObjects = function() {
-
-		//Remove objects from grid and get all removed objects
-		var objects = this.grid.removeObjects();
-
-		//Clear them
-		for (var i = 0; i < objects.length; i++) {
-			if (objects[i].clear) {
-				objects[i].clear(this.board);
-			}
-		}
-	};
-
-	/**
-	 * Add static object
-	 */
-	BoardLayer.prototype.addStaticObject = function(obj) {
-
-		//Must have identifier
-		if (!obj.identifier) {
-			console.warn('Static object', obj, 'must have an identifier');
-			return;
-		}
-
-		//Mark as static
-		obj.static = true;
-
-		//Set
-		this.staticObjects[obj.identifier] = obj;
-
-		//Draw if possible
-		if (obj.draw) {
-			obj.draw(this.board);
-		}
-	};
-
-	/**
-	 * Remove a static object
-	 */
-	BoardLayer.prototype.removeStaticObject = function(obj) {
-
-		//Check input
-		var identifier = (typeof obj == 'object') ? obj.identifier : obj;
-
-		//Object present?
-		if (identifier && typeof this.staticObjects[identifier] != 'undefined') {
-			obj = this.staticObjects[identifier];
-
-			//Clear if possible
-			if (obj.clear) {
-				obj.clear(this.board);
-			}
-
-			//Remove
-			delete this.staticObjects[identifier];
-		}
-	};
-
-	/**
-	 * Draw objects, optionally only at specific grid coordinates
-	 */
-	BoardLayer.prototype.drawObjects = function(x, y) {
-
-		//Can only draw when we have dimensions
-		if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
-			return;
-		}
-
-		//Coordinates given?
-		if (typeof x != 'undefined' && typeof y != 'undefined') {
-			var obj = this.grid.getObject(x, y);
-			if (obj && obj.draw) {
-				obj.draw(this.board);
-			}
-			return;
-		}
-
-		//Get all objects
-		var objects = this.grid.getObjects(true);
-
-		//Draw them
-		for (var i = 0; i < objects.length; i++) {
-			if (objects[i].draw) {
-				objects[i].draw(this.board);
-			}
-		}
-
-		//Draw static objects
-		for (var identifier in this.staticObjects) {
-			if (this.staticObjects[identifier].draw) {
-				this.staticObjects[identifier].draw(this.board);
-			}
-		}
-	};
-
-	/**
-	 * Clear objects, optionally only at specific grid coordinates
-	 */
-	BoardLayer.prototype.clearObjects = function(x, y) {
-
-		//Coordinates given?
-		if (typeof x != 'undefined' && typeof y != 'undefined') {
-			var obj = this.grid.getObject(x, y);
-			if (obj && obj.clear) {
-				obj.clear(this.board);
-			}
-			return;
-		}
-
-		//Get all objects
-		var objects = this.grid.getObjects(true);
-
-		//Draw them
-		for (var i = 0; i < objects.length; i++) {
-			if (objects[i].clear) {
-				objects[i].clear(this.board);
-			}
-		}
-
-		//Draw static objects
-		for (var identifier in this.staticObjects) {
-			if (this.staticObjects[identifier].clear) {
-				this.staticObjects[identifier].clear(this.board);
-			}
-		}
+	BoardLayer.prototype.has = function(x, y) {
+		return this.grid.has(x, y);
 	};
 
 	/***********************************************************************************************
-	 * Drawing
+	 * Generic drawing methods
 	 ***/
 
 	/**
 	 * Draw layer
 	 */
 	BoardLayer.prototype.draw = function() {
-		this.drawObjects();
+		//Drawing method to be implemented in specific layer class
 	};
 
 	/**
@@ -300,6 +124,28 @@ angular.module('ngGo.Board.Layer.Service', [
 	BoardLayer.prototype.redraw = function() {
 		this.clear();
 		this.draw();
+	};
+
+	/**
+	 * Draw cell
+	 */
+	BoardLayer.prototype.drawCell = function(x, y) {
+		//Drawing method to be implemented in specific layer class
+	};
+
+	/**
+	 * Clear cell
+	 */
+	BoardLayer.prototype.clearCell = function(x, y) {
+		//Clearing method to be implemented in specific layer class
+	};
+
+	/**
+	 * Redraw cell
+	 */
+	BoardLayer.prototype.redrawCell = function(x, y) {
+		this.clearCell(x, y);
+		this.drawCell(x, y);
 	};
 
 	/**

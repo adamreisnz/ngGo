@@ -8,25 +8,25 @@ player {
 board {
 	display: block;
 	position: relative;
-	boardlayer {
+	* {
 		position: absolute;
 	}
-	.grid {
+	gridlayer {
 		z-index: 10;
 	}
-	.shadow {
+	shadowlayer {
 		z-index: 20;
 	}
-	.faded {
+	stoneslayer {
 		z-index: 30;
 	}
-	.stones {
+	scorelayer {
 		z-index: 40;
 	}
-	.score {
+	markuplayer {
 		z-index: 50;
 	}
-	.markup {
+	hoverlayer {
 		z-index: 60;
 	}
 }

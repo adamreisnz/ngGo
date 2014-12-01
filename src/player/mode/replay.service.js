@@ -12,7 +12,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 /**
  * Run block
  */
-.run(function(Player, PlayerModes, PlayerModeReplay, Markup) {
+.run(function(Player, PlayerModes, PlayerModeReplay, MarkupTypes) {
 
 	/**
 	 * Register mode
@@ -20,23 +20,21 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 	Player.modes[PlayerModes.REPLAY] = PlayerModeReplay;
 
 	/**
-	 * Register event handlers for this mode
+	 * Register event handlers
 	 */
 	Player.on('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
 	Player.on('modeExit', PlayerModeReplay.modeExit, PlayerModes.REPLAY);
 	Player.on('click', PlayerModeReplay.mouseClick, PlayerModes.REPLAY);
 	Player.on('mousemove', PlayerModeReplay.mouseMove, PlayerModes.REPLAY);
 	Player.on('update', PlayerModeReplay.update, PlayerModes.REPLAY);
+	Player.on('toolSwitch', PlayerModeReplay.toolSwitch, PlayerModes.REPLAY);
 
 	/**
 	 * Helper to remove move variations from the board
 	 */
 	var removeMoveVariations = function(nodes) {
 		for (var i = 0; i < nodes.length; i++) {
-			this.board.removeObject({
-				x: nodes[i].move.x,
-				y: nodes[i].move.y
-			}, 'markup');
+			this.board.remove('markup', nodes[i].move.x, nodes[i].move.y);
 		}
 	};
 
@@ -47,18 +45,16 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		for (var i = 0; i < nodes.length; i++) {
 
 			//Auto variation markup should never overwrite existing markup
-			if (this.board.hasObjectAt(nodes[i].move.x, nodes[i].move.y, 'markup')) {
+			if (this.board.has('markup', nodes[i].move.x, nodes[i].move.y)) {
 				continue;
 			}
 
 			//Add to board
-			this.board.addObject(new Markup({
-				type: 'label',
+			this.board.add('markup', nodes[i].move.x, nodes[i].move.y, {
+				type: MarkupTypes.LABEL,
 				text: String.fromCharCode(65+i),
-				color: this.board.theme.get('markupVariationColor'),
-				x: nodes[i].move.x,
-				y: nodes[i].move.y
-			}));
+				color: this.board.theme.get('markupVariationColor')
+			});
 		}
 	};
 
@@ -72,14 +68,14 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 
 		//If we're in replay mode toggle the variations
 		if (this.mode == PlayerModes.REPLAY) {
-			this.toggleMoveVariations(this.config.variationBoardMarkup);
+			this.updateMoveVariations(this.config.variationBoardMarkup);
 		}
 	};
 
 	/**
 	 * Show or hide move variations
 	 */
-	Player.toggleMoveVariations = function(show) {
+	Player.updateMoveVariations = function(show) {
 
 		//Not the right mode, or disabled via configuration?
 		if (this.mode != PlayerModes.REPLAY || !this.config.variationBoardMarkup) {
@@ -119,18 +115,20 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 /**
  * Factory definition
  */
-.factory('PlayerModeReplay', function(PlayerTools, StoneFaded) {
+.factory('PlayerModeReplay', function(PlayerTools, MarkupTypes, GameScorer) {
 
 	/**
 	 * Helper to update the hover mark
 	 */
 	var updateHoverMark = function(x, y) {
 
-		//Remove hover mark if we have one
-		if (this._hoverMark) {
-			this.board.removeObject(this._hoverMark);
-			delete this._hoverMark;
+		//No hover layer?
+		if (!this.board.layers.hover) {
+			return;
 		}
+
+		//Remove existing item
+		this.board.layers.hover.remove();
 
 		//What happens, depends on the active tool
 		switch (this.tool) {
@@ -140,11 +138,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 
 				//Hovering over empty spot where we can make a move?
 				if (!this.game.hasStone(x, y) && this.game.isValidMove(x, y)) {
-					this._hoverMark = new StoneFaded({
-						x: x,
-						y: y,
-						color: this.game.getTurn()
-					});
+					this.board.layers.hover.fadedStone(x, y, this.game.getTurn());
 				}
 				break;
 
@@ -153,19 +147,31 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 
 				//Hovering over a stone means it can be marked dead or alive
 				if (this.game.hasStone(x, y)) {
-					this._hoverMark = new Markup({
-						type: 'mark',
-						x: x,
-						y: y
-					});
+					this.board.layers.hover.markup(x, y, MarkupTypes.MARK);
 				}
 				break;
 		}
+	};
 
-		//Add hover mark
-		if (this._hoverMark) {
-			this.board.addObject(this._hoverMark);
-		}
+	/**
+	 * Helper to score the current game position
+	 */
+	var scoreGame = function() {
+
+		//Calculate score
+		GameScorer.calculate();
+
+		//Get score, points and captures
+		var score = GameScorer.getScore(),
+			points = GameScorer.getPoints(),
+			captures = GameScorer.getCaptures();
+		console.log(score);
+
+		//Remove all markup
+		this.board.removeAll('markup');
+
+		//Set captures and points
+		this.board.layers.score.setAll(points, captures);
 	};
 
 	/**
@@ -179,7 +185,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		update: function() {
 
 			//Show move variations
-			this.toggleMoveVariations(true);
+			this.updateMoveVariations(true);
 		},
 
 		/**
@@ -187,12 +193,35 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		 */
 		mouseClick: function(event, mouseEvent) {
 
-			//Check if we clicked a move variation
-			var i = this.game.isMoveVariation(event.x, event.y);
+			//What happens, depends on the active tool
+			switch (this.tool) {
 
-			//Advance to the next position
-			if (i != -1) {
-				this.next(i);
+				//Move tool
+				case PlayerTools.MOVE:
+
+					//Check if we clicked a move variation
+					var i = this.game.isMoveVariation(event.x, event.y);
+
+					//Advance to the next position
+					if (i != -1) {
+						this.next(i);
+					}
+					break;
+
+				//Score tool, mark stones dead or alive
+				case PlayerTools.SCORE:
+
+					//Mark the clicked item
+					GameScorer.mark(event.x, event.y);
+
+					//Restore the board state from pre-scoring
+					/*if (this.preScoreState) {
+						this.board.restoreState(this.preScoreState);
+					}*/
+
+					//Score the current game position
+					scoreGame.call(this);
+					break;
 			}
 
 			//Update hover mark
@@ -205,13 +234,14 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		mouseMove: function(event, mouseEvent) {
 
 			//Nothing to do?
-			if (this.frozen || (this._lastX == event.x && this._lastY == event.y)) {
+			if (this.frozen || !this.board.layers.hover) {
 				return;
 			}
 
-			//Remember last coordinates
-			this._lastX = event.x;
-			this._lastY = event.y;
+			//Last coordinates are the same?
+			if (this.board.layers.hover.isLast(event.x, event.y)) {
+				return;
+			}
 
 			//Update hover mark
 			updateHoverMark.call(this, event.x, event.y);
@@ -232,7 +262,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 			this.tool = this.tools[0];
 
 			//Show move variations
-			this.toggleMoveVariations(true);
+			this.updateMoveVariations(true);
 		},
 
 		/**
@@ -241,7 +271,34 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		modeExit: function(event) {
 
 			//Hide move variations
-			this.toggleMoveVariations(false);
+			this.updateMoveVariations(false);
+		},
+
+		/**
+		 * Handler for tool switches
+		 */
+		toolSwitch: function(event) {
+
+			//Switched to scoring?
+			if (this.tool == PlayerTools.SCORE) {
+
+				//Remember the current board state
+				this.preScoreState = this.board.getState();
+
+				//Load game into scorer
+				GameScorer.load(this.game);
+
+				//Score the game position
+				scoreGame.call(this);
+			}
+
+			//Back to another state?
+			else {
+				if (this.preScoreState) {
+					this.board.restoreState(this.preScoreState);
+					this.preScoreState = null;
+				}
+			}
 		}
 	};
 

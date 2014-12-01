@@ -20,7 +20,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 	Player.modes[PlayerModes.SOLVE] = PlayerModeSolve;
 
 	/**
-	 * Register event handlers for this mode
+	 * Register event handlers
 	 */
 	Player.on('gameLoaded', PlayerModeSolve.gameLoaded, PlayerModes.SOLVE);
 	Player.on('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
@@ -29,7 +29,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 	Player.on('click', PlayerModeSolve.mouseClick, PlayerModes.SOLVE);
 	Player.on('mousemove', PlayerModeSolve.mouseMove, PlayerModes.SOLVE);
 
-	//Remember the player color for this problem
+	//The player color for this problem
 	Player.problemPlayerColor = 0;
 
 	//Solved flag
@@ -42,7 +42,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 /**
  * Factory definition
  */
-.factory('PlayerModeSolve', function($document, $timeout, PlayerTools, StoneFaded) {
+.factory('PlayerModeSolve', function($document, $timeout, PlayerTools) {
 
 	//Block navigation while in timeout
 	var navigationBlocked = false;
@@ -83,11 +83,13 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 	 */
 	var updateHoverMark = function(x, y) {
 
-		//Remove hover mark if we have one
-		if (this._hoverMark) {
-			this.board.removeObject(this._hoverMark);
-			delete this._hoverMark;
+		//No hover layer?
+		if (!this.board.layers.hover) {
+			return;
 		}
+
+		//Remove existing item
+		this.board.layers.hover.remove();
 
 		//What happens, depends on the active tool
 		switch (this.tool) {
@@ -95,20 +97,11 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 			//Move tool
 			case PlayerTools.MOVE:
 
-				//Check if we can make a move and if it's a valid move location
+				//Hovering over empty spot where we can make a move?
 				if (canMakeMove.call(this) && this.game.isValidMove(x, y)) {
-					this._hoverMark = new StoneFaded({
-						x: x,
-						y: y,
-						color: this.game.getTurn()
-					});
+					this.board.layers.hover.fadedStone(x, y, this.game.getTurn());
 				}
 				break;
-		}
-
-		//Add hover mark
-		if (this._hoverMark) {
-			this.board.addObject(this._hoverMark);
 		}
 	};
 
@@ -217,12 +210,14 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 			}
 
 			//Unknown variation, try to play
-			var changes = this.game.play(event.x, event.y);
-			if (changes) {
+			if (this.game.play(event.x, event.y)) {
 				this.problemOffPath = true;
-				this.updateBoard.call(this, changes);
+				this.updateBoard();
 				this.broadcast('solutionWrong', this.game.getNode());
 			}
+
+			//Update hover mark
+			updateHoverMark.call(this, event.x, event.y);
 		},
 
 		/**
@@ -231,13 +226,14 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 		mouseMove: function(event, mouseEvent) {
 
 			//Nothing to do?
-			if (this.frozen || (this._lastX == event.x && this._lastY == event.y)) {
+			if (this.frozen || !this.board.layers.hover) {
 				return;
 			}
 
-			//Remember last coordinates
-			this._lastX = event.x;
-			this._lastY = event.y;
+			//Last coordinates are the same?
+			if (this.board.layers.hover.isLast(event.x, event.y)) {
+				return;
+			}
 
 			//Update hover mark
 			updateHoverMark.call(this, event.x, event.y);

@@ -1,18 +1,18 @@
 
 /**
- * GamePositionChanges :: This is a simple class which acts as a wrapper for changes between two game
- * positions. It simply remembers which stones were added, and which were removed.
+ * BoardGridChanges :: This is a simple class which acts as a wrapper for changes between two board
+ * grids. It simply keeps track of what was added and what was removed.
  */
 
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Game.PositionChanges.Service', [])
+angular.module('ngGo.Board.GridChanges.Service', [])
 
 /**
  * Factory definition
  */
-.factory('GamePositionChanges', function() {
+.factory('BoardGridChanges', function() {
 
 	/**
 	 * Helper to subtract sets
@@ -40,7 +40,7 @@ angular.module('ngGo.Game.PositionChanges.Service', [])
 	return function() {
 
 		/**
-		 * Add/remove containers
+		 * Containers
 		 */
 		this.add = [];
 		this.remove = [];

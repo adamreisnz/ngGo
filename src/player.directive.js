@@ -18,12 +18,8 @@ angular.module('ngGo.Player.Directive', [
 		 */
 		controller: function($scope) {
 
-			//Initialize player
+			//Set player in scope
 			$scope.Player = Player;
-
-			//Create a new board for the player and set it in scope for the
-			//child board and layer directives to use
-			$scope.Board = Player.board = new Board();
 		},
 
 		/**
@@ -40,6 +36,11 @@ angular.module('ngGo.Player.Directive', [
 				element.css({width: parentSize, height: parentSize});
 				$scope.$broadcast('ngGo.board.resize', parentSize, parentSize);
 			}
+
+			//Link the board
+			$scope.$watch('Board', function(Board) {
+				Player.board = Board;
+			});
 
 			//On resize event, change the board dimensions
 			$scope.$on('ngGo.player.resize', function() {

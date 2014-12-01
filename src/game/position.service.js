@@ -1,7 +1,7 @@
 
 /**
- * GamePosition :: This class represents a single game position. It keeps track of the stones on
- * the board in this position, as well as any captures that were made and which player's turn it is.
+ * GamePosition :: This class represents a single game position. It keeps track of the stones and markup
+ * on the board in this position, as well as any captures that were made and which player's turn it is.
  * The class is also equipped with helpers to check for liberties, capture stones, and compare changes
  * to other positions.
  */
@@ -11,14 +11,13 @@
  */
 angular.module('ngGo.Game.Position.Service', [
 	'ngGo.Service',
-	'ngGo.Board.Grid.Service',
-	'ngGo.Game.PositionChanges.Service'
+	'ngGo.Board.Grid.Service'
 ])
 
 /**
  * Factory definition
  */
-.factory('GamePosition', function(StoneColor, BoardGrid, GamePositionChanges) {
+.factory('GamePosition', function(StoneColor, BoardGrid) {
 
 	/**
 	 * Constructor
@@ -29,13 +28,17 @@ angular.module('ngGo.Game.Position.Service', [
 		this.error = 0;
 		this.width = 0;
 		this.height = 0;
-		this.grid = new BoardGrid();
+		this.stones = new BoardGrid();
+		this.markup = new BoardGrid();
 		this.turn = StoneColor.B;
 
 		//Initialize captures
 		this.captures = {};
 		this.captures[StoneColor.B] = [];
 		this.captures[StoneColor.W] = [];
+
+		//Set empty value for stones grid
+		this.stones.whenEmpty(StoneColor.NONE);
 
 		//Set size
 		if (width || height) {
@@ -56,33 +59,39 @@ angular.module('ngGo.Game.Position.Service', [
 		this.width = parseInt(width);
 		this.height = parseInt(height);
 
-		//Set in grid
-		this.grid.setSize(width, height);
+		//Set in grids
+		this.stones.setSize(width, height);
+		this.markup.setSize(width, height);
 
 		//Clear the position (populates it with empty stones)
 		this.clear();
 	};
 
 	/**
-	 * Returns the stone color at a given coordinates.
+	 * Clear the whole position
 	 */
-	GamePosition.prototype.get = function(x, y) {
-		return this.grid.getObject(x, y);
+	GamePosition.prototype.clear = function() {
+		this.stones.clear();
+		this.markup.clear();
 	};
 
 	/**
-	 * Sets value of given coordinates.
+	 * Sets stone color at given coordinates.
 	 */
-	GamePosition.prototype.set = function(x, y, color) {
-		this.grid.setObject(x, y, color || StoneColor.NONE);
+	GamePosition.prototype.setStone = function(x, y, color) {
+		this.stones.set(x, y, color);
 	};
 
 	/**
-	 * Check if a stone at given coordinates matches the given color
+	 * Sets markup type at given coordinates.
 	 */
-	GamePosition.prototype.is = function(x, y, color) {
-		return (this.grid.getObject(x, y) === color);
+	GamePosition.prototype.setMarkup = function(x, y, markup) {
+		this.markup.set(x, y, markup);
 	};
+
+	/*******************************************************************************************************************************
+	 * Liberties and capturing
+	 ***/
 
 	/**
 	 * Check if a group of given color has liberties, starting at the given coordinates
@@ -90,7 +99,7 @@ angular.module('ngGo.Game.Position.Service', [
 	GamePosition.prototype.hasLiberties = function(x, y, groupColor, tested) {
 
 		//Out of bounds? No liberties outside of the board
-		if (!this.grid.isOnGrid(x, y)) {
+		if (!this.stones.isOnGrid(x, y)) {
 			return false;
 		}
 
@@ -98,13 +107,13 @@ angular.module('ngGo.Game.Position.Service', [
 		tested = tested || new BoardGrid(this.width, this.height);
 
 		//See what color is present on the coordinates
-		var color = this.get(x, y);
+		var color = this.stones.get(x, y);
 
 		//If no group color was given, use what's on the position
 		groupColor = groupColor || color;
 
 		//Already tested, or enemy stone? Not giving any liberties
-		if (tested.getObject(x, y) === true || color === -groupColor) {
+		if (tested.get(x, y) === true || color === -groupColor) {
 			return false;
 		}
 
@@ -114,7 +123,7 @@ angular.module('ngGo.Game.Position.Service', [
 		}
 
 		//Mark this position as tested now
-		tested.setObject(x, y, true);
+		tested.set(x, y, true);
 
 		//Ok, so we're looking at a stone of our own color. Test adjacent positions.
 		//If we get at least one true, we have a liberty
@@ -130,12 +139,12 @@ angular.module('ngGo.Game.Position.Service', [
 	GamePosition.prototype.captureAdjacent = function(x, y, friendlyColor) {
 
 		//Validate boundaries
-		if (!this.grid.isOnGrid(x, y)) {
+		if (!this.stones.isOnGrid(x, y)) {
 			return false;
 		}
 
 		//Use color of stone present if none given
-		friendlyColor = friendlyColor || this.get(x, y);
+		friendlyColor = friendlyColor || this.stones.get(x, y);
 
 		//Flag to see if we captured stuff
 		var captured = false;
@@ -164,15 +173,15 @@ angular.module('ngGo.Game.Position.Service', [
 	GamePosition.prototype.canCapture = function(x, y, enemyColor, doCapture) {
 
 		//Out of bounds? Nothing to capture
-		if (!this.grid.isOnGrid(x, y)) {
+		if (!this.stones.isOnGrid(x, y)) {
 			return false;
 		}
 
 		//Use color of stone present if none given
-		enemyColor = enemyColor || this.get(x, y);
+		enemyColor = enemyColor || this.stones.get(x, y);
 
 		//We need to have a stone of matching group color in order to be able to capture it
-		if (this.get(x, y) !== enemyColor) {
+		if (this.stones.get(x, y) !== enemyColor) {
 			return false;
 		}
 
@@ -196,15 +205,15 @@ angular.module('ngGo.Game.Position.Service', [
 	GamePosition.prototype.captureGroup = function(x, y, enemyColor) {
 
 		//Validate boundaries
-		if (!this.grid.isOnGrid(x, y)) {
+		if (!this.stones.isOnGrid(x, y)) {
 			return false;
 		}
 
 		//If no group color was given, use what's on the position
-		enemyColor = enemyColor || this.get(x, y);
+		enemyColor = enemyColor || this.stones.get(x, y);
 
 		//Stone at position does not match the given group color? Can't capture it
-		if (this.get(x, y) !== enemyColor) {
+		if (this.stones.get(x, y) !== enemyColor) {
 			return false;
 		}
 
@@ -227,12 +236,12 @@ angular.module('ngGo.Game.Position.Service', [
 	GamePosition.prototype.captureStone = function(x, y) {
 
 		//Validate boundaries
-		if (!this.grid.isOnGrid(x, y)) {
+		if (!this.stones.isOnGrid(x, y)) {
 			return;
 		}
 
 		//Get color
-		var color = this.get(x, y);
+		var color = this.stones.get(x, y);
 
 		//Empty?
 		if (color === StoneColor.NONE) {
@@ -240,7 +249,7 @@ angular.module('ngGo.Game.Position.Service', [
 		}
 
 		//Ok, stone present, capture it
-		this.set(x, y, StoneColor.NONE);
+		this.stones.set(x, y, StoneColor.NONE);
 		this.captures[color].push({x:x, y:y});
 	};
 
@@ -265,6 +274,10 @@ angular.module('ngGo.Game.Position.Service', [
 		return this.captures[-color].length;
 	};
 
+	/*******************************************************************************************************************************
+	 * Turn control
+	 ***/
+
 	/**
 	 * Set color for whose move it is at this position
 	 */
@@ -286,12 +299,9 @@ angular.module('ngGo.Game.Position.Service', [
 		this.turn = -this.turn;
 	};
 
-	/**
-	 * Clears the whole position
-	 */
-	GamePosition.prototype.clear = function() {
-		this.grid.populateObjects(StoneColor.NONE);
-	};
+	/*******************************************************************************************************************************
+	 * Cloning and comparison
+	 ***/
 
 	/**
 	 * Clones the whole position except turn and captures
@@ -307,7 +317,8 @@ angular.module('ngGo.Game.Position.Service', [
 		newPosition.turn = this.turn;
 		newPosition.width = this.width;
 		newPosition.height = this.height;
-		newPosition.grid = this.grid.clone();
+		newPosition.stones = this.stones.clone();
+		newPosition.markup = new BoardGrid(this.width, this.height);
 
 		//Return
 		return newPosition;
@@ -323,66 +334,8 @@ angular.module('ngGo.Game.Position.Service', [
 			return false;
 		}
 
-		//Get the colors for both positions
-		var oldColors = this.grid.getObjects(),
-			newColors = newPosition.grid.getObjects();
-
-		//Loop all objects
-		for (var x = 0; x < this.width; x++) {
-			for (var y = 0; y < this.height; y++) {
-				if (oldColors[x][y] != newColors[x][y]) {
-					return false;
-				}
-			}
-		}
-
-		//No differences found
-		return true;
-	};
-
-	/**
-	 * Compares this position with another position and return change object
-	 */
-	GamePosition.prototype.compare = function(newPosition) {
-
-		//Create new game position changes object
-		var changes = new GamePositionChanges();
-
-		//Must have the same size
-		if (this.width != newPosition.width || this.height != newPosition.height) {
-			console.warn('Trying to compare positions of a different size');
-			return changes;
-		}
-
-		//Get the colors for both positions
-		var oldColors = this.grid.getObjects(),
-			newColors = newPosition.grid.getObjects();
-
-		//Loop all objects
-		for (var x = 0; x < this.width; x++) {
-			for (var y = 0; y < this.height; y++) {
-
-				//Adding a stone?
-				if (oldColors[x][y] === StoneColor.NONE && oldColors[x][y] != newColors[x][y]) {
-					changes.add.push({
-						x: x,
-						y: y,
-						color: newColors[x][y]
-					});
-				}
-
-				//Removing a stone?
-				if (newColors[x][y] === StoneColor.NONE && oldColors[x][y] != newColors[x][y]) {
-					changes.remove.push({
-						x: x,
-						y: y
-					});
-				}
-			}
-		}
-
-		//Return changes
-		return changes;
+		//Compare the grids
+		return this.stones.isSameAs(newPosition.stones);
 	};
 
 	//Return

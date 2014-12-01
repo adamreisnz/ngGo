@@ -16,43 +16,38 @@ angular.module('ngGo.Board.Object.StoneMini.Service', [
 .factory('StoneMini', function(Stone) {
 
 	/**
-	 * Constructor
+	 * Class
 	 */
-	var StoneMini = function(properties, layer) {
+	StoneMini = {
 
-		//Initialize scale and alpha (to prevent shadow)
-		this.scale = 0;
-		this.alpha = 0.99;
-		layer = layer || 'score';
+		/**
+		 * Draw stone
+		 */
+		draw: function(stone) {
 
-		//Call stone constructor
-		Stone.call(this, properties, layer);
-	};
+			//Set alpha if not given
+			if (!stone.scale) {
+				stone.scale = this.board.theme.get('stoneMiniScale');
+			}
 
-	/**
-	 * Extend prototype
-	 */
-	angular.extend(StoneMini.prototype, Stone.prototype);
+			//Don't show shadow
+			stone.shadow = false;
 
-	/**
-	 * Draw method
-	 */
-	StoneMini.prototype.draw = function(board) {
+			//Now call the regular stone draw handler
+			Stone.draw.call(this, stone);
+		},
 
-		//Get scale if not set
-		if (!this.scale) {
-			this.scale = board.theme.get('stoneMiniScale');
+		/**
+		 * Clear stone
+		 */
+		clear: function(stone) {
+
+			//Don't show shadow
+			stone.shadow = false;
+
+			//Call parent method
+			Stone.clear.call(this, stone);
 		}
-
-		//Call the regular stone draw handler
-		Stone.prototype.draw.call(this, board);
-	};
-
-	/**
-	 * Clear method
-	 */
-	StoneMini.prototype.clear = function(board) {
-		Stone.prototype.clear.call(this, board);
 	};
 
 	//Return
