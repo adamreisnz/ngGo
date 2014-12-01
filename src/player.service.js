@@ -410,6 +410,27 @@ angular.module('ngGo.Player.Service', [
 				this.board.toggleCoordinates(show);
 			},
 
+			/**
+			 * Helper to score the current game position
+			 */
+			scoreGame: function() {
+
+				//Calculate score
+				GameScorer.calculate();
+
+				//Get score, points and captures
+				var score = GameScorer.getScore(),
+					points = GameScorer.getPoints(),
+					captures = GameScorer.getCaptures();
+
+				//Remove all markup, and set captures and points
+				this.board.layers.markup.removeAll();
+				this.board.layers.score.setAll(points, captures);
+
+				//Broadcast score
+				this.broadcast('score', score);
+			},
+
 			/***********************************************************************************************
 			 * Configuration
 			 ***/

@@ -1,5 +1,5 @@
 /**
- * ngGo v3.0.0
+ * ngGo v3.0.1
  *
  * This is the AngularJS implementation of WGo, based on WGo version 2.3.1. All code has been
  * refactored to fit the Angular framework, as well as having been linted, properly commented

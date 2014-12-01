@@ -27,7 +27,6 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 	Player.on('click', PlayerModeReplay.mouseClick, PlayerModes.REPLAY);
 	Player.on('mousemove', PlayerModeReplay.mouseMove, PlayerModes.REPLAY);
 	Player.on('update', PlayerModeReplay.update, PlayerModes.REPLAY);
-	Player.on('toolSwitch', PlayerModeReplay.toolSwitch, PlayerModes.REPLAY);
 
 	/**
 	 * Helper to remove move variations from the board
@@ -154,27 +153,6 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 	};
 
 	/**
-	 * Helper to score the current game position
-	 */
-	var scoreGame = function() {
-
-		//Calculate score
-		GameScorer.calculate();
-
-		//Get score, points and captures
-		var score = GameScorer.getScore(),
-			points = GameScorer.getPoints(),
-			captures = GameScorer.getCaptures();
-		console.log(score);
-
-		//Remove all markup
-		this.board.removeAll('markup');
-
-		//Set captures and points
-		this.board.layers.score.setAll(points, captures);
-	};
-
-	/**
 	 * Player mode definition
 	 */
 	var PlayerModeReplay = {
@@ -211,16 +189,9 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 				//Score tool, mark stones dead or alive
 				case PlayerTools.SCORE:
 
-					//Mark the clicked item
+					//Mark the clicked item and score the current game position
 					GameScorer.mark(event.x, event.y);
-
-					//Restore the board state from pre-scoring
-					/*if (this.preScoreState) {
-						this.board.restoreState(this.preScoreState);
-					}*/
-
-					//Score the current game position
-					scoreGame.call(this);
+					this.scoreGame();
 					break;
 			}
 
@@ -272,33 +243,6 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 
 			//Hide move variations
 			this.updateMoveVariations(false);
-		},
-
-		/**
-		 * Handler for tool switches
-		 */
-		toolSwitch: function(event) {
-
-			//Switched to scoring?
-			if (this.tool == PlayerTools.SCORE) {
-
-				//Remember the current board state
-				this.preScoreState = this.board.getState();
-
-				//Load game into scorer
-				GameScorer.load(this.game);
-
-				//Score the game position
-				scoreGame.call(this);
-			}
-
-			//Back to another state?
-			else {
-				if (this.preScoreState) {
-					this.board.restoreState(this.preScoreState);
-					this.preScoreState = null;
-				}
-			}
 		}
 	};
 

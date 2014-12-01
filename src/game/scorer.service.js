@@ -221,6 +221,10 @@ angular.module('ngGo.Game.Scorer.Service', [
 				return;
 			}
 
+			//Clear grids
+			this.points.clear();
+			this.captures.clear();
+
 			//Determine score state
 			determineScoreState.call(this);
 

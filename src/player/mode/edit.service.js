@@ -25,7 +25,6 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	 * Register event handlers
 	 */
 	Player.on('modeEnter', PlayerModeEdit.modeEnter, PlayerModes.EDIT);
-	Player.on('toolSwitch', PlayerModeEdit.toolSwitch, PlayerModes.EDIT);
 	Player.on('keydown', PlayerModeEdit.keyDown, PlayerModes.EDIT);
 	Player.on('click', PlayerModeEdit.mouseClick, PlayerModes.EDIT);
 	Player.on('mousemove', PlayerModeEdit.mouseMove, PlayerModes.EDIT);
@@ -212,27 +211,6 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				}
 				break;
 		}
-
-		//Add hover mark
-		if (this._hoverMark) {
-			this.board.addObject(this._hoverMark);
-		}
-	};
-
-	/**
-	 * Helper to score the current position
-	 */
-	var scorePosition = function() {
-
-		//Get changes and score
-		var changes = GameScorer.getChanges(),
-			score = GameScorer.getScore();
-			console.log(score);
-
-		//Remove all markup, and process changes
-		this.board.removeAllObjects('markup');
-		this.board.removeObject(changes.remove, 'stones');
-		this.board.addObject(changes.add);
 	};
 
 	/**
@@ -283,6 +261,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 					if (!this.game.play(event.x, event.y)) {
 						return;
 					}
+					this.updateBoard();
 					break;
 
 				//Setup tool
@@ -309,6 +288,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 							this.game.addStone(event.x, event.y, color);
 						}
 					}
+					this.updateBoard();
 					break;
 
 				//Markup tool
@@ -353,26 +333,19 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 							this.game.addMarkup(event.x, event.y, this.markupTool);
 						}
 					}
+					this.updateBoard();
 					break;
 
 				//Score tool, mark stones dead or alive
 				case PlayerTools.SCORE:
 
-					//Mark the clicked item
+					//Mark the clicked item and score the current game position
 					GameScorer.mark(event.x, event.y);
-
-					//Restore the board state from pre-scoring
-					if (this.preScoreState) {
-						this.board.restoreState(this.preScoreState);
-					}
-
-					//Score the current position
-					scorePosition.call(this);
+					this.scoreGame();
 					break;
 			}
 
-			//Update board and update the hover mark
-			this.updateBoard();
+			//Update the hover mark
 			updateHoverMark.call(this, event.x, event.y);
 		},
 
@@ -410,23 +383,6 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 			//Set default tool
 			this.tool = this.tools[0];
-		},
-
-		/**
-		 * Handler for tool switches
-		 */
-		toolSwitch: function(event) {
-
-			//Switched to scoring?
-			if (this.tool == PlayerTools.SCORE) {
-
-				//Remember the current board state
-				this.preScoreState = this.board.getState();
-
-				//Load the game into the game scorer and score the position
-				GameScorer.load(this.game);
-				scorePosition.call(this);
-			}
 		}
 	};
 

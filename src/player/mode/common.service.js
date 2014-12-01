@@ -26,12 +26,15 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 	Player.on('mouseout', PlayerModeCommon.mouseOut, [
 		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
 	]);
+	Player.on('toolSwitch', PlayerModeCommon.toolSwitch, [
+		PlayerModes.REPLAY, PlayerModes.EDIT
+	]);
 })
 
 /**
  * Factory definition
  */
-.factory('PlayerModeCommon', function($document, PlayerTools) {
+.factory('PlayerModeCommon', function($document, PlayerTools, GameScorer) {
 
 	/**
 	 * Player mode definition
@@ -114,6 +117,31 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 		 */
 		mouseOut: function(event, mouseEvent) {
 			this.board.layers.hover.remove();
+		},
+
+		/**
+		 * Handler for tool switches
+		 */
+		toolSwitch: function(event) {
+
+			//Switched to scoring?
+			if (this.tool == PlayerTools.SCORE) {
+
+				//Remember the current board state
+				this.statePreScoring = this.board.getState();
+
+				//Load game into scorer and score the game
+				GameScorer.load(this.game);
+				this.scoreGame();
+			}
+
+			//Back to another state?
+			else {
+				if (this.statePreScoring) {
+					this.board.restoreState(this.statePreScoring);
+					delete this.statePreScoring;
+				}
+			}
 		}
 	};
 
