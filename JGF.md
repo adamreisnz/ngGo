@@ -235,6 +235,22 @@ JGF = {
 			}
 		},
 
+		// For tutorials, a node can contain auto play instructions
+		{
+			setup: {
+				B: ["mm", "nn"],
+				W: ["mf"]
+			},
+			autoplay: {
+
+				//How many moves to auto play from this node onward
+				moves: 5,
+
+				//Start automatically?
+				start: true
+			}
+		},
+
 		// Variations are contained in a variations container.
 		[
 			// Each variation's nodes are contained in a child moves container.
