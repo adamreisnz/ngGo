@@ -9,6 +9,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Grid.Service', [
+	'ngGo',
 	'ngGo.Board.GridChanges.Service'
 ])
 

@@ -7,6 +7,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Object.StoneMini.Service', [
+	'ngGo',
 	'ngGo.Board.Object.Stone.Service'
 ])
 

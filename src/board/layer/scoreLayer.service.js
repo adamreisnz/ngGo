@@ -3,6 +3,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
+	'ngGo',
 	'ngGo.Board.Layer.Service',
 	'ngGo.Board.Object.StoneMini.Service',
 	'ngGo.Board.Object.StoneFaded.Service'

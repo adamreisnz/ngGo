@@ -7,7 +7,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Object.Stone.Service', [
-	'ngGo.Service',
+	'ngGo',
 	'ngGo.Board.Object.Service',
 	'ngGo.Board.ShellPattern.Service'
 ])

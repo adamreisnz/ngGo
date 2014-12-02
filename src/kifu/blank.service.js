@@ -7,7 +7,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Kifu.Blank.Service', [
-	'ngGo.Service'
+	'ngGo'
 ])
 
 /**

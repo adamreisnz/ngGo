@@ -8,7 +8,8 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Player.Mode.Edit.Service', [
-	'ngGo.Service'
+	'ngGo',
+	'ngGo.Game.Scorer.Service'
 ])
 
 /**

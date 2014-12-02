@@ -10,7 +10,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Game.Position.Service', [
-	'ngGo.Service',
+	'ngGo',
 	'ngGo.Board.Grid.Service'
 ])
 

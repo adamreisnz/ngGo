@@ -10,7 +10,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Player.Service', [
-	'ngGo.Service',
+	'ngGo',
 	'ngGo.Player.Directive',
 	'ngGo.Player.Mode.Common.Service',
 	'ngGo.Board.Service',

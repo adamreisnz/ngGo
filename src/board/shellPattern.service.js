@@ -6,7 +6,9 @@
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.ShellPattern.Service', [])
+angular.module('ngGo.Board.ShellPattern.Service', [
+	'ngGo'
+])
 
 /**
  * Factory definition

@@ -9,6 +9,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Kifu.Parser.Service', [
+	'ngGo',
 	'ngGo.Kifu.Parsers.Sgf2Jgf.Service',
 	'ngGo.Kifu.Parsers.Jgf2Sgf.Service'
 ])

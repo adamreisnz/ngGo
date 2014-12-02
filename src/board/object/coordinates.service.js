@@ -6,7 +6,9 @@
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Object.Coordinates.Service', [])
+angular.module('ngGo.Board.Object.Coordinates.Service', [
+	'ngGo'
+])
 
 /**
  * Factory definition

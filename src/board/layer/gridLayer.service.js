@@ -8,6 +8,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Layer.GridLayer.Service', [
+	'ngGo',
 	'ngGo.Board.Layer.Service',
 	'ngGo.Board.Object.Coordinates.Service'
 ])

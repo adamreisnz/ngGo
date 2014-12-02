@@ -7,6 +7,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Object.Markup.Service', [
+	'ngGo',
 	'ngGo.Board.Object.Service'
 ])
 

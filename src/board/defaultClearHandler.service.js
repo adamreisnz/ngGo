@@ -8,7 +8,9 @@
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.DefaultClearHandler.Service', [])
+angular.module('ngGo.Board.DefaultClearHandler.Service', [
+	'ngGo'
+])
 
 /**
  * Factory definition

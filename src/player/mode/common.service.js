@@ -7,7 +7,10 @@
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Player.Mode.Common.Service', [])
+angular.module('ngGo.Player.Mode.Common.Service', [
+	'ngGo',
+	'ngGo.Game.Scorer.Service'
+])
 
 /**
  * Run block

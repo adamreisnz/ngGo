@@ -1,5 +1,5 @@
 /**
- * ngGo v3.0.1
+ * ngGo
  *
  * This is the AngularJS implementation of WGo, based on WGo version 2.3.1. All code has been
  * refactored to fit the Angular framework, as well as having been linted, properly commented
@@ -27,14 +27,14 @@
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Service', [])
+angular.module('ngGo', [])
 
 /**
  * ngGo constants
  */
 .constant('ngGo', {
 	name:		'ngGo',
-	version:	'3.0.0',
+	version:	'3.0.2',
 	error:		{
 		MOVE_OUT_OF_BOUNDS:			1,
 		MOVE_ALREADY_HAS_STONE:		2,

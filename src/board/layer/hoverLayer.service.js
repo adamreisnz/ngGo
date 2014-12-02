@@ -3,6 +3,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Layer.HoverLayer.Service', [
+	'ngGo',
 	'ngGo.Board.Layer.Service',
 	'ngGo.Board.Object.Markup.Service',
 	'ngGo.Board.Object.StoneFaded.Service'

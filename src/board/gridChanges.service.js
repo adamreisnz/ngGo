@@ -7,7 +7,9 @@
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.GridChanges.Service', [])
+angular.module('ngGo.Board.GridChanges.Service', [
+	'ngGo'
+])
 
 /**
  * Factory definition

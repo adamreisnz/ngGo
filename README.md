@@ -1,7 +1,7 @@
 # ngGo
 
 ## Version
-Current version is 3.0.1
+Current version is 3.0.2
 
 ## About
 ngGo is an Angular.JS library for reading, parsing, displaying, editing and replaying Go game records.
@@ -26,6 +26,8 @@ ngGo also contains parsers to convert files from SGF to JGF and vice versa.
 For the proposed JGF specification, please see [JGF.md](JGF.md).
 
 ## Todo
-+ Improve the game scoring algorithm
++ Finalize game record editing capabilities
++ Finalize various player modes
++ Improve game scoring algorithm
++ Add support for board animations
 + Create unit tests
-+ Create gruntfile

@@ -7,7 +7,9 @@
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Player.Mode.Solve.Service', [])
+angular.module('ngGo.Player.Mode.Solve.Service', [
+	'ngGo'
+])
 
 /**
  * Run block

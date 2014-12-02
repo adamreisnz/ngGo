@@ -11,7 +11,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Game.Service', [
-	'ngGo.Service',
+	'ngGo',
 	'ngGo.Game.Node.Service',
 	'ngGo.Game.Position.Service',
 	'ngGo.Kifu.Blank.Service',

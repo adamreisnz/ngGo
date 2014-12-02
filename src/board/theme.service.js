@@ -10,7 +10,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Theme.Service', [
-	'ngGo.Service'
+	'ngGo'
 ])
 
 /**

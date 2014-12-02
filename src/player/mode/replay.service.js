@@ -7,7 +7,10 @@
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Player.Mode.Replay.Service', [])
+angular.module('ngGo.Player.Mode.Replay.Service', [
+	'ngGo',
+	'ngGo.Game.Scorer.Service'
+])
 
 /**
  * Run block

@@ -3,6 +3,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
+	'ngGo',
 	'ngGo.Board.Layer.Service',
 	'ngGo.Board.Object.StoneShadow.Service',
 ])

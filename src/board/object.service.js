@@ -7,6 +7,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Object.Service', [
+	'ngGo',
 	'ngGo.Board.DefaultClearHandler.Service'
 ])
 

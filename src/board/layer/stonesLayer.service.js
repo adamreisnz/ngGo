@@ -3,7 +3,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Layer.StonesLayer.Service', [
-	'ngGo.Service',
+	'ngGo',
 	'ngGo.Board.Layer.Service',
 	'ngGo.Board.Object.Stone.Service'
 ])
