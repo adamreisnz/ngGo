@@ -38,14 +38,14 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
 		//Get changes compared to current grid
 		var i, changes = this.grid.compare(grid, 'type');
 
-		//Draw added stuff
-		for (i = 0; i < changes.add.length; i++) {
-			Markup.draw.call(this, changes.add[i]);
-		}
-
 		//Clear removed stuff
 		for (i = 0; i < changes.remove.length; i++) {
 			Markup.clear.call(this, changes.remove[i]);
+		}
+
+		//Draw added stuff
+		for (i = 0; i < changes.add.length; i++) {
+			Markup.draw.call(this, changes.add[i]);
 		}
 
 		//Remember new grid

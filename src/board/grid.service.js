@@ -242,12 +242,12 @@ angular.module('ngGo.Board.Grid.Service', [
 			for (var y = 0; y < this.height; y++) {
 
 				//Something to add?
-				if (this.grid[x][y] === this.emptyValue && newGrid.grid[x][y] !== this.grid[x][y]) {
+				if (newGrid.grid[x][y] !== this.emptyValue && newGrid.grid[x][y] !== this.grid[x][y]) {
 					changes.add.push(toObject.call(newGrid, x, y, valueKey));
 				}
 
 				//Something to remove?
-				if (newGrid.grid[x][y] === this.emptyValue && newGrid.grid[x][y] !== this.grid[x][y]) {
+				if (this.grid[x][y] !== this.emptyValue && newGrid.grid[x][y] !== this.grid[x][y]) {
 					changes.remove.push(toObject.call(this, x, y, valueKey));
 				}
 			}

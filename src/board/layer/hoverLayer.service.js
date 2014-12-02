@@ -18,16 +18,8 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 	 */
 	var HoverLayer = function(board, context) {
 
-		//Remember coordinates of last item
-		this.lastX = -1;
-		this.lastY = -1;
-
-		//Remember last object
-		this.lastObject = null;
-		this.lastClass = null;
-
-		//Markup to restore if hovering over it
-		this.restoreMarkup = null;
+		//Container for items to restore
+		this.restore = [];
 
 		//Call parent constructor
 		BoardLayer.call(this, board, context);
@@ -39,104 +31,125 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 	angular.extend(HoverLayer.prototype, BoardLayer.prototype);
 
 	/**
-	 * Check if the remembered last coordinates are the same as the given ones
-	 */
-	HoverLayer.prototype.isLast = function(x, y) {
-		return (this.lastX == x && this.lastY == y);
-	};
-
-	/**
 	 * Add faded stone
 	 */
-	HoverLayer.prototype.fadedStone = function(x, y, color) {
+	HoverLayer.prototype.add = function(x, y, hover) {
 
 		//Validate coordinates
-		if (x == -1 || y == -1) {
+		if (!this.grid.isOnGrid(x, y)) {
 			return;
 		}
 
-		//Remove any previous item
-		this.remove();
+		//Remove any previous item at this position
+		this.remove(x, y);
 
-		//Remember new coordinates
-		this.lastX = x;
-		this.lastY = y;
-
-		//Remember last object
-		this.lastClass = StoneFaded;
-		this.lastObject = {
-			x: x,
-			y: y,
-			color: color
-		};
-
-		//Draw faded stone
-		StoneFaded.draw.call(this, this.lastObject);
-	};
-
-	/**
-	 * Add markup
-	 */
-	HoverLayer.prototype.markup = function(x, y, markup) {
-
-		//Validate coordinates
-		if (x == -1 || y == -1) {
-			return;
-		}
-
-		//Remove any previous item
-		this.remove();
-
-		//Remember new coordinates
-		this.lastX = x;
-		this.lastY = y;
-
-		//String (type) given?
-		if (typeof markup == 'string') {
-			markup = {
-				type: markup
-			};
-		}
-
-		//Remember last object
-		this.lastClass = Markup;
-		this.lastObject = angular.extend(markup, {
+		//Create hover object
+		hover.object = {
 			x: x,
 			y: y
-		});
+		};
 
-		//Check if there is existing markup on the board which we need to temporarily remove
-		if (this.board.layers.markup.has(x, y)) {
-			this.restoreMarkup = this.board.layers.markup.get(x, y);
-			this.board.layers.markup.remove(x, y);
+		//Stones
+		if (hover.type == 'stones') {
+			hover.objectClass = StoneFaded;
+			hover.object.color = hover.value;
 		}
 
-		//Draw markup
-		Markup.draw.call(this, this.lastObject);
+		//Markup
+		else if (hover.type == 'markup') {
+			hover.objectClass = Markup;
+			if (typeof hover.value == 'object') {
+				hover.object = angular.extend(hover.object, hover.value);
+			}
+			else {
+				hover.object.type = hover.value;
+			}
+		}
+
+		//Unknown
+		else {
+			console.warn('Unknown hover type', hover.type);
+			return;
+		}
+
+		//Check if we need to hide something on layers underneath
+		if (this.board.has(hover.type, x, y)) {
+			this.restore.push({
+				x: x,
+				y: y,
+				layer: hover.type,
+				value: this.board.get(hover.type, x, y)
+			});
+			this.board.remove(hover.type, x, y);
+		}
+
+		//Add to stack
+		this.grid.set(x, y, hover);
+
+		//Draw item
+		hover.objectClass.draw.call(this, hover.object);
 	};
 
 	/**
 	 * Remove the hover object
 	 */
-	HoverLayer.prototype.remove = function() {
+	HoverLayer.prototype.remove = function(x, y) {
 
-		//Something to remove?
-		if (this.lastX > -1 && this.lastY > -1) {
+		//Validate coordinates
+		if (!this.grid.has(x, y)) {
+			return;
+		}
 
-			//Clear last object
-			if (this.lastObject && this.lastClass) {
-				this.lastClass.clear.call(this, this.lastObject);
+		//Get object and clear it
+		var hover = this.grid.get(x, y);
+		hover.objectClass.clear.call(this, hover.object);
+
+		//Other objects to restore?
+		for (var i = 0; i < this.restore.length; i++) {
+			if (this.restore[i].x == x && this.restore[i].y == y) {
+				this.board.add(this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value);
+				this.restore.splice(i, 1);
 			}
+		}
+	};
 
-			//Markup to restore?
-			if (this.restoreMarkup) {
-				this.board.layers.markup.add(this.lastX, this.lastY, this.restoreMarkup);
-				this.restoreMarkup = null;
-			}
+	/**
+	 * Remove all hover objects
+	 */
+	HoverLayer.prototype.removeAll = function() {
 
-			//Clear coordinates
-			this.lastX = -1;
-			this.lastY = -1;
+		//Anything to do?
+		if (this.grid.isEmpty()) {
+			return;
+		}
+
+		//Clear layer and grid
+		this.clear();
+		this.grid.clear();
+
+		//Restore objects on other layers
+		for (var i = 0; i < this.restore.length; i++) {
+			this.board.add(this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value);
+		}
+
+		//Clear restore array
+		this.restore = [];
+	};
+
+	/**
+	 * Draw layer
+	 */
+	HoverLayer.prototype.draw = function() {
+
+		//Can only draw when we have dimensions
+		if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+			return;
+		}
+
+		//Loop objects and clear them
+		var hover = this.grid.all('hover');
+		for (var i = 0; i < hover.length; i++) {
+			hover.objectClass.draw.call(this, hover.object);
 		}
 	};
 

@@ -26,8 +26,8 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 	Player.on('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
 	Player.on('modeExit', PlayerModeSolve.modeExit, PlayerModes.SOLVE);
 	Player.on('keydown', PlayerModeSolve.keyDown, PlayerModes.SOLVE);
-	Player.on('click', PlayerModeSolve.mouseClick, PlayerModes.SOLVE);
-	Player.on('mousemove', PlayerModeSolve.mouseMove, PlayerModes.SOLVE);
+	Player.on('click', PlayerModeSolve.click, PlayerModes.SOLVE);
+	Player.on('hover', PlayerModeSolve.hover, PlayerModes.SOLVE);
 
 	//The player color for this problem
 	Player.problemPlayerColor = 0;
@@ -44,7 +44,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
  */
 .factory('PlayerModeSolve', function($document, $timeout, PlayerTools) {
 
-	//Block navigation while in timeout
+	/**
+	 * Block navigation while in timeout
+	 */
 	var navigationBlocked = false;
 
 	/**
@@ -83,13 +85,10 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 	 */
 	var updateHoverMark = function(x, y) {
 
-		//No hover layer?
-		if (!this.board.layers.hover) {
+		//Falling outside of grid?
+		if (!this.board.isOnBoard(x, y)) {
 			return;
 		}
-
-		//Remove existing item
-		this.board.layers.hover.remove();
 
 		//What happens, depends on the active tool
 		switch (this.tool) {
@@ -99,7 +98,10 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 
 				//Hovering over empty spot where we can make a move?
 				if (canMakeMove.call(this) && this.game.isValidMove(x, y)) {
-					this.board.layers.hover.fadedStone(x, y, this.game.getTurn());
+					this.board.add('hover', x, y, {
+						type: 'stones',
+						value: this.game.getTurn()
+					});
 				}
 				break;
 		}
@@ -111,6 +113,14 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 	var PlayerModeSolve = {
 
 		/**
+		 * Hover handler
+		 */
+		hover: function(event) {
+			this.board.removeAll('hover');
+			updateHoverMark.call(this, event.x, event.y);
+		},
+
+		/**
 		 * Handler for keydown events
 		 */
 		keyDown: function(event, keyboardEvent) {
@@ -119,6 +129,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 			if ($document[0].querySelector(':focus')) {
 				return true;
 			}
+
+			//Remove hover marks
+			this.board.removeAll('hover');
 
 			//Switch key code
 			switch (keyboardEvent.keyCode) {
@@ -160,7 +173,12 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 		/**
 		 * Handler for mouse click events
 		 */
-		mouseClick: function(event, mouseEvent) {
+		click: function(event, mouseEvent) {
+
+			//Falling outside of grid?
+			if (!this.board.isOnBoard(event.x, event.y)) {
+				return;
+			}
 
 			//Check if we clicked a move variation
 			var i = this.game.isMoveVariation(event.x, event.y);
@@ -216,27 +234,8 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 				this.broadcast('solutionWrong', this.game.getNode());
 			}
 
-			//Update hover mark
-			updateHoverMark.call(this, event.x, event.y);
-		},
-
-		/**
-		 * Mouse move handler
-		 */
-		mouseMove: function(event, mouseEvent) {
-
-			//Nothing to do?
-			if (this.frozen || !this.board.layers.hover) {
-				return;
-			}
-
-			//Last coordinates are the same?
-			if (this.board.layers.hover.isLast(event.x, event.y)) {
-				return;
-			}
-
-			//Update hover mark
-			updateHoverMark.call(this, event.x, event.y);
+			//Handle hover
+			PlayerModeSolve.hover.call(this, event);
 		},
 
 		/**

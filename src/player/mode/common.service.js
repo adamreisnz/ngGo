@@ -23,7 +23,16 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 	Player.on('mousewheel', PlayerModeCommon.mouseWheel, [
 		PlayerModes.REPLAY, PlayerModes.EDIT
 	]);
+	Player.on('mousemove', PlayerModeCommon.mouseMove, [
+		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+	]);
 	Player.on('mouseout', PlayerModeCommon.mouseOut, [
+		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+	]);
+	Player.on('mousedown', PlayerModeCommon.mouseDown, [
+		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+	]);
+	Player.on('mouseup', PlayerModeCommon.mouseUp, [
 		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
 	]);
 	Player.on('toolSwitch', PlayerModeCommon.toolSwitch, [
@@ -35,6 +44,51 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
  * Factory definition
  */
 .factory('PlayerModeCommon', function($document, PlayerTools, GameScorer) {
+
+	/**
+	 * Helper var to detect dragging
+	 */
+	var dragStart = null;
+
+	/**
+	 * Helper vars to keep track of last move coordinates
+	 */
+	var lastX, lastY;
+
+	/**
+	 * Helper to build drag object
+	 */
+	var dragObject = function(event) {
+
+		//Initialize drag object
+		var drag = {
+			start: {
+				x: (dragStart.x > event.x) ? event.x : dragStart.x,
+				y: (dragStart.y > event.y) ? event.y : dragStart.y,
+			},
+			stop: {
+				x: (dragStart.x > event.x) ? dragStart.x : event.x,
+				y: (dragStart.y > event.y) ? dragStart.y : event.y,
+			}
+		};
+
+		//Fix boundaries
+		if (drag.start.x < 0) {
+			drag.start.x = 0;
+		}
+		if (drag.start.y < 0) {
+			drag.start.y = 0;
+		}
+		if (drag.stop.x > this.board.width - 1) {
+			drag.stop.x = this.board.width - 1;
+		}
+		if (drag.stop.y > this.board.height - 1) {
+			drag.stop.y = this.board.height - 1;
+		}
+
+		//Return
+		return drag;
+	};
 
 	/**
 	 * Player mode definition
@@ -51,13 +105,23 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 				return true;
 			}
 
+			//Remove hover marks
+			this.board.removeAll('hover');
+
 			//Switch key code
 			switch (keyboardEvent.keyCode) {
+
+				//ESC
+				case 27:
+
+					//Cancel drag event, and prevent click event as well
+					dragStart = null;
+					this.preventClickEvent = true;
+					break;
 
 				//Right arrow
 				case 39:
 					if (this.config.arrowKeysNavigation && this.tool == PlayerTools.MOVE) {
-						this.board.layers.hover.remove();
 						this.next();
 					}
 					break;
@@ -65,7 +129,6 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 				//Left arrow
 				case 37:
 					if (this.config.arrowKeysNavigation && this.tool == PlayerTools.MOVE) {
-						this.board.layers.hover.remove();
 						this.previous();
 					}
 					break;
@@ -117,6 +180,52 @@ angular.module('ngGo.Player.Mode.Common.Service', [])
 		 */
 		mouseOut: function(event, mouseEvent) {
 			this.board.layers.hover.remove();
+		},
+
+		/**
+		 * Mouse move handler
+		 */
+		mouseMove: function(event, mouseEvent) {
+
+			//Attach drag object to events
+			if (dragStart && (dragStart.x != event.x || dragStart.y != event.y)) {
+				mouseEvent.drag = dragObject.call(this, event);
+			}
+
+			//Nothing else to do?
+			if (this.frozen || !this.board.layers.hover) {
+				return;
+			}
+
+			//Last coordinates are the same?
+			if (lastX == event.x && lastY == event.y) {
+				return;
+			}
+
+			//Remember last coordinates
+			lastX = event.x;
+			lastY = event.y;
+
+			//Broadcast hover event
+			this.broadcast('hover', mouseEvent);
+		},
+
+		/**
+		 * Mouse down handler
+		 */
+		mouseDown: function(event, mouseEvent) {
+			dragStart = {x: event.x, y: event.y};
+		},
+
+		/**
+		 * Mouse up handler
+		 */
+		mouseUp: function(event, mouseEvent) {
+			if (dragStart && (dragStart.x != event.x || dragStart.y != event.y)) {
+				mouseEvent.drag = dragObject.call(this, event);
+				this.broadcast('mousedrag', mouseEvent);
+			}
+			dragStart = null;
 		},
 
 		/**

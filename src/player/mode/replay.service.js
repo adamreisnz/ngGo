@@ -24,9 +24,9 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 	 */
 	Player.on('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
 	Player.on('modeExit', PlayerModeReplay.modeExit, PlayerModes.REPLAY);
-	Player.on('click', PlayerModeReplay.mouseClick, PlayerModes.REPLAY);
-	Player.on('mousemove', PlayerModeReplay.mouseMove, PlayerModes.REPLAY);
+	Player.on('click', PlayerModeReplay.click, PlayerModes.REPLAY);
 	Player.on('update', PlayerModeReplay.update, PlayerModes.REPLAY);
+	Player.on('hover', PlayerModeReplay.hover, PlayerModes.REPLAY);
 
 	/**
 	 * Helper to remove move variations from the board
@@ -121,13 +121,10 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 	 */
 	var updateHoverMark = function(x, y) {
 
-		//No hover layer?
-		if (!this.board.layers.hover) {
+		//Falling outside of grid?
+		if (!this.board.isOnBoard(x, y)) {
 			return;
 		}
-
-		//Remove existing item
-		this.board.layers.hover.remove();
 
 		//What happens, depends on the active tool
 		switch (this.tool) {
@@ -137,7 +134,10 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 
 				//Hovering over empty spot where we can make a move?
 				if (!this.game.hasStone(x, y) && this.game.isValidMove(x, y)) {
-					this.board.layers.hover.fadedStone(x, y, this.game.getTurn());
+					this.board.add('hover', x, y, {
+						type: 'stones',
+						value: this.game.getTurn()
+					});
 				}
 				break;
 
@@ -146,7 +146,10 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 
 				//Hovering over a stone means it can be marked dead or alive
 				if (this.game.hasStone(x, y)) {
-					this.board.layers.hover.markup(x, y, MarkupTypes.MARK);
+					this.board.add('hover', x, y, {
+						type: 'markup',
+						value: MarkupTypes.MARK
+					});
 				}
 				break;
 		}
@@ -156,6 +159,14 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 	 * Player mode definition
 	 */
 	var PlayerModeReplay = {
+
+		/**
+		 * Hover handler
+		 */
+		hover: function(event) {
+			this.board.removeAll('hover');
+			updateHoverMark.call(this, event.x, event.y);
+		},
 
 		/**
 		 * Board update event handler
@@ -169,7 +180,12 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		/**
 		 * Handler for mouse click events
 		 */
-		mouseClick: function(event, mouseEvent) {
+		click: function(event, mouseEvent) {
+
+			//Falling outside of grid?
+			if (!this.board.isOnBoard(event.x, event.y)) {
+				return;
+			}
 
 			//What happens, depends on the active tool
 			switch (this.tool) {
@@ -195,27 +211,8 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 					break;
 			}
 
-			//Update hover mark
-			updateHoverMark.call(this, event.x, event.y);
-		},
-
-		/**
-		 * Mouse move handler
-		 */
-		mouseMove: function(event, mouseEvent) {
-
-			//Nothing to do?
-			if (this.frozen || !this.board.layers.hover) {
-				return;
-			}
-
-			//Last coordinates are the same?
-			if (this.board.layers.hover.isLast(event.x, event.y)) {
-				return;
-			}
-
-			//Update hover mark
-			updateHoverMark.call(this, event.x, event.y);
+			//Handle hover
+			PlayerModeReplay.hover.call(this, event);
 		},
 
 		/**

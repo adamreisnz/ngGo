@@ -42,14 +42,14 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
 		//Get changes compared to current grid
 		var i, changes = this.grid.compare(grid, 'color');
 
-		//Draw added stuff
-		for (i = 0; i < changes.add.length; i++) {
-			Stone.draw.call(this, changes.add[i]);
-		}
-
 		//Clear removed stuff
 		for (i = 0; i < changes.remove.length; i++) {
 			Stone.clear.call(this, changes.remove[i]);
+		}
+
+		//Draw added stuff
+		for (i = 0; i < changes.add.length; i++) {
+			Stone.draw.call(this, changes.add[i]);
 		}
 
 		//Remember new grid

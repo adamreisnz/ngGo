@@ -775,7 +775,7 @@ angular.module('ngGo.Game.Service', [
 		Game.prototype.addStone = function(x, y, color) {
 
 			//Check if there's anything to do at all
-			if (this.position.stones.has(x, y, color)) {
+			if (this.position.stones.is(x, y, color)) {
 				return;
 			}
 
@@ -874,14 +874,20 @@ angular.module('ngGo.Game.Service', [
 		/**
 		 * Check if there is a stone at the given coordinates for the current position
 		 */
-		Game.prototype.hasStone = function(x, y) {
+		Game.prototype.hasStone = function(x, y, color) {
+			if (typeof color != 'undefined') {
+				return this.position.stones.is(x, y, color);
+			}
 			return this.position.stones.has(x, y);
 		};
 
 		/**
 		 * Check if there is markup at the given coordinate for the current position
 		 */
-		Game.prototype.hasMarkup = function(x, y) {
+		Game.prototype.hasMarkup = function(x, y, type) {
+			if (typeof type != 'undefined') {
+				return this.position.markup.is(x, y, type);
+			}
 			return this.position.markup.has(x, y);
 		};
 

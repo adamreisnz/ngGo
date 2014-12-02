@@ -402,16 +402,21 @@ angular.module('ngGo.Board.Service', [
 		 * Convert pixel coordinate to grid coordinate
 		 */
 		Board.prototype.getGridX = function(absX) {
-			var gridX = Math.round((absX - this.drawMargin) / this.cellSize);
-			return (gridX > this.grid.xRight || gridX < this.grid.xLeft) ? -1 : gridX;
+			return Math.round((absX - this.drawMargin) / this.cellSize);
 		};
 
 		/**
 		 * Convert pixel coordinate to grid coordinate
 		 */
 		Board.prototype.getGridY = function(absY) {
-			var gridY = Math.round((absY - this.drawMargin) / this.cellSize);
-			return (gridY > this.grid.yBot || gridY < this.grid.yTop) ? -1 : gridY;
+			return Math.round((absY - this.drawMargin) / this.cellSize);
+		};
+
+		/**
+		 * Check if given grid coordinates are on board
+		 */
+		Board.prototype.isOnBoard = function(gridX, gridY) {
+			return gridX >= 0 && gridY >= 0 && gridX < this.width && gridY < this.height;
 		};
 
 		//Return object

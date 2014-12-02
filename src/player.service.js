@@ -92,7 +92,7 @@ angular.module('ngGo.Player.Service', [
 		solveAutoPlayTimeout: 500,
 
 		//Event listeners to apply on the player HTML element
-		elementEvents: ['keydown', 'click', 'mousemove', 'mouseout', 'mousewheel']
+		elementEvents: ['keydown', 'click', 'mousedown', 'mouseup', 'mousemove', 'mouseout', 'mousewheel']
 	};
 
 	/**
@@ -110,7 +110,7 @@ angular.module('ngGo.Player.Service', [
 		/**
 		 * Helper to append board grid coordinatess to the broadcast event object
 		 */
-		var appendGridCoordinates = function(broadcastEvent, mouseEvent) {
+		var processMouseEvent = function(broadcastEvent, mouseEvent) {
 
 			//Can only do this with a board
 			if (!this.board) {
@@ -130,6 +130,11 @@ angular.module('ngGo.Player.Service', [
 			//Append coords
 			broadcastEvent.x = this.board.getGridX(x);
 			broadcastEvent.y = this.board.getGridY(y);
+
+			//Did we drag?
+			if (mouseEvent.drag) {
+				broadcastEvent.drag = mouseEvent.drag;
+			}
 		};
 
 		/**
@@ -493,8 +498,17 @@ angular.module('ngGo.Player.Service', [
 					}
 
 					//Append grid coordinates for mouse events
-					if (type == 'click' || type.substr(0, 5) == 'mouse') {
-						appendGridCoordinates.call(self, arguments[0], arguments[1]);
+					if (type == 'click' || type == 'hover' || type.substr(0, 5) == 'mouse') {
+						processMouseEvent.call(self, arguments[0], arguments[1]);
+					}
+
+					//Dragging? Prevent click events from firing
+					if (self.preventClickEvent && type == 'click') {
+						delete self.preventClickEvent;
+						return;
+					}
+					else if (type == 'mousedrag') {
+						self.preventClickEvent = true;
 					}
 
 					//Call listener

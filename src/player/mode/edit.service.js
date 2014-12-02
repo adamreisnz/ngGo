@@ -26,8 +26,9 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	 */
 	Player.on('modeEnter', PlayerModeEdit.modeEnter, PlayerModes.EDIT);
 	Player.on('keydown', PlayerModeEdit.keyDown, PlayerModes.EDIT);
-	Player.on('click', PlayerModeEdit.mouseClick, PlayerModes.EDIT);
-	Player.on('mousemove', PlayerModeEdit.mouseMove, PlayerModes.EDIT);
+	Player.on('click', PlayerModeEdit.click, PlayerModes.EDIT);
+	Player.on('mousedrag', PlayerModeEdit.mouseDrag, PlayerModes.EDIT);
+	Player.on('hover', PlayerModeEdit.hover, PlayerModes.EDIT);
 
 	//Setup tools
 	Player.setupTools = {
@@ -46,7 +47,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		SAD:		'sad',
 		HAPPY:		'happy',
 		TEXT:		'text',
-		NUMBER:		'number'
+		NUMBER:		'number',
+		CLEAR:		'clear'
 	};
 
 	//Active setup type and markup type
@@ -135,12 +137,14 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 .factory('PlayerModeEdit', function($document, PlayerTools, MarkupTypes, GameScorer, StoneColor) {
 
 	/**
-	 * Helper to update the hover mark
+	 * Update hover mark at specific coordinates
 	 */
-	var updateHoverMark = function(x, y) {
+	var updateHoverMark = function(x, y, isDrag) {
 
-		//Remove existing item
-		this.board.layers.hover.remove();
+		//Falling outside of grid?
+		if (!this.board.isOnBoard(x, y)) {
+			return;
+		}
 
 		//What happens, depends on the active tool
 		switch (this.tool) {
@@ -148,48 +152,80 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			//Setup tool
 			case PlayerTools.SETUP:
 
-				//Hovering over a stone? We can remove it
-				if (this.game.hasStone(x, y)) {
-					this.board.layers.hover.markup(x, y, MarkupTypes.MARK);
+				//Clear tool
+				if (this.setupTool == this.setupTools.CLEAR) {
+
+					//Stone present? Can remove it
+					if (this.game.hasStone(x, y)) {
+						this.board.add('hover', x, y, {
+							type: 'markup',
+							value: MarkupTypes.MARK
+						});
+					}
 				}
 
-				//Empty spot, we can add a stone if we're not clearing
-				else if (this.setupTool != this.setupTools.CLEAR) {
-					this.board.layers.hover.fadedStone(x, y, this.setupToolColor());
+				//Stone color tool
+				else {
+
+					//Add or overwrite stone if no stone present of the given color
+					if (!this.game.hasStone(x, y, this.setupToolColor())) {
+						this.board.add('hover', x, y, {
+							type: 'stones',
+							value: this.setupToolColor()
+						});
+					}
+
+					//Stone present of same color? Can remove it if we're not dragging
+					else if (!isDrag) {
+						this.board.add('hover', x, y, {
+							type: 'markup',
+							value: MarkupTypes.MARK
+						});
+					}
 				}
 				break;
 
 			//Markup tool
 			case PlayerTools.MARKUP:
 
-				//Hovering over existing markup? We can remove it
-				if (this.game.hasMarkup(x, y)) {
-					this.board.layers.hover.markup(x, y, MarkupTypes.MARK);
+				//Clear tool
+				if (this.markupTool == this.markupTools.CLEAR) {
+					if (this.game.hasMarkup(x, y)) {
+						this.board.add('hover', x, y, {
+							type: 'markup',
+							value: MarkupTypes.MARK
+						});
+					}
 				}
 
-				//No markup yet
-				else {
-
-					//Text
-					if (this.markupTool == this.markupTools.TEXT) {
-						this.board.layers.hover.markup(x, y, {
+				//Text
+				else if (this.markupTool == this.markupTools.TEXT) {
+					this.board.add('hover', x, y, {
+						type: 'markup',
+						value: {
 							type: MarkupTypes.LABEL,
 							text: this.markupTextLabel
-						});
-					}
+						}
+					});
+				}
 
-					//Number
-					else if (this.markupTool == this.markupTools.NUMBER) {
-						this.board.layers.hover.markup(x, y, {
+				//Number
+				else if (this.markupTool == this.markupTools.NUMBER) {
+					this.board.add('hover', x, y, {
+						type: 'markup',
+						value: {
 							type: MarkupTypes.LABEL,
 							text: this.markupNumberLabel
-						});
-					}
+						}
+					});
+				}
 
-					//Other markup
-					else {
-						this.board.layers.hover.markup(x, y, this.markupTool);
-					}
+				//Other markup
+				else {
+					this.board.add('hover', x, y, {
+						type: 'markup',
+						value: this.markupTool
+					});
 				}
 				break;
 
@@ -198,7 +234,10 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 				//Hovering over empty spot where we can make a move?
 				if (!this.game.hasStone(x, y) && this.game.isValidMove(x, y)) {
-					this.board.layers.hover.fadedStone(x, y, this.game.getTurn());
+					this.board.add('hover', x, y, {
+						type: 'stones',
+						value: this.game.getTurn()
+					});
 				}
 				break;
 
@@ -207,16 +246,119 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 				//Hovering over a stone means it can be marked dead or alive
 				if (this.game.hasStone(x, y)) {
-					this.board.layers.hover.markup(x, y, MarkupTypes.MARK);
+					this.board.add('hover', x, y, {
+						type: 'markup',
+						value: MarkupTypes.MARK
+					});
 				}
 				break;
 		}
 	};
 
 	/**
+	 * Helper to set markup
+	 */
+	var setMarkup = function(x, y) {
+
+		//Already markup in place? Remove it first
+		if (this.game.hasMarkup(x, y)) {
+			this.game.removeMarkup(x, y);
+		}
+
+		//Clear tool used? Done
+		if (this.markupTool == this.markupTools.CLEAR) {
+			return;
+		}
+
+		//Text
+		else if (this.markupTool == this.markupTools.TEXT) {
+			this.game.addMarkup(x, y, {
+				type: MarkupTypes.LABEL,
+				text: this.markupTextLabel
+			});
+
+			//Increment text
+			this.incrementMarkupTextLabel();
+		}
+
+		//Number
+		else if (this.markupTool == this.markupTools.NUMBER) {
+			this.game.addMarkup(x, y, {
+				type: MarkupTypes.LABEL,
+				text: this.markupNumberLabel
+			});
+
+			//Increment number
+			this.incrementMarkupNumberLabel();
+		}
+
+		//Other markup
+		else {
+			this.game.addMarkup(x, y, this.markupTool);
+		}
+	};
+
+	/**
+	 * Helper to set a stone
+	 */
+	var setStone = function(x, y, isDrag) {
+
+		//Get the stone color
+		var color = this.setupToolColor();
+
+		//Trying to remove a stone
+		if (color === StoneColor.NONE) {
+			this.game.removeStone(x, y);
+		}
+
+		//Adding a stone
+		else {
+
+			//A stone there already of the same color? Just remove if not dragging
+			if (!isDrag && this.game.hasStone(x, y, color)) {
+				this.game.removeStone(x, y);
+				return;
+			}
+
+			//Any stone present?
+			else if (this.game.hasStone(x, y)) {
+				this.game.removeStone(x, y);
+			}
+
+			//Add stone now
+			this.game.addStone(x, y, color);
+		}
+
+		//Redraw markup
+		this.board.layers.markup.redrawCell(x, y);
+	};
+
+	/**
 	 * Player mode definition
 	 */
 	var PlayerModeEdit = {
+
+		/**
+		 * Hover handler
+		 */
+		hover: function(event) {
+
+			//Remove all hover items
+			this.board.removeAll('hover');
+
+			//Single coordinate?
+			if (!event.drag || (this.tool != PlayerTools.SETUP && this.tool != PlayerTools.MARKUP)) {
+				updateHoverMark.call(this, event.x, event.y, false);
+				return;
+			}
+
+			//Loop area
+			for (x = event.drag.start.x; x <= event.drag.stop.x; x++) {
+				for (y = event.drag.start.y; y <= event.drag.stop.y; y++) {
+					updateHoverMark.call(this, x, y, true);
+				}
+			}
+		},
 
 		/**
 		 * Keydown handler
@@ -241,15 +383,16 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		/**
 		 * Click handler
 		 */
-		mouseClick: function(event, mouseEvent) {
+		click: function(event, mouseEvent) {
 
-			//Get current node
-			var node = this.game.getNode();
-
-			//Check if anything to do
-			if (!node) {
-				return false;
+			//Falling outside of grid?
+			if (!this.board.isOnBoard(event.x, event.y)) {
+				return;
 			}
+
+			//Remove all hover items now to restore actual stones and markup to the board,
+			//otherwise it will conflict when updating the board
+			this.board.removeAll('hover');
 
 			//What happens, depends on the active tool
 			switch (this.tool) {
@@ -267,72 +410,16 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				//Setup tool
 				case PlayerTools.SETUP:
 
-					//Get the stone color
-					var color = this.setupToolColor();
-
-					//Trying to remove a stone
-					if (color === StoneColor.NONE) {
-						this.game.removeStone(event.x, event.y);
-					}
-
-					//Adding a stone
-					else {
-
-						//Already a stone in place? Remove it first
-						if (this.game.hasStone(event.x, event.y)) {
-							this.game.removeStone(event.x, event.y);
-						}
-
-						//Add it
-						else {
-							this.game.addStone(event.x, event.y, color);
-						}
-					}
+					//Set stone and update board
+					setStone.call(this, event.x, event.y);
 					this.updateBoard();
 					break;
 
 				//Markup tool
 				case PlayerTools.MARKUP:
 
-					//Before dealing with markup, remove the hover markup in order to restore actual
-					//markup back to the board. Otherwise, it conflicts when updating the board.
-					this.board.layers.hover.remove();
-
-					//Already markup in place? Remove it first
-					if (this.game.hasMarkup(event.x, event.y)) {
-						this.game.removeMarkup(event.x, event.y);
-					}
-
-					//Placing new markup
-					else {
-
-						//Text
-						if (this.markupTool == this.markupTools.TEXT) {
-							this.game.addMarkup(event.x, event.y, {
-								type: MarkupTypes.LABEL,
-								text: this.markupTextLabel
-							});
-
-							//Increment text
-							this.incrementMarkupTextLabel();
-						}
-
-						//Number
-						else if (this.markupTool == this.markupTools.NUMBER) {
-							this.game.addMarkup(event.x, event.y, {
-								type: MarkupTypes.LABEL,
-								text: this.markupNumberLabel
-							});
-
-							//Increment number
-							this.incrementMarkupNumberLabel();
-						}
-
-						//Other markup
-						else {
-							this.game.addMarkup(event.x, event.y, this.markupTool);
-						}
-					}
+					//Set markup and update board
+					setMarkup.call(this, event.x, event.y);
 					this.updateBoard();
 					break;
 
@@ -345,27 +432,56 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 					break;
 			}
 
-			//Update the hover mark
-			updateHoverMark.call(this, event.x, event.y);
+			//Handle hover
+			PlayerModeEdit.hover.call(this, event);
 		},
 
 		/**
-		 * Mouse move handler
+		 * Mouse drag handler
 		 */
-		mouseMove: function(event, mouseEvent) {
+		mouseDrag: function(event, mouseEvent) {
 
-			//Nothing to do?
-			if (this.frozen || !this.board.layers.hover) {
-				return;
+			//Initialize vars
+			var x, y;
+
+			//Remove all hover items now to restore actual stones and markup to the board,
+			//otherwise it will conflict when updating the board
+			this.board.removeAll('hover');
+
+			//What happens, depends on the active tool
+			switch (this.tool) {
+
+				//Setup tool
+				case PlayerTools.SETUP:
+
+					//Loop dragging grid
+					for (x = event.drag.start.x; x <= event.drag.stop.x; x++) {
+						for (y = event.drag.start.y; y <= event.drag.stop.y; y++) {
+							setStone.call(this, x, y, true);
+						}
+					}
+
+					//Update board
+					this.updateBoard();
+					break;
+
+				//Markup tool
+				case PlayerTools.MARKUP:
+
+					//Loop dragging grid
+					for (x = event.drag.start.x; x <= event.drag.stop.x; x++) {
+						for (y = event.drag.start.y; y <= event.drag.stop.y; y++) {
+							setMarkup.call(this, x, y);
+						}
+					}
+
+					//Update board
+					this.updateBoard();
+					break;
 			}
 
-			//Last coordinates are the same?
-			if (this.board.layers.hover.isLast(event.x, event.y)) {
-				return;
-			}
-
-			//Update hover mark
-			updateHoverMark.call(this, event.x, event.y);
+			//Handle hover
+			PlayerModeEdit.hover.call(this, event);
 		},
 
 		/**
