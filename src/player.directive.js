@@ -81,24 +81,28 @@ angular.module('ngGo.Player.Directive', [
 				Player.switchTool(tool);
 			});
 
-			//Observe arrowkeys and scrollwheel navigation
-			attrs.$observe('arrowKeysNavigation', function(value) {
-				Player.setArrowKeysNavigation(value);
+			//Observe variation markup and solution paths attributes
+			attrs.$observe('variationMarkup', function(attr) {
+				Player.toggleVariationMarkup(parseBool(attr));
 			});
-			attrs.$observe('scrollWheelNavigation', function(value) {
-				Player.setScrollWheelNavigation(value);
+			attrs.$observe('solutionPaths', function(attr) {
+				Player.toggleSolutionPaths(parseBool(attr));
+			});
+
+			//Observe arrowkeys and scrollwheel navigation
+			attrs.$observe('arrowKeysNavigation', function(attr) {
+				Player.toggleArrowKeysNavigation(parseBool(attr));
+			});
+			attrs.$observe('scrollWheelNavigation', function(attr) {
+				Player.toggleScrollWheelNavigation(parseBool(attr));
 			});
 
 			//Observe last move attributes
-			attrs.$observe('lastMoveMarker', function(value) {
-				Player.setLastMoveMarker(value);
+			attrs.$observe('markLastMove', function(attr) {
+				Player.toggleMarkLastMove(parseBool(attr));
 			});
-			attrs.$observe('markLastMove', function(value) {
-				Player.setMarkLastMove(value);
-			});
-
-			attrs.$observe('variationBoardMarkup', function(value) {
-				Player.setVariationBoardMarkup(value);
+			attrs.$observe('lastMoveMarker', function(attr) {
+				Player.setLastMoveMarker(attr);
 			});
 		}
 	};

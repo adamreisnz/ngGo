@@ -34,6 +34,9 @@ angular.module('ngGo.Board.Service', [
 		//You can change this via BoardProvider.setConfig() or via a size attribute on the board element in HTML
 		defaultSize: 0,
 
+		//Show coordinates?
+		coordinates: false,
+
 		//Section of board to display
 		section: {
 			top: 0,
@@ -272,15 +275,25 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/***********************************************************************************************
-		 * Coordinates toggling
+		 * Configuration
 		 ***/
 
 		/**
 		 * Toggle the coordinates
 		 */
-		Board.prototype.toggleCoordinates = function() {
+		Board.prototype.toggleCoordinates = function(show) {
+
+			//Set or toggle
+			if (typeof show != 'undefined') {
+				this.config.coordinates = show;
+			}
+			else {
+				this.config.coordinates = !this.config.coordinates;
+			}
+
+			//Set in grid
 			if (this.layers.grid) {
-				this.layers.grid.toggleCoordinates();
+				this.layers.grid.showCoordinates(this.config.coordinates);
 			}
 		};
 

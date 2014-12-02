@@ -60,12 +60,18 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 	angular.extend(GridLayer.prototype, BoardLayer.prototype);
 
 	/**
-	 * Coordinates toggling
+	 * Show or hide the coordinates.
+	 * No need for a redraw due to the board margin change triggering one already!
 	 */
-	GridLayer.prototype.toggleCoordinates = function() {
+	GridLayer.prototype.showCoordinates = function(show) {
 
-		//Toggle
-		this.coordinates = !this.coordinates;
+		//Nothing to do?
+		if (show === this.coordinates) {
+			return;
+		}
+
+		//Set
+		this.coordinates = show;
 
 		//Showing? Set the board margin, otherwise reset it
 		if (this.coordinates) {
@@ -74,8 +80,6 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 		else {
 			this.board.resetMargin();
 		}
-
-		//No need for a redraw due to the board margin change triggering one already!
 	};
 
 	/***********************************************************************************************

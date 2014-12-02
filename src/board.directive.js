@@ -51,8 +51,8 @@ angular.module('ngGo.Board.Directive', [
 			});
 
 			//Observe the coordinates attribute
-			attrs.$observe('coordinates', function(show) {
-				$scope.Board.toggleCoordinates((show === true || show == 'true'));
+			attrs.$observe('coordinates', function(attr) {
+				$scope.Board.toggleCoordinates(parseBool(attr));
 			});
 		}
 	};

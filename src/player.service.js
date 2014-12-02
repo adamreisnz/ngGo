@@ -79,13 +79,16 @@ angular.module('ngGo.Player.Service', [
 		allowDisplayInstructions: true,
 
 		//Indicate variations with markup on the board or not
-		variationBoardMarkup: true,
+		variationMarkup: true,
 
 		//Show variations of successor nodes
 		variationChildren: true,
 
 		//Show variations of current node
 		variationSiblings: false,
+
+		//Show solution paths
+		solutionPaths: false,
 
 		//Solve mode auto play settings
 		solveAutoPlay: true,
@@ -211,8 +214,8 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Show board markup for variations?
-				if (typeof display.variation_board_markup != 'undefined') {
-					this.variationBoardMarkup = display.variation_board_markup;
+				if (typeof display.variation_markup != 'undefined') {
+					this.variationMarkup = display.variation_markup;
 				}
 
 				//Show variations of successor nodes?
@@ -223,6 +226,11 @@ angular.module('ngGo.Player.Service', [
 				//Show variations of current node?
 				if (typeof display.variation_siblings != 'undefined') {
 					this.variationSiblings = display.variation_siblings;
+				}
+
+				//Show solution paths?
+				if (typeof display.solution_paths != 'undefined') {
+					this.solutionPaths = display.solution_paths;
 				}
 			},
 
@@ -311,15 +319,23 @@ angular.module('ngGo.Player.Service', [
 			updateBoard: function() {
 
 				//Get current node and game position
-				var i,
+				var i, pathChange = false,
 					node = this.game.getNode(),
 					path = this.game.getPath(),
 					position = this.game.getPosition();
 
 				//Path change? That means a whole new board position
 				if (!angular.equals(this.path, path)) {
+					pathChange = true;
+
+					//Copy new path and remove all markup
 					this.path = angular.copy(path);
 					this.board.removeAll('markup');
+
+					//Mode change instruction?
+					if (node.mode) {
+						this.switchMode(node.mode);
+					}
 				}
 
 				//Set new stones and markup grids
@@ -341,7 +357,7 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Broadcast event
-				this.broadcast('update');
+				this.broadcast('update', pathChange);
 			},
 
 			/***********************************************************************************************
@@ -409,13 +425,6 @@ angular.module('ngGo.Player.Service', [
 			},
 
 			/**
-			 * Toggle board coordinates wrapper
-			 */
-			toggleCoordinates: function(show) {
-				this.board.toggleCoordinates(show);
-			},
-
-			/**
 			 * Helper to score the current game position
 			 */
 			scoreGame: function() {
@@ -441,17 +450,88 @@ angular.module('ngGo.Player.Service', [
 			 ***/
 
 			/**
+			 * Show/hide the solution paths
+			 */
+			toggleSolutionPaths: function(solutionPaths) {
+
+				//Set or toggle
+				if (typeof solutionPaths != 'undefined') {
+					this.config.solutionPaths = solutionPaths;
+				}
+				else {
+					this.config.solutionPaths = !this.config.solutionPaths;
+				}
+
+				//Broadcast event
+				this.broadcast('config', 'solutionPaths');
+			},
+
+			/**
+			 * Toggle variation markup on the board
+			 */
+			toggleVariationMarkup: function(variationMarkup) {
+
+				//Set or toggle
+				if (typeof variationMarkup != 'undefined') {
+					this.config.variationMarkup = variationMarkup;
+				}
+				else {
+					this.config.variationMarkup = !this.config.variationMarkup;
+				}
+
+				//Broadcast event
+				this.broadcast('config', 'variationMarkup');
+			},
+
+			/**
 			 * Set arrow keys navigation
 			 */
-			setArrowKeysNavigation: function(arrowKeys) {
-				this.config.arrowKeysNavigation = (arrowKeys === true || arrowKeys === 'true');
+			toggleArrowKeysNavigation: function(arrowKeys) {
+
+				//Set or toggle
+				if (typeof arrowKeys != 'undefined') {
+					this.config.arrowKeysNavigation = arrowKeys;
+				}
+				else {
+					this.config.arrowKeysNavigation = !this.config.arrowKeysNavigation;
+				}
+
+				//Broadcast event
+				this.broadcast('config', 'arrowKeysNavigation');
 			},
 
 			/**
 			 * Set scroll wheel navigation
 			 */
-			setScrollWheelNavigation: function(scrollWheel) {
-				this.config.scrollWheelNavigation = (scrollWheel === true || scrollWheel === 'true');
+			toggleScrollWheelNavigation: function(scrollWheel) {
+
+				//Set or toggle
+				if (typeof scrollWheel != 'undefined') {
+					this.config.scrollWheelNavigation = scrollWheel;
+				}
+				else {
+					this.config.scrollWheelNavigation = !this.config.scrollWheelNavigation;
+				}
+
+				//Broadcast event
+				this.broadcast('config', 'scrollWheelNavigation');
+			},
+
+			/**
+			 * Set whether to mark the last move
+			 */
+			toggleMarkLastMove: function(markLastMove) {
+
+				//Set or toggle
+				if (typeof markLastMove != 'undefined') {
+					this.config.markLastMove = markLastMove;
+				}
+				else {
+					this.config.markLastMove = !this.config.markLastMove;
+				}
+
+				//Broadcast event
+				this.broadcast('config', 'markLastMove');
 			},
 
 			/**
@@ -459,13 +539,7 @@ angular.module('ngGo.Player.Service', [
 			 */
 			setLastMoveMarker: function(lastMoveMarker) {
 				this.config.lastMoveMarker = lastMoveMarker;
-			},
-
-			/**
-			 * Set whether to mark the last move
-			 */
-			setMarkLastMove: function(markLastMove) {
-				this.config.markLastMove = (markLastMove === true || markLastMove === 'true');
+				this.broadcast('config', 'lastMoveMarker');
 			},
 
 			/***********************************************************************************************

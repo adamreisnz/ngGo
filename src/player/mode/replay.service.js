@@ -12,7 +12,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 /**
  * Run block
  */
-.run(function(Player, PlayerModes, PlayerModeReplay, MarkupTypes) {
+.run(function(Player, PlayerModes, PlayerModeReplay) {
 
 	/**
 	 * Register mode
@@ -24,97 +24,16 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 	 */
 	Player.on('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
 	Player.on('modeExit', PlayerModeReplay.modeExit, PlayerModes.REPLAY);
-	Player.on('click', PlayerModeReplay.click, PlayerModes.REPLAY);
 	Player.on('update', PlayerModeReplay.update, PlayerModes.REPLAY);
+	Player.on('config', PlayerModeReplay.config, PlayerModes.REPLAY);
+	Player.on('click', PlayerModeReplay.click, PlayerModes.REPLAY);
 	Player.on('hover', PlayerModeReplay.hover, PlayerModes.REPLAY);
-
-	/**
-	 * Helper to remove move variations from the board
-	 */
-	var removeMoveVariations = function(nodes) {
-		for (var i = 0; i < nodes.length; i++) {
-			this.board.remove('markup', nodes[i].move.x, nodes[i].move.y);
-		}
-	};
-
-	/**
-	 * Helper to add move variations to the board
-	 */
-	var addMoveVariations = function(nodes) {
-		for (var i = 0; i < nodes.length; i++) {
-
-			//Auto variation markup should never overwrite existing markup
-			if (this.board.has('markup', nodes[i].move.x, nodes[i].move.y)) {
-				continue;
-			}
-
-			//Add to board
-			this.board.add('markup', nodes[i].move.x, nodes[i].move.y, {
-				type: MarkupTypes.LABEL,
-				text: String.fromCharCode(65+i),
-				color: this.board.theme.get('markupVariationColor')
-			});
-		}
-	};
-
-	/**
-	 * Set whether to mark variations on the board
-	 */
-	Player.setVariationBoardMarkup = function(mark) {
-
-		//Set the config parameter
-		this.config.variationBoardMarkup = (mark === true || mark === 'true');
-
-		//If we're in replay mode toggle the variations
-		if (this.mode == PlayerModes.REPLAY) {
-			this.updateMoveVariations(this.config.variationBoardMarkup);
-		}
-	};
-
-	/**
-	 * Show or hide move variations
-	 */
-	Player.updateMoveVariations = function(show) {
-
-		//Not the right mode, or disabled via configuration?
-		if (this.mode != PlayerModes.REPLAY || !this.config.variationBoardMarkup) {
-			return;
-		}
-
-		//Get the current node
-		var node = this.game.getNode(), variations;
-		if (!node) {
-			return;
-		}
-
-		//Child variations?
-		if (this.config.variationChildren && node.hasMoveVariations()) {
-			variations = node.getMoveVariations();
-			if (show) {
-				addMoveVariations.call(this, variations);
-			}
-			else {
-				removeMoveVariations.call(this, variations);
-			}
-		}
-
-		//Sibling variations?
-		if (this.config.variationSiblings && node.parent && node.parent.hasMoveVariations()) {
-			variations = node.parent.getMoveVariations();
-			if (show) {
-				addMoveVariations.call(this, variations);
-			}
-			else {
-				removeMoveVariations.call(this, variations);
-			}
-		}
-	};
 })
 
 /**
  * Factory definition
  */
-.factory('PlayerModeReplay', function(PlayerTools, MarkupTypes, GameScorer) {
+.factory('PlayerModeReplay', function(Player, PlayerTools, MarkupTypes, GameScorer) {
 
 	/**
 	 * Helper to update the hover mark
@@ -156,9 +75,83 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 	};
 
 	/**
+	 * Helper to show move variations on the board
+	 */
+	var showMoveVariations = function(variations) {
+		for (var i = 0; i < variations.length; i++) {
+
+			//Auto variation markup should never overwrite existing markup
+			if (this.board.has('markup', variations[i].move.x, variations[i].move.y)) {
+				continue;
+			}
+
+			//Add to board
+			this.board.add('markup', variations[i].move.x, variations[i].move.y, {
+				type: MarkupTypes.LABEL,
+				text: String.fromCharCode(65+i),
+				color: this.board.theme.get('markupVariationColor')
+			});
+		}
+	};
+
+	/**
+	 * Helper to hide move variations from the board
+	 */
+	var hideMoveVariations = function(variations) {
+		for (var i = 0; i < variations.length; i++) {
+			this.board.remove('markup', variations[i].move.x, variations[i].move.y);
+		}
+	};
+
+	/**
+	 * Draw (or clear) move variations on the board
+	 */
+	var drawMoveVariations = function(show) {
+
+		//Get the current node
+		var node = this.game.getNode(), variations;
+		if (!node) {
+			return;
+		}
+
+		//Child variations?
+		if (this.config.variationChildren && node.hasMoveVariations()) {
+			variations = node.getMoveVariations();
+			if (show) {
+				showMoveVariations.call(this, variations);
+			}
+			else {
+				hideMoveVariations.call(this, variations);
+			}
+		}
+
+		//Sibling variations?
+		if (this.config.variationSiblings && node.parent && node.parent.hasMoveVariations()) {
+			variations = node.parent.getMoveVariations();
+			if (show) {
+				showMoveVariations.call(this, variations);
+			}
+			else {
+				hideMoveVariations.call(this, variations);
+			}
+		}
+	};
+
+	/**
 	 * Player mode definition
 	 */
 	var PlayerModeReplay = {
+
+		/**
+		 * Config changes handler
+		 */
+		config: function(event, setting) {
+
+			//Solution paths setting changes?
+			if (setting == 'variationMarkup') {
+				drawMoveVariations.call(this, this.config.variationMarkup);
+			}
+		},
 
 		/**
 		 * Hover handler
@@ -174,7 +167,9 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		update: function() {
 
 			//Show move variations
-			this.updateMoveVariations(true);
+			if (this.config.variationMarkup) {
+				drawMoveVariations.call(this, true);
+			}
 		},
 
 		/**
@@ -230,7 +225,9 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 			this.tool = this.tools[0];
 
 			//Show move variations
-			this.updateMoveVariations(true);
+			if (this.config.variationMarkup) {
+				drawMoveVariations.call(this, true);
+			}
 		},
 
 		/**
@@ -239,7 +236,9 @@ angular.module('ngGo.Player.Mode.Replay.Service', [])
 		modeExit: function(event) {
 
 			//Hide move variations
-			this.updateMoveVariations(false);
+			if (this.config.variationMarkup) {
+				drawMoveVariations.call(this, false);
+			}
 		}
 	};
 

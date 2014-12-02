@@ -32,6 +32,11 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 			s = this.board.getCellSize(),
 			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupTriangleScale'));
 
+		//Apply scaling factor?
+		if (markup.scale) {
+			r = Math.round(r * markup.scale);
+		}
+
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
 			strokeStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
@@ -65,8 +70,15 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		var x = this.board.getAbsX(markup.x),
 			y = this.board.getAbsY(markup.y),
 			s = this.board.getCellSize(),
-			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupSquareScale')),
-			rcos = Math.round(r*cosPi4);
+			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupSquareScale'));
+
+		//Apply scaling factor?
+		if (markup.scale) {
+			r = Math.round(r * markup.scale);
+		}
+
+		//Determine cos
+		var rcos = Math.round(r*cosPi4);
 
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
@@ -100,6 +112,11 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 			s = this.board.getCellSize(),
 			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupCircleScale'));
 
+		//Apply scaling factor?
+		if (markup.scale) {
+			r = Math.round(r * markup.scale);
+		}
+
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
 			strokeStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
@@ -130,8 +147,15 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		var x = this.board.getAbsX(markup.x),
 			y = this.board.getAbsY(markup.y),
 			s = this.board.getCellSize(),
-			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupMarkScale')),
-			rcos = Math.round(r*cosPi4);
+			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupMarkScale'));
+
+		//Apply scaling factor?
+		if (markup.scale) {
+			r = Math.round(r * markup.scale);
+		}
+
+		//Determine cos
+		var rcos = Math.round(r*cosPi4);
 
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
@@ -170,6 +194,11 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 			s = this.board.getCellSize(),
 			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupCircleScale'));
 
+		//Apply scaling factor?
+		if (markup.scale) {
+			r = Math.round(r * markup.scale);
+		}
+
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
 			fillStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
@@ -201,6 +230,11 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 			y = this.board.getAbsY(markup.y),
 			s = this.board.getCellSize(),
 			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupLastScale'));
+
+		//Apply scaling factor?
+		if (markup.scale) {
+			r = Math.round(r * markup.scale);
+		}
 
 		//Get theme properties
 		var fillStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
@@ -234,6 +268,11 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 			y = this.board.getAbsY(markup.y),
 			s = this.board.getCellSize(),
 			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupSmileyScale'));
+
+		//Apply scaling factor?
+		if (markup.scale) {
+			r = Math.round(r * markup.scale);
+		}
 
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
@@ -275,6 +314,11 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 			s = this.board.getCellSize(),
 			r = Math.round(this.board.theme.get('stoneRadius', s) * this.board.theme.get('markupSmileyScale'));
 
+		//Apply scaling factor?
+		if (markup.scale) {
+			r = Math.round(r * markup.scale);
+		}
+
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markupLineWidth', s) || 1,
 			strokeStyle = markup.color || this.board.theme.get('markupColor', this.board.getStoneColor(markup.x, markup.y)),
@@ -314,6 +358,11 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 			y = this.board.getAbsY(markup.y),
 			s = this.board.getCellSize(),
 			r = this.board.theme.get('stoneRadius', s);
+
+		//Apply scaling factor?
+		if (markup.scale) {
+			r = Math.round(r * markup.scale);
+		}
 
 		//Get theme properties
 		var font = markup.font || this.board.theme.get('font') || '',

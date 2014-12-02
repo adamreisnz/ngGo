@@ -26,6 +26,8 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 	Player.on('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
 	Player.on('modeExit', PlayerModeSolve.modeExit, PlayerModes.SOLVE);
 	Player.on('keydown', PlayerModeSolve.keyDown, PlayerModes.SOLVE);
+	Player.on('update', PlayerModeSolve.update, PlayerModes.SOLVE);
+	Player.on('config', PlayerModeSolve.config, PlayerModes.SOLVE);
 	Player.on('click', PlayerModeSolve.click, PlayerModes.SOLVE);
 	Player.on('hover', PlayerModeSolve.hover, PlayerModes.SOLVE);
 
@@ -42,7 +44,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 /**
  * Factory definition
  */
-.factory('PlayerModeSolve', function($document, $timeout, PlayerTools) {
+.factory('PlayerModeSolve', function($document, $timeout, Player, PlayerTools) {
 
 	/**
 	 * Block navigation while in timeout
@@ -108,9 +110,76 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 	};
 
 	/**
+	 * Helper to show solution paths
+	 */
+	var showSolutionPaths = function(variations) {
+		for (var i = 0; i < variations.length; i++) {
+			if (variations[i].move.solution === true) {
+				this.board.add('markup', variations[i].move.x, variations[i].move.y, {
+					type: this.board.theme.get('problemSolutionMarkup'),
+					scale: this.board.theme.get('problemSolutionScale'),
+					color: this.board.theme.get('problemSolutionColor')
+				});
+			}
+			else {
+				this.board.add('markup', variations[i].move.x, variations[i].move.y, {
+					type: this.board.theme.get('problemInvalidMarkup'),
+					scale: this.board.theme.get('problemInvalidScale'),
+					color: this.board.theme.get('problemInvalidColor')
+				});
+			}
+		}
+	};
+
+	/**
+	 * Helper to hide solution paths
+	 */
+	var hideSolutionPaths = function(variations) {
+		for (var i = 0; i < variations.length; i++) {
+			this.board.remove('markup', variations[i].move.x, variations[i].move.y);
+		}
+	};
+
+	/**
+	 * Draw (or clear) solution paths
+	 */
+	var drawSolutionPaths = function(show) {
+
+		//Get node and variations
+		var node = this.game.getNode(),
+			variations = node.getMoveVariations();
+
+		//When showing, make sure it's not during the auto solver's move
+		if (show && !this.problemSolved && this.config.solveAutoPlay) {
+			if (this.game.getTurn() != this.problemPlayerColor) {
+				return;
+			}
+		}
+
+		//Call helper
+		if (show) {
+			showSolutionPaths.call(this, variations);
+		}
+		else {
+			hideSolutionPaths.call(this, variations);
+		}
+	};
+
+	/**
 	 * Player mode definition
 	 */
 	var PlayerModeSolve = {
+
+		/**
+		 * Config changes handler
+		 */
+		config: function(event, setting) {
+
+			//Solution paths setting changes?
+			if (setting == 'solutionPaths')	{
+				drawSolutionPaths.call(this, this.config.solutionPaths);
+			}
+		},
 
 		/**
 		 * Hover handler
@@ -118,6 +187,17 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 		hover: function(event) {
 			this.board.removeAll('hover');
 			updateHoverMark.call(this, event.x, event.y);
+		},
+
+		/**
+		 * Board update event handler
+		 */
+		update: function() {
+
+			//Show move variations
+			if (this.config.solutionPaths) {
+				drawSolutionPaths.call(this, true);
+			}
 		},
 
 		/**
@@ -140,7 +220,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 				case 39:
 
 					//Go forward one move if solved
-					if (this.config.arrowKeysNavigation && solved) {
+					if (this.config.arrowKeysNavigation && this.problemSolved) {
 						this.next();
 					}
 					break;
@@ -262,6 +342,11 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 
 			//Initialize player color
 			this.problemPlayerColor = this.game.getTurn();
+
+			//Draw solution variations
+			if (this.config.solutionPaths) {
+				drawSolutionPaths.call(this, true);
+			}
 		},
 
 		/**
@@ -269,6 +354,10 @@ angular.module('ngGo.Player.Mode.Solve.Service', [])
 		 */
 		modeExit: function(event) {
 
+			//Hide any solution variations
+			if (this.config.solutionPaths) {
+				drawSolutionPaths.call(this, false);
+			}
 		}
 	};
 

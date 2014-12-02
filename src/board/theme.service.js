@@ -63,7 +63,7 @@ angular.module('ngGo.Board.Theme.Service', [
 				return 'rgba(0,0,0,0.9)';
 			}
 		},
-		markupVariationColor: 'rgba(0,32,128,0.8)',
+		markupVariationColor: 'rgba(86,114,30,0.9)',
 		markupTriangleScale: 0.85,
 		markupSquareScale: 0.85,
 		markupCircleScale: 0.55,
@@ -74,6 +74,14 @@ angular.module('ngGo.Board.Theme.Service', [
 		markupLineWidth: function(cellSize) {
 			return Math.max(1, Math.floor(cellSize / 16));
 		},
+
+		//Problem solution marking
+		problemSolutionMarkup: 'select',
+		problemSolutionColor: 'rgba(86,114,30,0.9)',
+		problemSolutionScale: 0.5,
+		problemInvalidMarkup: 'mark',
+		problemInvalidColor: 'rgba(237,9,15,0.8)',
+		problemInvalidScale: 0.3,
 
 		//Grid
 		gridLineColor: 'rgba(101,69,37,0.4)',
