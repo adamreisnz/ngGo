@@ -18,11 +18,6 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 .run(function(Player, PlayerModes, PlayerModeEdit, StoneColor) {
 
 	/**
-	 * Register mode
-	 */
-	Player.modes[PlayerModes.EDIT] = PlayerModeEdit;
-
-	/**
 	 * Register event handlers
 	 */
 	Player.on('modeEnter', PlayerModeEdit.modeEnter, PlayerModes.EDIT);
@@ -30,6 +25,11 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	Player.on('click', PlayerModeEdit.click, PlayerModes.EDIT);
 	Player.on('mousedrag', PlayerModeEdit.mouseDrag, PlayerModes.EDIT);
 	Player.on('hover', PlayerModeEdit.hover, PlayerModes.EDIT);
+
+	/**
+	 * Register mode itself
+	 */
+	Player.registerMode(PlayerModes.EDIT, PlayerModeEdit);
 
 	//Setup tools
 	Player.setupTools = {

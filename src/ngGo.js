@@ -44,7 +44,7 @@ angular.module('ngGo', [])
 })
 
 /**
- * Stone color constant
+ * Stone colors
  */
 .constant('StoneColor', {
 	E: 0,
@@ -53,4 +53,40 @@ angular.module('ngGo', [])
 	BLACK: 1,
 	W:	-1,
 	WHITE: -1
+})
+
+/**
+ * Markup types
+ */
+.constant('MarkupTypes', {
+	TRIANGLE:	'triangle',
+	CIRCLE:		'circle',
+	SQUARE:		'square',
+	MARK:		'mark',
+	SELECT:		'select',
+	LABEL:		'label',
+	LAST:		'last',
+	SAD:		'sad',
+	HAPPY:		'happy'
 });
+
+/**
+ * Angular extension
+ */
+if (typeof angular.extendDeep == 'undefined') {
+	angular.extendDeep = function(dest) {
+		for (var i = 0; i < arguments.length; i++) {
+			if (arguments[i] != dest) {
+				for (var k in arguments[i]) {
+					if (dest[k] && dest[k].constructor && dest[k].constructor === Object) {
+						angular.extendDeep(dest[k], arguments[i][k]);
+					}
+					else {
+						dest[k] = angular.copy(arguments[i][k]);
+					}
+				}
+			}
+		}
+		return dest;
+	};
+}

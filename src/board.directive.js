@@ -39,15 +39,20 @@ angular.module('ngGo.Board.Directive', [
 			//Get pixel ratio
 			var pixelRatio = window.pixelRatio || 1;
 
-			//Observe the board size attributes (should be 19x19 format)
-			attrs.$observe('size', function(size) {
-				size = size.split('x');
-				$scope.Board.setSize(size[0], size[1]);
-			});
-
 			//Listen for board resize events
 			$scope.$on('ngGo.board.resize', function(event, width, height) {
 				$scope.Board.setDrawSize(width * pixelRatio, height * pixelRatio);
+			});
+
+			//Observe the board size attribute
+			attrs.$observe('size', function(size) {
+				if (typeof size == 'string' && size.toLowerCase().indexOf('x') !== -1) {
+					size = size.split('x');
+					$scope.Board.setSize(size[0], size[1]);
+				}
+				else {
+					$scope.Board.setSize(size, size);
+				}
 			});
 
 			//Observe the coordinates attribute

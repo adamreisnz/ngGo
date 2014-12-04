@@ -18,11 +18,6 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 .run(function(Player, PlayerModes, PlayerModeReplay) {
 
 	/**
-	 * Register mode
-	 */
-	Player.modes[PlayerModes.REPLAY] = PlayerModeReplay;
-
-	/**
 	 * Register event handlers
 	 */
 	Player.on('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
@@ -31,6 +26,11 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	Player.on('config', PlayerModeReplay.config, PlayerModes.REPLAY);
 	Player.on('click', PlayerModeReplay.click, PlayerModes.REPLAY);
 	Player.on('hover', PlayerModeReplay.hover, PlayerModes.REPLAY);
+
+	/**
+	 * Register mode itself
+	 */
+	Player.registerMode(PlayerModes.REPLAY, PlayerModeReplay);
 })
 
 /**
@@ -90,9 +90,9 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 
 			//Add to board
 			this.board.add('markup', variations[i].move.x, variations[i].move.y, {
-				type: MarkupTypes.LABEL,
-				text: String.fromCharCode(65+i),
-				color: this.board.theme.get('markupVariationColor')
+				type: this.board.theme.get('markup.variation.type'),
+				text: this.board.theme.get('markup.variation.text', i),
+				color: this.board.theme.get('markup.variation.color')
 			});
 		}
 	};
@@ -167,7 +167,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 		/**
 		 * Board update event handler
 		 */
-		update: function() {
+		update: function(event, node) {
 
 			//Show move variations
 			if (this.config.variationMarkup) {

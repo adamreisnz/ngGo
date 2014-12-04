@@ -41,6 +41,10 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 	Player.on('toolSwitch', PlayerModeCommon.toolSwitch, [
 		PlayerModes.REPLAY, PlayerModes.EDIT
 	]);
+
+	//Last x and y coordinates for mouse events
+	Player.lastX = -1;
+	Player.lastY = -1;
 })
 
 /**
@@ -52,11 +56,6 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 	 * Helper var to detect dragging
 	 */
 	var dragStart = null;
-
-	/**
-	 * Helper vars to keep track of last move coordinates
-	 */
-	var lastX, lastY;
 
 	/**
 	 * Helper to build drag object
@@ -108,9 +107,6 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 				return true;
 			}
 
-			//Remove hover marks
-			this.board.removeAll('hover');
-
 			//Switch key code
 			switch (keyboardEvent.keyCode) {
 
@@ -124,15 +120,37 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 
 				//Right arrow
 				case 39:
-					if (this.config.arrowKeysNavigation && this.tool == PlayerTools.MOVE) {
-						this.next();
+
+					//Arrow navigation enabled?
+					if (this.config.arrowKeysNavigation) {
+
+						//Don't scroll with arrows
+						if (this.config.lockScroll) {
+							keyboardEvent.preventDefault();
+						}
+
+						//Advance to the next move
+						if (this.tool == PlayerTools.MOVE) {
+							this.next();
+						}
 					}
 					break;
 
 				//Left arrow
 				case 37:
-					if (this.config.arrowKeysNavigation && this.tool == PlayerTools.MOVE) {
-						this.previous();
+
+					//Arrow navigation enabled?
+					if (this.config.arrowKeysNavigation) {
+
+						//Don't scroll with arrows
+						if (this.config.lockScroll) {
+							keyboardEvent.preventDefault();
+						}
+
+						//Go to the previous move
+						if (this.tool == PlayerTools.MOVE) {
+							this.previous();
+						}
 					}
 					break;
 
@@ -141,10 +159,9 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 					return true;
 			}
 
-			//Don't scroll with arrows
-			if (this.config.lockScroll) {
-				keyboardEvent.preventDefault();
-			}
+			//Update hover mark
+			this.board.removeAll('hover');
+			updateHoverMark.call(this, this.lastX, this.lastY);
 		},
 
 		/**
@@ -196,18 +213,18 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			}
 
 			//Nothing else to do?
-			if (this.frozen || !this.board.layers.hover) {
+			if (!this.board.layers.hover) {
 				return;
 			}
 
 			//Last coordinates are the same?
-			if (lastX == event.x && lastY == event.y) {
+			if (this.lastX == event.x && this.lastY == event.y) {
 				return;
 			}
 
 			//Remember last coordinates
-			lastX = event.x;
-			lastY = event.y;
+			this.lastX = event.x;
+			this.lastY = event.y;
 
 			//Broadcast hover event
 			this.broadcast('hover', mouseEvent);

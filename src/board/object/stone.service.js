@@ -52,7 +52,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		var x = this.board.getAbsX(stone.x),
 			y = this.board.getAbsY(stone.y),
 			s = this.board.getCellSize(),
-			r = this.board.theme.get('stoneRadius', s);
+			r = this.board.theme.get('stone.radius', s);
 
 		//Apply scaling factor?
 		if (stone.scale) {
@@ -64,6 +64,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
 		//Get theme properties
 		var lineWidth = this.board.theme.get('markupLinesWidth', s) || 1;
+			fillStyle = this.board.theme.get('stone.mono.color', color),
 			canvasTranslate = this.board.theme.get('canvasTranslate');
 
 		//Translate canvas
@@ -75,7 +76,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		}
 
 		//Configure context
-		this.context.fillStyle = (color == StoneColor.W) ? this.board.theme.get('stoneColorMonoWhite') : this.board.theme.get('stoneColorMonoBlack');
+		this.context.fillStyle = fillStyle;
 
 		//Draw stone
 		this.context.beginPath();
@@ -107,7 +108,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		var x = this.board.getAbsX(stone.x),
 			y = this.board.getAbsY(stone.y),
 			s = this.board.getCellSize(),
-			r = this.board.theme.get('stoneRadius', s);
+			r = this.board.theme.get('stone.radius', s);
 
 		//Apply scaling factor?
 		if (stone.scale) {
@@ -165,7 +166,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		var x = this.board.getAbsX(stone.x),
 			y = this.board.getAbsY(stone.y),
 			s = this.board.getCellSize(),
-			r = this.board.theme.get('stoneRadius', s);
+			r = this.board.theme.get('stone.radius', s);
 
 		//Apply scaling factor?
 		if (stone.scale) {
@@ -266,7 +267,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		draw: function(stone) {
 
 			//Determine style of stone
-			var style = this.board.theme.get('stoneStyle');
+			var style = this.board.theme.get('stone.style');
 
 			//Draw using the appropriate handler
 			switch (style) {
@@ -295,7 +296,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 			}
 
 			//Draw shadow
-			if (this.board.theme.get('stoneShadow') && stone.shadow !== false) {
+			if (this.board.theme.get('stone.shadow') && stone.shadow !== false) {
 				this.board.layers.shadow.add(stone);
 			}
 		},
@@ -309,7 +310,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 			BoardObject.clear.call(this, stone);
 
 			//Redraw shadow layer
-			if (this.board.theme.get('stoneShadow') && stone.shadow !== false) {
+			if (this.board.theme.get('stone.shadow') && stone.shadow !== false) {
 				this.board.layers.shadow.remove(stone);
 			}
 		}

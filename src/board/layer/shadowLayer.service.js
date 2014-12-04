@@ -67,7 +67,7 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
 		}
 
 		//Get shadowsize from theme
-		var shadowSize = this.board.theme.get('shadowSize', this.board.getCellSize());
+		var shadowSize = this.board.theme.get('shadow.size', this.board.getCellSize());
 
 		//Apply shadow transformation
 		this.context.setTransform(1, 0, 0, 1, shadowSize, shadowSize);

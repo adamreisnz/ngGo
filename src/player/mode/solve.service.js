@@ -17,11 +17,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 .run(function(Player, PlayerModes, PlayerModeSolve) {
 
 	/**
-	 * Register mode
-	 */
-	Player.modes[PlayerModes.SOLVE] = PlayerModeSolve;
-
-	/**
 	 * Register event handlers
 	 */
 	Player.on('gameLoaded', PlayerModeSolve.gameLoaded, PlayerModes.SOLVE);
@@ -32,6 +27,11 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	Player.on('config', PlayerModeSolve.config, PlayerModes.SOLVE);
 	Player.on('click', PlayerModeSolve.click, PlayerModes.SOLVE);
 	Player.on('hover', PlayerModeSolve.hover, PlayerModes.SOLVE);
+
+	/**
+	 * Register mode itself
+	 */
+	Player.registerMode(PlayerModes.SOLVE, PlayerModeSolve);
 
 	//The player color for this problem
 	Player.problemPlayerColor = 0;
@@ -116,18 +116,20 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	 */
 	var showSolutionPaths = function(variations) {
 		for (var i = 0; i < variations.length; i++) {
-			if (variations[i].move.solution === true) {
+			if (variations[i].solution === true) {
 				this.board.add('markup', variations[i].move.x, variations[i].move.y, {
-					type: this.board.theme.get('problemSolutionMarkup'),
-					scale: this.board.theme.get('problemSolutionScale'),
-					color: this.board.theme.get('problemSolutionColor')
+					type: this.board.theme.get('markup.solution.valid.type'),
+					text: this.board.theme.get('markup.solution.valid.text', i),
+					scale: this.board.theme.get('markup.solution.valid.scale'),
+					color: this.board.theme.get('markup.solution.valid.color')
 				});
 			}
 			else {
 				this.board.add('markup', variations[i].move.x, variations[i].move.y, {
-					type: this.board.theme.get('problemInvalidMarkup'),
-					scale: this.board.theme.get('problemInvalidScale'),
-					color: this.board.theme.get('problemInvalidColor')
+					type: this.board.theme.get('markup.solution.invalid.type'),
+					text: this.board.theme.get('markup.solution.invalid.text', i),
+					scale: this.board.theme.get('markup.solution.invalid.scale'),
+					color: this.board.theme.get('markup.solution.invalid.color')
 				});
 			}
 		}
@@ -194,7 +196,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 		/**
 		 * Board update event handler
 		 */
-		update: function() {
+		update: function(event, node) {
 
 			//Show move variations
 			if (this.config.solutionPaths) {
@@ -212,44 +214,57 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 				return true;
 			}
 
-			//Remove hover marks
-			this.board.removeAll('hover');
-
 			//Switch key code
 			switch (keyboardEvent.keyCode) {
 
 				//Right arrow
 				case 39:
 
-					//Go forward one move if solved
-					if (this.config.arrowKeysNavigation && this.problemSolved) {
-						this.next();
+					//Arrow keys navigation enabled?
+					if (this.config.arrowKeysNavigation) {
+
+						//Lock scroll
+						if (this.config.lockScroll) {
+							keyboardEvent.preventDefault();
+						}
+
+						//Go forward one move if solved
+						if (this.problemSolved) {
+							this.next();
+						}
 					}
 					break;
 
 				//Left arrow
 				case 37:
-					if (this.config.arrowKeysNavigation && !navigationBlocked) {
 
-						//Go back one move
-						this.previous();
+					//Arrow keys navigation enabled?
+					if (this.config.arrowKeysNavigation) {
 
-						//Go back one more if this is not the player's turn and if
-						//the problem hasn't been solved yet
-						if (!this.problemSolved && this.config.solveAutoPlay && this.game.getTurn() == -this.problemPlayerColor) {
+						//Lock scroll
+						if (this.config.lockScroll) {
+							keyboardEvent.preventDefault();
+						}
+
+						//Navigation not blocked?
+						if (!navigationBlocked) {
+
+							//Go back one move
 							this.previous();
+
+							//Go back one more if this is not the player's turn and if
+							//the problem hasn't been solved yet
+							if (!this.problemSolved && this.config.solveAutoPlay && this.game.getTurn() == -this.problemPlayerColor) {
+								this.previous();
+							}
 						}
 					}
 					break;
-
-				default:
-					return true;
 			}
 
-			//Don't scroll with arrows
-			if (this.config.lockScroll) {
-				keyboardEvent.preventDefault();
-			}
+			//Update hover mark
+			this.board.removeAll('hover');
+			updateHoverMark.call(this, this.lastX, this.lastY);
 		},
 
 		/**
@@ -274,50 +289,49 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 
 				//No children left? Check if we solved it or not
 				if (node.children.length === 0) {
-					if (node.move.solution) {
+					if (node.solution === true) {
 						this.problemSolved = true;
 						this.broadcast('solutionFound', node);
 					}
 					else {
 						this.broadcast('solutionWrong', node);
 					}
-					return;
 				}
 
-				//Stop auto-playing if solved
-				if (this.problemSolved || !this.config.solveAutoPlay) {
-					return;
+				//Auto-play?
+				else if (!this.problemSolved && this.config.solveAutoPlay) {
+
+					//Children left, pick a random one and make a move
+					i = Math.floor(Math.random() * node.children.length), self = this;
+
+					//Using a delay?
+					if (this.config.solveAutoPlayDelay) {
+
+						//Block navigation and run the timeout
+						navigationBlocked = true;
+						$timeout(function() {
+							self.next(i);
+							navigationBlocked = false;
+						}, this.config.solveAutoPlayDelay);
+					}
+
+					//Just move to the next node immediately
+					else {
+						this.next(i);
+					}
 				}
-
-				//Children left, pick a random one and make a move
-				i = Math.floor(Math.random() * node.children.length), self = this;
-
-				//Using timeouts?
-				if (this.config.solveAutoPlayTimeout) {
-
-					//Block navigation and run the timeout
-					navigationBlocked = true;
-					$timeout(function() {
-						self.next(i);
-						navigationBlocked = false;
-					}, this.config.solveAutoPlayTimeout);
-					return;
-				}
-
-				//Just move to the next node immediately
-				this.next(i);
-				return;
 			}
 
 			//Unknown variation, try to play
-			if (this.game.play(event.x, event.y)) {
+			else if (this.game.play(event.x, event.y)) {
 				this.problemOffPath = true;
 				this.updateBoard();
 				this.broadcast('solutionWrong', this.game.getNode());
 			}
 
-			//Handle hover
-			PlayerModeSolve.hover.call(this, event);
+			//Update hover mark
+			this.board.removeAll('hover');
+			updateHoverMark.call(this, event.x, event.y);
 		},
 
 		/**

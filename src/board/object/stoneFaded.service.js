@@ -26,10 +26,9 @@ angular.module('ngGo.Board.Object.StoneFaded.Service', [
 		 */
 		draw: function(stone) {
 
-			//Set alpha if not given
-			if (!stone.alpha) {
-				stone.alpha = this.board.theme.get('stoneFadedAlpha', stone.color);
-			}
+			//Set scale and alpha
+			stone.scale = this.board.theme.get('stone.faded.scale');
+			stone.alpha = this.board.theme.get('stone.faded.alpha', stone.color);
 
 			//Don't show shadow
 			stone.shadow = false;

@@ -9,7 +9,7 @@ angular.module('ngGo.Player.Directive', [
 /**
  * Directive definition
  */
-.directive('player', function($window, $document, Player, Board) {
+.directive('player', function($window, Player, Board) {
 	return {
 		restrict: 'E',
 
@@ -37,9 +37,17 @@ angular.module('ngGo.Player.Directive', [
 				$scope.$broadcast('ngGo.board.resize', parentSize, parentSize);
 			}
 
+			//Link the element
+			Player.setElement(element);
+
 			//Link the board
 			$scope.$watch('Board', function(Board) {
-				Player.board = Board;
+				Player.setBoard(Board);
+			});
+
+			//On window resize, change the board dimensions
+			angular.element($window).on('resize.ngGo.player', function() {
+				$scope.$broadcast('ngGo.player.resize');
 			});
 
 			//On resize event, change the board dimensions
@@ -52,26 +60,6 @@ angular.module('ngGo.Player.Directive', [
 				//Propagate to board and layers
 				$scope.$broadcast('ngGo.board.resize', parentSize, parentSize);
 			});
-
-			//On window resize, change the board dimensions
-			angular.element($window).on('resize.ngGo.player', function() {
-				$scope.$broadcast('ngGo.player.resize');
-			});
-
-			//Bind other needed event listeners to the element
-			var events = Player.getElementEvents();
-			for (var e = 0; e < events.length; e++) {
-
-				//Keydown event is registered on the document to prevent having to focus the board first
-				if (events[e] == 'keydown') {
-					$document.on('keydown.ngGo.player', Player.broadcast.bind(Player, events[e]));
-				}
-
-				//All other events apply on the element
-				else {
-					element.on(events[e] + '.ngGo.player', Player.broadcast.bind(Player, events[e]));
-				}
-			}
 
 			//Observe mode and tool attributes
 			attrs.$observe('mode', function(mode) {

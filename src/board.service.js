@@ -43,10 +43,7 @@ angular.module('ngGo.Board.Service', [
 			right: 0,
 			bottom: 0,
 			left: 0
-		},
-
-		//Margin size (factor of the lesser of available width and height)
-		margin: 0.04
+		}
 	};
 
 	/**
@@ -65,6 +62,11 @@ angular.module('ngGo.Board.Service', [
 		 * Helper to (re)calculate cellsize and margins
 		 */
 		var calcCellSizeAndMargins = function() {
+
+			//Check if there is sensible data
+			if (!this.width || !this.height) {
+				return;
+			}
 
 			//Get draw size, available size and number of cells
 			var drawSize = Math.min(this.drawWidth, this.drawHeight),
@@ -99,11 +101,12 @@ angular.module('ngGo.Board.Service', [
 			this.config = angular.extend({}, defaultConfig, config || {});
 
 			//Set board theme
-			this.theme = new BoardTheme(this.config.theme);
+			this.theme = new BoardTheme();
 
 			//Initialize board draw dimensions in pixels
 			this.drawWidth = 0;
 			this.drawHeight = 0;
+			this.drawMargin = 0;
 
 			//Color multiplier (to allow color swapping)
 			this.colorMultiplier = 1;
@@ -112,11 +115,19 @@ angular.module('ngGo.Board.Service', [
 			this.layers = {};
 
 			//Initialize grid size
-			this.width = this.height = parseInt(this.config.defaultSize);
+			var size = this.config.defaultSize;
+			if (typeof size == 'string' && size.toLowerCase().indexOf('x') !== -1) {
+				size = size.split('x');
+				this.width = parseInt(size[0]);
+				this.height = parseInt(size[0]);
+			}
+			else {
+				this.width = this.height = parseInt(size);
+			}
 
 			//Set section of board to display and determine resulting grid
 			this.section = angular.extend({}, defaultConfig.section, this.config.section);
-			this.margin = this.config.margin;
+			this.margin = this.theme.get('board.margin');
 			determineGrid.call(this);
 		};
 
@@ -128,22 +139,17 @@ angular.module('ngGo.Board.Service', [
 		 * Set margin
 		 */
 		Board.prototype.setMargin = function(margin) {
-
-			//No change?
-			if (this.margin == margin) {
-				return;
+			if (this.margin != margin) {
+				this.margin = margin;
+				this.resized();
 			}
-
-			//Set margin and call resized handler
-			this.margin = margin;
-			this.resized();
 		};
 
 		/**
-		 * Reset margin to config value
+		 * Reset margin to theme value
 		 */
 		Board.prototype.resetMargin = function() {
-			this.setMargin(this.config.margin);
+			this.setMargin(this.theme.get('board.margin'));
 		};
 
 		/**
@@ -208,9 +214,33 @@ angular.module('ngGo.Board.Service', [
 		 * Called after a board resize, section change or margin change
 		 */
 		Board.prototype.resized = function() {
+
+			//Determine the new grid and calculate cell size and margins
 			determineGrid.call(this);
 			calcCellSizeAndMargins.call(this);
-			this.redraw();
+
+			//Only redraw when there is sensible data
+			if (this.width && this.height) {
+				this.redraw();
+			}
+		};
+
+		/*******************************************************************************************************************************
+		 * Theme handling
+		 ***/
+
+		/**
+		 * Get the current theme object
+		 */
+		Board.prototype.getTheme = function() {
+			return this.theme;
+		};
+
+		/**
+		 * Set the theme object
+		 */
+		Board.prototype.setTheme = function(theme) {
+			this.theme = theme;
 		};
 
 		/***********************************************************************************************
@@ -291,9 +321,19 @@ angular.module('ngGo.Board.Service', [
 				this.config.coordinates = !this.config.coordinates;
 			}
 
-			//Set in grid
+			//Must have grid layer
 			if (this.layers.grid) {
+
+				//Show in grid
 				this.layers.grid.showCoordinates(this.config.coordinates);
+
+				//Set the board margin, or reset it
+				if (this.config.coordinates) {
+					this.setMargin(this.theme.get('coordinates.margin'));
+				}
+				else {
+					this.resetMargin();
+				}
 			}
 		};
 
@@ -366,16 +406,6 @@ angular.module('ngGo.Board.Service', [
 		Board.prototype.swapColors = function() {
 			this.colorMultiplier = -this.colorMultiplier;
 			if (this.layers.stones)	{
-
-				//Clear shadows
-				//TODO: this would belong in a stone layer redraw method, but there is no distinct
-				//stone layer class. This might be obsolete anyway when we find a better way to handle
-				//shadows
-				if (this.layers.shadow)	{
-					this.layers.shadow.clear();
-				}
-
-				//Redraw stones
 				this.layers.stones.redraw();
 			}
 		};
@@ -429,7 +459,7 @@ angular.module('ngGo.Board.Service', [
 		 * Check if given grid coordinates are on board
 		 */
 		Board.prototype.isOnBoard = function(gridX, gridY) {
-			return gridX >= 0 && gridY >= 0 && gridX < this.width && gridY < this.height;
+			return gridX >= this.grid.xLeft && gridY >= this.grid.yTop && gridX <= this.grid.xRight && gridY <= this.grid.yBot;
 		};
 
 		//Return object

@@ -120,12 +120,13 @@ angular.module('ngGo.Game.Node.Service', [
 			colors = ['W', 'B'];
 
 		//Check whose move it was
-		for (i in colors) {
-			color = colors[i];
-			if (move[color]) {
-				coords = move[color];
-				break;
-			}
+		if (move.W) {
+			color = 'W';
+			coords = move.W;
+		}
+		else if (move.B) {
+			color = 'B';
+			coords = move.B;
 		}
 
 		//No coordinates?
@@ -133,12 +134,10 @@ angular.module('ngGo.Game.Node.Service', [
 			return null;
 		}
 
-		//Set new color property
-		delete move[color];
-		move.color = toColorConstant(color);
-
 		//Return coordinates object
-		return coordinatesObject(coords, move);
+		return coordinatesObject(coords, {
+			color: toColorConstant(color)
+		});
 	};
 
 	/**
@@ -348,6 +347,13 @@ angular.module('ngGo.Game.Node.Service', [
 	 */
 	GameNode.prototype.getChildren = function() {
 		return this.children;
+	};
+
+	/**
+	 * Check if the node has any chilren
+	 */
+	GameNode.prototype.hasChildren = function() {
+		return (this.children.length > 0);
 	};
 
 	/**

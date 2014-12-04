@@ -227,31 +227,11 @@ JGF = {
 			}
 		},
 
-		// For problems, a move with the correct solution can be marked as follows
+		// For problems, a node with the correct solution can be marked as follows
 		{
 			solution: true,
 			move: {
 				W: "gb"
-			}
-		},
-
-		// For demo mode, a node can contain play/stop instructions
-		// to auto play a sequence of moves or positions.
-		{
-			demo: "start",
-			move: {
-				W: "gb"
-			}
-		},
-		{
-			move: {
-				W: "gc"
-			}
-		},
-		{
-			demo: "stop",
-			move: {
-				W: "gd"
 			}
 		},
 

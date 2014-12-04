@@ -22,47 +22,37 @@ angular.module('ngGo.Player.Service', [
  * Player modes constant
  */
 .constant('PlayerModes', {
-	PLAY:		'play',
-	REPLAY:		'replay',
-	EDIT:		'edit',
-	SOLVE:		'solve'
+	PLAY:	'play',
+	REPLAY:	'replay',
+	EDIT:	'edit',
+	SOLVE:	'solve',
+	DEMO:	'demo'
 })
 
 /**
  * Player tools constant
  */
 .constant('PlayerTools', {
-	NONE:		'none',
-	MOVE:		'move',
-	SCORE:		'score',
-	SETUP:		'setup',
-	MARKUP:		'markup'
-})
-
-/**
- * Markup types
- */
-.constant('MarkupTypes', {
-	TRIANGLE:	'triangle',
-	CIRCLE:		'circle',
-	SQUARE:		'square',
-	MARK:		'mark',
-	SELECT:		'select',
-	LABEL:		'label',
-	LAST:		'last',
-	SAD:		'sad',
-	HAPPY:		'happy'
+	NONE:	'none',
+	MOVE:	'move',
+	SCORE:	'score',
+	SETUP:	'setup',
+	MARKUP:	'markup'
 })
 
 /**
  * Provider definition
  */
-.provider('Player', function(PlayerModes) {
+.provider('Player', function(PlayerModes, PlayerTools) {
 
 	/**
 	 * Default configuration
 	 */
 	var defaultConfig = {
+
+		//Starting mode/tool
+		defaultMode: PlayerModes.REPLAY,
+		defaultTool: PlayerTools.MOVE,
 
 		//Keys/scrollwheel navigation
 		arrowKeysNavigation: true,
@@ -90,12 +80,15 @@ angular.module('ngGo.Player.Service', [
 		//Show solution paths
 		solutionPaths: false,
 
-		//Solve mode auto play settings
-		solveAutoPlay: true,
-		solveAutoPlayTimeout: 500,
+		//Replay mode auto play interval
+		autoPlayDelay: 1000,
 
-		//Event listeners to apply on the player HTML element
-		elementEvents: ['keydown', 'click', 'mousedown', 'mouseup', 'mousemove', 'mouseout', 'mousewheel']
+		//Solve mode settings
+		solveAutoPlay: true,
+		solveAutoPlayDelay: 500,
+
+		//Additional event listeners to apply on the player HTML element
+		elementEvents: []
 	};
 
 	/**
@@ -108,7 +101,7 @@ angular.module('ngGo.Player.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function($rootScope, Game, GameScorer, Board, PlayerModes, PlayerTools) {
+	this.$get = function($rootScope, $document, $interval, Game, GameScorer, Board, PlayerTools) {
 
 		/**
 		 * Helper to append board grid coordinatess to the broadcast event object
@@ -155,19 +148,16 @@ angular.module('ngGo.Player.Service', [
 			//Remembered current path
 			path: null,
 
-			//Frozen state
-			frozen: false,
-
 			//Player mode and active tool
-			mode: null,
-			tool: null,
+			mode: '',
+			tool: '',
 
 			//Available modes and tools
 			modes: {},
 			tools: [],
 
 			/**
-			 * Load and auto detect format
+			 * Load game record
 			 */
 			load: function(data, path) {
 
@@ -201,6 +191,83 @@ angular.module('ngGo.Player.Service', [
 
 				//Dispatch game loaded event
 				this.broadcast('gameLoaded', this.game);
+				return true;
+			},
+
+			/**
+			 * Set the board
+			 */
+			setBoard: function(Board) {
+				this.board = Board;
+			},
+
+			/**
+			 * Set the element
+			 */
+			setElement: function(element) {
+
+				//Set element
+				this.element = element;
+
+				//Register document event
+				this.registerElementEvent('keydown', $document);
+
+				//Register element events
+				this.registerElementEvent('click');
+				this.registerElementEvent('mousedown');
+				this.registerElementEvent('mouseup');
+				this.registerElementEvent('mousemove');
+				this.registerElementEvent('mouseout');
+				this.registerElementEvent('mousewheel');
+			},
+
+			/**
+			 * Update the board
+			 */
+			updateBoard: function() {
+
+				//Get current node and game position
+				var i,
+					node = this.game.getNode(),
+					path = this.game.getPath(),
+					position = this.game.getPosition();
+
+				//Path change? That means a whole new board position
+				if (!path.compare(this.path)) {
+
+					//Copy new path and remove all markup
+					this.path = path.clone();
+					this.board.removeAll('markup');
+
+					//Broadcast
+					this.broadcast('pathChange', node);
+
+					//Mode change instruction?
+					if (node.mode) {
+						this.switchMode(node.mode);
+					}
+				}
+
+				//Set new stones and markup grids
+				this.board.setAll('stones', position.stones);
+				this.board.setAll('markup', position.markup);
+
+				//Move made?
+				if (node.move) {
+
+					//Passed?
+					if (node.move.pass) {
+						this.broadcast('notification', 'pass');
+					}
+
+					//Mark last move?
+					else if (this.config.markLastMove) {
+						this.board.add('markup', node.move.x, node.move.y, this.config.lastMoveMarker);
+					}
+				}
+
+				//Broadcast event
+				this.broadcast('update', node);
 			},
 
 			/**
@@ -234,6 +301,21 @@ angular.module('ngGo.Player.Service', [
 				}
 			},
 
+			/**
+			 * Register a player mode
+			 */
+			registerMode: function(mode, handler) {
+
+				//Register the mode
+				this.modes[mode] = handler;
+
+				//Switch to the mode now, if not in a mode yet and if it matches the default mode
+				if (!this.mode && mode == this.config.defaultMode) {
+					this.switchMode(this.config.defaultMode);
+					this.switchTool(this.config.defaultTool);
+				}
+			},
+
 			/***********************************************************************************************
 			 * Game record navigation
 			 ***/
@@ -242,143 +324,94 @@ angular.module('ngGo.Player.Service', [
 			 * Play next move
 			 */
 			next: function(i) {
-
-				//Frozen or no game?
-				if (this.frozen || !this.game) {
-					return;
+				if (this.game) {
+					this.game.next(i);
+					this.updateBoard();
 				}
-
-				//Go to the next position and update board
-				this.game.next(i);
-				this.updateBoard();
 			},
 
 			/**
 			 * Go back to the previous position
 			 */
 			previous: function() {
-
-				//Frozen or no game?
-				if (this.frozen || !this.game) {
-					return;
+				if (this.game) {
+					this.game.previous();
+					this.updateBoard();
 				}
-
-				//Go to the previous position and update board
-				this.game.previous();
-				this.updateBoard();
 			},
 
 			/**
 			 * Go to the last position
 			 */
 			last: function() {
-
-				//Frozen or no game?
-				if (this.frozen || !this.game) {
-					return;
+				if (this.game) {
+					this.game.last();
+					this.updateBoard();
 				}
-
-				//Go to last position and update board
-				this.game.last();
-				this.updateBoard();
 			},
 
 			/**
 			 * Go to the first position
 			 */
 			first: function() {
-
-				//Frozen or no game?
-				if (this.frozen || !this.game) {
-					return;
+				if (this.game) {
+					this.game.first();
+					this.updateBoard();
 				}
-
-				//Go to first position and update board
-				this.game.first();
-				this.updateBoard();
 			},
 
 			/**
-			 * Go to a specific move/path
+			 * Go to a specific move number, tree path or named node
 			 */
-			goto: function(path) {
-
-				//Frozen or no game?
-				if (this.frozen || !this.game) {
-					return;
+			goto: function(target) {
+				if (this.game && target) {
+					this.game.goto(target);
+					this.updateBoard();
 				}
-
-				//Go to specified path and update board
-				this.game.goto(path);
-				this.updateBoard();
 			},
 
 			/**
-			 * Update the board
+			 * Start auto play with a given delay
 			 */
-			updateBoard: function() {
+			play: function(delay) {
 
-				//Get current node and game position
-				var i, pathChange = false,
-					node = this.game.getNode(),
-					path = this.game.getPath(),
-					position = this.game.getPosition();
-
-				//Path change? That means a whole new board position
-				if (!angular.equals(this.path, path)) {
-					pathChange = true;
-
-					//Copy new path and remove all markup
-					this.path = angular.copy(path);
-					this.board.removeAll('markup');
-
-					//Mode change instruction?
-					if (node.mode) {
-						this.switchMode(node.mode);
-					}
+				//No game or no move children?
+				if (!this.game || !this.game.node.hasChildren()) {
+					return;
 				}
 
-				//Set new stones and markup grids
-				this.board.setAll('stones', position.stones);
-				this.board.setAll('markup', position.markup);
+				//Get self
+				var self = this;
 
-				//Move made?
-				if (node.move) {
+				//Determine delay
+				delay = (typeof delay == 'number') ? delay*1000 : this.config.autoPlayDelay;
 
-					//Passed?
-					if (node.move.pass) {
-						this.broadcast('notification', 'pass');
+				//Create interval
+				this.autoPlayPromise = $interval(function() {
+
+					//Advance to the next node
+					self.next();
+
+					//Ran out of children?
+					if (!self.game.node.hasChildren()) {
+						self.stop();
 					}
+				}, delay);
+			},
 
-					//Mark last move?
-					else if (this.config.markLastMove) {
-						this.board.add('markup', node.move.x, node.move.y, this.config.lastMoveMarker);
-					}
+			/**
+			 * Cancel auto play
+			 */
+			stop: function() {
+				if (this.autoPlayPromise) {
+					$interval.cancel(this.autoPlayPromise);
+					this.autoPlayPromise = null;
 				}
-
-				//Broadcast event
-				this.broadcast('update', pathChange);
 			},
 
 			/***********************************************************************************************
 			 * Player control
 			 ***/
-
-			/**
-			 * Freeze player
-			 */
-			freeze: function() {
-				this.frozen = true;
-				this.broadcast('freeze');
-			},
-
-			/**
-			 * Unfreeze player
-			 */
-			unFreeze: function() {
-				this.frozen = false;
-				this.broadcast('unfreeze');
-			},
 
 			/**
 			 * Switch player mode
@@ -422,6 +455,14 @@ angular.module('ngGo.Player.Service', [
 				//Change tool
 				this.tool = tool;
 				this.broadcast('toolSwitch', this.tool);
+			},
+
+			/**
+			 * Start a new game
+			 */
+			newGame: function() {
+				this.game = new Game();
+				this.updateBoard();
 			},
 
 			/**
@@ -547,10 +588,18 @@ angular.module('ngGo.Player.Service', [
 			 ***/
 
 			/**
-			 * Returns the necessary events that the element needs to listen to
+			 * Register an element event
 			 */
-			getElementEvents: function() {
-				return this.config.elementEvents;
+			registerElementEvent: function(event, element) {
+
+				//Which element to use
+				if (typeof element == 'undefined' || !element.on) {
+					element = this.element;
+				}
+
+				//Remove any existing event listener and apply new one
+				element.off(event + '.ngGo.player');
+				element.on(event + '.ngGo.player', this.broadcast.bind(this, event));
 			},
 
 			/**

@@ -12,6 +12,7 @@
  */
 angular.module('ngGo.Game.Service', [
 	'ngGo',
+	'ngGo.Game.Path.Service',
 	'ngGo.Game.Node.Service',
 	'ngGo.Game.Position.Service',
 	'ngGo.Kifu.Blank.Service',
@@ -58,7 +59,7 @@ angular.module('ngGo.Game.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function(ngGo, StoneColor, GameNode, GamePosition, KifuParser, KifuBlank) {
+	this.$get = function(ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser, KifuBlank) {
 
 		/***********************************************************************************************
 		 * General helpers
@@ -121,11 +122,8 @@ angular.module('ngGo.Game.Service', [
 				return false;
 			}
 
-			//Update path
-			this.path.m++;
-			if (this.node.children.length > 1) {
-				this.path[this.path.m] = i;
-			}
+			//Advance path
+			this.path.advance(i);
 
 			//Set pointer of current node
 			this.node = this.node.children[i];
@@ -142,11 +140,8 @@ angular.module('ngGo.Game.Service', [
 				return false;
 			}
 
-			//Update path
-			if (this.path[this.path.m] !== undefined) {
-				delete this.path[this.path.m];
-			}
-			this.path.m--;
+			//Retreat path
+			this.path.retreat();
 
 			//Set pointer of current node
 			this.node = this.node.parent;
@@ -159,7 +154,7 @@ angular.module('ngGo.Game.Service', [
 		var firstNode = function() {
 
 			//Reset path
-			this.path = {m: 0};
+			this.path.reset();
 
 			//Set node pointer back to root
 			this.node = this.root;
@@ -322,8 +317,10 @@ angular.module('ngGo.Game.Service', [
 			this.root = null;
 			this.node = null;
 
-			//The current move path and positions history stack
-			this.path = {};
+			//Game path
+			this.path = new GamePath();
+
+			//Positions history stack
 			this.history = [];
 		};
 
@@ -522,17 +519,17 @@ angular.module('ngGo.Game.Service', [
 		};
 
 		/**
-		 * Get the move path
+		 * Get the game path
 		 */
 		Game.prototype.getPath = function() {
 			return this.path;
 		};
 
 		/**
-		 * Check if a given path is the same as the current one
+		 * Get the game path to a certain named node
 		 */
-		Game.prototype.isPath = function(path) {
-			return this.path == path;
+		Game.prototype.getPathToNode = function(nodeName) {
+			return GamePath.findNode(nodeName, this.root);
 		};
 
 		/**
@@ -1011,25 +1008,40 @@ angular.module('ngGo.Game.Service', [
 		};
 
 		/**
-		 * Go to position specified by path object
+		 * Go to position specified by a path object, a numeric move numer, or a node name string
 		 */
-		Game.prototype.goto = function(path) {
+		Game.prototype.goto = function(target) {
 
-			//Path not given?
-			if (typeof path == 'undefined') {
-				return null;
+			//Nothing given?
+			if (typeof target == 'undefined') {
+				return;
 			}
 
 			//Function given? Call now
-			if (typeof path == 'function') {
-				path = path.call(this);
+			if (typeof target == 'function') {
+				target = target.call(this);
 			}
 
-			//Simple move number? Convert to path
-			if (typeof path == 'number') {
-				var move = path;
-				path = angular.copy(this.path);
-				path.m = move || 0;
+			//Initialize path
+			var path;
+
+			//Simple move number? Convert to path object
+			if (typeof target == 'number') {
+				path = this.path.clone();
+				path.setMove(target);
+			}
+
+			//String? Named node
+			else if (typeof target == 'string') {
+				path = this.getPathToNode(target);
+				if (path === null) {
+					return;
+				}
+			}
+
+			//Otherwise assume path object
+			else {
+				path = target;
 			}
 
 			//Go to the first node
@@ -1041,13 +1053,13 @@ angular.module('ngGo.Game.Service', [
 			executeNode.call(this);
 
 			//Loop path
-			for (var i = 0; i < path.m; i++) {
-				if (nextNode.call(this, path[i+1])) {
+			var n = path.getMove();
+			for (var i = 0; i < n; i++) {
+				if (nextNode.call(this, path.nodeAt(i))) {
 					executeNode.call(this);
+					continue;
 				}
-				else {
-					break;
-				}
+				break;
 			}
 		};
 

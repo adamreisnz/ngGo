@@ -26,10 +26,9 @@ angular.module('ngGo.Board.Object.StoneMini.Service', [
 		 */
 		draw: function(stone) {
 
-			//Set alpha if not given
-			if (!stone.scale) {
-				stone.scale = this.board.theme.get('stoneMiniScale');
-			}
+			//Set scale and alpha
+			stone.scale = this.board.theme.get('stone.mini.scale');
+			stone.alpha = this.board.theme.get('stone.mini.alpha', stone.color);
 
 			//Don't show shadow
 			stone.shadow = false;

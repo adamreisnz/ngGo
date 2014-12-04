@@ -88,7 +88,9 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 		this.grid.set(x, y, hover);
 
 		//Draw item
-		hover.objectClass.draw.call(this, hover.object);
+		if (hover.objectClass && hover.objectClass.draw) {
+			hover.objectClass.draw.call(this, hover.object);
+		}
 	};
 
 	/**
@@ -103,7 +105,9 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 
 		//Get object and clear it
 		var hover = this.grid.get(x, y);
-		hover.objectClass.clear.call(this, hover.object);
+		if (hover.objectClass && hover.objectClass.clear) {
+			hover.objectClass.clear.call(this, hover.object);
+		}
 
 		//Other objects to restore?
 		for (var i = 0; i < this.restore.length; i++) {
@@ -150,7 +154,9 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 		//Loop objects and clear them
 		var hover = this.grid.all('hover');
 		for (var i = 0; i < hover.length; i++) {
-			hover.objectClass.draw.call(this, hover.object);
+			if (hover.objectClass && hover.objectClass.draw) {
+				hover.objectClass.draw.call(this, hover.object);
+			}
 		}
 	};
 

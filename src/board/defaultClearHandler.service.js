@@ -29,7 +29,7 @@ angular.module('ngGo.Board.DefaultClearHandler.Service', [
 		var x = this.board.getAbsX(obj.x),
 			y = this.board.getAbsY(obj.y),
 			s = this.board.getCellSize(),
-			r = this.board.theme.get('stoneRadius', s);
+			r = this.board.theme.get('stone.radius', s);
 
 		//Clear rectangle the size of the stone radius
 		ctx.clearRect(x-r, y-r, 2*r, 2*r);
