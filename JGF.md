@@ -229,25 +229,29 @@ JGF = {
 
 		// For problems, a move with the correct solution can be marked as follows
 		{
+			solution: true,
 			move: {
-				W: "gb",
-				solution: true
+				W: "gb"
 			}
 		},
 
-		// For tutorials, a node can contain auto play instructions
+		// For demo mode, a node can contain play/stop instructions
+		// to auto play a sequence of moves or positions.
 		{
-			setup: {
-				B: ["mm", "nn"],
-				W: ["mf"]
-			},
-			autoplay: {
-
-				//How many moves to auto play from this node onward
-				moves: 5,
-
-				//Start automatically?
-				start: true
+			demo: "start",
+			move: {
+				W: "gb"
+			}
+		},
+		{
+			move: {
+				W: "gc"
+			}
+		},
+		{
+			demo: "stop",
+			move: {
+				W: "gd"
 			}
 		},
 
