@@ -336,6 +336,13 @@ angular.module('ngGo.Player.Service', [
 				}
 			},
 
+			/**
+			 * Check if we have a player mode
+			 */
+			hasMode: function(mode) {
+				return this.modes[mode] ? true : false;
+			},
+
 			/***********************************************************************************************
 			 * Game record navigation
 			 ***/
