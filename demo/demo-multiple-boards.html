@@ -8,7 +8,6 @@
     <link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
     <script src="../angular/angular.js"></script>
     <script src="../build/ngGo.min.js"></script>
-    <script src="demo-multiple-boards.js"></script>
 </head>
 <body lang="en">
 <main ng-controller="ngGoDemoController">
@@ -17,9 +16,33 @@
 	</div>
 </main>
 <script>
-	angular.element(document).ready(function() {
+
+    /**
+     * Demo
+     */
+    angular.module('ngGoDemo', [
+        'ngGo.Player.Service'
+    ]).controller('ngGoDemoController', function($scope, Board, StoneColor) {
+
+        //Prepare board container
+        $scope.Boards = [];
+
+        //Create some random boards
+        for (var i = 0; i < 5; i++) {
+            var board = new Board(5);
+            for (var j = 0; j <= i; j++) {
+                board.add('stones', j, j, j%2 ? StoneColor.B : StoneColor.W);
+            }
+            $scope.Boards.push(board);
+        }
+    });
+
+    /**
+     * Bootstrap angular
+     */
+    angular.element(document).ready(function() {
         setTimeout(function() {
-        	angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
+            angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
         }, 10);
     });
 </script>

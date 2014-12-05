@@ -139,7 +139,7 @@ angular.module('ngGo.Board.Theme.Service', [
 
 			//Label
 			label: {
-				font: 'Calibri'
+				font: 'Arial'
 			},
 
 			//Variation markup
@@ -235,7 +235,7 @@ angular.module('ngGo.Board.Theme.Service', [
 
 			//Vertical coordinates style
 			vertical: {
-				font: 'Calibri',
+				font: 'Arial',
 				style: 'numbers',
 				inverse: true,
 				size: function() {
@@ -247,7 +247,7 @@ angular.module('ngGo.Board.Theme.Service', [
 
 			//Horizontal coordinates style
 			horizontal: {
-				font: 'Calibri',
+				font: 'Arial',
 				style: 'letters',
 				inverse: false,
 				size: function() {
