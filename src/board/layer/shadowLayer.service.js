@@ -40,8 +40,10 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
 		//Add to grid
 		this.grid.set(stone.x, stone.y, stone.color);
 
-		//Draw it
-		StoneShadow.draw.call(this, stone);
+		//Draw it if there is a context
+		if (this.context && this.board.drawWidth === 0 && this.board.drawheight === 0) {
+			StoneShadow.draw.call(this, stone);
+		}
 	};
 
 	/**
@@ -61,8 +63,8 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
 	 */
 	ShadowLayer.prototype.draw = function() {
 
-		//Can only draw when we have dimensions
-		if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+		//Can only draw when we have dimensions and context
+		if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 			return;
 		}
 

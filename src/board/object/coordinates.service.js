@@ -56,8 +56,8 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 		 */
 		draw: function() {
 
-			//Can only draw when we have dimensions
-			if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+			//Can only draw when we have context and dimensions
+			if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 				return;
 			}
 

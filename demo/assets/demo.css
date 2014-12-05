@@ -28,6 +28,12 @@ button {
 	float: right;
 	width: 22%;
 }
+.static {
+	height: 150px;
+	width: 150px;
+	float: left;
+	margin: 0 10px 10px 0;
+}
 
 /* Some player and board enhancements */
 player {

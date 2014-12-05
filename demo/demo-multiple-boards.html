@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ngGo demonstration</title>
+	<meta charset="utf-8" />
+	<meta name="author" content="Adam Buczynski" />
+    <link rel="stylesheet" type="text/css" media="screen" href="../build/ngGo.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
+    <script src="../angular/angular.js"></script>
+    <script src="../build/ngGo.min.js"></script>
+    <script src="demo-multiple-boards.js"></script>
+</head>
+<body lang="en">
+<main ng-controller="ngGoDemoController">
+	<div class="static" ng-repeat="Board in Boards">
+		<board static="true"></board>
+	</div>
+</main>
+<script>
+	angular.element(document).ready(function() {
+        setTimeout(function() {
+        	angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
+        }, 10);
+    });
+</script>
+</body>
+</html>

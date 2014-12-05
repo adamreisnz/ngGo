@@ -1,1 +1,1 @@
-player{display:block}player board{width:100%;height:100%}board{position:relative;display:block}board *{position:absolute}board gridlayer{z-index:10}board shadowlayer{z-index:20}board stoneslayer{z-index:30}board scorelayer{z-index:40}board markuplayer{z-index:50}board hoverlayer{z-index:60}
+player{display:block}board{position:relative;display:block;width:100%;height:100%}board canvas{position:absolute;width:100%;height:100%}board .grid{z-index:10}board .shadow{z-index:20}board .stones{z-index:30}board .score{z-index:40}board .markup{z-index:50}board .hover{z-index:60}

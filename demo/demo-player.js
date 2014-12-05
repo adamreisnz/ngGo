@@ -83,13 +83,13 @@ angular.module('ngGoDemo', [
 /**
  * Controller
  */
-.controller('ngGoDemoController', function($scope, $timeout, $http, Player) {
+.controller('ngGoDemoController', function($scope, $http, Player) {
 
 	//Set the game in scope for easy access
 	$scope.Game = Player.game;
 
 	//Load game data from external source
-	/*$http.get('demo-replay.jgf').success(function(data) {
+	/*$http.get('test.jgf').success(function(data) {
 		Player.load(data);
 	});*/
 

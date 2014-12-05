@@ -169,9 +169,9 @@ angular.module('ngGo.Board.Grid.Service', [
 	};
 
 	/**
-	 * Clear all values from the grid
+	 * Empty the grid
 	 */
-	BoardGrid.prototype.clear = function() {
+	BoardGrid.prototype.empty = function() {
 		for (var x = 0; x < this.width; x++) {
 			for (var y = 0; y < this.height; y++) {
 				this.grid[x][y] = this.emptyValue;

@@ -42,6 +42,10 @@ angular.module('ngGo.Board.Theme.Service', [
 
 			//Mono stones
 			mono: {
+				lineWidth: 1,
+				lineColor: function(stoneColor) {
+					return '#000';
+				},
 				color: function(stoneColor) {
 					if (stoneColor == StoneColor.B) {
 						return '#000';
@@ -358,16 +362,19 @@ angular.module('ngGo.Board.Theme.Service', [
 			//Loop path
 			for (var i = 0; i < path.length; i++) {
 
+				//Time to set?
+				if ((i + 1) == path.length) {
+					prop[path[i]] = value;
+					break;
+				}
+
 				//Not set?
 				if (typeof prop[path[i]] == 'undefined') {
-					if ((i + 1) == path.length) {
-						prop[path[i]] = value;
-					}
-					else {
-						prop[path[i]] = {};
-						prop = prop[path[i]];
-					}
+					prop[path[i]] = {};
 				}
+
+				//Move on
+				prop = prop[path[i]];
 			}
 
 			//Return self for chaining

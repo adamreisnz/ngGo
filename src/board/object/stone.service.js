@@ -59,12 +59,16 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 			r = Math.round(r * stone.scale);
 		}
 
+		//Don't draw shadow
+		stone.shadow = false;
+
 		//Apply color multiplier
 		var color = stone.color * this.board.colorMultiplier;
 
 		//Get theme properties
-		var lineWidth = this.board.theme.get('markupLinesWidth', s) || 1;
+		var lineWidth = this.board.theme.get('stone.mono.lineWidth', s) || 1,
 			fillStyle = this.board.theme.get('stone.mono.color', color),
+			strokeStyle = this.board.theme.get('stone.mono.lineColor', color),
 			canvasTranslate = this.board.theme.get('canvasTranslate');
 
 		//Translate canvas
@@ -85,7 +89,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
 		//Configure context
 		this.context.lineWidth = lineWidth;
-		this.context.strokeStyle = '#000';
+		this.context.strokeStyle = strokeStyle;
 
 		//Draw outline
 		this.context.stroke();
@@ -266,6 +270,11 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		 */
 		draw: function(stone) {
 
+			//No context?
+			if (!this.context) {
+				return;
+			}
+
 			//Determine style of stone
 			var style = this.board.theme.get('stone.style');
 
@@ -295,8 +304,8 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 					}
 			}
 
-			//Draw shadow
-			if (this.board.theme.get('stone.shadow') && stone.shadow !== false) {
+			//Add shadow
+			if (!this.board.static && stone.shadow !== false && this.board.theme.get('stone.shadow')) {
 				this.board.layers.shadow.add(stone);
 			}
 		},
@@ -306,11 +315,16 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		 */
 		clear: function(stone) {
 
+			//No context?
+			if (!this.context) {
+				return;
+			}
+
 			//Call parent method
 			BoardObject.clear.call(this, stone);
 
-			//Redraw shadow layer
-			if (this.board.theme.get('stone.shadow') && stone.shadow !== false) {
+			//Remove shadow
+			if (!this.board.static && stone.shadow !== false && this.board.theme.get('stone.shadow')) {
 				this.board.layers.shadow.remove(stone);
 			}
 		}

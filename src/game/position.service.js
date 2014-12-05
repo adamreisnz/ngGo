@@ -63,16 +63,16 @@ angular.module('ngGo.Game.Position.Service', [
 		this.stones.setSize(width, height);
 		this.markup.setSize(width, height);
 
-		//Clear the position (populates it with empty stones)
-		this.clear();
+		//Empty the position
+		this.empty();
 	};
 
 	/**
 	 * Clear the whole position
 	 */
-	GamePosition.prototype.clear = function() {
-		this.stones.clear();
-		this.markup.clear();
+	GamePosition.prototype.empty = function() {
+		this.stones.empty();
+		this.markup.empty();
 	};
 
 	/**

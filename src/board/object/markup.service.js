@@ -39,7 +39,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		}
 
 		//Get stone color
-		var stoneColor = this.board.getStoneColor(markup.x, markup.y) * this.board.colorMultiplier;
+		var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
@@ -85,7 +85,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		var rcos = Math.round(r*cosPi4);
 
 		//Get stone color
-		var stoneColor = this.board.getStoneColor(markup.x, markup.y) * this.board.colorMultiplier;
+		var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
@@ -125,7 +125,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		}
 
 		//Get stone color
-		var stoneColor = this.board.getStoneColor(markup.x, markup.y) * this.board.colorMultiplier;
+		var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
@@ -168,7 +168,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		var rcos = Math.round(r*cosPi4);
 
 		//Get stone color
-		var stoneColor = this.board.getStoneColor(markup.x, markup.y) * this.board.colorMultiplier;
+		var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
@@ -213,7 +213,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		}
 
 		//Get stone color
-		var stoneColor = this.board.getStoneColor(markup.x, markup.y) * this.board.colorMultiplier;
+		var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
@@ -253,7 +253,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		}
 
 		//Get stone color
-		var stoneColor = this.board.getStoneColor(markup.x, markup.y) * this.board.colorMultiplier;
+		var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
 		//Get theme properties
 		var fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
@@ -294,7 +294,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		}
 
 		//Get stone color
-		var stoneColor = this.board.getStoneColor(markup.x, markup.y) * this.board.colorMultiplier;
+		var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
@@ -343,7 +343,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		}
 
 		//Get stone color
-		var stoneColor = this.board.getStoneColor(markup.x, markup.y) * this.board.colorMultiplier;
+		var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
@@ -392,7 +392,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		}
 
 		//Get stone color
-		var stoneColor = this.board.getStoneColor(markup.x, markup.y) * this.board.colorMultiplier;
+		var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
 		//Get theme properties
 		var font = markup.font || this.board.theme.get('markup.label.font') || '',
@@ -400,7 +400,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 			canvasTranslate = this.board.theme.get('canvasTranslate');
 
 		//First, clear grid square below for clarity
-		if (this.board.layers.grid && !this.board.layers.stones.has(markup.x, markup.y)) {
+		if (!this.board.has('stones', markup.x, markup.y)) {
 			this.board.layers.grid.clearCell(markup.x, markup.y);
 		}
 
@@ -442,7 +442,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 	var clearLabel = function(markup) {
 
 		//No stone on location? Redraw the grid square, if we cleared it
-		if (this.board.layers.grid && !this.board.layers.stones.has(markup.x, markup.y)) {
+		if (!this.board.has('stones', markup.x, markup.y)) {
 			var r = this.board.theme.get('stone.radius', this.board.getCellSize());
 			this.board.layers.grid.redrawCell(markup.x, markup.y);
 		}
@@ -457,6 +457,11 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		 * Draw
 		 */
 		draw: function(markup) {
+
+			//No context?
+			if (!this.context) {
+				return;
+			}
 
 			//Can only draw when we have dimensions
 			if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -518,6 +523,11 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		 * Clear
 		 */
 		clear: function(markup) {
+
+			//No context?
+			if (!this.context) {
+				return;
+			}
 
 			//Call parent method
 			BoardObject.clear.call(this, markup);

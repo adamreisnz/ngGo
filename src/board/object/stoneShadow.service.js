@@ -26,6 +26,11 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
 		 */
 		draw: function(stone) {
 
+			//No context?
+			if (!this.context) {
+				return;
+			}
+
 			//Don't draw shadows if there is stone alpha or if explicitly stated
 			if ((stone.alpha && stone.alpha < 1) || stone.shadow === false) {
 				return;
@@ -66,6 +71,11 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
 			//problem. Instead, the entire shadow layer is simply cleared and redrawn
 			//when removing stones. The multiple canvasses solution from WGo didn't seem
 			//appropriate either, so for now we will leave it at this.
+
+			//No context?
+			if (!this.context) {
+				return;
+			}
 
 			//Don't draw shadows if there is stone alpha or if explicitly stated
 			if ((stone.alpha && stone.alpha < 1) || stone.shadow === false) {

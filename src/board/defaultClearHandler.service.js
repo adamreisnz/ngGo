@@ -23,7 +23,12 @@ angular.module('ngGo.Board.DefaultClearHandler.Service', [
 	 * All external handlers are called from the context of the layer that contains the object.
 	 * First parameter is the canvas2d context, second parameter is the object itself.
 	 */
-	return function(ctx, obj) {
+	return function(context, obj) {
+
+		//No context?
+		if (!context) {
+			return;
+		}
 
 		//Get coordinates and stone radius
 		var x = this.board.getAbsX(obj.x),
@@ -32,6 +37,6 @@ angular.module('ngGo.Board.DefaultClearHandler.Service', [
 			r = this.board.theme.get('stone.radius', s);
 
 		//Clear rectangle the size of the stone radius
-		ctx.clearRect(x-r, y-r, 2*r, 2*r);
+		context.clearRect(x-r, y-r, 2*r, 2*r);
 	};
 });

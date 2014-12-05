@@ -13,6 +13,12 @@ angular.module('ngGo.Board.Service', [
 	'ngGo',
 	'ngGo.Board.Directive',
 	'ngGo.Board.Theme.Service',
+	'ngGo.Board.Layer.GridLayer.Service',
+	'ngGo.Board.Layer.ShadowLayer.Service',
+	'ngGo.Board.Layer.StonesLayer.Service',
+	'ngGo.Board.Layer.MarkupLayer.Service',
+	'ngGo.Board.Layer.ScoreLayer.Service',
+	'ngGo.Board.Layer.HoverLayer.Service',
 	'ngGo.Board.Object.Markup.Service',
 	'ngGo.Board.Object.Stone.Service',
 	'ngGo.Board.Object.StoneMini.Service',
@@ -51,7 +57,7 @@ angular.module('ngGo.Board.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function(BoardTheme, StoneColor, Stone, Markup) {
+	this.$get = function(BoardTheme, StoneColor, GridLayer, ShadowLayer, StonesLayer, MarkupLayer, ScoreLayer, HoverLayer) {
 
 		/**
 		 * Helper to (re)calculate cellsize and margins
@@ -90,10 +96,10 @@ angular.module('ngGo.Board.Service', [
 		/**
 		 * Board constructor
 		 */
-		var Board = function(config) {
+		var Board = function(width, height) {
 
 			//Extend config
-			this.config = angular.extend({}, defaultConfig, config || {});
+			this.config = angular.extend({}, defaultConfig);
 
 			//Set board theme
 			this.theme = new BoardTheme();
@@ -107,7 +113,18 @@ angular.module('ngGo.Board.Service', [
 			this.colorMultiplier = 1;
 
 			//Initialize layers
-			this.layers = {};
+			this.layerOrder = ['grid', 'shadow', 'stones', 'score', 'markup', 'hover'];
+			this.layers = {
+				grid: new GridLayer(this),
+				shadow: new ShadowLayer(this),
+				stones: new StonesLayer(this),
+				markup: new MarkupLayer(this),
+				score: new ScoreLayer(this),
+				hover: new HoverLayer(this)
+			};
+
+			//Static board flag
+			this.static = false;
 
 			//Initialize board grid size
 			this.width = 0;
@@ -117,6 +134,18 @@ angular.module('ngGo.Board.Service', [
 			this.section = angular.extend({}, defaultConfig.section, this.config.section);
 			this.margin = this.theme.get('board.margin');
 			determineGrid.call(this);
+
+			//Set size now if given
+			this.setSize(width, height);
+		};
+
+		/**
+		 * Make this board static (one canvas layer, only grid, stones and markup)
+		 */
+		Board.prototype.makeStatic = function() {
+			this.static = true;
+			this.theme.set('stone.style', 'mono');
+			this.layerOrder = ['grid', 'stones', 'markup'];
 		};
 
 		/***********************************************************************************************
@@ -127,10 +156,15 @@ angular.module('ngGo.Board.Service', [
 		 * Set margin
 		 */
 		Board.prototype.setMargin = function(margin) {
+
+			//Set margin if changed
 			if (this.margin != margin) {
 				this.margin = margin;
 				this.resized();
 			}
+
+			//Return self for chaining
+			return this;
 		};
 
 		/**
@@ -138,6 +172,7 @@ angular.module('ngGo.Board.Service', [
 		 */
 		Board.prototype.resetMargin = function() {
 			this.setMargin(this.theme.get('board.margin'));
+			return this;
 		};
 
 		/**
@@ -147,7 +182,7 @@ angular.module('ngGo.Board.Service', [
 
 			//Nothing given?
 			if (!section) {
-				return;
+				return this;
 			}
 
 			//Expand on default
@@ -155,12 +190,15 @@ angular.module('ngGo.Board.Service', [
 
 			//No changes?
 			if (this.section.top == section.top && this.section.bottom == section.bottom && this.section.left == section.left && this.section.right == section.right) {
-				return;
+				return this;
 			}
 
 			//Set section and call resized handler
 			this.section = section;
 			this.resized();
+
+			//Return self for chaining
+			return this;
 		};
 
 		/**
@@ -169,8 +207,8 @@ angular.module('ngGo.Board.Service', [
 		Board.prototype.setSize = function(width, height) {
 
 			//Check what's given
-			width = parseInt(width || height || defaultConfig.defaultSize);
-			height = parseInt(height || width || defaultConfig.defaultSize);
+			width = parseInt(width || height || 0);
+			height = parseInt(height || width || 0);
 
 			//Changing?
 			if (width != this.width || height != this.height) {
@@ -187,6 +225,9 @@ angular.module('ngGo.Board.Service', [
 				//Resized handler
 				this.resized();
 			}
+
+			//Return self for chaining
+			return this;
 		};
 
 		/**
@@ -229,6 +270,7 @@ angular.module('ngGo.Board.Service', [
 		 */
 		Board.prototype.setTheme = function(theme) {
 			this.theme = theme;
+			return this;
 		};
 
 		/***********************************************************************************************
@@ -293,7 +335,7 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/***********************************************************************************************
-		 * Configuration
+		 * Coordinates, color swapping
 		 ***/
 
 		/**
@@ -309,19 +351,33 @@ angular.module('ngGo.Board.Service', [
 				this.config.coordinates = !this.config.coordinates;
 			}
 
-			//Must have grid layer
-			if (this.layers.grid) {
+			//Show in grid
+			this.layers.grid.showCoordinates(this.config.coordinates);
 
-				//Show in grid
-				this.layers.grid.showCoordinates(this.config.coordinates);
+			//Set the board margin, or reset it
+			if (this.config.coordinates) {
+				this.setMargin(this.theme.get('coordinates.margin'));
+			}
+			else {
+				this.resetMargin();
+			}
+		};
 
-				//Set the board margin, or reset it
-				if (this.config.coordinates) {
-					this.setMargin(this.theme.get('coordinates.margin'));
-				}
-				else {
-					this.resetMargin();
-				}
+		/**
+		 * Swap colors on the board
+		 */
+		Board.prototype.swapColors = function() {
+			this.colorMultiplier = -this.colorMultiplier;
+
+			//For static board, redraw the whole thing
+			if (this.static) {
+				this.redraw();
+			}
+
+			//For a dynamic board, only these layers
+			else {
+				this.redraw('stones');
+				this.redraw('markup');
 			}
 		};
 
@@ -380,9 +436,17 @@ angular.module('ngGo.Board.Service', [
 		 ***/
 
 		/**
-		 * Clear everything
+		 * Clear the whole board
 		 */
 		Board.prototype.clear = function() {
+
+			//Static? One clear is enough
+			if (this.static) {
+				this.layers.stones.clear();
+				return;
+			}
+
+			//Clear all layers
 			for (var layer in this.layers) {
 				this.layers[layer].clear();
 			}
@@ -391,33 +455,29 @@ angular.module('ngGo.Board.Service', [
 		/**
 		 * Redraw everything
 		 */
-		Board.prototype.redraw = function() {
-			for (var layer in this.layers) {
+		Board.prototype.redraw = function(layer) {
+
+			//Just redrawing one layer?
+			if (layer) {
+
+				//If the board is static or the layer is unknown, we can't do this
+				if (this.static || !this.layers[layer]) {
+					return;
+				}
+
+				//Redraw the layer
 				this.layers[layer].redraw();
+				return;
 			}
-		};
 
-		/**
-		 * Swap colors on the board
-		 */
-		Board.prototype.swapColors = function() {
-			this.colorMultiplier = -this.colorMultiplier;
-			if (this.layers.stones)	{
-				this.layers.stones.redraw();
-			}
-			if (this.layers.markup)	{
-				this.layers.markup.redraw();
-			}
-		};
+			//Clear the board first
+			this.clear();
 
-		/**
-		 * Get the stone color for a certain coordinate
-		 */
-		Board.prototype.getStoneColor = function(x, y) {
-			if (this.layers.stones) {
-				return this.layers.stones.get(x, y);
+			//Now draw all layers again in the correct order
+			for (var i = 0; i < this.layerOrder.length; i++) {
+				layer = this.layerOrder[i];
+				this.layers[layer].draw();
 			}
-			return StoneColor.EMPTY;
 		};
 
 		/**

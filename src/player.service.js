@@ -239,6 +239,11 @@ angular.module('ngGo.Player.Service', [
 				//Set the board
 				this.board = Board;
 
+				//Board ready
+				if (this.board) {
+					this.broadcast('boardReady', this.board);
+				}
+
 				//If a game has been loaded already, prepare and update the board
 				if (this.game.isLoaded()) {
 					this.prepareBoard();

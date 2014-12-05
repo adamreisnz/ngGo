@@ -41,8 +41,8 @@ angular.module('ngGo.Board.Layer.Service', [
 	BoardLayer.prototype.setSize = function(width, height) {
 
 		//Note: since this method is usually only called upon a global board resize,
-		//which also triggers the redraw method for all layers, the board objects on the grid
-		//are not being cleared here, as it will happen anyway during the redraw cycle.
+		//which also triggers the redraw method for layers, the layer is not cleared
+		//here, as it will happen anyway during the redraw cycle.
 
 		//Set it in the grid (removing all objects in the process)
 		this.grid.setSize(width, height);
@@ -63,11 +63,11 @@ angular.module('ngGo.Board.Layer.Service', [
 	};
 
 	/**
-	 * Remove all (clear grid)
+	 * Remove all (clear layer and empty grid)
 	 */
 	BoardLayer.prototype.removeAll = function() {
 		this.clear();
-		this.grid.clear();
+		this.grid.empty();
 	};
 
 	/**
@@ -116,7 +116,9 @@ angular.module('ngGo.Board.Layer.Service', [
 	 * Clear layer (this method doesn't clear objects, as the canvas wipe clears the entire canvas)
 	 */
 	BoardLayer.prototype.clear = function() {
-		this.context.clearRect(0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight);
+		if (this.context) {
+			this.context.clearRect(0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight);
+		}
 	};
 
 	/**
@@ -147,6 +149,13 @@ angular.module('ngGo.Board.Layer.Service', [
 	BoardLayer.prototype.redrawCell = function(x, y) {
 		this.clearCell(x, y);
 		this.drawCell(x, y);
+	};
+
+	/**
+	 * Set the canvas2d context
+	 */
+	BoardLayer.prototype.setContext = function(context) {
+		this.context = context;
 	};
 
 	/**

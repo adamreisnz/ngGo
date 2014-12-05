@@ -128,9 +128,9 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 			return;
 		}
 
-		//Clear layer and grid
+		//Clear layer and empty grid
 		this.clear();
-		this.grid.clear();
+		this.grid.empty();
 
 		//Restore objects on other layers
 		for (var i = 0; i < this.restore.length; i++) {
@@ -146,8 +146,8 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 	 */
 	HoverLayer.prototype.draw = function() {
 
-		//Can only draw when we have dimensions
-		if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+		//Can only draw when we have dimensions and context
+		if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 			return;
 		}
 

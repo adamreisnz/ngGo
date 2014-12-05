@@ -469,6 +469,24 @@ module.exports = function(grunt) {
 	]);
 
 	/**
+	 * Task to compile but not minify, for debugging
+	 */
+	grunt.registerTask('debug', [
+
+		//First, build the app, and copy stuff back to the build folder since we emptied the temp dir
+		'build', 'copy:public_build_restore', 'clean:public',
+
+		//Compile the final CSS
+		'recess:compile',
+
+		//Apply angular minification protection, concatenate all JS into a single file
+		'ngAnnotate', 'concat:compile_js',
+
+		//Copy everything to the public folder, clean the temp folder
+		'copy:public_compile', 'clean:temp'
+	]);
+
+	/**
 	 * A utility function to get all JavaScript sources.
 	 */
 	function filterForJS (files) {
