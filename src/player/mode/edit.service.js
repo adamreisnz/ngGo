@@ -354,8 +354,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			}
 
 			//Loop area
-			for (x = event.drag.start.x; x <= event.drag.stop.x; x++) {
-				for (y = event.drag.start.y; y <= event.drag.stop.y; y++) {
+			for (var x = event.drag.start.x; x <= event.drag.stop.x; x++) {
+				for (var y = event.drag.start.y; y <= event.drag.stop.y; y++) {
 					updateHoverMark.call(this, x, y, true);
 				}
 			}
