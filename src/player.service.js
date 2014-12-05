@@ -155,7 +155,7 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Load game record
 			 */
-			load: function(data, path) {
+			load: function(data) {
 
 				//Try to load the game record data
 				if (!this.game.load(data)) {
@@ -167,46 +167,48 @@ angular.module('ngGo.Player.Service', [
 					this.displayInstructions(this.game.get('display'));
 				}
 
-				//Prepare board
-				this.prepareBoard();
-
-				//Path given? Go there now
-				if (path) {
-					this.goto(path);
-				}
-
-				//Otherwise, go to the fist position
-				else {
-					this.first();
-				}
-
 				//Dispatch game loaded event
 				this.broadcast('gameLoaded', this.game);
+
+				//Prepare board
+				if (this.board) {
+					this.prepareBoard();
+					this.updateBoard();
+				}
+
+				//Loaded ok
 				return true;
 			},
 
 			/**
-			 * Prepare board once game data is loaded
+			 * Process display instructions (can be given in game record)
 			 */
-			prepareBoard: function() {
+			displayInstructions: function(display) {
 
-				//Get board info
-				var board = this.game.get('board');
-
-				//Remove all objects, set size and section
-				if (board) {
-					this.board.removeAll();
-					this.board.setSize(board.width, board.height);
-					this.board.setSection(board.section);
+				//No instructions?
+				if (!display) {
+					return;
 				}
-			},
 
-			/**
-			 * Set the board
-			 */
-			setBoard: function(Board) {
-				this.board = Board;
-				this.prepareBoard();
+				//Show board markup for variations?
+				if (typeof display.variation_markup != 'undefined') {
+					this.variationMarkup = display.variation_markup;
+				}
+
+				//Show variations of successor nodes?
+				if (typeof display.variation_children != 'undefined') {
+					this.variationChildren = display.variation_children;
+				}
+
+				//Show variations of current node?
+				if (typeof display.variation_siblings != 'undefined') {
+					this.variationSiblings = display.variation_siblings;
+				}
+
+				//Show solution paths?
+				if (typeof display.solution_paths != 'undefined') {
+					this.solutionPaths = display.solution_paths;
+				}
 			},
 
 			/**
@@ -230,9 +232,45 @@ angular.module('ngGo.Player.Service', [
 			},
 
 			/**
+			 * Set the board
+			 */
+			setBoard: function(Board) {
+
+				//Set the board
+				this.board = Board;
+
+				//If a game has been loaded already, prepare and update the board
+				if (this.game.isLoaded()) {
+					this.prepareBoard();
+					this.updateBoard();
+				}
+			},
+
+			/**
+			 * Prepare board once game data is loaded
+			 */
+			prepareBoard: function() {
+
+				//Get board info
+				var board = this.game.get('board');
+
+				//Remove all objects, set size and section
+				if (board) {
+					this.board.removeAll();
+					this.board.setSize(board.width, board.height);
+					this.board.setSection(board.section);
+				}
+			},
+
+			/**
 			 * Update the board
 			 */
 			updateBoard: function() {
+
+				//Premature call?
+				if (!this.game.isLoaded() || !this.board) {
+					return;
+				}
 
 				//Get current node and game position
 				var i,
@@ -276,37 +314,6 @@ angular.module('ngGo.Player.Service', [
 
 				//Broadcast event
 				this.broadcast('update', node);
-			},
-
-			/**
-			 * Process display instructions (can be given in game record)
-			 */
-			displayInstructions: function(display) {
-
-				//No instructions?
-				if (!display) {
-					return;
-				}
-
-				//Show board markup for variations?
-				if (typeof display.variation_markup != 'undefined') {
-					this.variationMarkup = display.variation_markup;
-				}
-
-				//Show variations of successor nodes?
-				if (typeof display.variation_children != 'undefined') {
-					this.variationChildren = display.variation_children;
-				}
-
-				//Show variations of current node?
-				if (typeof display.variation_siblings != 'undefined') {
-					this.variationSiblings = display.variation_siblings;
-				}
-
-				//Show solution paths?
-				if (typeof display.solution_paths != 'undefined') {
-					this.solutionPaths = display.solution_paths;
-				}
 			},
 
 			/**

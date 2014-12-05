@@ -11,7 +11,7 @@
     <script src="demo.js"></script>
 </head>
 <body lang="en">
-<main player-container-height ng-controller="ngGoDemoController">
+<main ng-controller="ngGoDemoController">
 	<section class="goban">
 		<player mode="replay">
 			<board coordinates="true"></board>
@@ -52,6 +52,16 @@
 		<button ng-click="Player.last()">Last position</button>
 		<button ng-click="Player.next()">Next position</button>
 		<button ng-click="Player.previous()">Previous position</button>
+		<br/><br/>
+
+		<h3>{{Game.get('game.name')}}</h3>
+		<p>
+			<span ng-repeat="Player in Game.get('game.players')">{{Player.name}} ({{Player.rank}})<span ng-show="$first"> vs. </span></span><br/>
+			{{Game.getTurn() | stoneColor}} to play<br/>
+			Move number: {{Game.path.getMove()}}<br/>
+			Komi: {{Game.get('game.komi')}}
+		</p>
+
 	</aside>
 </main>
 <script>

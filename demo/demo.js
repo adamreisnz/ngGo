@@ -13,15 +13,17 @@ var testJGF1 = {
 		"players": [
 			{
 				"color": "black",
-				"name": "Black"
+				"name": "Black",
+				"rank": "5k"
 			},
 			{
 				"color": "white",
-				"name": "White"
+				"name": "White",
+				"rank": "2d"
 			}
 		],
 		"rules": "Japanese",
-		"komi": 0
+		"komi": 0.5
 	},
 	"board": {
 		"width": 9,
@@ -79,40 +81,36 @@ angular.module('ngGoDemo', [
 })
 
 /**
- * Run logic
- */
-.run(function() {
-
-})
-
-/**
  * Controller
  */
-.controller('ngGoDemoController', function($scope, $timeout, $http, Player, StoneColor) {
+.controller('ngGoDemoController', function($scope, $timeout, $http, Player) {
 
-	//Load JGF
+	//Set the game in scope for easy access
+	$scope.Game = Player.game;
+
+	//Load game data from external source
 	/*$http.get('demo-replay.jgf').success(function(data) {
 		Player.load(data);
 	});*/
 
-	$timeout(function() {
-		Player.load(testJGF1);
-	}, 50);
-
+	//Load local data
+	Player.load(testJGF1);
 })
 
 /**
- * Directive for dynamic player height
+ * Stone color example filter
  */
-.directive('playerContainerHeight', function() {
-	return {
-		restrict: 'AE',
-		link: function($scope, element, attrs) {
-			if (element.find('player').length > 0) {
-				var height = attrs.playerContainerHeight || '100%';
-				element.css({'height': height});
-				$scope.$broadcast('ngGo.player.resize');
-			}
+.filter('stoneColor', function(StoneColor) {
+	return function(color) {
+		if (color == StoneColor.B) {
+			return 'Black';
 		}
+		else if (color == StoneColor.W) {
+			return 'White';
+		}
+		else if (color == StoneColor.E) {
+			return '';
+		}
+		return input;
 	};
 });

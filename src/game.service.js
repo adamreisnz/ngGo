@@ -339,19 +339,22 @@ angular.module('ngGo.Game.Service', [
 			this.init();
 
 			//Try to load game record data
-			this.fromData(data);
+			if (!this.fromData(data)) {
 
-			//Initialize history with a blank board position
-			initializeHistory.call(this);
+				//Just initialize our history with a blank position
+				initializeHistory.call(this);
+				return false;
+			}
 
-			//If we don't have a tree, we failed to load
-			return this.hasTree();
+			//Go to the first move
+			this.first();
+			return true;
 		};
 
 		/**
 		 * Check if we managed to load a valid game record
 		 */
-		Game.prototype.hasTree = function() {
+		Game.prototype.isLoaded = function() {
 			return this.root !== null;
 		};
 
@@ -384,23 +387,23 @@ angular.module('ngGo.Game.Service', [
 
 			//No data, can't do much
 			if (!data) {
-				return;
+				return false;
 			}
 
 			//String given, could be stringified JGF or an SGF file
 			if (typeof data == 'string') {
 				var c = data.charAt(0);
 				if (c == '(') {
-					this.fromSgf(data);
+					return this.fromSgf(data);
 				}
 				else if (c == '{') {
-					this.fromJgf(data);
+					return this.fromJgf(data);
 				}
 			}
 
 			//Object given? Probably a JGF object
 			else if (typeof data == 'object') {
-				this.fromJgf(data);
+				return this.fromJgf(data);
 			}
 		};
 
@@ -409,13 +412,14 @@ angular.module('ngGo.Game.Service', [
 		 */
 		Game.prototype.fromSgf = function(sgf) {
 
-			//Init
+			//Use the kifu parser
 			var jgf = KifuParser.sgf2jgf(sgf);
-
-			//If parsing succeeded, load from JGF
-			if (jgf) {
-				this.fromJgf(jgf);
+			if (!jgf) {
+				return false;
 			}
+
+			//Now load from JGF
+			return this.fromJgf(jgf);
 		};
 
 		/**
@@ -425,13 +429,25 @@ angular.module('ngGo.Game.Service', [
 
 			//Parse jgf string
 			if (typeof jgf == 'string') {
-				jgf = JSON.parse(jgf);
+				try {
+					jgf = JSON.parse(jgf);
+				}
+				catch (error) {
+					console.warn('Could not parse JGF data');
+					return false;
+				}
 			}
 
 			//Parse tree string
 			if (typeof jgf.tree == 'string') {
 				if (jgf.tree.charAt(0) == '[') {
-					jgf.tree = JSON.parse(jgf.tree);
+					try {
+						jgf.tree = JSON.parse(jgf.tree);
+					}
+					catch (error) {
+						console.warn('Could not parse JGF tree');
+						return false;
+					}
 				}
 				else {
 					jgf.tree = [];
@@ -451,10 +467,13 @@ angular.module('ngGo.Game.Service', [
 			//Create root node
 			this.root = new GameNode();
 
-			//If tree given, load all the moves
+			//Tree given? Load all the moves
 			if (jgf.tree) {
 				this.root.fromJgf(jgf.tree);
 			}
+
+			//Load ok
+			return true;
 		};
 
 		/**
