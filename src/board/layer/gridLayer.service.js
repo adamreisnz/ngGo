@@ -191,7 +191,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 			r = this.board.theme.get('stone.radius', s);
 
 		//Get theme properties
-		var lineWidth = this.board.theme.get('gridLineWidth', s),
+		var lineWidth = this.board.theme.get('grid.lineWidth', s),
 			canvasTranslate = this.board.theme.get('canvasTranslate', s, lineWidth);
 
 		//Translate canvas

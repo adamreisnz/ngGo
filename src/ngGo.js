@@ -34,7 +34,7 @@ angular.module('ngGo', [])
  */
 .constant('ngGo', {
 	name:		'ngGo',
-	version:	'3.0.2',
+	version:	'3.0.3',
 	error:		{
 		MOVE_OUT_OF_BOUNDS:			1,
 		MOVE_ALREADY_HAS_STONE:		2,
@@ -48,7 +48,7 @@ angular.module('ngGo', [])
  */
 .constant('StoneColor', {
 	E: 0,
-	NONE: 0,
+	EMPTY: 0,
 	B:	1,
 	BLACK: 1,
 	W:	-1,
@@ -68,6 +68,28 @@ angular.module('ngGo', [])
 	LAST:		'last',
 	SAD:		'sad',
 	HAPPY:		'happy'
+})
+
+/**
+ * Player modes
+ */
+.constant('PlayerModes', {
+	PLAY:	'play',
+	REPLAY:	'replay',
+	EDIT:	'edit',
+	SOLVE:	'solve',
+	DEMO:	'demo'
+})
+
+/**
+ * Player tools
+ */
+.constant('PlayerTools', {
+	NONE:	'none',
+	MOVE:	'move',
+	SCORE:	'score',
+	SETUP:	'setup',
+	MARKUP:	'markup'
 });
 
 /**
@@ -88,5 +110,14 @@ if (typeof angular.extendDeep == 'undefined') {
 			}
 		}
 		return dest;
+	};
+}
+
+/**
+ * Global helpers
+ */
+if (typeof parseBool == 'undefined') {
+	var parseBool = function(b) {
+		return (b.toLowerCase() === 'true' || b === true || b === 1 || b === '1');
 	};
 }

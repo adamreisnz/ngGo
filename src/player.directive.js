@@ -14,18 +14,12 @@ angular.module('ngGo.Player.Directive', [
 		restrict: 'E',
 
 		/**
-		 * Controller
-		 */
-		controller: function($scope) {
-
-			//Set player in scope
-			$scope.Player = Player;
-		},
-
-		/**
 		 * Linking function
 		 */
 		link: function($scope, element, attrs) {
+
+			//Set player in scope
+			$scope.Player = Player;
 
 			//Get parent element
 			var parent = element.parent(),
@@ -33,7 +27,7 @@ angular.module('ngGo.Player.Directive', [
 
 			//Set initial dimensions
 			if (parentSize > 0) {
-				element.css({width: parentSize, height: parentSize});
+				element.css({width: parentSize + 'px', height: parentSize + 'px'});
 				$scope.$broadcast('ngGo.board.resize', parentSize, parentSize);
 			}
 
@@ -46,7 +40,7 @@ angular.module('ngGo.Player.Directive', [
 			});
 
 			//On window resize, change the board dimensions
-			angular.element($window).on('resize.ngGo.player', function() {
+			angular.element($window).on('resize', function() {
 				$scope.$broadcast('ngGo.player.resize');
 			});
 
@@ -55,7 +49,7 @@ angular.module('ngGo.Player.Directive', [
 
 				//Determine and set our size
 				parentSize = Math.min(parent[0].clientWidth, parent[0].clientHeight);
-				element.css({width: parentSize, height: parentSize});
+				element.css({width: parentSize + 'px', height: parentSize + 'px'});
 
 				//Propagate to board and layers
 				$scope.$broadcast('ngGo.board.resize', parentSize, parentSize);

@@ -21,7 +21,7 @@ angular.module('ngGo.Game.Scorer.Service', [
 	 * Possible score states
 	 */
 	var scoreState = {
-		UNKNOWN: StoneColor.NONE,
+		UNKNOWN: StoneColor.EMPTY,
 		BLACK_STONE: StoneColor.B,
 		WHITE_STONE: StoneColor.W,
 		BLACK_CANDIDATE: StoneColor.B * 2,

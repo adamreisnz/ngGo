@@ -19,7 +19,7 @@ angular.module('ngGo.Board.Object.StoneFaded.Service', [
 	/**
 	 * Class
 	 */
-	StoneFaded = {
+	var StoneFaded = {
 
 		/**
 		 * Draw stone

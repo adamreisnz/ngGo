@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ngGo demonstration</title>
+	<meta charset="utf-8" />
+	<meta name="author" content="Adam Buczynski" />
+    <link rel="stylesheet" type="text/css" media="screen" href="../build/ngGo.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="demo.css" />
+    <script src="../angular/angular.js"></script>
+    <script src="../build/ngGo.min.js"></script>
+    <script src="demo.js"></script>
+</head>
+<body lang="en">
+<main player-container-height ng-controller="ngGoDemoController">
+	<section class="goban">
+		<player mode="replay">
+			<board coordinates="true"></board>
+		</player>
+	</section>
+	<aside class="goban-info">
+		Player mode:
+		<br/>
+		<button ng-repeat="(mode, modeClass) in Player.modes" ng-click="Player.switchMode(mode)" ng-disabled="Player.mode == mode">{{mode}}</button>
+		<br/><br/>
+
+		Player tool:
+		<br/>
+		<button ng-repeat="tool in Player.tools" ng-click="Player.switchTool(tool)" ng-disabled="Player.tool == tool">{{tool}}</button>
+		<br/><br/>
+
+		Setup tool:
+		<br/>
+		<button ng-repeat="tool in Player.setupTools" ng-click="Player.switchSetupTool(tool)" ng-disabled="Player.setupTool == tool">{{tool}}</button>
+		<br/><br/>
+
+		Markup tool:
+		<br/>
+		<button ng-repeat="tool in Player.markupTools" ng-click="Player.switchMarkupTool(tool)" ng-disabled="Player.markupTool == tool">{{tool}}</button>
+		<br/><br/>
+
+		Options:
+		<br/>
+		<button ng-click="Board.swapColors()">Swap colors</button>
+		<button ng-click="Board.toggleCoordinates()">Toggle coordinates</button>
+		<button ng-click="Player.toggleVariationMarkup()">Toggle variation markup</button>
+		<button ng-click="Player.toggleSolutionPaths()">Toggle solution paths</button>
+		<br/><br/>
+
+		Navigate:
+		<br/>
+		<button ng-click="Player.first()">First position</button>
+		<button ng-click="Player.last()">Last position</button>
+		<button ng-click="Player.next()">Next position</button>
+		<button ng-click="Player.previous()">Previous position</button>
+	</aside>
+</main>
+<script>
+	angular.element(document).ready(function() {
+        setTimeout(function() {
+        	angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
+        }, 10);
+    });
+</script>
+</body>
+</html>

@@ -462,7 +462,7 @@ module.exports = function(grunt) {
 		'recess:compile',
 
 		//Apply angular minification protection, concatenate all JS into a single file and minify the code
-		'ngAnnotate', 'concat:compile_js', 'uglify',
+		'ngAnnotate', 'concat:compile_js', /*'uglify',*/
 
 		//Copy everything to the public folder, clean the temp folder
 		'copy:public_compile', 'clean:temp'

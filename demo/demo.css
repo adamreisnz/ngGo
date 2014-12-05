@@ -1,0 +1,26 @@
+
+/* Positioning of demo elements */
+html, body {
+	height: 100%;
+}
+main {
+	padding: 1rem;
+}
+.goban {
+	float: left;
+	width: 75%;
+	height: 100%;
+}
+.goban-info {
+	height: 100%;
+	float: right;
+	width: 22%;
+}
+
+/* Some player and board enhancements */
+player {
+	box-shadow: 0 0 15px rgba(60,30,20,0.3);
+}
+board {
+	background: url('board.jpg');
+}

@@ -19,7 +19,7 @@ angular.module('ngGo.Board.Object.StoneMini.Service', [
 	/**
 	 * Class
 	 */
-	StoneMini = {
+	var StoneMini = {
 
 		/**
 		 * Draw stone

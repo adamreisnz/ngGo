@@ -81,12 +81,12 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
 	 */
 	MarkupLayer.prototype.clear = function() {
 
-		//Get all markup as objects
-		var markup = this.grid.all('type');
+		//Use parent method
+		BoardLayer.prototype.clear.call(this);
 
-		//Clear them
-		for (var i = 0; i < markup.length; i++) {
-			Markup.clear.call(this, markup[i]);
+		//Make sure the grid is redrawn, because labels could have erased parts of it
+		if (this.board.layers.grid) {
+			this.board.layers.grid.redraw();
 		}
 	};
 

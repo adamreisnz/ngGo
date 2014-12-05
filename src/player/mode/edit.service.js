@@ -21,9 +21,9 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	 * Register event handlers
 	 */
 	Player.on('modeEnter', PlayerModeEdit.modeEnter, PlayerModes.EDIT);
+	Player.on('mousedrag', PlayerModeEdit.mouseDrag, PlayerModes.EDIT);
 	Player.on('keydown', PlayerModeEdit.keyDown, PlayerModes.EDIT);
 	Player.on('click', PlayerModeEdit.click, PlayerModes.EDIT);
-	Player.on('mousedrag', PlayerModeEdit.mouseDrag, PlayerModes.EDIT);
 	Player.on('hover', PlayerModeEdit.hover, PlayerModes.EDIT);
 
 	/**
@@ -84,7 +84,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			case this.setupTools.WHITE:
 				return StoneColor.W;
 			default:
-				return StoneColor.NONE;
+				return StoneColor.EMPTY;
 		}
 	};
 
@@ -308,7 +308,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		var color = this.setupToolColor();
 
 		//Trying to remove a stone
-		if (color === StoneColor.NONE) {
+		if (color === StoneColor.EMPTY) {
 			this.game.removeStone(x, y);
 		}
 
@@ -379,6 +379,10 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				default:
 					return true;
 			}
+
+			//Update hover mark
+			this.board.removeAll('hover');
+			updateHoverMark.call(this, this.lastX, this.lastY);
 		},
 
 		/**

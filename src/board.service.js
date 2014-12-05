@@ -29,11 +29,6 @@ angular.module('ngGo.Board.Service', [
 	 */
 	var defaultConfig = {
 
-		//Default size
-		//Note that the default size is left at 0 intentionally, to prevent needless re-draws when loading SGF/JGF data
-		//You can change this via BoardProvider.setConfig() or via a size attribute on the board element in HTML
-		defaultSize: 0,
-
 		//Show coordinates?
 		coordinates: false,
 
@@ -114,16 +109,9 @@ angular.module('ngGo.Board.Service', [
 			//Initialize layers
 			this.layers = {};
 
-			//Initialize grid size
-			var size = this.config.defaultSize;
-			if (typeof size == 'string' && size.toLowerCase().indexOf('x') !== -1) {
-				size = size.split('x');
-				this.width = parseInt(size[0]);
-				this.height = parseInt(size[0]);
-			}
-			else {
-				this.width = this.height = parseInt(size);
-			}
+			//Initialize board grid size
+			this.width = 0;
+			this.height = 0;
 
 			//Set section of board to display and determine resulting grid
 			this.section = angular.extend({}, defaultConfig.section, this.config.section);
@@ -392,6 +380,15 @@ angular.module('ngGo.Board.Service', [
 		 ***/
 
 		/**
+		 * Clear everything
+		 */
+		Board.prototype.clear = function() {
+			for (var layer in this.layers) {
+				this.layers[layer].clear();
+			}
+		};
+
+		/**
 		 * Redraw everything
 		 */
 		Board.prototype.redraw = function() {
@@ -408,6 +405,9 @@ angular.module('ngGo.Board.Service', [
 			if (this.layers.stones)	{
 				this.layers.stones.redraw();
 			}
+			if (this.layers.markup)	{
+				this.layers.markup.redraw();
+			}
 		};
 
 		/**
@@ -417,7 +417,7 @@ angular.module('ngGo.Board.Service', [
 			if (this.layers.stones) {
 				return this.layers.stones.get(x, y);
 			}
-			return StoneColor.NONE;
+			return StoneColor.EMPTY;
 		};
 
 		/**

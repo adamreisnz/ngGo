@@ -22,7 +22,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
 		BoardLayer.call(this, board, context);
 
 		//Set empty value for grid
-		this.grid.whenEmpty(StoneColor.NONE);
+		this.grid.whenEmpty(StoneColor.EMPTY);
 	};
 
 	/**

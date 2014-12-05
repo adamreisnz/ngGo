@@ -19,28 +19,6 @@ angular.module('ngGo.Player.Service', [
 ])
 
 /**
- * Player modes constant
- */
-.constant('PlayerModes', {
-	PLAY:	'play',
-	REPLAY:	'replay',
-	EDIT:	'edit',
-	SOLVE:	'solve',
-	DEMO:	'demo'
-})
-
-/**
- * Player tools constant
- */
-.constant('PlayerTools', {
-	NONE:	'none',
-	MOVE:	'move',
-	SCORE:	'score',
-	SETUP:	'setup',
-	MARKUP:	'markup'
-})
-
-/**
  * Provider definition
  */
 .provider('Player', function(PlayerModes, PlayerTools) {
@@ -85,10 +63,7 @@ angular.module('ngGo.Player.Service', [
 
 		//Solve mode settings
 		solveAutoPlay: true,
-		solveAutoPlayDelay: 500,
-
-		//Additional event listeners to apply on the player HTML element
-		elementEvents: []
+		solveAutoPlayDelay: 500
 	};
 
 	/**
@@ -108,8 +83,8 @@ angular.module('ngGo.Player.Service', [
 		 */
 		var processMouseEvent = function(broadcastEvent, mouseEvent) {
 
-			//Can only do this with a board
-			if (!this.board) {
+			//Can only do this with a board and mouse event
+			if (!this.board || !mouseEvent) {
 				broadcastEvent.x = -1;
 				broadcastEvent.y = -1;
 				return;
@@ -142,7 +117,7 @@ angular.module('ngGo.Player.Service', [
 			config: angular.copy(defaultConfig),
 
 			//Board and game containers
-			board: null,
+			board: new Board(),
 			game: new Game(),
 
 			//Remembered current path
@@ -171,13 +146,8 @@ angular.module('ngGo.Player.Service', [
 					this.displayInstructions(this.game.get('display'));
 				}
 
-				//Get board info
-				var board = this.game.get('board');
-
-				//Remove all objects, set size and section
-				this.board.removeAll();
-				this.board.setSize(board.width, board.height);
-				this.board.setSection(board.section);
+				//Prepare board
+				this.prepareBoard();
 
 				//Path given? Go there now
 				if (path) {
@@ -195,10 +165,27 @@ angular.module('ngGo.Player.Service', [
 			},
 
 			/**
+			 * Prepare board once game data is loaded
+			 */
+			prepareBoard: function() {
+
+				//Get board info
+				var board = this.game.get('board');
+
+				//Remove all objects, set size and section
+				if (board) {
+					this.board.removeAll();
+					this.board.setSize(board.width, board.height);
+					this.board.setSection(board.section);
+				}
+			},
+
+			/**
 			 * Set the board
 			 */
 			setBoard: function(Board) {
 				this.board = Board;
+				this.prepareBoard();
 			},
 
 			/**
@@ -321,7 +308,7 @@ angular.module('ngGo.Player.Service', [
 			 ***/
 
 			/**
-			 * Play next move
+			 * Go to the next position
 			 */
 			next: function(i) {
 				if (this.game) {
@@ -373,7 +360,7 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Start auto play with a given delay
 			 */
-			play: function(delay) {
+			start: function(delay) {
 
 				//No game or no move children?
 				if (!this.game || !this.game.node.hasChildren()) {
@@ -598,14 +585,20 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Remove any existing event listener and apply new one
-				element.off(event + '.ngGo.player');
-				element.on(event + '.ngGo.player', this.broadcast.bind(this, event));
+				//TODO: namespacing doesn't work with Angular's jqLite
+				element.off(event/* + '.ngGo.player'*/);
+				element.on(event/* + '.ngGo.player'*/, this.broadcast.bind(this, event));
 			},
 
 			/**
 			 * Event listener
 			 */
 			on: function(type, listener, mode) {
+
+				//Must have valid listener
+				if (typeof listener != 'function') {
+					return;
+				}
 
 				//Get self
 				var self = this;

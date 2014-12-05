@@ -38,7 +38,7 @@ angular.module('ngGo.Game.Position.Service', [
 		this.captures[StoneColor.W] = [];
 
 		//Set empty value for stones grid
-		this.stones.whenEmpty(StoneColor.NONE);
+		this.stones.whenEmpty(StoneColor.EMPTY);
 
 		//Set size
 		if (width || height) {
@@ -118,7 +118,7 @@ angular.module('ngGo.Game.Position.Service', [
 		}
 
 		//Empty? That's a liberty
-		if (color === StoneColor.NONE) {
+		if (color === StoneColor.EMPTY) {
 			return true;
 		}
 
@@ -244,12 +244,12 @@ angular.module('ngGo.Game.Position.Service', [
 		var color = this.stones.get(x, y);
 
 		//Empty?
-		if (color === StoneColor.NONE) {
+		if (color === StoneColor.EMPTY) {
 			return;
 		}
 
 		//Ok, stone present, capture it
-		this.stones.set(x, y, StoneColor.NONE);
+		this.stones.set(x, y, StoneColor.EMPTY);
 		this.captures[color].push({x:x, y:y});
 	};
 

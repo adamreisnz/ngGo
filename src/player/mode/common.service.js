@@ -158,10 +158,6 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 				default:
 					return true;
 			}
-
-			//Update hover mark
-			this.board.removeAll('hover');
-			updateHoverMark.call(this, this.lastX, this.lastY);
 		},
 
 		/**

@@ -70,7 +70,7 @@ angular.module('ngGo.Game.Node.Service', [
 		else if (color == 'W') {
 			return StoneColor.W;
 		}
-		return StoneColor.NONE;
+		return StoneColor.EMPTY;
 	};
 
 	/***********************************************************************************************
@@ -292,7 +292,7 @@ angular.module('ngGo.Game.Node.Service', [
 			case 'B':
 				return StoneColor.B;
 			default:
-				return StoneColor.NONE;
+				return StoneColor.EMPTY;
 		}
 	};
 
@@ -412,9 +412,9 @@ angular.module('ngGo.Game.Node.Service', [
 	};
 
 	/**
-	 * Check if given coordinates are one of the next child node coordinates
+	 * Get the move variation for given coordinates
 	 */
-	GameNode.prototype.isMoveVariation = function(x, y) {
+	GameNode.prototype.getMoveVariation = function(x, y) {
 
 		//Loop the child nodes
 		for (var i in this.children) {
@@ -425,6 +425,22 @@ angular.module('ngGo.Game.Node.Service', [
 
 		//Not found
 		return -1;
+	};
+
+	/**
+	 * Check if given coordinates are one of the next child node coordinates
+	 */
+	GameNode.prototype.isMoveVariation = function(x, y) {
+
+		//Loop the child nodes
+		for (var i in this.children) {
+			if (this.children[i].move && this.children[i].move.x == x && this.children[i].move.y == y) {
+				return true;
+			}
+		}
+
+		//Not found
+		return false;
 	};
 
 	/***********************************************************************************************

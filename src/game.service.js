@@ -285,7 +285,13 @@ angular.module('ngGo.Game.Service', [
 			this.config = angular.extend({}, defaultConfig, config || {});
 
 			//Load data
-			this.load(data);
+			if (data) {
+				this.load(data);
+			}
+			else {
+				this.init();
+			}
+
 
 			//Define property getter/setter for position
 			Object.defineProperty(this, 'position', {
@@ -605,6 +611,16 @@ angular.module('ngGo.Game.Service', [
 		};
 
 		/**
+		 * Get the move variation for given coordinates
+		 */
+		Game.prototype.getMoveVariation = function(x, y) {
+			if (this.node) {
+				return this.node.getMoveVariation(x, y);
+			}
+			return -1;
+		};
+
+		/**
 		 * Get an info property
 		 */
 		Game.prototype.get = function(position) {
@@ -662,7 +678,7 @@ angular.module('ngGo.Game.Service', [
 			if (this.node) {
 				return this.node.isMoveVariation(x, y);
 			}
-			return -1;
+			return false;
 		};
 
 		/**
@@ -713,7 +729,7 @@ angular.module('ngGo.Game.Service', [
 			}
 
 			//Something already here?
-			if (!this.allowRewrite && this.position.stones.get(x, y) != StoneColor.NONE) {
+			if (!this.allowRewrite && this.position.stones.get(x, y) != StoneColor.EMPTY) {
 				this.error = ngGo.error.MOVE_ALREADY_HAS_STONE;
 				return false;
 			}
@@ -847,7 +863,7 @@ angular.module('ngGo.Game.Service', [
 
 			//Not found in setup? Add as no stone color
 			if (!foundInSetup) {
-				this.addStone(x, y, StoneColor.NONE);
+				this.addStone(x, y, StoneColor.EMPTY);
 			}
 		};
 
@@ -1003,7 +1019,6 @@ angular.module('ngGo.Game.Service', [
 
 			//Create the initial position, clone it and parse the current node
 			initializeHistory.call(this);
-			pushPosition.call(this);
 			executeNode.call(this);
 		};
 

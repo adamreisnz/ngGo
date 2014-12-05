@@ -22,6 +22,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	 */
 	Player.on('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
 	Player.on('modeExit', PlayerModeReplay.modeExit, PlayerModes.REPLAY);
+	Player.on('keydown', PlayerModeReplay.keyDown, PlayerModes.REPLAY);
 	Player.on('update', PlayerModeReplay.update, PlayerModes.REPLAY);
 	Player.on('config', PlayerModeReplay.config, PlayerModes.REPLAY);
 	Player.on('click', PlayerModeReplay.click, PlayerModes.REPLAY);
@@ -55,7 +56,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			case PlayerTools.MOVE:
 
 				//Hovering over empty spot where we can make a move?
-				if (!this.game.hasStone(x, y) && this.game.isValidMove(x, y)) {
+				if (!this.game.hasStone(x, y) && this.game.isMoveVariation(x, y)) {
 					this.board.add('hover', x, y, {
 						type: 'stones',
 						value: this.game.getTurn()
@@ -173,6 +174,16 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			if (this.config.variationMarkup) {
 				drawMoveVariations.call(this, true);
 			}
+		},
+
+		/**
+		 * Handler for keydown events
+		 */
+		keyDown: function(event, keyboardEvent) {
+
+			//Update hover mark
+			this.board.removeAll('hover');
+			updateHoverMark.call(this, this.lastX, this.lastY);
 		},
 
 		/**

@@ -26,9 +26,6 @@ angular.module('ngGo.Board.Theme.Service', [
 		//Board
 		board: {
 
-			//Font for labels & coordinates
-			font: 'Calibri',
-
 			//Board margin (factor of the lesser of available width and height)
 			margin: 0.04
 		},
@@ -76,7 +73,6 @@ angular.module('ngGo.Board.Theme.Service', [
 
 			//Shadow gradient colors
 			color: 'rgba(62,32,32,0.3)',
-			colorTransparent: 'rgba(62,32,32,0)',
 
 			//Shadow size
 			size: function(cellSize) {
@@ -135,6 +131,11 @@ angular.module('ngGo.Board.Theme.Service', [
 			smiley: {
 				lineCap: 'round',
 				scale: 0.85
+			},
+
+			//Label
+			label: {
+				font: 'Calibri'
 			},
 
 			//Variation markup
