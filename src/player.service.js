@@ -84,7 +84,7 @@ angular.module('ngGo.Player.Service', [
 		var processMouseEvent = function(broadcastEvent, mouseEvent) {
 
 			//Can only do this with a board and mouse event
-			if (!this.board || mouseEvent) {
+			if (!this.board || !mouseEvent) {
 				broadcastEvent.x = -1;
 				broadcastEvent.y = -1;
 				return;

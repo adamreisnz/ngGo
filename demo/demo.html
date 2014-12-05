@@ -18,7 +18,15 @@
 		</player>
 	</section>
 	<aside class="goban-info">
-		Player mode:
+		<h3>{{Game.get('game.name')}}</h3>
+		<p>
+			<span ng-repeat="Player in Game.get('game.players')">{{Player.name}} ({{Player.rank}})<span ng-show="$first"> vs. </span></span><br/>
+			{{Game.getTurn() | stoneColor}} to play<br/>
+			Move number: {{Game.path.getMove()}}<br/>
+			Komi: {{Game.get('game.komi')}}
+		</p>
+
+		<br/>Player mode:
 		<br/>
 		<button ng-repeat="(mode, modeClass) in Player.modes" ng-click="Player.switchMode(mode)" ng-disabled="Player.mode == mode">{{mode}}</button>
 		<br/><br/>
@@ -46,22 +54,14 @@
 		<button ng-click="Player.toggleSolutionPaths()">Toggle solution paths</button>
 		<br/><br/>
 
-		Navigate:
+		Navigate &amp; auto play:
 		<br/>
-		<button ng-click="Player.first()">First position</button>
-		<button ng-click="Player.last()">Last position</button>
-		<button ng-click="Player.next()">Next position</button>
-		<button ng-click="Player.previous()">Previous position</button>
-		<br/><br/>
-
-		<h3>{{Game.get('game.name')}}</h3>
-		<p>
-			<span ng-repeat="Player in Game.get('game.players')">{{Player.name}} ({{Player.rank}})<span ng-show="$first"> vs. </span></span><br/>
-			{{Game.getTurn() | stoneColor}} to play<br/>
-			Move number: {{Game.path.getMove()}}<br/>
-			Komi: {{Game.get('game.komi')}}
-		</p>
-
+		<button ng-click="Player.first()">&lt;&lt;</button>
+		<button ng-click="Player.previous()">&lt;</button>
+		<button ng-click="Player.next()">&gt;</button>
+		<button ng-click="Player.last()">&gt;&gt;</button>
+		<button ng-click="Player.start()">Start</button>
+		<button ng-click="Player.stop()">Stop</button>
 	</aside>
 </main>
 <script>

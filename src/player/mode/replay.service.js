@@ -202,12 +202,9 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 				//Move tool
 				case PlayerTools.MOVE:
 
-					//Check if we clicked a move variation
-					var i = this.game.isMoveVariation(event.x, event.y);
-
-					//Advance to the next position
-					if (i != -1) {
-						this.next(i);
+					//Check if we clicked a move variation, advance to the next position if so
+					if (this.game.isMoveVariation(event.x, event.y)) {
+						this.next(this.game.getMoveVariation(event.x, event.y));
 					}
 					break;
 
