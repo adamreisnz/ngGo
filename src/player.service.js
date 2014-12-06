@@ -138,7 +138,7 @@ angular.module('ngGo.Player.Service', [
 			config: angular.copy(defaultConfig),
 
 			//Board and game containers
-			board: new Board(),
+			board: null,
 			game: new Game(),
 
 			//Remembered current path
@@ -264,6 +264,7 @@ angular.module('ngGo.Player.Service', [
 					this.board.removeAll();
 					this.board.setSize(board.width, board.height);
 					this.board.setSection(board.section);
+					this.board.setCutOff(board.cutoff);
 				}
 			},
 

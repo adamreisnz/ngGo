@@ -38,6 +38,9 @@ angular.module('ngGo.Board.Service', [
 		//Show coordinates?
 		coordinates: false,
 
+		//Cut-off grid at certain sides?
+		cutOff: [],
+
 		//Section of board to display
 		section: {
 			top: 0,
@@ -57,7 +60,7 @@ angular.module('ngGo.Board.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function(BoardTheme, StoneColor, GridLayer, ShadowLayer, StonesLayer, MarkupLayer, ScoreLayer, HoverLayer) {
+	this.$get = function($rootScope, BoardTheme, GridLayer, ShadowLayer, StonesLayer, MarkupLayer, ScoreLayer, HoverLayer) {
 
 		/**
 		 * Helper to (re)calculate cellsize and margins
@@ -69,16 +72,19 @@ angular.module('ngGo.Board.Service', [
 				return;
 			}
 
-			//Get draw size, available size and number of cells
-			var drawSize = Math.min(this.drawWidth, this.drawHeight),
-				availableSize = drawSize * (1-this.margin),
-				noCells = Math.max(this.width, this.height);
+			//Determine cell size with margin
+			this.cellSize = Math.floor(Math.min(
+				this.drawWidth * (1-this.margin) / this.width,
+				this.drawHeight * (1-this.margin) / this.height
+			));
 
-			//Determine cell size
-			this.cellSize = Math.round(availableSize / noCells);
+			//Determine actual grid draw size
+			var gridDrawWidth = this.cellSize * (this.width - 1),
+				gridDrawHeight = this.cellSize * (this.height - 1);
 
-			//Determine draw margin
-			this.drawMargin = Math.round((drawSize - availableSize) / 2 + this.cellSize/2);
+			//Determine draw margins
+			this.drawMarginHor = Math.floor((this.drawWidth - gridDrawWidth) / 2);
+			this.drawMarginVer = Math.floor((this.drawHeight - gridDrawHeight) / 2);
 		};
 
 		/**
@@ -107,7 +113,8 @@ angular.module('ngGo.Board.Service', [
 			//Initialize board draw dimensions in pixels
 			this.drawWidth = 0;
 			this.drawHeight = 0;
-			this.drawMargin = 0;
+			this.drawMarginHor = 0;
+			this.drawMarginVer = 0;
 
 			//Color multiplier (to allow color swapping)
 			this.colorMultiplier = 1;
@@ -132,11 +139,14 @@ angular.module('ngGo.Board.Service', [
 
 			//Set section of board to display and determine resulting grid
 			this.section = angular.extend({}, defaultConfig.section, this.config.section);
+			this.cutOff = this.config.cutOff;
 			this.margin = this.theme.get('board.margin');
 			determineGrid.call(this);
 
 			//Set size now if given
-			this.setSize(width, height);
+			if (width || height) {
+				this.setSize(width, height);
+			}
 		};
 
 		/**
@@ -173,6 +183,20 @@ angular.module('ngGo.Board.Service', [
 		Board.prototype.resetMargin = function() {
 			this.setMargin(this.theme.get('board.margin'));
 			return this;
+		};
+
+		/**
+		 * Set grid cut-off
+		 */
+		Board.prototype.setCutOff = function(cutOff) {
+
+			//Nothing given?
+			if (!cutOff) {
+				return this;
+			}
+
+			//Set cutoff
+			this.cutOff = cutOff;
 		};
 
 		/**
@@ -222,8 +246,8 @@ angular.module('ngGo.Board.Service', [
 					this.layers[layer].setSize(width, height);
 				}
 
-				//Resized handler
-				this.resized();
+				//Broadcast event (no call to resized, as that is handled in the directive)
+				$rootScope.$broadcast('ngGo.board.resize', this, width, height);
 			}
 
 			//Return self for chaining
@@ -234,9 +258,11 @@ angular.module('ngGo.Board.Service', [
 		 * Set new draw size
 		 */
 		Board.prototype.setDrawSize = function(width, height) {
-			this.drawWidth = width;
-			this.drawHeight = height;
-			this.resized();
+			if (width != this.drawWidth || height != this.drawHeight) {
+				this.drawWidth = width;
+				this.drawHeight = height;
+				this.resized();
+			}
 		};
 
 		/**
@@ -249,7 +275,7 @@ angular.module('ngGo.Board.Service', [
 			calcCellSizeAndMargins.call(this);
 
 			//Only redraw when there is sensible data
-			if (this.width && this.height) {
+			if (this.width && this.height && this.drawWidth && this.drawHeight) {
 				this.redraw();
 			}
 		};
@@ -457,6 +483,11 @@ angular.module('ngGo.Board.Service', [
 		 */
 		Board.prototype.redraw = function(layer) {
 
+			//The board can only be redrawn when there is a grid size and a draw size
+			if (!this.width || !this.height || !this.drawWidth || !this.drawHeight) {
+				return;
+			}
+
 			//Just redrawing one layer?
 			if (layer) {
 
@@ -491,28 +522,28 @@ angular.module('ngGo.Board.Service', [
 		 * Convert grid coordinate to pixel coordinate
 		 */
 		Board.prototype.getAbsX = function(gridX) {
-			return this.drawMargin + Math.round((gridX) * this.cellSize);
+			return this.drawMarginHor + Math.round(gridX * this.cellSize);
 		};
 
 		/**
 		 * Convert grid coordinate to pixel coordinate
 		 */
 		Board.prototype.getAbsY = function(gridY) {
-			return this.drawMargin + Math.round((gridY) * this.cellSize);
+			return this.drawMarginVer + Math.round(gridY * this.cellSize);
 		};
 
 		/**
 		 * Convert pixel coordinate to grid coordinate
 		 */
 		Board.prototype.getGridX = function(absX) {
-			return Math.round((absX - this.drawMargin) / this.cellSize);
+			return Math.round((absX - this.drawMarginHor) / this.cellSize);
 		};
 
 		/**
 		 * Convert pixel coordinate to grid coordinate
 		 */
 		Board.prototype.getGridY = function(absY) {
-			return Math.round((absY - this.drawMargin) / this.cellSize);
+			return Math.round((absY - this.drawMarginVer) / this.cellSize);
 		};
 
 		/**

@@ -32,7 +32,7 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
 	 ***/
 
 	/**
-	 * Set all stones at once
+	 * Set all markup at once
 	 */
 	MarkupLayer.prototype.setAll = function(grid) {
 
@@ -51,6 +51,23 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
 
 		//Remember new grid
 		this.grid = grid.clone();
+	};
+
+	/**
+	 * Remove all (clear layer and empty grid)
+	 */
+	MarkupLayer.prototype.removeAll = function() {
+
+		//Get all markup as objects
+		var markup = this.grid.all('type');
+
+		//Clear them
+		for (var i = 0; i < markup.length; i++) {
+			Markup.clear.call(this, markup[i]);
+		}
+
+		//Empty the grid now
+		this.grid.empty();
 	};
 
 	/***********************************************************************************************
@@ -74,18 +91,6 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
 		for (var i = 0; i < markup.length; i++) {
 			Markup.draw.call(this, markup[i]);
 		}
-	};
-
-	/**
-	 * Clear layer
-	 */
-	MarkupLayer.prototype.clear = function() {
-
-		//Use parent method
-		BoardLayer.prototype.clear.call(this);
-
-		//Make sure the grid is redrawn, because labels could have erased parts of it
-		this.board.redraw('grid');
 	};
 
 	/**

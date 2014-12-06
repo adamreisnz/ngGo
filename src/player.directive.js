@@ -8,7 +8,7 @@ angular.module('ngGo.Player.Directive', [
 /**
  * Directive definition
  */
-.directive('player', function($window, Player) {
+.directive('player', function(Player) {
 	return {
 		restrict: 'E',
 
@@ -28,34 +28,8 @@ angular.module('ngGo.Player.Directive', [
 		 */
 		link: function($scope, element, attrs) {
 
-			//Get parent element
-			var parent = element.parent(),
-				parentSize = Math.min(parent[0].clientWidth, parent[0].clientHeight);
-
-			//Set initial dimensions
-			if (parentSize > 0) {
-				element.css({width: parentSize + 'px', height: parentSize + 'px'});
-				$scope.$broadcast('ngGo.board.resize', parentSize, parentSize);
-			}
-
 			//Link the element
 			Player.setElement(element);
-
-			//On window resize, change the board dimensions
-			angular.element($window).on('resize', function() {
-				$scope.$broadcast('ngGo.player.resize');
-			});
-
-			//On resize event, change the board dimensions
-			$scope.$on('ngGo.player.resize', function() {
-
-				//Determine and set our size
-				parentSize = Math.min(parent[0].clientWidth, parent[0].clientHeight);
-				element.css({width: parentSize + 'px', height: parentSize + 'px'});
-
-				//Propagate to board
-				$scope.$broadcast('ngGo.board.resize', parentSize, parentSize);
-			});
 
 			//Observe mode and tool attributes
 			attrs.$observe('mode', function(mode) {

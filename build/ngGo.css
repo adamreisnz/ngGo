@@ -1,1 +1,1 @@
-player{display:block}board{position:relative;display:block;width:100%;height:100%}board canvas{position:absolute;width:100%;height:100%}board .grid{z-index:10}board .shadow{z-index:20}board .stones{z-index:30}board .score{z-index:40}board .markup{z-index:50}board .hover{z-index:60}
+player{display:inline}board{position:relative;display:block;width:100%;height:100%}board canvas{position:absolute;width:100%;height:100%}board .grid{z-index:10}board .shadow{z-index:20}board .stones{z-index:30}board .score{z-index:40}board .markup{z-index:50}board .hover{z-index:60}

@@ -106,8 +106,8 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 		}
 
 		//Determine top x and y margin
-		var tx = Math.round(this.board.drawMargin),
-			ty = Math.round(this.board.drawMargin);
+		var tx = this.board.drawMarginHor,
+			ty = this.board.drawMarginVer;
 
 		//Determine number of visible cells
 		var cellsVer = this.board.grid.yBot - this.board.grid.yTop,
