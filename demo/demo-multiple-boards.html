@@ -22,7 +22,7 @@
      */
     angular.module('ngGoDemo', [
         'ngGo.Player.Service'
-    ]).controller('ngGoDemoController', function($scope, Board, StoneColor) {
+    ]).controller('ngGoDemoController', function($timeout, $scope, Board, StoneColor) {
 
         //Prepare board container
         $scope.Boards = [];

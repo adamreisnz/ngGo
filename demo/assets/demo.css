@@ -18,6 +18,9 @@ button {
 	padding: 0.2rem;
 	margin-right: 0.2rem;
 }
+p {
+	margin-bottom: 1rem;
+}
 .goban {
 	float: left;
 	width: 75%;
@@ -35,10 +38,8 @@ button {
 	margin: 0 10px 10px 0;
 }
 
-/* Some player and board enhancements */
-player {
-	box-shadow: 0 0 15px rgba(60,30,20,0.3);
-}
+/* Some board enhancements */
 board {
 	background: url('board.jpg');
+	box-shadow: 0 0 15px rgba(60,30,20,0.3);
 }

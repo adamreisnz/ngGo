@@ -23,13 +23,6 @@ angular.module('ngGo.Board.Theme.Service', [
 	 */
 	var defaultTheme = {
 
-		//Board
-		board: {
-
-			//Board margin (factor of the lesser of available width and height)
-			margin: 0.04
-		},
-
 		//Stones
 		stone: {
 
@@ -219,19 +212,21 @@ angular.module('ngGo.Board.Theme.Service', [
 			}
 		},
 
+		//Board
+		board: {
+
+			//Board margin factor
+			margin: 0.035
+		},
+
 		//Coordinates
 		coordinates: {
 
 			//Color
 			color: 'rgba(101,69,37,0.4)',
 
-			//Board margin when showing coordinates
-			margin: function(width, height) {
-				if (width > 9) {
-					return 0.08;
-				}
-				return 0.12;
-			},
+			//Board margin factor when showing coordinates
+			margin: 0.13,
 
 			//Vertical coordinates style
 			vertical: {
@@ -240,7 +235,7 @@ angular.module('ngGo.Board.Theme.Service', [
 				inverse: true,
 				size: function() {
 					return function(ch, cellSize) {
-						return Math.floor((cellSize / 3) + 1) + 'px';
+						return Math.floor((cellSize * 0.3) + 1) + 'px';
 					};
 				}
 			},
@@ -252,7 +247,7 @@ angular.module('ngGo.Board.Theme.Service', [
 				inverse: false,
 				size: function() {
 					return function(ch, cellSize) {
-						return Math.floor((cellSize / 3) + 1) + 'px';
+						return Math.floor((cellSize * 0.3) + 1) + 'px';
 					};
 				}
 			}

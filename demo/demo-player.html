@@ -25,42 +25,37 @@
 			Komi: {{Game.get('game.komi')}}
 		</p>
 
-		<br/>Player mode:
-		<br/>
-		<button ng-repeat="(mode, modeClass) in Player.modes" ng-click="Player.switchMode(mode)" ng-disabled="Player.mode == mode">{{mode}}</button>
-		<br/><br/>
+		<p>Player mode:<br/>
+			<button ng-repeat="(mode, modeClass) in Player.modes" ng-click="Player.switchMode(mode)" ng-disabled="Player.mode == mode">{{mode}}</button>
+		</p>
 
-		Player tool:
-		<br/>
-		<button ng-repeat="tool in Player.tools" ng-click="Player.switchTool(tool)" ng-disabled="Player.tool == tool">{{tool}}</button>
-		<br/><br/>
+		<p>Player tool:<br/>
+			<button ng-repeat="tool in Player.tools" ng-click="Player.switchTool(tool)" ng-disabled="Player.tool == tool">{{tool}}</button>
+		</p>
 
-		Setup tool:
-		<br/>
-		<button ng-repeat="tool in Player.setupTools" ng-click="Player.switchSetupTool(tool)" ng-disabled="Player.setupTool == tool">{{tool}}</button>
-		<br/><br/>
+		<p ng-show="Player.tool == 'setup'">Setup tool:<br/>
+			<button ng-repeat="tool in Player.setupTools" ng-click="Player.switchSetupTool(tool)" ng-disabled="Player.setupTool == tool">{{tool}}</button>
+		</p>
 
-		Markup tool:
-		<br/>
-		<button ng-repeat="tool in Player.markupTools" ng-click="Player.switchMarkupTool(tool)" ng-disabled="Player.markupTool == tool">{{tool}}</button>
-		<br/><br/>
+		<p ng-show="Player.tool == 'markup'">Markup tool:<br/>
+			<button ng-repeat="tool in Player.markupTools" ng-click="Player.switchMarkupTool(tool)" ng-disabled="Player.markupTool == tool">{{tool}}</button>
+		</p>
 
-		Options:
-		<br/>
-		<button ng-click="Board.swapColors()">Swap colors</button>
-		<button ng-click="Board.toggleCoordinates()">Toggle coordinates</button>
-		<button ng-click="Player.toggleVariationMarkup()">Toggle variation markup</button>
-		<button ng-click="Player.toggleSolutionPaths()">Toggle solution paths</button>
-		<br/><br/>
+		<p>Options:<br/>
+			<button ng-click="Board.swapColors()">Swap colors</button>
+			<button ng-click="Board.toggleCoordinates()">Toggle coordinates</button>
+			<button ng-click="Player.toggleVariationMarkup()">Toggle variation markup</button>
+			<button ng-click="Player.toggleSolutionPaths()">Toggle solution paths</button>
+		</p/>
 
-		Navigate &amp; auto play:
-		<br/>
-		<button ng-click="Player.first()">&lt;&lt;</button>
-		<button ng-click="Player.previous()">&lt;</button>
-		<button ng-click="Player.next()">&gt;</button>
-		<button ng-click="Player.last()">&gt;&gt;</button>
-		<button ng-click="Player.start()">Start</button>
-		<button ng-click="Player.stop()">Stop</button>
+		<p>Navigate &amp; auto play:<br/>
+			<button ng-click="Player.first()">&lt;&lt;</button>
+			<button ng-click="Player.previous()">&lt;</button>
+			<button ng-click="Player.next()">&gt;</button>
+			<button ng-click="Player.last()">&gt;&gt;</button>
+			<button ng-click="Player.start()">Start</button>
+			<button ng-click="Player.stop()">Stop</button>
+		</p>
 	</aside>
 </main>
 <script>

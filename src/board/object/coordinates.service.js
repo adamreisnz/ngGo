@@ -61,15 +61,17 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 				return;
 			}
 
+			//Get cell size
+			var cellSize = this.board.getCellSize();
+
 			//Get boundary coordinates
-			var xl = this.board.getAbsX(-0.75),
-				xr = this.board.getAbsX(this.board.width - 0.25),
-				yt = this.board.getAbsY(-0.75),
-				yb = this.board.getAbsY(this.board.height - 0.25);
+			var xl = Math.ceil((this.board.drawMarginHor - cellSize/2) / 2),
+				xr = this.board.drawWidth - xl,
+				yt = Math.ceil((this.board.drawMarginVer - cellSize/2) / 2),
+				yb = this.board.drawHeight - yt;
 
 			//Get theme properties
-			var cellSize = this.board.getCellSize(),
-				stoneRadius = this.board.theme.get('stone.radius', cellSize),
+			var stoneRadius = this.board.theme.get('stone.radius', cellSize),
 				fillStyle = this.board.theme.get('coordinates.color'),
 				vertical = {
 					font: this.board.theme.get('coordinates.vertical.font'),
@@ -113,10 +115,10 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 				}
 
 				//Draw
-				y = this.board.getAbsX(i);
+				y = this.board.getAbsY(i);
 				this.context.font = vertical.size(ch, cellSize) + ' ' + vertical.font;
-				this.context.fillText(ch, xr, y);
 				this.context.fillText(ch, xl, y);
+				this.context.fillText(ch, xr, y);
 			}
 
 			//Draw horizontal coordinates
@@ -140,7 +142,7 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 				}
 
 				//Draw
-				x = this.board.getAbsY(i);
+				x = this.board.getAbsX(i);
 				this.context.font = horizontal.size(ch, cellSize) + ' ' + horizontal.font;
 				this.context.fillText(ch, x, yt);
 				this.context.fillText(ch, x, yb);

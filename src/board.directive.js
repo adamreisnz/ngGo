@@ -8,7 +8,7 @@ angular.module('ngGo.Board.Directive', [
 /**
  * Directive definition
  */
-.directive('board', function(Board) {
+.directive('board', function($window, Board) {
 
 	//Get pixel ratio
 	var pixelRatio = window.pixelRatio || 1;
@@ -40,6 +40,42 @@ angular.module('ngGo.Board.Directive', [
 	};
 
 	/**
+	 * Helper to determine draw size
+	 */
+	var determineDrawSize = function($scope, availableWidth, availableHeight) {
+
+		//Init vars
+		var drawWidth, drawHeight, cellSize;
+
+		//Grid size known?
+		if ($scope.Board.width && $scope.Board.height) {
+
+			//Determine smallest cell size
+			cellSize = Math.min(availableWidth / $scope.Board.width, availableHeight / $scope.Board.height);
+
+			//Set draw size
+			drawWidth = Math.floor(cellSize * $scope.Board.width);
+			drawHeight = Math.floor(cellSize * $scope.Board.height);
+		}
+
+		//Otherwise, use the lesser of the available width/height
+		else {
+			drawWidth = drawHeight = Math.min(availableWidth, availableHeight);
+		}
+
+		//Broadcast new size if changed
+		if ($scope.lastDrawWidth != drawWidth || $scope.lastDrawHeight != drawHeight) {
+			$scope.lastDrawWidth = drawWidth;
+			$scope.lastDrawHeight = drawHeight;
+			$scope.$broadcast('ngGo.board.drawSizeChanged', drawWidth, drawHeight);
+			return true;
+		}
+
+		//No change
+		return false;
+	};
+
+	/**
 	 * Directive
 	 */
 	return {
@@ -52,8 +88,12 @@ angular.module('ngGo.Board.Directive', [
 		link: function($scope, element, attrs) {
 
 			//Init vars
-			var i, context, layer,
+			var i, context, layer, playerElement,
 				existingInstance = true;
+
+			//Remember last draw width/height
+			$scope.lastDrawWidth = 0;
+			$scope.lastDrawHeight = 0;
 
 			//Instantiate board if not present in scope
 			if (!$scope.Board) {
@@ -61,18 +101,15 @@ angular.module('ngGo.Board.Directive', [
 				$scope.Board = new Board();
 			}
 
-			//Get parent element
-			var parent = element.parent(),
-				parentSize = Math.min(parent[0].clientWidth, parent[0].clientHeight);
-
-			//Set initial dimensions
-			if (parentSize > 0) {
-				element.css({width: parentSize + 'px', height: parentSize + 'px'});
-				$scope.Board.setDrawSize(parentSize * pixelRatio, parentSize * pixelRatio);
+			//Get first non-player parent element
+			var parent = element.parent();
+			if (parent[0].tagName == 'PLAYER') {
+				playerElement = parent;
+				parent = parent.parent();
 			}
 
-			//Listen for board resize events
-			$scope.$on('ngGo.board.resize', function(event, width, height) {
+			//Listen for board drawsize events
+			$scope.$on('ngGo.board.drawSizeChanged', function(event, width, height) {
 
 				//First set the new dimensions on the canvas elements
 				var canvas = element.find('canvas');
@@ -84,6 +121,31 @@ angular.module('ngGo.Board.Directive', [
 				//Next set it on the board itself
 				element.css({width: width + 'px', height: height + 'px'});
 				$scope.Board.setDrawSize(width * pixelRatio, height * pixelRatio);
+			});
+
+			//Determine draw size
+			determineDrawSize($scope, parent[0].clientWidth, parent[0].clientHeight);
+
+			//On window resize, determine the draw size again
+			angular.element($window).on('resize', function() {
+				determineDrawSize($scope, parent[0].clientWidth, parent[0].clientHeight);
+			});
+
+			//On board grid resize, determine the draw size again
+			$scope.$on('ngGo.board.resize', function(event, board, width, height) {
+
+				//Only relevent if this was our own board
+				if (board != $scope.Board) {
+					return;
+				}
+
+				// If the draw size didn't change, the draw size event won't be triggered.
+				// However, that means we should call the resized() method now manually because
+				// it won't be called with the setDrawSize() call.
+				// This may seem a bit "off", but it's the best way to prevent redundant redraws.
+				if (!determineDrawSize($scope, parent[0].clientWidth, parent[0].clientHeight)) {
+					$scope.Board.resized();
+				}
 			});
 
 			//Static board?
