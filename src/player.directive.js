@@ -21,6 +21,9 @@ angular.module('ngGo.Player.Directive', [
 			if (!$scope.Player) {
 				$scope.Player = Player;
 			}
+
+			//Initialize player
+			//Player.init();
 		},
 
 		/**

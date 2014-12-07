@@ -23,7 +23,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 	 */
 	var drawStarPoint = function(gridX, gridY, starRadius, starColor) {
 
-		//Don't draw if it falls outsize of the board grid section
+		//Don't draw if it falls outsize of the board grid
 		if (gridX < this.board.grid.xLeft || gridX > this.board.grid.xRight) {
 			return;
 		}
@@ -109,29 +109,20 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 		var tx = this.board.drawMarginHor,
 			ty = this.board.drawMarginVer;
 
-		//Determine number of visible cells
-		var cellsVer = this.board.grid.yBot - this.board.grid.yTop,
-			cellsHor = this.board.grid.xRight - this.board.grid.xLeft;
+		//Helper vars
+		var i, x, y;
 
-		//If we are displaying a section, add some line height/width to indicate the cut off
-		if (this.board.section.top) {
-			cellsVer += 0.5;
-			ty += Math.round((this.board.grid.yBot - cellsVer) * this.board.cellSize);
+		//Are we cutting off parts of the grid?
+		for (i = 0; i < this.board.cutoff.length; i++) {
+			switch (this.board.cutoff[i].toLowerCase()) {
+				case 'top':
+					//ty += Math.round((this.board.grid.yBot - cellsVer) * this.board.cellSize);
+					break;
+				case 'left':
+					//tx += Math.round((this.board.grid.xRight - cellsHor) * this.board.cellSize);
+					break;
+			}
 		}
-		if (this.board.section.bottom) {
-			cellsVer += 0.5;
-		}
-		if (this.board.section.left) {
-			cellsHor += 0.5;
-			tx += Math.round((this.board.grid.xRight - cellsHor) * this.board.cellSize);
-		}
-		if (this.board.section.right) {
-			cellsHor += 0.5;
-		}
-
-		//Determine grid lines width/height
-		var gridWidth = Math.round(this.board.cellSize * cellsHor),
-			gridHeight = Math.round(this.board.cellSize * cellsVer);
 
 		//Get theme properties
 		var cellSize = this.board.getCellSize(),
@@ -150,21 +141,18 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 		this.context.lineWidth = lineWidth;
 		this.context.strokeStyle = strokeStyle;
 
-		//Helper vars
-		var i, x, y;
-
 		//Draw vertical lines
 		for (i = this.board.grid.xLeft; i <= this.board.grid.xRight; i++) {
 			x = this.board.getAbsX(i);
 			this.context.moveTo(x, ty);
-			this.context.lineTo(x, ty + gridHeight);
+			this.context.lineTo(x, ty + this.board.gridDrawHeight);
 		}
 
 		//Draw horizontal lines
 		for (i = this.board.grid.yTop; i <= this.board.grid.yBot; i++) {
 			y = this.board.getAbsY(i);
 			this.context.moveTo(tx, y);
-			this.context.lineTo(tx + gridWidth, y);
+			this.context.lineTo(tx + this.board.gridDrawWidth, y);
 		}
 
 		//Draw grid lines

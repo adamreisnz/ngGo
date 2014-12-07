@@ -33,7 +33,7 @@ angular.module('ngGo.Player.Mode.Demo.Service', [
 /**
  * Factory definition
  */
-.factory('PlayerModeDemo', function($document, $timeout, Player, PlayerTools) {
+.factory('PlayerModeDemo', function($document, Player, PlayerTools) {
 
 	/**
 	 * Helper to update the hover mark

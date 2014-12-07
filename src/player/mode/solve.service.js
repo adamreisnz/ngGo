@@ -277,11 +277,11 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 				return;
 			}
 
-			//Check if we clicked a move variation
-			var i = this.game.isMoveVariation(event.x, event.y);
-
 			//A valid variation
-			if (i != -1) {
+			if (this.game.isMoveVariation(event.x, event.y)) {
+
+				//Get the node
+				var i = this.game.getMoveVariation(event.x, event.y);
 
 				//Advance to the next position and get the next node
 				this.next(i);
@@ -309,6 +309,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 
 						//Block navigation and run the timeout
 						navigationBlocked = true;
+						var self = this;
 						$timeout(function() {
 							self.next(i);
 							navigationBlocked = false;
@@ -356,12 +357,16 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			//Set default tool
 			this.tool = this.tools[0];
 
-			//Initialize player color
-			this.problemPlayerColor = this.game.getTurn();
+			//Game already loaded?
+			if (this.game && this.game.isLoaded()) {
 
-			//Draw solution variations
-			if (this.config.solutionPaths) {
-				drawSolutionPaths.call(this, true);
+				//Initialize player color
+				this.problemPlayerColor = this.game.getTurn();
+
+				//Draw solution variations
+				if (this.board && this.config.solutionPaths) {
+					drawSolutionPaths.call(this, true);
+				}
 			}
 		},
 
@@ -371,11 +376,14 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 		modeExit: function(event) {
 
 			//Hide any solution variations
-			if (this.config.solutionPaths) {
+			if (this.board && this.config.solutionPaths) {
 				drawSolutionPaths.call(this, false);
 			}
 		}
 	};
+
+	//Initialize
+	Player.init();
 
 	//Return
 	return PlayerModeSolve;

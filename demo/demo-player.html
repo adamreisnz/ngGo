@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>ngGo demonstration</title>
+	<title>ngGo demo - Player</title>
 	<meta charset="utf-8" />
 	<meta name="author" content="Adam Buczynski" />
     <link rel="stylesheet" type="text/css" media="screen" href="../build/ngGo.css" />
@@ -25,30 +25,36 @@
 			Komi: {{Game.get('game.komi')}}
 		</p>
 
-		<p>Player mode:<br/>
+		<p>
+			Player mode:<br/>
 			<button ng-repeat="(mode, modeClass) in Player.modes" ng-click="Player.switchMode(mode)" ng-disabled="Player.mode == mode">{{mode}}</button>
 		</p>
 
-		<p>Player tool:<br/>
+		<p>
+			Player tool:<br/>
 			<button ng-repeat="tool in Player.tools" ng-click="Player.switchTool(tool)" ng-disabled="Player.tool == tool">{{tool}}</button>
 		</p>
 
-		<p ng-show="Player.tool == 'setup'">Setup tool:<br/>
+		<p ng-show="Player.tool == 'setup'">
+			Setup tool:<br/>
 			<button ng-repeat="tool in Player.setupTools" ng-click="Player.switchSetupTool(tool)" ng-disabled="Player.setupTool == tool">{{tool}}</button>
 		</p>
 
-		<p ng-show="Player.tool == 'markup'">Markup tool:<br/>
+		<p ng-show="Player.tool == 'markup'">
+			Markup tool:<br/>
 			<button ng-repeat="tool in Player.markupTools" ng-click="Player.switchMarkupTool(tool)" ng-disabled="Player.markupTool == tool">{{tool}}</button>
 		</p>
 
-		<p>Options:<br/>
-			<button ng-click="Board.swapColors()">Swap colors</button>
-			<button ng-click="Board.toggleCoordinates()">Toggle coordinates</button>
+		<p>
+			Options:<br/>
+			<button ng-click="Player.board.swapColors()">Swap colors</button>
+			<button ng-click="Player.board.toggleCoordinates()">Toggle coordinates</button>
 			<button ng-click="Player.toggleVariationMarkup()">Toggle variation markup</button>
 			<button ng-click="Player.toggleSolutionPaths()">Toggle solution paths</button>
 		</p/>
 
-		<p>Navigate &amp; auto play:<br/>
+		<p>
+			Navigate &amp; auto play:<br/>
 			<button ng-click="Player.first()">&lt;&lt;</button>
 			<button ng-click="Player.previous()">&lt;</button>
 			<button ng-click="Player.next()">&gt;</button>
@@ -63,7 +69,7 @@
 	/**
 	 * Some JGF data to work with, since Chrome doesnt allow loading a file due to cross domain policy
 	 */
-	var testJGF1 = {
+	var jgf = {
 		"record": {
 			"application": "ngGo v3.0.3",
 			"version": 1,
@@ -156,7 +162,7 @@
 		});*/
 
 		//Load local data
-		Player.load(testJGF1);
+		Player.load(jgf);
 	})
 
 	/**

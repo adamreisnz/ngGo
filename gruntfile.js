@@ -13,6 +13,8 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-html2js');
 	grunt.loadNpmTasks('grunt-recess');
 	grunt.loadNpmTasks('grunt-karma');
+	grunt.loadNpmTasks('grunt-bump');
+	grunt.loadNpmTasks('grunt-text-replace');
 	grunt.loadNpmTasks('grunt-ng-annotate');
 
 	/**
@@ -90,6 +92,48 @@ module.exports = function(grunt) {
 				' *\n' +
 				' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' +
 				' */\n'
+		},
+
+		/**
+		 * Version bump
+		 */
+		bump: {
+		    options: {
+				files: ['package.json'],
+				updateConfigs: ['pkg'],
+				commit: false,
+				commitMessage: 'Release v%VERSION%',
+				commitFiles: ['package.json'],
+				createTag: false,
+				tagName: 'v%VERSION%',
+				tagMessage: 'Version %VERSION%',
+				push: false,
+				pushTo: 'upstream',
+				gitDescribeOptions: '--tags --always --abbrev=1 --dirty=-d',
+				globalReplace: false
+		    }
+		},
+
+		/**
+		 * Text replace
+		 */
+		replace: {
+			readmeVersion: {
+				src: 'README.md',
+				dest: 'README.md',
+				replacements: [{
+					from: /([0-9]\.[0-9]+\.[0-9]+)/i,
+					to: '<%= pkg.version %>'
+				}]
+			},
+			ngGoVersion: {
+				src: 'src/ngGo.js',
+				dest: 'src/ngGo.js',
+				replacements: [{
+					from: /'([0-9]\.[0-9]+\.[0-9]+)'/i,
+					to: '\'<%= pkg.version %>\''
+				}]
+			}
 		},
 
 		/**
@@ -454,6 +498,9 @@ module.exports = function(grunt) {
 	 * The 'compile' task gets the app ready for deployment by concatenating and minifying code.
 	 */
 	grunt.registerTask('compile', [
+
+		//Update the version number in the README and in ngGo.js
+		'replace:readmeVersion', 'replace:ngGoVersion',
 
 		//First, build the app, and copy stuff back to the build folder since we emptied the temp dir
 		'build', 'copy:public_build_restore', 'clean:public',

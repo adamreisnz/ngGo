@@ -135,13 +135,13 @@ angular.module('ngGo.Player.Service', [
 		var Player = {
 
 			//Player configuration
-			config: angular.copy(defaultConfig),
+			config: {},
 
-			//Board and game containers
+			//Board and game instances
 			board: null,
-			game: new Game(),
+			game: null,
 
-			//Remembered current path
+			//Path
 			path: null,
 
 			//Player mode and active tool
@@ -151,6 +151,26 @@ angular.module('ngGo.Player.Service', [
 			//Available modes and tools
 			modes: {},
 			tools: [],
+
+			/**
+			 * Initialization
+			 */
+			init: function() {
+
+				//Player configuration
+				this.config = angular.copy(defaultConfig);
+
+				//Unlink board instance, create new game
+				this.board = null;
+				this.game = new Game();
+
+				//Reset path
+				this.path = null;
+
+				//Player mode and active tool
+				this.mode = '';
+				this.tool = '';
+			},
 
 			/**
 			 * Load game record
@@ -170,9 +190,9 @@ angular.module('ngGo.Player.Service', [
 				//Dispatch game loaded event
 				this.broadcast('gameLoaded', this.game);
 
-				//Prepare board
+				//Initialize board if present
 				if (this.board) {
-					this.prepareBoard();
+					this.board.init(this.game.get('board'));
 					this.updateBoard();
 				}
 
@@ -244,27 +264,10 @@ angular.module('ngGo.Player.Service', [
 					this.broadcast('boardReady', this.board);
 				}
 
-				//If a game has been loaded already, prepare and update the board
-				if (this.game.isLoaded()) {
-					this.prepareBoard();
+				//If a game has been loaded already, initialize and update the board
+				if (this.game && this.game.isLoaded()) {
+					this.board.init(this.game.get('board'));
 					this.updateBoard();
-				}
-			},
-
-			/**
-			 * Prepare board once game data is loaded
-			 */
-			prepareBoard: function() {
-
-				//Get board info
-				var board = this.game.get('board');
-
-				//Remove all objects, set size and section
-				if (board) {
-					this.board.removeAll();
-					this.board.setSize(board.width, board.height);
-					this.board.setSection(board.section);
-					this.board.setCutOff(board.cutoff);
 				}
 			},
 
@@ -274,7 +277,7 @@ angular.module('ngGo.Player.Service', [
 			updateBoard: function() {
 
 				//Premature call?
-				if (!this.game.isLoaded() || !this.board) {
+				if (!this.board || !this.game || !this.game.isLoaded()) {
 					return;
 				}
 

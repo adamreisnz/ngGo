@@ -38,16 +38,15 @@ angular.module('ngGo.Board.Service', [
 		//Show coordinates?
 		coordinates: false,
 
-		//Cut-off grid at certain sides?
-		cutOff: [],
+		//Width and height
+		width: 0,
+		height: 0,
+
+		//Grid cut-off sides (i.e. ["top", "left"])
+		cutoff: [],
 
 		//Section of board to display
-		section: {
-			top: 0,
-			right: 0,
-			bottom: 0,
-			left: 0
-		}
+		section: null
 	};
 
 	/**
@@ -61,43 +60,6 @@ angular.module('ngGo.Board.Service', [
 	 * Service getter
 	 */
 	this.$get = function($rootScope, BoardTheme, GridLayer, ShadowLayer, StonesLayer, MarkupLayer, ScoreLayer, HoverLayer) {
-
-		/**
-		 * Helper to (re)calculate cellsize and margins
-		 */
-		var calcCellSizeAndMargins = function() {
-
-			//Check if there is sensible data
-			if (!this.width || !this.height) {
-				return;
-			}
-
-			//Determine cell size with margin
-			this.cellSize = Math.floor(Math.min(
-				this.drawWidth * (1-this.margin) / this.width,
-				this.drawHeight * (1-this.margin) / this.height
-			));
-
-			//Determine actual grid draw size
-			var gridDrawWidth = this.cellSize * (this.width - 1),
-				gridDrawHeight = this.cellSize * (this.height - 1);
-
-			//Determine draw margins
-			this.drawMarginHor = Math.floor((this.drawWidth - gridDrawWidth) / 2);
-			this.drawMarginVer = Math.floor((this.drawHeight - gridDrawHeight) / 2);
-		};
-
-		/**
-		 * Helper to determine the grid to display
-		 */
-		var determineGrid = function() {
-			this.grid = {
-				xLeft: 0 + this.section.left,
-				xRight: this.width - 1 - this.section.right,
-				yTop: 0 + this.section.top,
-				yBot: this.height - 1 - this.section.bottom
-			};
-		};
 
 		/**
 		 * Board constructor
@@ -115,6 +77,8 @@ angular.module('ngGo.Board.Service', [
 			this.drawHeight = 0;
 			this.drawMarginHor = 0;
 			this.drawMarginVer = 0;
+			this.gridDrawWidth = 0;
+			this.gridDrawHeight = 0;
 
 			//Color multiplier (to allow color swapping)
 			this.colorMultiplier = 1;
@@ -133,19 +97,60 @@ angular.module('ngGo.Board.Service', [
 			//Static board flag
 			this.static = false;
 
-			//Initialize board grid size
+			//Get margin from theme
+			this.margin = this.theme.get('board.margin');
+
+			//Width or height given?
+			if (typeof width != 'undefined') {
+				this.config.width = width;
+				this.config.height = height || width;
+			}
+
+			//Initialize board
+			this.init(this.config);
+		};
+
+		/**
+		 * Initialize board
+		 */
+		Board.prototype.init = function(config) {
+
+			//Remove everything
+			this.removeAll();
+
+			//Initialize grid size
 			this.width = 0;
 			this.height = 0;
 
-			//Set section of board to display and determine resulting grid
-			this.section = angular.extend({}, defaultConfig.section, this.config.section);
-			this.cutOff = this.config.cutOff;
-			this.margin = this.theme.get('board.margin');
-			determineGrid.call(this);
+			//Initialize cutoff
+			this.cutoff = {
+				top: false,
+				left: false,
+				right: false,
+				bottom: false
+			};
 
-			//Set size now if given
-			if (width || height) {
-				this.setSize(width, height);
+			//Initialize section
+			this.section = {
+				top: 0,
+				left: 0,
+				right: 0,
+				bottom: 0
+			};
+
+			//Cutoff given?
+			if (config && config.cutoff) {
+				this.setCutoff(config.cutoff);
+			}
+
+			//Section given?
+			if (config && config.section) {
+				this.setSection(config.section);
+			}
+
+			//Size given?
+			if (config && (config.width || config.height)) {
+				this.setSize(config.width, config.height);
 			}
 		};
 
@@ -188,15 +193,39 @@ angular.module('ngGo.Board.Service', [
 		/**
 		 * Set grid cut-off
 		 */
-		Board.prototype.setCutOff = function(cutOff) {
+		Board.prototype.setCutoff = function(cutoff) {
 
 			//Nothing given?
-			if (!cutOff) {
+			if (!cutoff || !angular.isArray(cutoff) || cutoff.length === 0) {
 				return this;
 			}
 
-			//Set cutoff
-			this.cutOff = cutOff;
+			//Init
+			var changes = false;
+
+			//Check if there's a change
+			for (var side in this.cutoff) {
+				if (cutoff.indexOf(side) != -1) {
+					if (!this.cutoff[side]) {
+						this.cutoff[side] = true;
+						changes = true;
+					}
+				}
+				else {
+					if (this.cutoff[side]) {
+						this.cutoff[side] = false;
+						changes = true;
+					}
+				}
+			}
+
+			//Trigger resized if there were changes
+			if (changes) {
+				this.resized();
+			}
+
+			//Return self for chaining
+			return this;
 		};
 
 		/**
@@ -205,12 +234,17 @@ angular.module('ngGo.Board.Service', [
 		Board.prototype.setSection = function(section) {
 
 			//Nothing given?
-			if (!section) {
+			if (!section || typeof section != 'object') {
 				return this;
 			}
 
 			//Expand on default
-			section = angular.extend({}, defaultConfig.section, section);
+			section = angular.extend({
+				top: 0,
+				left: 0,
+				right: 0,
+				bottom: 0
+			}, section);
 
 			//No changes?
 			if (this.section.top == section.top && this.section.bottom == section.bottom && this.section.left == section.left && this.section.right == section.right) {
@@ -266,18 +300,55 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/**
-		 * Called after a board resize, section change or margin change
+		 * Called after a board size change, draw size change, section change or margin change
 		 */
 		Board.prototype.resized = function() {
 
-			//Determine the new grid and calculate cell size and margins
-			determineGrid.call(this);
-			calcCellSizeAndMargins.call(this);
+			//Determine the new grid
+			this.grid = {
+				xLeft: 0 + this.section.left,
+				xRight: this.width - 1 - this.section.right,
+				yTop: 0 + this.section.top,
+				yBot: this.height - 1 - this.section.bottom
+			};
 
 			//Only redraw when there is sensible data
-			if (this.width && this.height && this.drawWidth && this.drawHeight) {
-				this.redraw();
+			if (!this.width || !this.height || !this.drawWidth || !this.drawHeight) {
+				return;
 			}
+
+			//Determine number of cells horizontall and vertically
+			var noCellsHor = this.width,
+				noCellsVer = this.height;
+
+			//Are we cutting off parts of the grid? Add half a cell of draw size
+			for (var side in this.cutoff) {
+				if (this.cutoff[side]) {
+					if (side == 'top' || side == 'bottom') {
+						noCellsVer += 0.5;
+					}
+					else {
+						noCellsHor += 0.5;
+					}
+				}
+			}
+
+			//Determine cell size with margin
+			this.cellSize = Math.floor(Math.min(
+				this.drawWidth * (1-this.margin) / noCellsHor,
+				this.drawHeight * (1-this.margin) / noCellsVer
+			));
+
+			//Determine actual grid draw size
+			this.gridDrawWidth = this.cellSize * (noCellsHor - 1);
+			this.gridDrawHeight = this.cellSize * (noCellsVer - 1);
+
+			//Determine draw margins
+			this.drawMarginHor = Math.floor((this.drawWidth - this.gridDrawWidth) / 2);
+			this.drawMarginVer = Math.floor((this.drawHeight - this.gridDrawHeight) / 2);
+
+			//Redraw
+			this.redraw();
 		};
 
 		/*******************************************************************************************************************************
@@ -522,28 +593,32 @@ angular.module('ngGo.Board.Service', [
 		 * Convert grid coordinate to pixel coordinate
 		 */
 		Board.prototype.getAbsX = function(gridX) {
-			return this.drawMarginHor + Math.round(gridX * this.cellSize);
+			var offset = this.cutoff.left ? 0.5 : 0;
+			return this.drawMarginHor + Math.round((gridX + offset) * this.cellSize);
 		};
 
 		/**
 		 * Convert grid coordinate to pixel coordinate
 		 */
 		Board.prototype.getAbsY = function(gridY) {
-			return this.drawMarginVer + Math.round(gridY * this.cellSize);
+			var offset = this.cutoff.top ? 0.5 : 0;
+			return this.drawMarginVer + Math.round((gridY + offset) * this.cellSize);
 		};
 
 		/**
 		 * Convert pixel coordinate to grid coordinate
 		 */
 		Board.prototype.getGridX = function(absX) {
-			return Math.round((absX - this.drawMarginHor) / this.cellSize);
+			var offset = this.cutoff.left ? 0.5 : 0;
+			return Math.round((absX - this.drawMarginHor) / this.cellSize - offset);
 		};
 
 		/**
 		 * Convert pixel coordinate to grid coordinate
 		 */
 		Board.prototype.getGridY = function(absY) {
-			return Math.round((absY - this.drawMarginVer) / this.cellSize);
+			var offset = this.cutoff.top ? 0.5 : 0;
+			return Math.round((absY - this.drawMarginVer) / this.cellSize - offset);
 		};
 
 		/**
