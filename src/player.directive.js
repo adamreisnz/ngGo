@@ -17,9 +17,6 @@ angular.module('ngGo.Player.Directive', [
 		 */
 		controller: function($scope) {
 
-			//Re-initialize player
-			Player.init();
-
 			//Set player in scope
 			if (!$scope.Player) {
 				$scope.Player = Player;
