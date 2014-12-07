@@ -12,7 +12,7 @@ angular.module('ngGo.Player.Mode.Demo.Service', [
 ])
 
 /**
- * Run block
+ * Extend player functionality and register the mode
  */
 .run(function(Player, PlayerModes, PlayerModeDemo) {
 
@@ -31,123 +31,139 @@ angular.module('ngGo.Player.Mode.Demo.Service', [
 })
 
 /**
- * Factory definition
+ * Provider definition
  */
-.factory('PlayerModeDemo', function($document, Player, PlayerTools) {
+.provider('PlayerModeDemo', function() {
 
 	/**
-	 * Helper to update the hover mark
+	 * Default configuration
 	 */
-	var updateHoverMark = function(x, y) {
+	var defaultConfig = {
 
-		//Falling outside of grid?
-		if (!this.board.isOnBoard(x, y)) {
-			return;
-		}
+	};
 
-		//What happens, depends on the active tool
-		switch (this.tool) {
+	/**
+	 * Set global default configuration for players
+	 */
+	this.setConfig = function(config) {
+		defaultConfig = angular.extend(defaultConfig, config);
+	};
 
-			//Move tool
-			case PlayerTools.MOVE:
+	/**
+	 * Service getter
+	 */
+	this.$get = function($document, Player, PlayerTools) {
 
-				//Hovering over empty spot where we can make a move?
-				if (canMakeMove.call(this) && this.game.isValidMove(x, y)) {
-					this.board.add('hover', x, y, {
-						type: 'stones',
-						value: this.game.getTurn()
-					});
+		/**
+		 * Helper to update the hover mark
+		 */
+		var updateHoverMark = function(x, y) {
+
+			//Falling outside of grid?
+			if (!this.board.isOnBoard(x, y)) {
+				return;
+			}
+
+			//What happens, depends on the active tool
+			switch (this.tool) {
+
+				//Move tool
+				case PlayerTools.MOVE:
+
+					//Hovering over empty spot where we can make a move?
+					if (canMakeMove.call(this) && this.game.isValidMove(x, y)) {
+						this.board.add('hover', x, y, {
+							type: 'stones',
+							value: this.game.getTurn()
+						});
+					}
+					break;
+			}
+		};
+
+		/**
+		 * Player mode definition
+		 */
+		var PlayerModeDemo = {
+
+			/**
+			 * Hover handler
+			 */
+			hover: function(event) {
+				this.board.removeAll('hover');
+				updateHoverMark.call(this, event.x, event.y);
+			},
+
+			/**
+			 * Handler for keydown events
+			 */
+			keyDown: function(event, keyboardEvent) {
+
+				//Inside a text field?
+				if ($document[0].querySelector(':focus')) {
+					return true;
 				}
-				break;
-		}
-	};
 
-	/**
-	 * Player mode definition
-	 */
-	var PlayerModeDemo = {
+				//Switch key code
+				switch (keyboardEvent.keyCode) {
 
-		/**
-		 * Hover handler
-		 */
-		hover: function(event) {
-			this.board.removeAll('hover');
-			updateHoverMark.call(this, event.x, event.y);
-		},
+					//Right arrow
+					case 39:
 
-		/**
-		 * Handler for keydown events
-		 */
-		keyDown: function(event, keyboardEvent) {
+						//Arrow keys navigation enabled?
+						if (this.arrowKeysNavigation) {
 
-			//Inside a text field?
-			if ($document[0].querySelector(':focus')) {
-				return true;
-			}
-
-			//Switch key code
-			switch (keyboardEvent.keyCode) {
-
-				//Right arrow
-				case 39:
-
-					//Arrow keys navigation enabled?
-					if (this.config.arrowKeysNavigation) {
-
-						//Lock scroll
-						if (this.config.lockScroll) {
+							//Lock scroll
 							keyboardEvent.preventDefault();
+
+							//Go forward one move slide
+							this.next();
 						}
+						break;
 
-						//Go forward one move slide
-						this.next();
-					}
-					break;
+					//Left arrow
+					case 37:
 
-				//Left arrow
-				case 37:
+						//Arrow keys navigation enabled?
+						if (this.arrowKeysNavigation) {
 
-					//Arrow keys navigation enabled?
-					if (this.config.arrowKeysNavigation) {
-
-						//Lock scroll
-						if (this.config.lockScroll) {
+							//Lock scroll
 							keyboardEvent.preventDefault();
+
+							//Go back one slide
+							this.previous();
 						}
+						break;
+				}
 
-						//Go back one slide
-						this.previous();
-					}
-					break;
+				//Update hover mark
+				this.board.removeAll('hover');
+				updateHoverMark.call(this, this.lastX, this.lastY);
+			},
+
+			/**
+			 * Handler for mode entry
+			 */
+			modeEnter: function(event) {
+
+				//Set available tools for this mode
+				this.setTools([
+					PlayerTools.NONE
+				]);
+
+				//Set default tool
+				this.tool = this.tools[0];
+			},
+
+			/**
+			 * Handler for mode exit
+			 */
+			modeExit: function(event) {
+
 			}
+		};
 
-			//Update hover mark
-			this.board.removeAll('hover');
-			updateHoverMark.call(this, this.lastX, this.lastY);
-		},
-
-		/**
-		 * Handler for mode entry
-		 */
-		modeEnter: function(event) {
-
-			//Set available tools for this mode
-			this.tools = [
-				PlayerTools.NONE
-			];
-
-			//Set default tool
-			this.tool = this.tools[0];
-		},
-
-		/**
-		 * Handler for mode exit
-		 */
-		modeExit: function(event) {
-
-		}
+		//Return
+		return PlayerModeDemo;
 	};
-
-	//Return
-	return PlayerModeDemo;
 });

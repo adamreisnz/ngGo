@@ -69,7 +69,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		var lineWidth = this.board.theme.get('stone.mono.lineWidth', s) || 1,
 			fillStyle = this.board.theme.get('stone.mono.color', color),
 			strokeStyle = this.board.theme.get('stone.mono.lineColor', color),
-			canvasTranslate = this.board.theme.get('canvasTranslate');
+			canvasTranslate = this.board.theme.canvasTranslate();
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -123,7 +123,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		var color = stone.color * this.board.colorMultiplier;
 
 		//Get theme variables
-		var canvasTranslate = this.board.theme.get('canvasTranslate');
+		var canvasTranslate = this.board.theme.canvasTranslate();
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -184,7 +184,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		var color = stone.color * this.board.colorMultiplier;
 
 		//Get theme variables
-		var canvasTranslate = this.board.theme.get('canvasTranslate');
+		var canvasTranslate = this.board.theme.canvasTranslate();
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);

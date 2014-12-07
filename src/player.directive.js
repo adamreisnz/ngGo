@@ -21,9 +21,6 @@ angular.module('ngGo.Player.Directive', [
 			if (!$scope.Player) {
 				$scope.Player = Player;
 			}
-
-			//Initialize player
-			//Player.init();
 		},
 
 		/**
@@ -32,7 +29,7 @@ angular.module('ngGo.Player.Directive', [
 		link: function($scope, element, attrs) {
 
 			//Link the element
-			Player.setElement(element);
+			Player.linkElement(element);
 
 			//Observe mode and tool attributes
 			attrs.$observe('mode', function(mode) {
@@ -42,25 +39,12 @@ angular.module('ngGo.Player.Directive', [
 				Player.switchTool(tool);
 			});
 
-			//Observe variation markup and solution paths attributes
+			//Observe other settings attributes
 			attrs.$observe('variationMarkup', function(attr) {
 				Player.toggleVariationMarkup(parseBool(attr));
 			});
 			attrs.$observe('solutionPaths', function(attr) {
 				Player.toggleSolutionPaths(parseBool(attr));
-			});
-
-			//Observe arrowkeys and scrollwheel navigation
-			attrs.$observe('arrowKeysNavigation', function(attr) {
-				Player.toggleArrowKeysNavigation(parseBool(attr));
-			});
-			attrs.$observe('scrollWheelNavigation', function(attr) {
-				Player.toggleScrollWheelNavigation(parseBool(attr));
-			});
-
-			//Observe last move attributes
-			attrs.$observe('markLastMove', function(attr) {
-				Player.toggleMarkLastMove(parseBool(attr));
 			});
 			attrs.$observe('lastMoveMarker', function(attr) {
 				Player.setLastMoveMarker(attr);

@@ -9,13 +9,14 @@
  */
 angular.module('ngGo.Game.Scorer.Service', [
 	'ngGo',
+	'ngGo.Game.Score.Service',
 	'ngGo.Board.Grid.Service'
 ])
 
 /**
  * Factory definition
  */
-.factory('GameScorer', function(StoneColor, BoardGrid) {
+.factory('GameScorer', function(GameScore, StoneColor, BoardGrid) {
 
 	/**
 	 * Possible score states
@@ -178,6 +179,9 @@ angular.module('ngGo.Game.Scorer.Service', [
 		 */
 		load: function(game) {
 
+			//Reset score
+			this.score = new GameScore();
+
 			//Remember
 			this.game = game;
 
@@ -232,21 +236,14 @@ angular.module('ngGo.Game.Scorer.Service', [
 			var komi = this.game.get('game.komi'),
 				captures = this.game.getCaptureCount();
 
-			//Initialize score
-			this.score = {
-				black: {
-					stones: 0,
-					territory: 0,
-					captures: captures[StoneColor.B],
-					komi: komi < 0 ? komi : 0
-				},
-				white: {
-					stones: 0,
-					territory: 0,
-					captures: captures[StoneColor.W],
-					komi: komi > 0 ? komi : 0
-				}
-			};
+			//Reset score
+			this.score.reset();
+
+			//Set captures and komi
+			this.score.black.captures = captures[StoneColor.B];
+			this.score.white.captures = captures[StoneColor.W];
+			this.score.black.komi = komi < 0 ? komi : 0;
+			this.score.white.komi = komi > 0 ? komi : 0;
 
 			//Init helper vars
 			var x, y, state, color;

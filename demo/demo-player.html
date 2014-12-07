@@ -59,6 +59,7 @@
 			<button ng-click="Player.previous()">&lt;</button>
 			<button ng-click="Player.next()">&gt;</button>
 			<button ng-click="Player.last()">&gt;&gt;</button>
+			<br/>
 			<button ng-click="Player.start()">Start</button>
 			<button ng-click="Player.stop()">Stop</button>
 		</p>
@@ -71,7 +72,7 @@
 	 */
 	var jgf = {
 		"record": {
-			"application": "ngGo v3.0.3",
+			"application": "ngGo v1.0.3",
 			"version": 1,
 			"charset": "UTF-8"
 		},
@@ -124,8 +125,8 @@
 
 		//Player configuration
 		PlayerProvider.setConfig({
-			lastMoveMarker: 'circle',
-			autoPlayDelay: 750
+			last_move_marker: 'circle',
+			replay_auto_play_delay: 750
 		});
 
 		//Board configuration

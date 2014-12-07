@@ -23,6 +23,13 @@ angular.module('ngGo.Board.Theme.Service', [
 	 */
 	var defaultTheme = {
 
+		//Board
+		board: {
+
+			//Board margin factor
+			margin: 0.25
+		},
+
 		//Stones
 		stone: {
 
@@ -212,13 +219,6 @@ angular.module('ngGo.Board.Theme.Service', [
 			}
 		},
 
-		//Board
-		board: {
-
-			//Board margin factor
-			margin: 0.035
-		},
-
 		//Coordinates
 		coordinates: {
 
@@ -226,7 +226,7 @@ angular.module('ngGo.Board.Theme.Service', [
 			color: 'rgba(101,69,37,0.4)',
 
 			//Board margin factor when showing coordinates
-			margin: 0.13,
+			margin: 1.25,
 
 			//Vertical coordinates style
 			vertical: {
@@ -251,20 +251,6 @@ angular.module('ngGo.Board.Theme.Service', [
 					};
 				}
 			}
-		},
-
-		//To combat 2d canvas blurry lines, we translate the canvas prior to drawing elements
-		//See: http://www.mobtowers.com/html5-canvas-crisp-lines-every-time/
-		canvasTranslate: function(cellSize, lineWidth) {
-
-			//If no linewidth specified, use the grid line width as a reference
-			//to make sure stuff is aligned to the grid
-			if (typeof lineWidth == 'undefined') {
-				lineWidth = this.get('grid.lineWidth');
-			}
-
-			//Return a translation for uneven widths
-			return (lineWidth % 2) * 0.5;
 		}
 	};
 
@@ -374,6 +360,22 @@ angular.module('ngGo.Board.Theme.Service', [
 
 			//Return self for chaining
 			return this;
+		};
+
+		/**
+		 * To combat 2d canvas blurry lines, we translate the canvas prior to drawing elements.
+		 * See: http://www.mobtowers.com/html5-canvas-crisp-lines-every-time/
+		 */
+		BoardTheme.prototype.canvasTranslate = function(lineWidth) {
+
+			//If no linewidth specified, use the grid line width as a reference
+			//to make sure stuff is aligned to the grid
+			if (typeof lineWidth == 'undefined') {
+				lineWidth = this.get('grid.lineWidth');
+			}
+
+			//Return a translation for uneven widths
+			return (lineWidth % 2) * 0.5;
 		};
 
 		//Return
