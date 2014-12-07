@@ -67,10 +67,22 @@ angular.module('ngGo.Board.Service', [
 		/**
 		 * Board constructor
 		 */
-		var Board = function(width, height) {
+		var Board = function(config) {
 
-			//Extend config
-			this.config = angular.extend({}, defaultConfig);
+			//Initialize board
+			this.init();
+
+			//Parse config
+			this.parseConfig(config || {});
+		};
+
+		/**
+		 * Initialize board
+		 */
+		Board.prototype.init = function() {
+
+			//Remove everything
+			this.removeAll();
 
 			//Set board theme
 			this.theme = new BoardTheme();
@@ -96,26 +108,6 @@ angular.module('ngGo.Board.Service', [
 
 			//Static board flag
 			this.static = false;
-
-			//Width or height given? Overwrite in config
-			if (typeof width != 'undefined') {
-				this.config.width = width;
-				this.config.height = height || width;
-			}
-
-			//Initialize board
-			this.init(this.config);
-		};
-
-		/**
-		 * Initialize board
-		 */
-		Board.prototype.init = function(config) {
-
-			console.trace('Board init');
-
-			//Remove everything
-			this.removeAll();
 
 			//Get margin from theme
 			this.margin = this.theme.get('board.margin');
@@ -146,36 +138,6 @@ angular.module('ngGo.Board.Service', [
 				right: 0,
 				bottom: 0
 			};
-
-			//Parse config if given
-			if (!config) {
-				return;
-			}
-
-			//Coordinates to toggle?
-			if (config.coordinates) {
-				this.toggleCoordinates(config.coordinates);
-			}
-
-			//Color multiplier?
-			if (config.colorMultiplier) {
-				this.colorMultiplier = config.colorMultiplier;
-			}
-
-			//Cutoff given?
-			if (config.cutoff) {
-				this.setCutoff(config.cutoff);
-			}
-
-			//Section given?
-			if (config.section) {
-				this.setSection(config.section);
-			}
-
-			//Size given?
-			if (config.width || config.height) {
-				this.setSize(config.width, config.height);
-			}
 		};
 
 		/**
@@ -188,8 +150,31 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/***********************************************************************************************
-		 * Board setup
+		 * Board configuration
 		 ***/
+
+		/**
+		 * Parse config instructions
+		 */
+		Board.prototype.parseConfig = function(config) {
+
+			//Validate
+			if (typeof config != 'object') {
+				return;
+			}
+
+			//Extend from default config
+			config = angular.extend({}, defaultConfig, config);
+
+			console.log('Parsing config', config);
+
+			//Process settigns
+			this.toggleCoordinates(config.coordinates);
+			this.swapColors(config.colorMultiplier);
+			this.setCutoff(config.cutoff);
+			this.setSection(config.section);
+			this.setSize(config.width, config.height);
+		};
 
 		/**
 		 * Set margin
@@ -219,9 +204,9 @@ angular.module('ngGo.Board.Service', [
 		 */
 		Board.prototype.setCutoff = function(cutoff) {
 
-			//Nothing given?
-			if (!cutoff || !angular.isArray(cutoff) || cutoff.length === 0) {
-				return this;
+			//Nothing given? Reset cutoff
+			if (!cutoff || !angular.isArray(cutoff)) {
+				cutoff = [];
 			}
 
 			//Init
@@ -500,7 +485,7 @@ angular.module('ngGo.Board.Service', [
 				multiplier = -this.colorMultiplier;
 			}
 			else {
-				multiplier = parseInt(multipier);
+				multiplier = parseInt(multiplier);
 				if (isNaN(multiplier)) {
 					return;
 				}

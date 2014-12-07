@@ -184,7 +184,6 @@ angular.module('ngGo.Board.Directive', [
 
 			//Observe the coordinates attribute
 			attrs.$observe('coordinates', function(attr) {
-				console.log('coordinates from attr');
 				$scope.Board.toggleCoordinates(parseBool(attr));
 			});
 

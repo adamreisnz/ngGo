@@ -190,9 +190,10 @@ angular.module('ngGo.Player.Service', [
 				//Dispatch game loaded event
 				this.broadcast('gameLoaded', this.game);
 
-				//Initialize board if present
+				//Board present?
 				if (this.board) {
-					this.board.init(this.game.get('board'));
+					this.board.removeAll();
+					this.board.parseConfig(this.game.get('board'));
 					this.updateBoard();
 				}
 
@@ -264,9 +265,10 @@ angular.module('ngGo.Player.Service', [
 					this.broadcast('boardReady', this.board);
 				}
 
-				//If a game has been loaded already, initialize and update the board
+				//If a game has been loaded already, parse config and update the board
 				if (this.game && this.game.isLoaded()) {
-					this.board.init(this.game.get('board'));
+					this.board.removeAll();
+					this.board.parseConfig(this.game.get('board'));
 					this.updateBoard();
 				}
 			},
