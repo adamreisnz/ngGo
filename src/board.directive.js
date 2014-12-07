@@ -139,10 +139,10 @@ angular.module('ngGo.Board.Directive', [
 					return;
 				}
 
-				// If the draw size didn't change, the draw size event won't be triggered.
-				// However, that means we should call the resized() method now manually because
-				// it won't be called with the setDrawSize() call.
-				// This may seem a bit "off", but it's the best way to prevent redundant redraws.
+				//If the draw size didn't change, the draw size event won't be triggered.
+				//However, that means we should call the resized() method now manually because
+				//it won't be called with the setDrawSize() call.
+				//This may seem a bit "off", but it's the best way to prevent redundant redraws.
 				if (!determineDrawSize($scope, parent[0].clientWidth, parent[0].clientHeight)) {
 					$scope.Board.resized();
 				}
@@ -184,7 +184,18 @@ angular.module('ngGo.Board.Directive', [
 
 			//Observe the coordinates attribute
 			attrs.$observe('coordinates', function(attr) {
+				console.log('coordinates from attr');
 				$scope.Board.toggleCoordinates(parseBool(attr));
+			});
+
+			//Observe the cutoff attribute
+			attrs.$observe('cutoff', function(attr) {
+				$scope.Board.setCutoff(attr.split(','));
+			});
+
+			//Observe color multiplier
+			attrs.$observe('colorMultiplier', function(attr) {
+				$scope.Board.swapColors(attr);
 			});
 
 			//Link board to player if present

@@ -44,7 +44,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
 			strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-			canvasTranslate = this.board.theme.get('canvasTranslate', s, lineWidth);
+			canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -90,7 +90,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
 			strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-			canvasTranslate = this.board.theme.get('canvasTranslate', s, lineWidth);
+			canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -130,7 +130,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
 			strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-			canvasTranslate = this.board.theme.get('canvasTranslate');
+			canvasTranslate = this.board.theme.canvasTranslate();
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -174,7 +174,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
 			lineCap = markup.lineCap || this.board.theme.get('markup.mark.lineCap'),
 			strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-			canvasTranslate = this.board.theme.get('canvasTranslate', s, lineWidth);
+			canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -218,7 +218,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		//Get theme properties
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
 			fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-			canvasTranslate = this.board.theme.get('canvasTranslate');
+			canvasTranslate = this.board.theme.canvasTranslate();
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -257,7 +257,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 
 		//Get theme properties
 		var fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-			canvasTranslate = this.board.theme.get('canvasTranslate', s);
+			canvasTranslate = this.board.theme.canvasTranslate(s);
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -300,7 +300,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
 			lineCap = markup.lineCap || this.board.theme.get('markup.smiley.lineCap'),
 			strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-			canvasTranslate = this.board.theme.get('canvasTranslate');
+			canvasTranslate = this.board.theme.canvasTranslate();
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -349,7 +349,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
 			lineCap = markup.lineCap || this.board.theme.get('markup.smiley.lineCap'),
 			strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-			canvasTranslate = this.board.theme.get('canvasTranslate');
+			canvasTranslate = this.board.theme.canvasTranslate();
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -397,7 +397,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		//Get theme properties
 		var font = markup.font || this.board.theme.get('markup.label.font') || '',
 			fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-			canvasTranslate = this.board.theme.get('canvasTranslate');
+			canvasTranslate = this.board.theme.canvasTranslate();
 
 		//First, clear grid square below for clarity
 		if (!this.board.has('stones', markup.x, markup.y)) {

@@ -46,7 +46,10 @@ angular.module('ngGo.Board.Service', [
 		cutoff: [],
 
 		//Section of board to display
-		section: null
+		section: {top:0,right:0,bottom:0,left:0},
+
+		//Color multiplier (use -1 to swap colors)
+		colorMultiplier: 1
 	};
 
 	/**
@@ -80,9 +83,6 @@ angular.module('ngGo.Board.Service', [
 			this.gridDrawWidth = 0;
 			this.gridDrawHeight = 0;
 
-			//Color multiplier (to allow color swapping)
-			this.colorMultiplier = 1;
-
 			//Initialize layers
 			this.layerOrder = ['grid', 'shadow', 'stones', 'score', 'markup', 'hover'];
 			this.layers = {
@@ -97,10 +97,7 @@ angular.module('ngGo.Board.Service', [
 			//Static board flag
 			this.static = false;
 
-			//Get margin from theme
-			this.margin = this.theme.get('board.margin');
-
-			//Width or height given?
+			//Width or height given? Overwrite in config
 			if (typeof width != 'undefined') {
 				this.config.width = width;
 				this.config.height = height || width;
@@ -115,8 +112,20 @@ angular.module('ngGo.Board.Service', [
 		 */
 		Board.prototype.init = function(config) {
 
+			console.trace('Board init');
+
 			//Remove everything
 			this.removeAll();
+
+			//Get margin from theme
+			this.margin = this.theme.get('board.margin');
+
+			//Color multiplier (to allow color swapping)
+			this.colorMultiplier = 1;
+
+			//Turn off coordinates
+			this.coordinates = false;
+			this.layers.grid.setCoordinates(false);
 
 			//Initialize grid size
 			this.width = 0;
@@ -138,18 +147,33 @@ angular.module('ngGo.Board.Service', [
 				bottom: 0
 			};
 
+			//Parse config if given
+			if (!config) {
+				return;
+			}
+
+			//Coordinates to toggle?
+			if (config.coordinates) {
+				this.toggleCoordinates(config.coordinates);
+			}
+
+			//Color multiplier?
+			if (config.colorMultiplier) {
+				this.colorMultiplier = config.colorMultiplier;
+			}
+
 			//Cutoff given?
-			if (config && config.cutoff) {
+			if (config.cutoff) {
 				this.setCutoff(config.cutoff);
 			}
 
 			//Section given?
-			if (config && config.section) {
+			if (config.section) {
 				this.setSection(config.section);
 			}
 
 			//Size given?
-			if (config && (config.width || config.height)) {
+			if (config.width || config.height) {
 				this.setSize(config.width, config.height);
 			}
 		};
@@ -268,6 +292,11 @@ angular.module('ngGo.Board.Service', [
 			width = parseInt(width || height || 0);
 			height = parseInt(height || width || 0);
 
+			//Invalid?
+			if (isNaN(width) || isNaN(height)) {
+				return;
+			}
+
 			//Changing?
 			if (width != this.width || height != this.height) {
 
@@ -318,8 +347,9 @@ angular.module('ngGo.Board.Service', [
 			}
 
 			//Determine number of cells horizontall and vertically
-			var noCellsHor = this.width,
-				noCellsVer = this.height;
+			//The margin is a factor of the cell size, so let's add it to the number of cells
+			var noCellsHor = this.width + this.margin,
+				noCellsVer = this.height + this.margin;
 
 			//Are we cutting off parts of the grid? Add half a cell of draw size
 			for (var side in this.cutoff) {
@@ -333,15 +363,15 @@ angular.module('ngGo.Board.Service', [
 				}
 			}
 
-			//Determine cell size with margin
+			//Determine cell size now
 			this.cellSize = Math.floor(Math.min(
-				this.drawWidth * (1-this.margin) / noCellsHor,
-				this.drawHeight * (1-this.margin) / noCellsVer
+				this.drawWidth / noCellsHor,
+				this.drawHeight / noCellsVer
 			));
 
-			//Determine actual grid draw size
-			this.gridDrawWidth = this.cellSize * (noCellsHor - 1);
-			this.gridDrawHeight = this.cellSize * (noCellsVer - 1);
+			//Determine actual grid draw size (taking off the margin again)
+			this.gridDrawWidth = this.cellSize * (noCellsHor - this.margin - 1);
+			this.gridDrawHeight = this.cellSize * (noCellsVer - this.margin - 1);
 
 			//Determine draw margins
 			this.drawMarginHor = Math.floor((this.drawWidth - this.gridDrawWidth) / 2);
@@ -442,17 +472,17 @@ angular.module('ngGo.Board.Service', [
 
 			//Set or toggle
 			if (typeof show != 'undefined') {
-				this.config.coordinates = show;
+				this.coordinates = show;
 			}
 			else {
-				this.config.coordinates = !this.config.coordinates;
+				this.coordinates = !this.coordinates;
 			}
 
-			//Show in grid
-			this.layers.grid.showCoordinates(this.config.coordinates);
+			//Set in grid layer
+			this.layers.grid.setCoordinates(this.coordinates);
 
 			//Set the board margin, or reset it
-			if (this.config.coordinates) {
+			if (this.coordinates) {
 				this.setMargin(this.theme.get('coordinates.margin'));
 			}
 			else {
@@ -463,8 +493,26 @@ angular.module('ngGo.Board.Service', [
 		/**
 		 * Swap colors on the board
 		 */
-		Board.prototype.swapColors = function() {
-			this.colorMultiplier = -this.colorMultiplier;
+		Board.prototype.swapColors = function(multiplier) {
+
+			//Multiplier not given? Set to inverse of current value
+			if (typeof multiplier == 'undefined') {
+				multiplier = -this.colorMultiplier;
+			}
+			else {
+				multiplier = parseInt(multipier);
+				if (isNaN(multiplier)) {
+					return;
+				}
+			}
+
+			//No change?
+			if (multiplier == this.colorMultiplier) {
+				return;
+			}
+
+			//Set new value
+			this.colorMultiplier = multiplier;
 
 			//For static board, redraw the whole thing
 			if (this.static) {
