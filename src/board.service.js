@@ -35,9 +35,6 @@ angular.module('ngGo.Board.Service', [
 	 */
 	var defaultConfig = {
 
-		//Show coordinates?
-		coordinates: false,
-
 		//Width and height
 		width: 0,
 		height: 0,
@@ -47,6 +44,9 @@ angular.module('ngGo.Board.Service', [
 
 		//Section of board to display
 		section: {top:0,right:0,bottom:0,left:0},
+
+		//Show coordinates?
+		coordinates: false,
 
 		//Color multiplier (use -1 to swap colors)
 		colorMultiplier: 1
@@ -166,8 +166,6 @@ angular.module('ngGo.Board.Service', [
 			//Extend from default config
 			config = angular.extend({}, defaultConfig, config);
 
-			console.log('Parsing config', config);
-
 			//Process settigns
 			this.toggleCoordinates(config.coordinates);
 			this.swapColors(config.colorMultiplier);
@@ -181,6 +179,11 @@ angular.module('ngGo.Board.Service', [
 		 */
 		Board.prototype.setMargin = function(margin) {
 
+			//Reset when not defined
+			if (typeof margin == 'undefined') {
+				margin = this.theme.get('board.margin');
+			}
+
 			//Set margin if changed
 			if (this.margin != margin) {
 				this.margin = margin;
@@ -188,14 +191,6 @@ angular.module('ngGo.Board.Service', [
 			}
 
 			//Return self for chaining
-			return this;
-		};
-
-		/**
-		 * Reset margin to theme value
-		 */
-		Board.prototype.resetMargin = function() {
-			this.setMargin(this.theme.get('board.margin'));
 			return this;
 		};
 
@@ -466,12 +461,12 @@ angular.module('ngGo.Board.Service', [
 			//Set in grid layer
 			this.layers.grid.setCoordinates(this.coordinates);
 
-			//Set the board margin, or reset it
+			//Set the proper board margin
 			if (this.coordinates) {
 				this.setMargin(this.theme.get('coordinates.margin'));
 			}
 			else {
-				this.resetMargin();
+				this.setMargin(this.theme.get('board.margin'));
 			}
 		};
 
