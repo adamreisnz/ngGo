@@ -347,7 +347,7 @@ module.exports = function(grunt) {
 		 */
 		karmaconfig: {
 			template: 'grunt.karma-unit.js',
-			dest: '<%= temp_dir %>/karma-unit.js',
+			dest: 'karma-unit.js',
 			src: [
 				'<%= test_files.js %>'
 			]

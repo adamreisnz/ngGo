@@ -16,34 +16,113 @@ angular.module('ngGo.Game.Score.Service', [
 .factory('GameScore', function(StoneColor) {
 
 	/**
-	 * Helper to calculate the total points
+	 * Constructor
 	 */
-	var calcTotal = function() {
-		return parseInt(this.stones) + parseInt(this.territory) + parseInt(this.captures) + parseInt(this.komi);
+	var GameScore = function(colors, items) {
+
+		//Set colors and items
+		this.setColors(colors || [StoneColor.B, StoneColor.W]);
+		this.setItems(items || ['stones', 'territory', 'captures', 'komi']);
 	};
 
 	/**
-	 * Constructor
+	 * Set colors
 	 */
-	var GameScore = function() {
+	GameScore.prototype.setColors = function(colors) {
 
-		//Get self
-		var self = this;
+		//Remember colors and initialize score container
+		this.colors = colors;
+		this.score = {};
 
-		//Setup score containers
-		this.black = {};
-		this.white = {};
+		//Prepare score container
+		for (var c = 0; c < colors.length; c++) {
+			this.score[colors[c]] = {};
+		}
 
-		//Initialize
+		//Reset
 		this.reset();
+	};
 
-		//Add total handlers
-		this.black.total = function() {
-			return calcTotal.call(self.black);
-		};
-		this.white.total = function() {
-			return calcTotal.call(self.white);
-		};
+	/**
+	 * Set items
+	 */
+	GameScore.prototype.setItems = function(items) {
+
+		//Remember items
+		this.items = items;
+
+		//Reset
+		this.reset();
+	};
+
+	/**
+	 * Set a score item
+	 */
+	GameScore.prototype.set = function(color, item, score) {
+
+		//Color undefined?
+		if (typeof this.score[color] == 'undefined') {
+			console.warn('Color', color, 'is not defined');
+			return;
+		}
+
+		//Item undefined
+		if (typeof this.score[color][item] == 'undefined') {
+			console.warn('Item', item, 'is not defined');
+			return;
+		}
+
+		//Set
+		this.score[color][item] = score;
+		return this;
+	};
+
+	/**
+	 * Get a score item or object
+	 */
+	GameScore.prototype.get = function(color, item) {
+
+		//Color undefined?
+		if (typeof this.score[color] == 'undefined') {
+			console.warn('Color', color, 'is not defined');
+			return;
+		}
+
+		//Item not given? Return score object
+		if (typeof item == 'undefined') {
+			var score = angular.copy(this.score[color]);
+			score.total = this.total(color);
+			return score;
+		}
+
+		//Item undefined
+		if (typeof this.score[color][item] == 'undefined') {
+			console.warn('Item', item, 'is not defined');
+			return;
+		}
+
+		//Return
+		return this.score[color][item];
+	};
+
+	/**
+	 * Get the total score of a player color
+	 */
+	GameScore.prototype.total = function(color) {
+
+		//Color undefined?
+		if (typeof this.score[color] == 'undefined') {
+			console.warn('Color', color, 'is not defined');
+			return;
+		}
+
+		//Sum up
+		var sum = 0;
+		for (var i = 0; i < this.items.length; i++) {
+			var item = this.items[i];
+			sum += (1 * this.score[color][item]);
+		}
+		return sum;
 	};
 
 	/**
@@ -51,13 +130,18 @@ angular.module('ngGo.Game.Score.Service', [
 	 */
 	GameScore.prototype.reset = function() {
 
-		//Get properties to loop
-		var props = ['stones', 'territory', 'captures', 'komi'];
+		//Must have colors and items
+		if (!this.colors || !this.items) {
+			return;
+		}
 
-		//Score for black player
-		for (var i in props) {
-			this.black[props[i]] = 0;
-			this.white[props[i]] = 0;
+		//Reset all score properties
+		for (var c = 0; c < this.colors.length; c++) {
+			var color = this.colors[c];
+			for (var i = 0; i < this.items.length; i++) {
+				var item = this.items[i];
+				this.score[color][item] = 0;
+			}
 		}
 	};
 
@@ -66,18 +150,28 @@ angular.module('ngGo.Game.Score.Service', [
 	 */
 	GameScore.prototype.winner = function() {
 
-		//Get totals
-		var b = this.black.total(),
-			w = this.white.total();
+		//Initialize
+		var winner = StoneColor.E,
+			highestScore = 0;
 
-		//Determine winner
-		if (w > b) {
-			return StoneColor.W;
+		//Loop colors
+		for (var c = 0; c < this.colors.length; c++) {
+			var total = this.total(this.colors[c]);
+
+			//Check if higher
+			if (total > highestScore) {
+				highestScore = total;
+				winner = this.colors[c];
+			}
+
+			//Check if the same
+			else if (total == highestScore) {
+				winner = StoneColor.E;
+			}
 		}
-		else if (b > w) {
-			return StoneColor.B;
-		}
-		return StoneColor.E;
+
+		//Return winner
+		return winner;
 	};
 
 	//Return

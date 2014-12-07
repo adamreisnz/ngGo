@@ -4,7 +4,7 @@ module.exports = function (config) {
 		/**
 		 * From where to look for files, starting with the location of this file.
 		 */
-		basePath: '../',
+		basePath: '',
 
 		/**
 		 * This is the list of file patterns to load into the browser during testing.
