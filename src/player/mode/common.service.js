@@ -122,12 +122,10 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 				case 39:
 
 					//Arrow navigation enabled?
-					if (this.config.arrowKeysNavigation) {
+					if (this.arrowKeysNavigation) {
 
 						//Don't scroll with arrows
-						if (this.config.lockScroll) {
-							keyboardEvent.preventDefault();
-						}
+						keyboardEvent.preventDefault();
 
 						//Advance to the next move
 						if (this.tool == PlayerTools.MOVE) {
@@ -140,12 +138,10 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 				case 37:
 
 					//Arrow navigation enabled?
-					if (this.config.arrowKeysNavigation) {
+					if (this.arrowKeysNavigation) {
 
 						//Don't scroll with arrows
-						if (this.config.lockScroll) {
-							keyboardEvent.preventDefault();
-						}
+						keyboardEvent.preventDefault();
 
 						//Go to the previous move
 						if (this.tool == PlayerTools.MOVE) {
@@ -166,7 +162,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		mouseWheel: function(event, mouseEvent) {
 
 			//Disabled or not using move tool?
-			if (!this.config.scrollWheelNavigation || this.tool != PlayerTools.MOVE) {
+			if (!this.scrollWheelNavigation || this.tool != PlayerTools.MOVE) {
 				return true;
 			}
 
@@ -186,7 +182,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			}
 
 			//Don't scroll the window
-			if (delta !== 0 && this.config.lockScroll) {
+			if (delta !== 0) {
 				mouseEvent.preventDefault();
 			}
 		},

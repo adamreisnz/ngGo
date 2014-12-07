@@ -122,17 +122,23 @@ JGF = {
 		comment: "These are general comments about the game"
 	},
 
-	// Board properties
+	// Board properties and configuration instructions
 	board: {
 
 		// The board size is specified by width and height separately, to
 		// allow support for non-square boards
 		width: 19,
-		height: 19
+		height: 19,
+
+		// Show coordinates for this game record
+		coordinates: true,
+
+		// Cut-off part of the grid (for displaying problems)
+		cutoff: ["right", "bottom"]
 	},
 
-	// Display instructions for this game record
-	display: {
+	// Instructions for the game record replayer
+	player: {
 
 		// Indicate variations with markup on the board or not
 		variation_markup: true,

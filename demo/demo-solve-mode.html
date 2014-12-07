@@ -37,7 +37,7 @@
 	 */
 	var jgf = {
 		"record": {
-			"application": "ngGo v3.0.4",
+			"application": "ngGo v1.0.4",
 			"version": 1,
 			"charset": "UTF-8"
 		},
@@ -319,7 +319,10 @@
 			$scope.solution = "Solution found! :D";
 		});
 		Player.on('solutionWrong', function(event, node) {
-			$scope.solution = "Wrong solution or off path :(";
+			$scope.solution = "Wrong solution :(";
+		});
+		Player.on('solutionOffPath', function(event, node) {
+			$scope.solution = "Off path :(";
 		});
 	})
 

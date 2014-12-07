@@ -49,7 +49,7 @@ angular.module('ngGo.Board.Service', [
 		coordinates: false,
 
 		//Color multiplier (use -1 to swap colors)
-		colorMultiplier: 1
+		color_multiplier: 1
 	};
 
 	/**
@@ -150,7 +150,7 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/***********************************************************************************************
-		 * Board configuration
+		 * Configuration
 		 ***/
 
 		/**
@@ -309,56 +309,64 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/**
-		 * Called after a board size change, draw size change, section change or margin change
+		 * Toggle the coordinates
 		 */
-		Board.prototype.resized = function() {
+		Board.prototype.toggleCoordinates = function(show) {
 
-			//Determine the new grid
-			this.grid = {
-				xLeft: 0 + this.section.left,
-				xRight: this.width - 1 - this.section.right,
-				yTop: 0 + this.section.top,
-				yBot: this.height - 1 - this.section.bottom
-			};
-
-			//Only redraw when there is sensible data
-			if (!this.width || !this.height || !this.drawWidth || !this.drawHeight) {
-				return;
+			//Set or toggle
+			if (typeof show != 'undefined') {
+				this.coordinates = show;
+			}
+			else {
+				this.coordinates = !this.coordinates;
 			}
 
-			//Determine number of cells horizontall and vertically
-			//The margin is a factor of the cell size, so let's add it to the number of cells
-			var noCellsHor = this.width + this.margin,
-				noCellsVer = this.height + this.margin;
+			//Set in grid layer
+			this.layers.grid.setCoordinates(this.coordinates);
 
-			//Are we cutting off parts of the grid? Add half a cell of draw size
-			for (var side in this.cutoff) {
-				if (this.cutoff[side]) {
-					if (side == 'top' || side == 'bottom') {
-						noCellsVer += 0.5;
-					}
-					else {
-						noCellsHor += 0.5;
-					}
+			//Set the proper board margin
+			if (this.coordinates) {
+				this.setMargin(this.theme.get('coordinates.margin'));
+			}
+			else {
+				this.setMargin(this.theme.get('board.margin'));
+			}
+		};
+
+		/**
+		 * Swap colors on the board
+		 */
+		Board.prototype.swapColors = function(multiplier) {
+
+			//Multiplier not given? Set to inverse of current value
+			if (typeof multiplier == 'undefined') {
+				multiplier = -this.colorMultiplier;
+			}
+			else {
+				multiplier = parseInt(multiplier);
+				if (isNaN(multiplier)) {
+					return;
 				}
 			}
 
-			//Determine cell size now
-			this.cellSize = Math.floor(Math.min(
-				this.drawWidth / noCellsHor,
-				this.drawHeight / noCellsVer
-			));
+			//No change?
+			if (multiplier == this.colorMultiplier) {
+				return;
+			}
 
-			//Determine actual grid draw size (taking off the margin again)
-			this.gridDrawWidth = this.cellSize * (noCellsHor - this.margin - 1);
-			this.gridDrawHeight = this.cellSize * (noCellsVer - this.margin - 1);
+			//Set new value
+			this.colorMultiplier = multiplier;
 
-			//Determine draw margins
-			this.drawMarginHor = Math.floor((this.drawWidth - this.gridDrawWidth) / 2);
-			this.drawMarginVer = Math.floor((this.drawHeight - this.gridDrawHeight) / 2);
+			//For static board, redraw the whole thing
+			if (this.static) {
+				this.redraw();
+			}
 
-			//Redraw
-			this.redraw();
+			//For a dynamic board, only these layers
+			else {
+				this.redraw('stones');
+				this.redraw('markup');
+			}
 		};
 
 		/*******************************************************************************************************************************
@@ -442,72 +450,7 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/***********************************************************************************************
-		 * Coordinates, color swapping
-		 ***/
-
-		/**
-		 * Toggle the coordinates
-		 */
-		Board.prototype.toggleCoordinates = function(show) {
-
-			//Set or toggle
-			if (typeof show != 'undefined') {
-				this.coordinates = show;
-			}
-			else {
-				this.coordinates = !this.coordinates;
-			}
-
-			//Set in grid layer
-			this.layers.grid.setCoordinates(this.coordinates);
-
-			//Set the proper board margin
-			if (this.coordinates) {
-				this.setMargin(this.theme.get('coordinates.margin'));
-			}
-			else {
-				this.setMargin(this.theme.get('board.margin'));
-			}
-		};
-
-		/**
-		 * Swap colors on the board
-		 */
-		Board.prototype.swapColors = function(multiplier) {
-
-			//Multiplier not given? Set to inverse of current value
-			if (typeof multiplier == 'undefined') {
-				multiplier = -this.colorMultiplier;
-			}
-			else {
-				multiplier = parseInt(multiplier);
-				if (isNaN(multiplier)) {
-					return;
-				}
-			}
-
-			//No change?
-			if (multiplier == this.colorMultiplier) {
-				return;
-			}
-
-			//Set new value
-			this.colorMultiplier = multiplier;
-
-			//For static board, redraw the whole thing
-			if (this.static) {
-				this.redraw();
-			}
-
-			//For a dynamic board, only these layers
-			else {
-				this.redraw('stones');
-				this.redraw('markup');
-			}
-		};
-
-		/***********************************************************************************************
-		 * Board state
+		 * State handling
 		 ***/
 
 		/**
@@ -556,8 +499,8 @@ angular.module('ngGo.Board.Service', [
 			}
 		};
 
-		/***********************************************************************************************
-		 * Drawing helpers and control methods
+		/*******************************************************************************************************************************
+		 * Drawing control
 		 ***/
 
 		/**
@@ -578,7 +521,7 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/**
-		 * Redraw everything
+		 * Redraw everything or just a single layer
 		 */
 		Board.prototype.redraw = function(layer) {
 
@@ -608,6 +551,63 @@ angular.module('ngGo.Board.Service', [
 				layer = this.layerOrder[i];
 				this.layers[layer].draw();
 			}
+		};
+
+		/***********************************************************************************************
+		 * Drawing helpers
+		 ***/
+
+		/**
+		 * Called after a board size change, draw size change, section change or margin change
+		 */
+		Board.prototype.resized = function() {
+
+			//Determine the new grid
+			this.grid = {
+				xLeft: 0 + this.section.left,
+				xRight: this.width - 1 - this.section.right,
+				yTop: 0 + this.section.top,
+				yBot: this.height - 1 - this.section.bottom
+			};
+
+			//Only redraw when there is sensible data
+			if (!this.width || !this.height || !this.drawWidth || !this.drawHeight) {
+				return;
+			}
+
+			//Determine number of cells horizontall and vertically
+			//The margin is a factor of the cell size, so let's add it to the number of cells
+			var noCellsHor = this.width + this.margin,
+				noCellsVer = this.height + this.margin;
+
+			//Are we cutting off parts of the grid? Add half a cell of draw size
+			for (var side in this.cutoff) {
+				if (this.cutoff[side]) {
+					if (side == 'top' || side == 'bottom') {
+						noCellsVer += 0.5;
+					}
+					else {
+						noCellsHor += 0.5;
+					}
+				}
+			}
+
+			//Determine cell size now
+			this.cellSize = Math.floor(Math.min(
+				this.drawWidth / noCellsHor,
+				this.drawHeight / noCellsVer
+			));
+
+			//Determine actual grid draw size (taking off the margin again)
+			this.gridDrawWidth = this.cellSize * (noCellsHor - this.margin - 1);
+			this.gridDrawHeight = this.cellSize * (noCellsVer - this.margin - 1);
+
+			//Determine draw margins
+			this.drawMarginHor = Math.floor((this.drawWidth - this.gridDrawWidth) / 2);
+			this.drawMarginVer = Math.floor((this.drawHeight - this.gridDrawHeight) / 2);
+
+			//Redraw
+			this.redraw();
 		};
 
 		/**

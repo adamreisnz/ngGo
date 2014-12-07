@@ -21,49 +21,32 @@ angular.module('ngGo.Player.Service', [
 /**
  * Provider definition
  */
-.provider('Player', function(PlayerModes, PlayerTools) {
+.provider('Player', function(PlayerModes, PlayerTools, MarkupTypes) {
 
 	/**
 	 * Default configuration
 	 */
 	var defaultConfig = {
 
-		//Starting mode/tool
-		defaultMode: PlayerModes.REPLAY,
-		defaultTool: PlayerTools.MOVE,
+		//Default mode/tool
+		mode: PlayerModes.REPLAY,
+		tool: PlayerTools.MOVE,
 
 		//Keys/scrollwheel navigation
-		arrowKeysNavigation: true,
-		scrollWheelNavigation: true,
+		arrow_keys_navigation: true,
+		scroll_wheel_navigation: true,
 
-		//Disable window scrolling when scrolling player
-		lockScroll: true,
+		//Last move marker, leave empty for none
+		last_move_marker: MarkupTypes.LAST,
 
-		//Last move marking
-		markLastMove: true,
-		lastMoveMarker: 'last',
-
-		//Allow the display instructions from the game record to overwrite standard settings
-		allowDisplayInstructions: true,
-
-		//Indicate variations with markup on the board or not
-		variationMarkup: true,
-
-		//Show variations of successor nodes
-		variationChildren: true,
-
-		//Show variations of current node
-		variationSiblings: false,
+		//Indicate variations with markup on the board, and show
+		//successor node variations or current node variations
+		variation_markup: true,
+		variation_children: true,
+		variation_siblings: false,
 
 		//Show solution paths
-		solutionPaths: false,
-
-		//Replay mode auto play interval
-		autoPlayDelay: 1000,
-
-		//Solve mode settings
-		solveAutoPlay: true,
-		solveAutoPlayDelay: 500
+		solution_paths: false
 	};
 
 	/**
@@ -76,7 +59,7 @@ angular.module('ngGo.Player.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function($rootScope, $document, $interval, Game, GameScorer, Board, PlayerTools) {
+	this.$get = function($rootScope, $document, Game, GameScorer, Board, PlayerTools) {
 
 		/**
 		 * Helper to append board grid coordinatess to the broadcast event object
@@ -141,24 +124,21 @@ angular.module('ngGo.Player.Service', [
 			board: null,
 			game: null,
 
-			//Path
-			path: null,
+			//Available modes and tools
+			modes: {},
+			tools: [],
 
 			//Player mode and active tool
 			mode: '',
 			tool: '',
 
-			//Available modes and tools
-			modes: {},
-			tools: [],
+			//Current path
+			path: null,
 
 			/**
 			 * Initialization
 			 */
 			init: function() {
-
-				//Player configuration
-				this.config = angular.copy(defaultConfig);
 
 				//Unlink board instance, create new game
 				this.board = null;
@@ -170,21 +150,274 @@ angular.module('ngGo.Player.Service', [
 				//Player mode and active tool
 				this.mode = '';
 				this.tool = '';
+
+				//Arrow keys / scroll wheel navigation
+				this.arrowKeysNavigation = false;
+				this.scrollWheelNavigation = false;
+
+				//Last move marker
+				this.lastMoveMarker = '';
+
+				//Variation markup
+				this.variationMarkup = false;
+				this.variationChildren = false;
+				this.variationSiblings = false;
+
+				//Solution paths
+				this.solutionPaths = false;
+
+				//Parse config
+				this.parseConfig({});
 			},
+
+			/**
+			 * Link the player to a HTML element
+			 */
+			linkElement: function(element) {
+
+				//Set element
+				this.element = element;
+
+				//Register document event
+				this.registerElementEvent('keydown', $document);
+
+				//Register element events
+				this.registerElementEvent('click');
+				this.registerElementEvent('mousedown');
+				this.registerElementEvent('mouseup');
+				this.registerElementEvent('mousemove');
+				this.registerElementEvent('mouseout');
+				this.registerElementEvent('mousewheel');
+			},
+
+			/*******************************************************************************************************************************
+			 * Configuration
+			 ***/
+
+			/**
+			 * Parse config instructions
+			 */
+			parseConfig: function(config) {
+
+				//Validate
+				if (typeof config != 'object') {
+					return;
+				}
+
+				//Extend from default config
+				this.config = angular.extend({}, defaultConfig, config);
+
+				//Process settings
+				this.switchMode(this.config.mode);
+				this.switchTool(this.config.tool);
+				this.toggleSolutionPaths(this.config.solution_paths);
+				this.setArrowKeysNavigation(this.config.arrow_keys_navigation);
+				this.setScrollWheelNavigation(this.config.scroll_wheel_navigation);
+				this.setLastMoveMarker(this.config.last_move_marker);
+				this.setVariationMarkup(
+					this.config.variation_markup,
+					this.config.variation_children,
+					this.config.variation_siblings
+				);
+
+				//Let the modes parse their config
+				for (var mode in this.modes) {
+					if (this.modes[mode].parseConfig) {
+						this.modes[mode].parseConfig.call(this);
+					}
+				}
+			},
+
+			/**
+			 * Set arrow keys navigation
+			 */
+			setArrowKeysNavigation: function(arrowKeys) {
+				if (arrowKeys != this.arrowKeysNavigation) {
+					this.arrowKeysNavigation = arrowKeys;
+					this.broadcast('settingChange', 'arrowKeysNavigation');
+				}
+			},
+
+			/**
+			 * Set scroll wheel navigation
+			 */
+			setScrollWheelNavigation: function(scrollWheel) {
+				if (scrollWheel != this.scrollWheelNavigation) {
+					this.scrollWheelNavigation = scrollWheel;
+					this.broadcast('settingChange', 'scrollWheelNavigation');
+				}
+			},
+
+			/**
+			 * Set the last move marker
+			 */
+			setLastMoveMarker: function(lastMoveMarker) {
+				if (lastMoveMarker != this.lastMoveMarker) {
+					this.lastMoveMarker = lastMoveMarker;
+					this.broadcast('settingChange', 'lastMoveMarker');
+				}
+			},
+
+			/**
+			 * Set variation markup on the board
+			 */
+			setVariationMarkup: function(variationMarkup, variationChildren, variationSiblings) {
+
+				//One change event for these three settings
+				var change = false;
+
+				//Markup setting change?
+				if (variationMarkup != this.variationMarkup) {
+					this.variationMarkup = variationMarkup;
+					change = true;
+				}
+
+				//Children setting change?
+				if (typeof variationChildren != 'undefined' && variationChildren != this.variationChildren) {
+					this.variationChildren = variationChildren;
+					change = true;
+				}
+
+				//Siblings setting change?
+				if (typeof variationSiblings != 'undefined' && variationSiblings != this.variationSiblings) {
+					this.variationSiblings = variationSiblings;
+					change = true;
+				}
+
+				//Did anything change?
+				if (change) {
+					this.broadcast('settingChange', 'variationMarkup');
+				}
+			},
+
+			/**
+			 * Show/hide the solution paths
+			 */
+			toggleSolutionPaths: function(solutionPaths) {
+
+				//Toggle if not given
+				if (typeof solutionPaths == 'undefined') {
+					solutionPaths = !this.solutionPaths;
+				}
+
+				//Change?
+				if (solutionPaths != this.solutionPaths) {
+					this.solutionPaths = solutionPaths;
+					this.broadcast('settingChange', 'solutionPaths');
+				}
+			},
+
+			/*******************************************************************************************************************************
+			 * Mode and tool handling
+			 ***/
+
+			/**
+			 * Register a player mode
+			 */
+			registerMode: function(mode, PlayerMode) {
+
+				//Register the mode and let it parse the configuration
+				this.modes[mode] = PlayerMode;
+
+				//Parse config if we have a handler
+				if (this.modes[mode].parseConfig) {
+					this.modes[mode].parseConfig.call(this);
+				}
+
+				//Force switch the mode now, if it matches the initial mode
+				if (this.mode == mode) {
+					this.switchMode(this.mode, true);
+					this.switchTool(this.tool, true);
+				}
+			},
+
+			/**
+			 * Set available tools
+			 */
+			setTools: function(tools) {
+				this.tools = tools || [PlayerTools.NONE];
+			},
+
+			/**
+			 * Check if we have a player mode
+			 */
+			hasMode: function(mode) {
+				return this.modes[mode] ? true : false;
+			},
+
+			/**
+			 * Check if we have a player tool
+			 */
+			hasTool: function(tool) {
+				return (this.tools.indexOf(tool) != -1);
+			},
+
+			/**
+			 * Switch player mode
+			 */
+			switchMode: function(mode, force) {
+
+				//No change?
+				if (!force && (!mode || this.mode == mode)) {
+					return false;
+				}
+
+				//Broadcast mode exit
+				if (this.mode) {
+					this.broadcast('modeExit', this.mode);
+				}
+
+				//Set mode, reset tools and active tool
+				this.mode = mode;
+				this.tools = [];
+				this.tool = PlayerTools.NONE;
+
+				//Broadcast mode entry
+				this.broadcast('modeEnter', this.mode);
+				return true;
+			},
+
+			/**
+			 * Switch player tool
+			 */
+			switchTool: function(tool, force) {
+
+				//No change?
+				if (!force && (!tool || this.tool == tool)) {
+					return false;
+				}
+
+				//Validate tool switch (only when there is a mode)
+				if (this.mode && this.modes[this.mode] && this.tools.indexOf(tool) === -1) {
+					return false;
+				}
+
+				//Change tool
+				this.tool = tool;
+				this.broadcast('toolSwitch', this.tool);
+				return true;
+			},
+
+			/***********************************************************************************************
+			 * Game record handling
+			 ***/
 
 			/**
 			 * Load game record
 			 */
-			load: function(data) {
+			load: function(data, allowPlayerConfig) {
 
 				//Try to load the game record data
 				if (!this.game.load(data)) {
 					return false;
 				}
 
-				//Process display instructions
-				if (this.config.allowDisplayInstructions) {
-					this.displayInstructions(this.game.get('display'));
+				//Reset path
+				this.path = null;
+
+				//Parse configuration from JGF if allowed
+				if (allowPlayerConfig || typeof allowPlayerConfig == 'undefined') {
+					this.parseConfig(this.game.get('player'));
 				}
 
 				//Dispatch game loaded event
@@ -202,54 +435,97 @@ angular.module('ngGo.Player.Service', [
 			},
 
 			/**
-			 * Process display instructions (can be given in game record)
+			 * Go to the next position
 			 */
-			displayInstructions: function(display) {
-
-				//No instructions?
-				if (!display) {
-					return;
-				}
-
-				//Show board markup for variations?
-				if (typeof display.variation_markup != 'undefined') {
-					this.variationMarkup = display.variation_markup;
-				}
-
-				//Show variations of successor nodes?
-				if (typeof display.variation_children != 'undefined') {
-					this.variationChildren = display.variation_children;
-				}
-
-				//Show variations of current node?
-				if (typeof display.variation_siblings != 'undefined') {
-					this.variationSiblings = display.variation_siblings;
-				}
-
-				//Show solution paths?
-				if (typeof display.solution_paths != 'undefined') {
-					this.solutionPaths = display.solution_paths;
+			next: function(i) {
+				if (this.game) {
+					this.game.next(i);
+					this.updateBoard();
 				}
 			},
 
 			/**
-			 * Set the element
+			 * Go back to the previous position
 			 */
-			setElement: function(element) {
+			previous: function() {
+				if (this.game) {
+					this.game.previous();
+					this.updateBoard();
+				}
+			},
 
-				//Set element
-				this.element = element;
+			/**
+			 * Go to the last position
+			 */
+			last: function() {
+				if (this.game) {
+					this.game.last();
+					this.updateBoard();
+				}
+			},
 
-				//Register document event
-				this.registerElementEvent('keydown', $document);
+			/**
+			 * Go to the first position
+			 */
+			first: function() {
+				if (this.game) {
+					this.game.first();
+					this.updateBoard();
+				}
+			},
 
-				//Register element events
-				this.registerElementEvent('click');
-				this.registerElementEvent('mousedown');
-				this.registerElementEvent('mouseup');
-				this.registerElementEvent('mousemove');
-				this.registerElementEvent('mouseout');
-				this.registerElementEvent('mousewheel');
+			/**
+			 * Go to a specific move number, tree path or named node
+			 */
+			goto: function(target) {
+				if (this.game && target) {
+					this.game.goto(target);
+					this.updateBoard();
+				}
+			},
+
+			/*******************************************************************************************************************************
+			 * Game handling
+			 ***/
+
+			/**
+			 * Start a new game
+			 */
+			newGame: function() {
+				this.game = new Game();
+				this.updateBoard();
+			},
+
+			/**
+			 * Score the current game position
+			 */
+			scoreGame: function() {
+
+				//Calculate score
+				GameScorer.calculate();
+
+				//Get score, points and captures
+				var score = GameScorer.getScore(),
+					points = GameScorer.getPoints(),
+					captures = GameScorer.getCaptures();
+
+				//Remove all markup, and set captures and points
+				this.board.layers.markup.removeAll();
+				this.board.layers.score.setAll(points, captures);
+
+				//Broadcast score
+				this.broadcast('scoreCalculated', score);
+			},
+
+			/*******************************************************************************************************************************
+			 * Board handling
+			 ***/
+
+			/**
+			 * Get the board
+			 */
+			getBoard: function() {
+				return this.board;
 			},
 
 			/**
@@ -314,306 +590,17 @@ angular.module('ngGo.Player.Service', [
 
 					//Passed?
 					if (node.move.pass) {
-						this.broadcast('notification', 'pass');
+						this.broadcast('movePassed', node);
 					}
 
 					//Mark last move?
-					else if (this.config.markLastMove) {
-						this.board.add('markup', node.move.x, node.move.y, this.config.lastMoveMarker);
+					else if (this.lastMoveMarker) {
+						this.board.add('markup', node.move.x, node.move.y, this.lastMoveMarker);
 					}
 				}
 
 				//Broadcast event
-				this.broadcast('update', node);
-			},
-
-			/**
-			 * Register a player mode
-			 */
-			registerMode: function(mode, handler) {
-
-				//Register the mode
-				this.modes[mode] = handler;
-
-				//Switch to the mode now, if not in a mode yet and if it matches the default mode
-				if (!this.mode && mode == this.config.defaultMode) {
-					this.switchMode(this.config.defaultMode);
-					this.switchTool(this.config.defaultTool);
-				}
-			},
-
-			/**
-			 * Check if we have a player mode
-			 */
-			hasMode: function(mode) {
-				return this.modes[mode] ? true : false;
-			},
-
-			/***********************************************************************************************
-			 * Game record navigation
-			 ***/
-
-			/**
-			 * Go to the next position
-			 */
-			next: function(i) {
-				if (this.game) {
-					this.game.next(i);
-					this.updateBoard();
-				}
-			},
-
-			/**
-			 * Go back to the previous position
-			 */
-			previous: function() {
-				if (this.game) {
-					this.game.previous();
-					this.updateBoard();
-				}
-			},
-
-			/**
-			 * Go to the last position
-			 */
-			last: function() {
-				if (this.game) {
-					this.game.last();
-					this.updateBoard();
-				}
-			},
-
-			/**
-			 * Go to the first position
-			 */
-			first: function() {
-				if (this.game) {
-					this.game.first();
-					this.updateBoard();
-				}
-			},
-
-			/**
-			 * Go to a specific move number, tree path or named node
-			 */
-			goto: function(target) {
-				if (this.game && target) {
-					this.game.goto(target);
-					this.updateBoard();
-				}
-			},
-
-			/**
-			 * Start auto play with a given delay
-			 */
-			start: function(delay) {
-
-				//No game or no move children?
-				if (!this.game || !this.game.node.hasChildren()) {
-					return;
-				}
-
-				//Get self
-				var self = this;
-
-				//Determine delay
-				delay = (typeof delay == 'number') ? delay*1000 : this.config.autoPlayDelay;
-
-				//Create interval
-				this.autoPlayPromise = $interval(function() {
-
-					//Advance to the next node
-					self.next();
-
-					//Ran out of children?
-					if (!self.game.node.hasChildren()) {
-						self.stop();
-					}
-				}, delay);
-			},
-
-			/**
-			 * Cancel auto play
-			 */
-			stop: function() {
-				if (this.autoPlayPromise) {
-					$interval.cancel(this.autoPlayPromise);
-					this.autoPlayPromise = null;
-				}
-			},
-
-			/***********************************************************************************************
-			 * Player control
-			 ***/
-
-			/**
-			 * Switch player mode
-			 */
-			switchMode: function(mode) {
-
-				//Validate input
-				mode = mode || this.mode;
-
-				//No change or mode not available?
-				if (this.mode == mode || !this.modes[mode]) {
-					return false;
-				}
-
-				//Broadcast mode exit
-				this.broadcast('modeExit', this.mode);
-
-				//Set mode, reset tools and active tool
-				this.mode = mode;
-				this.tools = [];
-				this.tool = PlayerTools.NONE;
-
-				//Broadcast mode entry
-				this.broadcast('modeEnter', this.mode);
-				return true;
-			},
-
-			/**
-			 * Switch player tool
-			 */
-			switchTool: function(tool) {
-
-				//Check input
-				tool = tool || PlayerTools.NONE;
-
-				//No change or invaid tool?
-				if (this.tool == tool || this.tools.indexOf(tool) === -1) {
-					return false;
-				}
-
-				//Change tool
-				this.tool = tool;
-				this.broadcast('toolSwitch', this.tool);
-			},
-
-			/**
-			 * Start a new game
-			 */
-			newGame: function() {
-				this.game = new Game();
-				this.updateBoard();
-			},
-
-			/**
-			 * Helper to score the current game position
-			 */
-			scoreGame: function() {
-
-				//Calculate score
-				GameScorer.calculate();
-
-				//Get score, points and captures
-				var score = GameScorer.getScore(),
-					points = GameScorer.getPoints(),
-					captures = GameScorer.getCaptures();
-
-				//Remove all markup, and set captures and points
-				this.board.layers.markup.removeAll();
-				this.board.layers.score.setAll(points, captures);
-
-				//Broadcast score
-				this.broadcast('score', score);
-			},
-
-			/***********************************************************************************************
-			 * Configuration
-			 ***/
-
-			/**
-			 * Show/hide the solution paths
-			 */
-			toggleSolutionPaths: function(solutionPaths) {
-
-				//Set or toggle
-				if (typeof solutionPaths != 'undefined') {
-					this.config.solutionPaths = solutionPaths;
-				}
-				else {
-					this.config.solutionPaths = !this.config.solutionPaths;
-				}
-
-				//Broadcast event
-				this.broadcast('config', 'solutionPaths');
-			},
-
-			/**
-			 * Toggle variation markup on the board
-			 */
-			toggleVariationMarkup: function(variationMarkup) {
-
-				//Set or toggle
-				if (typeof variationMarkup != 'undefined') {
-					this.config.variationMarkup = variationMarkup;
-				}
-				else {
-					this.config.variationMarkup = !this.config.variationMarkup;
-				}
-
-				//Broadcast event
-				this.broadcast('config', 'variationMarkup');
-			},
-
-			/**
-			 * Set arrow keys navigation
-			 */
-			toggleArrowKeysNavigation: function(arrowKeys) {
-
-				//Set or toggle
-				if (typeof arrowKeys != 'undefined') {
-					this.config.arrowKeysNavigation = arrowKeys;
-				}
-				else {
-					this.config.arrowKeysNavigation = !this.config.arrowKeysNavigation;
-				}
-
-				//Broadcast event
-				this.broadcast('config', 'arrowKeysNavigation');
-			},
-
-			/**
-			 * Set scroll wheel navigation
-			 */
-			toggleScrollWheelNavigation: function(scrollWheel) {
-
-				//Set or toggle
-				if (typeof scrollWheel != 'undefined') {
-					this.config.scrollWheelNavigation = scrollWheel;
-				}
-				else {
-					this.config.scrollWheelNavigation = !this.config.scrollWheelNavigation;
-				}
-
-				//Broadcast event
-				this.broadcast('config', 'scrollWheelNavigation');
-			},
-
-			/**
-			 * Set whether to mark the last move
-			 */
-			toggleMarkLastMove: function(markLastMove) {
-
-				//Set or toggle
-				if (typeof markLastMove != 'undefined') {
-					this.config.markLastMove = markLastMove;
-				}
-				else {
-					this.config.markLastMove = !this.config.markLastMove;
-				}
-
-				//Broadcast event
-				this.broadcast('config', 'markLastMove');
-			},
-
-			/**
-			 * Set the last move marker
-			 */
-			setLastMoveMarker: function(lastMoveMarker) {
-				this.config.lastMoveMarker = lastMoveMarker;
-				this.broadcast('config', 'lastMoveMarker');
+				this.broadcast('boardUpdate', node);
 			},
 
 			/***********************************************************************************************
@@ -639,18 +626,25 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Event listener
 			 */
-			on: function(type, listener, mode) {
+			on: function(type, listener, mode, $scope) {
 
 				//Must have valid listener
 				if (typeof listener != 'function') {
 					return;
 				}
 
-				//Get self
-				var self = this;
+				//Scope given as 3rd parameter?
+				if (mode && mode.$parent) {
+					$scope = mode;
+					mode = '';
+				}
 
-				//Create listener
-				$rootScope.$on('ngGo.player.' + type, function() {
+				//Get self and determine scope to use
+				var self = this,
+					scope = $scope || $rootScope;
+
+				//Create listener and return de-registration function
+				return scope.$on('ngGo.player.' + type, function() {
 
 					//Filter on mode
 					if (mode) {
@@ -694,6 +688,9 @@ angular.module('ngGo.Player.Service', [
 				}
 			}
 		};
+
+		//Initialize
+		Player.init();
 
 		//Return object
 		return Player;
