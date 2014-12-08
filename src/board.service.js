@@ -506,7 +506,20 @@ angular.module('ngGo.Board.Service', [
 		/**
 		 * Clear the whole board
 		 */
-		Board.prototype.clear = function() {
+		Board.prototype.clear = function(layer) {
+
+			//Just clearing one layer?
+			if (layer) {
+
+				//If the board is static or the layer is unknown, we can't do this
+				if (this.static || !this.layers[layer]) {
+					return;
+				}
+
+				//Clear the layer
+				this.layers[layer].clear();
+				return;
+			}
 
 			//Static? One clear is enough
 			if (this.static) {
@@ -515,7 +528,7 @@ angular.module('ngGo.Board.Service', [
 			}
 
 			//Clear all layers
-			for (var layer in this.layers) {
+			for (layer in this.layers) {
 				this.layers[layer].clear();
 			}
 		};

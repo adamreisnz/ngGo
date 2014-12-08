@@ -76,7 +76,7 @@ angular.module('ngGo.Board.Theme.Service', [
 		shadow: {
 
 			//Shadow gradient colors
-			color: 'rgba(62,32,32,0.3)',
+			color: 'rgba(62,32,32,0.2)',
 
 			//Shadow size
 			size: function(cellSize) {
@@ -86,6 +86,14 @@ angular.module('ngGo.Board.Theme.Service', [
 			//Shadow blur size
 			blur: function(cellSize) {
 				return cellSize / 20;
+			},
+
+			//Shadow offset
+			offsetX: function(cellSize) {
+				return Math.ceil(cellSize / 20);
+			},
+			offsetY: function(cellSize) {
+				return Math.ceil(cellSize / 20);
 			}
 		},
 
