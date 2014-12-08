@@ -7,7 +7,7 @@ JGF = {
 	record: {
 
 		// The application that created the game record file including version identifier
-		application: "ngGo v3.0.0",
+		application: "ngGo v1.0.0",
 
 		// JGF version
 		version: 1,
@@ -163,12 +163,28 @@ JGF = {
 			// Flag to indicate this is the root node
 			root: true,
 
-			// Comments are placed in an array, to separate different commentators.
+			// Comments are placed in an array and each comment can either be
+			// a simple string, or an object if more information is present.
 			comments: [
-				"These are comments shown at the start of the game.",
-				"Every separate comment has it's own entry."
 
-				//Comments can be further
+				// Simple comments
+				"These are comments shown at the start of the game.",
+				"Every separate comment has it's own entry.",
+
+				// More detailed comments
+				{
+					// Commentator name
+					name: "C. Ommentator",
+
+					// Comment timestamp
+					timestamp: "2014-12-08 14:30",
+
+					// The actual comment
+					comment: "This is my comment",
+
+					// Optionally, related to certain coordinates
+					coordinates: "gb"
+				}
 			]
 		},
 

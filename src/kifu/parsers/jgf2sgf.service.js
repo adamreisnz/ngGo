@@ -133,8 +133,23 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	 * Comments parser
 	 */
 	var parseComments = function(comments, output) {
+
+		//Determine key
 		var key = (typeof jgfAliases.comments != 'undefined') ? jgfAliases.comments : 'C';
-		writeGroup(key, comments, output, true);
+
+		//Flatten comment objects
+		var flatComments = [];
+		for (var c = 0; c < comments.length; c++) {
+			if (typeof comments[c] == 'string') {
+				flatComments.push(comments[c]);
+			}
+			else if (comments[c].comment) {
+				flatComments.push(comments[c].comment);
+			}
+		}
+
+		//Write as group
+		writeGroup(key, flatComments, output, true);
 	};
 
 	/**
