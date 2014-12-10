@@ -36,7 +36,7 @@ module.exports = function(grunt) {
 		temp_dir:		'temp',
 		build_dir:		'<%= temp_dir %>/build',
 		compile_dir:	'<%= temp_dir %>/compile',
-		deploy_dir:		'build',
+		deploy_dir:		'release',
 
 		/**
 		 * This is a collection of file patterns that refer to the application code.
