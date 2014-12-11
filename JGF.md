@@ -180,10 +180,7 @@ JGF = {
 					timestamp: "2014-12-08 14:30",
 
 					// The actual comment
-					comment: "This is my comment",
-
-					// Optionally, related to certain coordinates
-					coordinates: "gb"
+					comment: "This is my comment"
 				}
 			]
 		},
