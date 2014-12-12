@@ -15,7 +15,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 /**
  * Extend player functionality and register the mode
  */
-.run(function($interval, Player, PlayerModes, PlayerModeReplay) {
+.run(function($interval, Player, PlayerModes, PlayerTools, PlayerModeReplay) {
 
 	/**
 	 * Register event handlers
@@ -29,12 +29,12 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	Player.on('hover', PlayerModeReplay.hover, PlayerModes.REPLAY);
 
 	/**
-	 * Set replay auto play delay
+	 * Set auto play delay
 	 */
-	Player.setReplayAutoPlayDelay = function(delay) {
-		if (this.replayAutoPlayDelay != delay) {
-			this.replayAutoPlayDelay = delay;
-			this.broadcast('settingChange', 'replayAutoPlayDelay');
+	Player.setAutoPlayDelay = function(delay) {
+		if (this.autoPlayDelay != delay) {
+			this.autoPlayDelay = delay;
+			this.broadcast('settingChange', 'autoPlayDelay');
 		}
 	};
 
@@ -43,7 +43,12 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	 */
 	Player.start = function(delay) {
 
-		//No game or no move children?
+		//Not in replay mode or already auto playing?
+		if (this.mode != PlayerModes.REPLAY || this.autoPlaying) {
+			return;
+		}
+
+		//Already auto playing, no game or no move children?
 		if (!this.game || !this.game.node.hasChildren()) {
 			return;
 		}
@@ -52,34 +57,67 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 		var self = this;
 
 		//Determine delay
-		delay = (typeof delay == 'number') ? delay*1000 : this.replayAutoPlayDelay;
+		delay = (typeof delay == 'number') ? delay : this.autoPlayDelay;
+
+		//Switch tool
+		this.switchTool(PlayerTools.NONE);
 
 		//Create interval
-		this.replayAutoPlayPromise = $interval(function() {
+		this.autoPlaying = true;
+		this.autoPlayPromise = $interval(function() {
 
 			//Advance to the next node
-			self.next();
+			self.next(0, true);
 
 			//Ran out of children?
 			if (!self.game.node.hasChildren()) {
 				self.stop();
 			}
 		}, delay);
+
+		//Broadcast event
+		this.broadcast('autoPlayStarted', this.game.node);
 	};
 
 	/**
-	 * Cancel auto play
+	 * Stop auto play
 	 */
 	Player.stop = function() {
-		if (this.replayAutoPlayPromise) {
-			$interval.cancel(this.replayAutoPlayPromise);
-			this.replayAutoPlayPromise = null;
+
+		//Not in replay mode or not auto playing?
+		if (this.mode != PlayerModes.REPLAY || !this.autoPlaying) {
+			return;
 		}
+
+		//Cancel interval
+		if (this.autoPlayPromise) {
+			$interval.cancel(this.autoPlayPromise);
+		}
+
+		//Clear flags
+		this.autoPlayPromise = null;
+		this.autoPlaying = false;
+
+		//Broadcast event
+		this.broadcast('autoPlayStopped', this.game.node);
+	};
+
+	/**
+	 * Helper to start in "demo" mode, which is replay mode with no tool
+	 */
+	Player.demo = function() {
+
+		//Switch mode to replay
+		this.switchMode(PlayerModes.REPLAY);
+
+		//Switch tool to none
+		this.switchTool(PlayerTools.NONE);
 	};
 
 	//Auto play vars
-	Player.replayAutoPlayDelay = 1000;
-	Player.replayAutoPlayPromise = null;
+	Player.autoPlaying = false;
+	Player.autoPlayDelay = 1000;
+	Player.autoPlayPromise = null;
 
 	//Register the mode
 	Player.registerMode(PlayerModes.REPLAY, PlayerModeReplay);
@@ -96,7 +134,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	var defaultConfig = {
 
 		//Auto play delay
-		replay_auto_play_delay: 1000
+		auto_play_delay: 1000,
 	};
 
 	/**
@@ -228,16 +266,11 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			 */
 			parseConfig: function(config) {
 
-				//Validate
-				if (typeof config != 'object') {
-					return;
-				}
-
 				//Extend from default config
-				this.config = angular.extend({}, this.config, defaultConfig, config);
+				this.config = angular.extend({}, this.config, defaultConfig, config || {});
 
 				//Process settings
-				this.setReplayAutoPlayDelay(this.config.replay_auto_play_delay);
+				this.setAutoPlayDelay(this.config.auto_play_delay);
 			},
 
 			/**
@@ -323,7 +356,8 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 				//Set available tools for this mode
 				this.setTools([
 					PlayerTools.MOVE,
-					PlayerTools.SCORE
+					PlayerTools.SCORE,
+					PlayerTools.NONE
 				]);
 
 				//Set default tool
@@ -339,6 +373,11 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			 * Handler for mode exit
 			 */
 			modeExit: function(event) {
+
+				//Stop auto playing
+				if (this.autoPlaying) {
+					this.stop();
+				}
 
 				//Hide move variations
 				if (this.variationMarkup) {

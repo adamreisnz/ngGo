@@ -240,11 +240,10 @@ angular.module('ngGo.Game.Scorer.Service', [
 			this.score.reset();
 
 			//Set captures and komi
-			this.score
-				.set(StoneColor.B, 'captures', captures[StoneColor.B])
-				.set(StoneColor.W, 'captures', captures[StoneColor.W])
-				.set(StoneColor.B, 'komi', komi < 0 ? komi : 0)
-				.set(StoneColor.W, 'komi', komi > 0 ? komi : 0);
+			this.score.black.captures = captures[StoneColor.B];
+			this.score.white.captures = captures[StoneColor.W];
+			this.score.black.komi = komi < 0 ? komi : 0;
+			this.score.white.komi = komi > 0 ? komi : 0;
 
 			//Init helper vars
 			var x, y, state, color;

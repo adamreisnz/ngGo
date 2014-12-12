@@ -107,6 +107,11 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 				return true;
 			}
 
+			//No game?
+			if (!this.game || !this.game.isLoaded()) {
+				return true;
+			}
+
 			//Switch key code
 			switch (keyboardEvent.keyCode) {
 
@@ -123,12 +128,10 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 
 					//Arrow navigation enabled?
 					if (this.arrowKeysNavigation) {
-
-						//Don't scroll with arrows
 						keyboardEvent.preventDefault();
 
 						//Advance to the next move
-						if (this.tool == PlayerTools.MOVE) {
+						if (this.tool == PlayerTools.MOVE && this.game.node != this.restrictNodeEnd) {
 							this.next();
 						}
 					}
@@ -139,12 +142,10 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 
 					//Arrow navigation enabled?
 					if (this.arrowKeysNavigation) {
-
-						//Don't scroll with arrows
 						keyboardEvent.preventDefault();
 
 						//Go to the previous move
-						if (this.tool == PlayerTools.MOVE) {
+						if (this.tool == PlayerTools.MOVE && this.game.node != this.restrictNodeStart) {
 							this.previous();
 						}
 					}
@@ -163,6 +164,11 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 
 			//Disabled or not using move tool?
 			if (!this.scrollWheelNavigation || this.tool != PlayerTools.MOVE) {
+				return true;
+			}
+
+			//No game?
+			if (!this.game || !this.game.isLoaded()) {
 				return true;
 			}
 

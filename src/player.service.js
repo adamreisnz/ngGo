@@ -43,10 +43,7 @@ angular.module('ngGo.Player.Service', [
 		//successor node variations or current node variations
 		variation_markup: true,
 		variation_children: true,
-		variation_siblings: false,
-
-		//Show solution paths
-		solution_paths: false
+		variation_siblings: false
 	};
 
 	/**
@@ -163,11 +160,12 @@ angular.module('ngGo.Player.Service', [
 				this.variationChildren = false;
 				this.variationSiblings = false;
 
-				//Solution paths
-				this.solutionPaths = false;
+				//Restricted nodes
+				this.restrictNodeStart = null;
+				this.restrictNodeEnd = null;
 
 				//Parse config
-				this.parseConfig({});
+				this.parseConfig();
 			},
 
 			/**
@@ -199,18 +197,12 @@ angular.module('ngGo.Player.Service', [
 			 */
 			parseConfig: function(config) {
 
-				//Validate
-				if (typeof config != 'object') {
-					return;
-				}
-
 				//Extend from default config
-				this.config = angular.extend({}, defaultConfig, config);
+				this.config = angular.extend({}, defaultConfig, config || {});
 
 				//Process settings
 				this.switchMode(this.config.mode);
 				this.switchTool(this.config.tool);
-				this.toggleSolutionPaths(this.config.solution_paths);
 				this.setArrowKeysNavigation(this.config.arrow_keys_navigation);
 				this.setScrollWheelNavigation(this.config.scroll_wheel_navigation);
 				this.setLastMoveMarker(this.config.last_move_marker);
@@ -287,23 +279,6 @@ angular.module('ngGo.Player.Service', [
 				//Did anything change?
 				if (change) {
 					this.broadcast('settingChange', 'variationMarkup');
-				}
-			},
-
-			/**
-			 * Show/hide the solution paths
-			 */
-			toggleSolutionPaths: function(solutionPaths) {
-
-				//Toggle if not given
-				if (typeof solutionPaths == 'undefined') {
-					solutionPaths = !this.solutionPaths;
-				}
-
-				//Change?
-				if (solutionPaths != this.solutionPaths) {
-					this.solutionPaths = solutionPaths;
-					this.broadcast('settingChange', 'solutionPaths');
 				}
 			},
 
@@ -435,6 +410,61 @@ angular.module('ngGo.Player.Service', [
 			},
 
 			/**
+			 * Reload the existing game record
+			 */
+			reload: function() {
+
+				//Must have game
+				if (!this.game || !this.game.isLoaded()) {
+					return;
+				}
+
+				//Reload game
+				this.game.reload();
+
+				//Update board
+				if (this.board) {
+					this.board.removeAll();
+					this.updateBoard();
+				}
+			},
+
+			/**
+			 * Save the current state
+			 */
+			saveState: function() {
+
+				//Remember game state
+				if (this.game && this.game.isLoaded()) {
+					this.gameState = this.game.getState();
+				}
+			},
+
+			/**
+			 * Restore to the saved state
+			 */
+			restoreState: function() {
+
+				//Must have game and saved state
+				if (!this.game || !this.gameState) {
+					return;
+				}
+
+				//Restore state
+				this.game.restoreState(this.gameState);
+
+				//Update board
+				if (this.board) {
+					this.board.removeAll();
+					this.updateBoard();
+				}
+			},
+
+			/***********************************************************************************************
+			 * Navigation
+			 ***/
+
+			/**
 			 * Go to the next position
 			 */
 			next: function(i) {
@@ -481,6 +511,25 @@ angular.module('ngGo.Player.Service', [
 				if (this.game && target) {
 					this.game.goto(target);
 					this.updateBoard();
+				}
+			},
+
+			/**
+			 * Restrict navigation to the current node
+			 */
+			restrictNode: function(end) {
+
+				//Must have game and node
+				if (!this.game || !this.game.node) {
+					return;
+				}
+
+				//Restrict to current node
+				if (end) {
+					this.restrictNodeEnd = this.game.node;
+				}
+				else {
+					this.restrictNodeStart = this.game.node;
 				}
 			},
 
@@ -575,9 +624,9 @@ angular.module('ngGo.Player.Service', [
 					//Broadcast
 					this.broadcast('pathChange', node);
 
-					//Mode change instruction?
-					if (node.mode) {
-						this.switchMode(node.mode);
+					//Named node reached? Broadcast event
+					if (node.name) {
+						this.broadcast('reachedNode.' + node.name, node);
 					}
 				}
 
@@ -630,6 +679,7 @@ angular.module('ngGo.Player.Service', [
 
 				//Must have valid listener
 				if (typeof listener != 'function') {
+					console.warn('Listener is not a function:', listener);
 					return;
 				}
 
@@ -676,6 +726,11 @@ angular.module('ngGo.Player.Service', [
 			 * Event broadcaster
 			 */
 			broadcast: function(type, args) {
+
+				//Must have type
+				if (!type) {
+					return;
+				}
 
 				//Make sure we are in a digest cycle
 				if (!$rootScope.$$phase) {

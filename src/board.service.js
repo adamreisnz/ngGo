@@ -141,6 +141,13 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/**
+		 * Link the board to a HTML element
+		 */
+		Board.prototype.linkElement = function(element) {
+			this.element = element;
+		};
+
+		/**
 		 * Make this board static (one canvas layer, only grid, stones and markup)
 		 */
 		Board.prototype.makeStatic = function() {

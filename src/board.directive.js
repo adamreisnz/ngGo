@@ -88,7 +88,7 @@ angular.module('ngGo.Board.Directive', [
 		link: function($scope, element, attrs) {
 
 			//Init vars
-			var i, context, layer, playerElement,
+			var i, context, layer, parent, playerElement,
 				existingInstance = true;
 
 			//Remember last draw width/height
@@ -101,11 +101,13 @@ angular.module('ngGo.Board.Directive', [
 				$scope.Board = new Board();
 			}
 
-			//Get first non-player parent element
-			var parent = element.parent();
+			//Link element
+			$scope.Board.linkElement(element);
+
+			//Find player element
+			parent = element.parent();
 			if (parent[0].tagName == 'PLAYER') {
 				playerElement = parent;
-				parent = parent.parent();
 			}
 
 			//Listen for board drawsize events
@@ -121,14 +123,6 @@ angular.module('ngGo.Board.Directive', [
 				//Next set it on the board itself
 				element.css({width: width + 'px', height: height + 'px'});
 				$scope.Board.setDrawSize(width * pixelRatio, height * pixelRatio);
-			});
-
-			//Determine draw size
-			determineDrawSize($scope, parent[0].clientWidth, parent[0].clientHeight);
-
-			//On window resize, determine the draw size again
-			angular.element($window).on('resize', function() {
-				determineDrawSize($scope, parent[0].clientWidth, parent[0].clientHeight);
 			});
 
 			//On board grid resize, determine the draw size again
@@ -148,10 +142,38 @@ angular.module('ngGo.Board.Directive', [
 				}
 			});
 
-			//Static board?
-			if (attrs.static === 'true') {
+			//Board with player element?
+			if (playerElement) {
 
-				//Make the board static
+				//Get player element parent
+				parent = parent.parent();
+
+				//Determine draw size based on parent
+				determineDrawSize($scope, parent[0].clientWidth, parent[0].clientHeight);
+
+				//On window resize, determine the draw size again
+				angular.element($window).on('resize', function() {
+					determineDrawSize($scope, parent[0].clientWidth, parent[0].clientHeight);
+				});
+			}
+
+			//Board without player
+			else {
+
+				//Determine draw size based on element dimensions
+				determineDrawSize($scope, element[0].clientWidth, element[0].clientHeight);
+
+				//On window resize, determine the draw size again
+				angular.element($window).on('resize', function() {
+					determineDrawSize($scope, element[0].clientWidth, element[0].clientHeight);
+				});
+			}
+
+			//Static board
+			if (attrs.static) {
+
+				//Add static class and make the board static
+				element.addClass('static');
 				$scope.Board.makeStatic();
 
 				//Create single canvas and link to all relevant layer service classes
@@ -162,8 +184,10 @@ angular.module('ngGo.Board.Directive', [
 				}
 			}
 
-			//Create individual layer canvasses and link the canvas context to the layer service class
+			//Dynamic board
 			else {
+
+				//Create individual layer canvasses and link the canvas context to the layer service class
 				for (i = 0; i < $scope.Board.layerOrder.length; i++) {
 					layer = $scope.Board.layerOrder[i];
 					context = createLayerCanvas.call(element[0], layer);

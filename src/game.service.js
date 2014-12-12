@@ -292,7 +292,6 @@ angular.module('ngGo.Game.Service', [
 				this.init();
 			}
 
-
 			//Define property getter/setter for position
 			Object.defineProperty(this, 'position', {
 
@@ -326,6 +325,9 @@ angular.module('ngGo.Game.Service', [
 			//Game path
 			this.path = new GamePath();
 
+			//JGF record we loaded from
+			this.jgf = null;
+
 			//Positions history stack
 			this.history = [];
 		};
@@ -349,6 +351,15 @@ angular.module('ngGo.Game.Service', [
 			//Go to the first move
 			this.first();
 			return true;
+		};
+
+		/**
+		 * Reload game record
+		 */
+		Game.prototype.reload = function() {
+			if (this.jgf) {
+				this.load(this.jgf);
+			}
 		};
 
 		/**
@@ -472,6 +483,9 @@ angular.module('ngGo.Game.Service', [
 				this.root.fromJgf(jgf.tree);
 			}
 
+			//Remember JGF
+			this.jgf = jgf;
+
 			//Load ok
 			return true;
 		};
@@ -548,6 +562,13 @@ angular.module('ngGo.Game.Service', [
 		 */
 		Game.prototype.getPath = function() {
 			return this.path;
+		};
+
+		/**
+		 * Clone the current game path
+		 */
+		Game.prototype.clonePath = function() {
+			return this.path.clone();
 		};
 
 		/**
@@ -824,8 +845,11 @@ angular.module('ngGo.Game.Service', [
 					var node = new GameNode();
 
 					//Append it to the current node and change the pointer
-					node.appendTo(this.node);
+					var i = node.appendTo(this.node);
 					this.node = node;
+
+					//Advance path to the added node index
+					this.path.advance(i);
 				}
 
 				//Create setup container
@@ -956,8 +980,12 @@ angular.module('ngGo.Game.Service', [
 			});
 
 			//Append it to the current node, remember the path, and change the pointer
-			this.node._remembered_path = node.appendTo(this.node);
+			var i = node.appendTo(this.node);
+			this.node._remembered_path = i;
 			this.node = node;
+
+			//Advance path to the added node index
+			this.path.advance(i);
 
 			//Valid move
 			return true;
@@ -987,8 +1015,12 @@ angular.module('ngGo.Game.Service', [
 			});
 
 			//Append it to the current node, remember the path, and change the pointer
-			this.node._remembered_path = node.appendTo(this.node);
+			var i = node.appendTo(this.node);
+			this.node._remembered_path = i;
 			this.node = node;
+
+			//Advance path to the added node index
+			this.path.advance(i);
 		};
 
 		/***********************************************************************************************
@@ -1046,6 +1078,11 @@ angular.module('ngGo.Game.Service', [
 		 */
 		Game.prototype.goto = function(target) {
 
+			//Must have a tree
+			if (this.root === null) {
+				return;
+			}
+
 			//Nothing given?
 			if (typeof target == 'undefined') {
 				return;
@@ -1067,6 +1104,13 @@ angular.module('ngGo.Game.Service', [
 
 			//String? Named node
 			else if (typeof target == 'string') {
+
+				//Already here?
+				if (this.node.name == target) {
+					return;
+				}
+
+				//Find path to node
 				path = this.getPathToNode(target);
 				if (path === null) {
 					return;
@@ -1076,6 +1120,11 @@ angular.module('ngGo.Game.Service', [
 			//Otherwise assume path object
 			else {
 				path = target;
+			}
+
+			//Already here?
+			if (this.path.compare(path)) {
+				return;
 			}
 
 			//Go to the first node
@@ -1104,6 +1153,45 @@ angular.module('ngGo.Game.Service', [
 
 			//Loop until we find a node with more than one child
 			while (execPrevious.call(this) && this.node.children.length == 1) {}
+		};
+
+		/***********************************************************************************************
+		 * State handling
+		 ***/
+
+		/**
+		 * Get the board state
+		 */
+		Game.prototype.getState = function() {
+
+			//Can only create when we have a JGF and path
+			if (!this.jgf || !this.path) {
+				return null;
+			}
+
+			//Create state
+			var state = {
+				jgf: this.jgf,
+				path: this.path.clone()
+			};
+
+			//Return
+			return state;
+		};
+
+		/**
+		 * Restore the game state
+		 */
+		Game.prototype.restoreState = function(state) {
+
+			//Must have jgf and path
+			if (!state || !state.jgf || !state.path) {
+				return;
+			}
+
+			//Restore state
+			this.load(state.jgf);
+			this.goto(state.path);
 		};
 
 		//Return object

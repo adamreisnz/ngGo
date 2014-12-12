@@ -21,7 +21,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	 */
 	Player.on('settingChange', PlayerModeSolve.settingChange, PlayerModes.SOLVE);
 	Player.on('boardUpdate', PlayerModeSolve.boardUpdate, PlayerModes.SOLVE);
-	Player.on('gameLoaded', PlayerModeSolve.gameLoaded, PlayerModes.SOLVE);
 	Player.on('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
 	Player.on('modeExit', PlayerModeSolve.modeExit, PlayerModes.SOLVE);
 	Player.on('keydown', PlayerModeSolve.keyDown, PlayerModes.SOLVE);
@@ -48,16 +47,95 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 		}
 	};
 
-	//The player color for this problem
-	Player.problemPlayerColor = 0;
+	/**
+	 * Set solve mode player color
+	 */
+	Player.setProblemPlayerColor = function(color) {
+		if (this.problemPlayerColor != color) {
+			this.problemPlayerColor = color;
+			this.broadcast('settingChange', 'problemPlayerColor');
+		}
+	};
+
+	/**
+	 * Toggle solution paths
+	 */
+	Player.toggleSolutionPaths = function(solutionPaths) {
+
+		//Toggle if not given
+		if (typeof solutionPaths == 'undefined') {
+			solutionPaths = !this.solutionPaths;
+		}
+
+		//Change?
+		if (solutionPaths != this.solutionPaths) {
+			this.solutionPaths = solutionPaths;
+			this.broadcast('settingChange', 'solutionPaths');
+		}
+	};
+
+	/**
+	 * Start solving from the current game node
+	 */
+	Player.solve = function() {
+
+		//Switch player mode
+		this.switchMode(PlayerModes.SOLVE);
+
+		//Must have a game
+		if (!this.game || !this.game.isLoaded()) {
+			return false;
+		}
+
+		//Reset flags
+		this.problemSolved = false;
+		this.problemOffPath = false;
+
+		//Restrict start of navigation to the current node
+		this.restrictNode();
+
+		//Current turn is not our color?
+		if (this.game.getTurn() != this.problemPlayerColor) {
+
+			//Auto-play?
+			if (this.solveAutoPlay) {
+
+				//Pick a random child node
+				var i = Math.floor(Math.random() * node.children.length), self = this;
+
+				//Using a delay? Block navigation and run the timeout
+				if (this.solveAutoPlayDelay) {
+					this.solveNavigationBlocked = true;
+					$timeout(function() {
+						self.next(i);
+						self.solveNavigationBlocked = false;
+					}, this.solveAutoPlayDelay);
+				}
+
+				//Just move to the next node immediately
+				else {
+					this.next(i);
+				}
+			}
+		}
+	};
 
 	//Solved and off-path flags
 	Player.problemSolved = false;
 	Player.problemOffPath = false;
 
+	//The player color
+	Player.problemPlayerColor = 0;
+
+	//Solution paths
+	Player.solutionPaths = false;
+
 	//Auto play vars
 	Player.solveAutoPlay = true;
 	Player.solveAutoPlayDelay = 500;
+
+	//Navigation blocked flag
+	Player.solveNavigationBlocked = false;
 
 	//Register mode
 	Player.registerMode(PlayerModes.SOLVE, PlayerModeSolve);
@@ -66,12 +144,18 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 /**
  * Provider definition
  */
-.provider('PlayerModeSolve', function() {
+.provider('PlayerModeSolve', function(StoneColor) {
 
 	/**
 	 * Default configuration
 	 */
 	var defaultConfig = {
+
+		//Problem player color
+		problem_player_color: StoneColor.B,
+
+		//Show solution paths
+		solution_paths: false,
 
 		//Auto play settings
 		solve_auto_play: true,
@@ -89,11 +173,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	 * Service getter
 	 */
 	this.$get = function($document, $timeout, Player, PlayerTools) {
-
-		/**
-		 * Block navigation while in timeout
-		 */
-		var navigationBlocked = false;
 
 		/**
 		 * Check if we can make a move
@@ -226,15 +305,12 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			 */
 			parseConfig: function(config) {
 
-				//Validate
-				if (typeof config != 'object') {
-					return;
-				}
-
 				//Extend from default config
-				this.config = angular.extend({}, this.config, defaultConfig, config);
+				this.config = angular.extend({}, this.config, defaultConfig, config || {});
 
 				//Process settings
+				this.toggleSolutionPaths(this.config.solution_paths);
+				this.setProblemPlayerColor(this.config.problem_player_color);
 				this.setSolveAutoPlay(this.config.solve_auto_play);
 				this.setSolveAutoPlayDelay(this.config.solve_auto_play_delay);
 			},
@@ -287,13 +363,15 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 
 						//Arrow keys navigation enabled?
 						if (this.arrowKeysNavigation) {
-
-							//Lock scroll
 							keyboardEvent.preventDefault();
 
-							//Go forward one move if solved
-							if (this.problemSolved) {
-								this.next();
+							//Navigation not blocked?
+							if (!this.solveNavigationBlocked && this.game.node != this.restrictNodeEnd) {
+
+								//Go forward one move if solved
+								if (this.problemSolved) {
+									this.next();
+								}
 							}
 						}
 						break;
@@ -303,12 +381,10 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 
 						//Arrow keys navigation enabled?
 						if (this.arrowKeysNavigation) {
-
-							//Lock scroll
 							keyboardEvent.preventDefault();
 
-							//Navigation not blocked?
-							if (!navigationBlocked) {
+							//Navigation not blocked and not reached the start?
+							if (!this.solveNavigationBlocked && this.game.node != this.restrictNodeStart) {
 
 								//Go back one move
 								this.previous();
@@ -365,15 +441,19 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 						//Children left, pick a random one and make a move
 						i = Math.floor(Math.random() * node.children.length), self = this;
 
-						//Using a delay?
+						//Using a delay? Block navigation and run the timeout
 						if (this.solveAutoPlayDelay) {
-
-							//Block navigation and run the timeout
-							navigationBlocked = true;
-							var self = this;
+							this.solveNavigationBlocked = true;
 							$timeout(function() {
+
+								//Move to next move and unblock navigation
 								self.next(i);
-								navigationBlocked = false;
+								self.solveNavigationBlocked = false;
+
+								//Forget last hover position and update hover mark
+								self.lastX = self.lastY = -1;
+								updateHoverMark.call(self, event.x, event.y);
+
 							}, this.solveAutoPlayDelay);
 						}
 
@@ -397,15 +477,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			},
 
 			/**
-			 * Handler for game loaded
-			 */
-			gameLoaded: function(event) {
-
-				//Set player color
-				this.problemPlayerColor = this.game.getTurn();
-			},
-
-			/**
 			 * Handler for mode entry
 			 */
 			modeEnter: function(event) {
@@ -417,11 +488,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 
 				//Set default tool
 				this.tool = this.tools[0];
-
-				//Initialize player color
-				if (this.game && this.game.isLoaded()) {
-					this.problemPlayerColor = this.game.getTurn();
-				}
 
 				//Draw solution variations
 				if (this.solutionPaths) {

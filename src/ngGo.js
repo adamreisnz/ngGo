@@ -77,8 +77,7 @@ angular.module('ngGo', [])
 	PLAY:	'play',
 	REPLAY:	'replay',
 	EDIT:	'edit',
-	SOLVE:	'solve',
-	DEMO:	'demo'
+	SOLVE:	'solve'
 })
 
 /**
