@@ -215,7 +215,7 @@ angular.module('ngGo.Player.Service', [
 				//Let the modes parse their config
 				for (var mode in this.modes) {
 					if (this.modes[mode].parseConfig) {
-						this.modes[mode].parseConfig.call(this);
+						this.modes[mode].parseConfig.call(this, this.config);
 					}
 				}
 			},
@@ -296,7 +296,7 @@ angular.module('ngGo.Player.Service', [
 
 				//Parse config if we have a handler
 				if (this.modes[mode].parseConfig) {
-					this.modes[mode].parseConfig.call(this);
+					this.modes[mode].parseConfig.call(this, this.config);
 				}
 
 				//Force switch the mode now, if it matches the initial mode

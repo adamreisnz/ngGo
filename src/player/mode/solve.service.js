@@ -48,13 +48,23 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	};
 
 	/**
-	 * Set solve mode player color
+	 * Set player color
 	 */
-	Player.setProblemPlayerColor = function(color) {
-		if (this.problemPlayerColor != color) {
-			this.problemPlayerColor = color;
-			this.broadcast('settingChange', 'problemPlayerColor');
+	Player.setPlayerColor = function(color) {
+		if (this.playerColor != color) {
+			this.playerColor = color;
+			this.broadcast('settingChange', 'playerColor');
 		}
+	};
+
+	/**
+	 * Get player color
+	 */
+	Player.getPlayerColor = function(asOnBoard) {
+		if (asOnBoard && this.board) {
+			return this.board.colorMultiplier * this.playerColor;
+		}
+		return this.playerColor;
 	};
 
 	/**
@@ -95,7 +105,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 		this.restrictNode();
 
 		//Current turn is not our color?
-		if (this.game.getTurn() != this.problemPlayerColor) {
+		if (this.game.getTurn() != this.playerColor) {
 
 			//Auto-play?
 			if (this.solveAutoPlay) {
@@ -125,7 +135,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	Player.problemOffPath = false;
 
 	//The player color
-	Player.problemPlayerColor = 0;
+	Player.playerColor = 0;
 
 	//Solution paths
 	Player.solutionPaths = false;
@@ -151,8 +161,8 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	 */
 	var defaultConfig = {
 
-		//Problem player color
-		problem_player_color: StoneColor.B,
+		//Player color
+		player_color: StoneColor.B,
 
 		//Show solution paths
 		solution_paths: false,
@@ -197,7 +207,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			}
 
 			//...it's our turn
-			if (this.game.getTurn() == this.problemPlayerColor) {
+			if (this.game.getTurn() == this.playerColor) {
 				return true;
 			}
 
@@ -281,7 +291,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 
 			//When showing, make sure it's not during the auto solver's move
 			if (show && !this.problemSolved && this.solveAutoPlay) {
-				if (this.game.getTurn() != this.problemPlayerColor) {
+				if (this.game.getTurn() != this.playerColor) {
 					return;
 				}
 			}
@@ -310,7 +320,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 
 				//Process settings
 				this.toggleSolutionPaths(this.config.solution_paths);
-				this.setProblemPlayerColor(this.config.problem_player_color);
+				this.setPlayerColor(this.config.player_color);
 				this.setSolveAutoPlay(this.config.solve_auto_play);
 				this.setSolveAutoPlayDelay(this.config.solve_auto_play_delay);
 			},
@@ -391,7 +401,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 
 								//Go back one more if this is not the player's turn and if
 								//the problem hasn't been solved yet
-								if (!this.problemSolved && this.solveAutoPlay && this.game.getTurn() == -this.problemPlayerColor) {
+								if (!this.problemSolved && this.solveAutoPlay && this.game.getTurn() == -this.playerColor) {
 									this.previous();
 								}
 							}

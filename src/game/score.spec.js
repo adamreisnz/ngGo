@@ -116,7 +116,7 @@ describe('GameScore', function() {
 		 * Winner
 		 */
 		it('should declare the correct winner', function() {
-			var winner, highestScore = 0;
+			var winner = StoneColor.EMPTY, highestScore = 0;
 			for (var c in score.colors) {
 
 				//Init
