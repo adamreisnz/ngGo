@@ -18,6 +18,10 @@ button {
 	padding: 0.2rem;
 	margin-right: 0.2rem;
 }
+h2 {
+	clear: both;
+	margin: 1rem 0;
+}
 p {
 	margin-bottom: 1rem;
 }
@@ -30,6 +34,9 @@ p {
 	height: 100%;
 	float: right;
 	width: 22%;
+}
+.boards {
+	overflow: auto;
 }
 .static {
 	height: 150px;

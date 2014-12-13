@@ -76,7 +76,7 @@ angular.module('ngGo.Board.Theme.Service', [
 		shadow: {
 
 			//Shadow gradient colors
-			color: 'rgba(62,32,32,0.3)',
+			color: 'rgba(62,32,32,0.2)',
 
 			//Shadow size
 			size: function(cellSize) {
@@ -86,6 +86,14 @@ angular.module('ngGo.Board.Theme.Service', [
 			//Shadow blur size
 			blur: function(cellSize) {
 				return cellSize / 20;
+			},
+
+			//Shadow offset
+			offsetX: function(cellSize) {
+				return Math.ceil(cellSize / 20);
+			},
+			offsetY: function(cellSize) {
+				return Math.ceil(cellSize / 20);
 			}
 		},
 
@@ -172,14 +180,15 @@ angular.module('ngGo.Board.Theme.Service', [
 		grid: {
 
 			//Line properties
-			lineColor: 'rgba(101,69,37,0.4)',
+			lineColor: 'rgba(71,39,7,0.7)', //'rgba(101,69,37,0.4)',
 			lineWidth: 1,
+			lineCap: 'square',
 
 			//Star points
 			star: {
 
 				//Color and radius
-				color: 'rgba(168,132,81,1)',
+				color: 'rgba(81,49,17,1)', //'rgba(168,132,81,1)',
 				radius: function(cellSize) {
 					return Math.floor((cellSize / 16) + 1);
 				},
@@ -223,7 +232,7 @@ angular.module('ngGo.Board.Theme.Service', [
 		coordinates: {
 
 			//Color
-			color: 'rgba(101,69,37,0.4)',
+			color: 'rgba(101,69,37,0.5)',
 
 			//Board margin factor when showing coordinates
 			margin: 1.25,

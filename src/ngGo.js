@@ -34,7 +34,7 @@ angular.module('ngGo', [])
  */
 .constant('ngGo', {
 	name:		'ngGo',
-	version:	'1.0.7',
+	version:	'1.0.8',
 	error:		{
 		MOVE_OUT_OF_BOUNDS:			1,
 		MOVE_ALREADY_HAS_STONE:		2,
@@ -77,8 +77,7 @@ angular.module('ngGo', [])
 	PLAY:	'play',
 	REPLAY:	'replay',
 	EDIT:	'edit',
-	SOLVE:	'solve',
-	DEMO:	'demo'
+	SOLVE:	'solve'
 })
 
 /**
@@ -110,14 +109,5 @@ if (typeof angular.extendDeep == 'undefined') {
 			}
 		}
 		return dest;
-	};
-}
-
-/**
- * Global helpers
- */
-if (typeof parseBool == 'undefined') {
-	var parseBool = function(b) {
-		return (b.toLowerCase() === 'true' || b === true || b === 1 || b === '1');
 	};
 }

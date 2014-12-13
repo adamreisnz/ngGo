@@ -43,10 +43,7 @@ angular.module('ngGo.Player.Service', [
 		//successor node variations or current node variations
 		variation_markup: true,
 		variation_children: true,
-		variation_siblings: false,
-
-		//Show solution paths
-		solution_paths: false
+		variation_siblings: false
 	};
 
 	/**
@@ -163,11 +160,12 @@ angular.module('ngGo.Player.Service', [
 				this.variationChildren = false;
 				this.variationSiblings = false;
 
-				//Solution paths
-				this.solutionPaths = false;
+				//Restricted nodes
+				this.restrictNodeStart = null;
+				this.restrictNodeEnd = null;
 
 				//Parse config
-				this.parseConfig({});
+				this.parseConfig();
 			},
 
 			/**
@@ -199,18 +197,12 @@ angular.module('ngGo.Player.Service', [
 			 */
 			parseConfig: function(config) {
 
-				//Validate
-				if (typeof config != 'object') {
-					return;
-				}
-
 				//Extend from default config
-				this.config = angular.extend({}, defaultConfig, config);
+				this.config = angular.extend({}, defaultConfig, config || {});
 
 				//Process settings
 				this.switchMode(this.config.mode);
 				this.switchTool(this.config.tool);
-				this.toggleSolutionPaths(this.config.solution_paths);
 				this.setArrowKeysNavigation(this.config.arrow_keys_navigation);
 				this.setScrollWheelNavigation(this.config.scroll_wheel_navigation);
 				this.setLastMoveMarker(this.config.last_move_marker);
@@ -223,7 +215,7 @@ angular.module('ngGo.Player.Service', [
 				//Let the modes parse their config
 				for (var mode in this.modes) {
 					if (this.modes[mode].parseConfig) {
-						this.modes[mode].parseConfig.call(this);
+						this.modes[mode].parseConfig.call(this, this.config);
 					}
 				}
 			},
@@ -290,23 +282,6 @@ angular.module('ngGo.Player.Service', [
 				}
 			},
 
-			/**
-			 * Show/hide the solution paths
-			 */
-			toggleSolutionPaths: function(solutionPaths) {
-
-				//Toggle if not given
-				if (typeof solutionPaths == 'undefined') {
-					solutionPaths = !this.solutionPaths;
-				}
-
-				//Change?
-				if (solutionPaths != this.solutionPaths) {
-					this.solutionPaths = solutionPaths;
-					this.broadcast('settingChange', 'solutionPaths');
-				}
-			},
-
 			/*******************************************************************************************************************************
 			 * Mode and tool handling
 			 ***/
@@ -321,7 +296,7 @@ angular.module('ngGo.Player.Service', [
 
 				//Parse config if we have a handler
 				if (this.modes[mode].parseConfig) {
-					this.modes[mode].parseConfig.call(this);
+					this.modes[mode].parseConfig.call(this, this.config);
 				}
 
 				//Force switch the mode now, if it matches the initial mode
@@ -427,7 +402,7 @@ angular.module('ngGo.Player.Service', [
 				if (this.board) {
 					this.board.removeAll();
 					this.board.parseConfig(this.game.get('board'));
-					this.updateBoard();
+					this.processPosition();
 				}
 
 				//Loaded ok
@@ -435,12 +410,67 @@ angular.module('ngGo.Player.Service', [
 			},
 
 			/**
+			 * Reload the existing game record
+			 */
+			reload: function() {
+
+				//Must have game
+				if (!this.game || !this.game.isLoaded()) {
+					return;
+				}
+
+				//Reload game
+				this.game.reload();
+
+				//Update board
+				if (this.board) {
+					this.board.removeAll();
+					this.processPosition();
+				}
+			},
+
+			/**
+			 * Save the current state
+			 */
+			saveState: function() {
+
+				//Remember game state
+				if (this.game && this.game.isLoaded()) {
+					this.gameState = this.game.getState();
+				}
+			},
+
+			/**
+			 * Restore to the saved state
+			 */
+			restoreState: function() {
+
+				//Must have game and saved state
+				if (!this.game || !this.gameState) {
+					return;
+				}
+
+				//Restore state
+				this.game.restoreState(this.gameState);
+
+				//Update board
+				if (this.board) {
+					this.board.removeAll();
+					this.processPosition();
+				}
+			},
+
+			/***********************************************************************************************
+			 * Navigation
+			 ***/
+
+			/**
 			 * Go to the next position
 			 */
 			next: function(i) {
 				if (this.game) {
 					this.game.next(i);
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
@@ -450,7 +480,7 @@ angular.module('ngGo.Player.Service', [
 			previous: function() {
 				if (this.game) {
 					this.game.previous();
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
@@ -460,7 +490,7 @@ angular.module('ngGo.Player.Service', [
 			last: function() {
 				if (this.game) {
 					this.game.last();
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
@@ -470,7 +500,7 @@ angular.module('ngGo.Player.Service', [
 			first: function() {
 				if (this.game) {
 					this.game.first();
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
@@ -480,7 +510,64 @@ angular.module('ngGo.Player.Service', [
 			goto: function(target) {
 				if (this.game && target) {
 					this.game.goto(target);
-					this.updateBoard();
+					this.processPosition();
+				}
+			},
+
+			/**
+			 * Restrict navigation to the current node
+			 */
+			restrictNode: function(end) {
+
+				//Must have game and node
+				if (!this.game || !this.game.node) {
+					return;
+				}
+
+				//Restrict to current node
+				if (end) {
+					this.restrictNodeEnd = this.game.node;
+				}
+				else {
+					this.restrictNodeStart = this.game.node;
+				}
+			},
+
+			/**
+			 * Process a new game position
+			 */
+			processPosition: function() {
+
+				//No game?
+				if (!this.game || !this.game.isLoaded()) {
+					return;
+				}
+
+				//Get current node and game position
+				var node = this.game.getNode(),
+					path = this.game.getPath(),
+					position = this.game.getPosition(),
+					pathChanged = !path.compare(this.path);
+
+				//Update board
+				this.updateBoard(node, position, pathChanged);
+
+				//Path change?
+				if (pathChanged) {
+
+					//Copy new path and broadcast path change
+					this.path = path.clone();
+					this.broadcast('pathChange', node);
+
+					//Named node reached? Broadcast event
+					if (node.name) {
+						this.broadcast('reachedNode.' + node.name, node);
+					}
+				}
+
+				//Passed?
+				if (node.move && node.move.pass) {
+					this.broadcast('movePassed', node);
 				}
 			},
 
@@ -493,7 +580,7 @@ angular.module('ngGo.Player.Service', [
 			 */
 			newGame: function() {
 				this.game = new Game();
-				this.updateBoard();
+				this.processPosition();
 			},
 
 			/**
@@ -545,61 +632,29 @@ angular.module('ngGo.Player.Service', [
 				if (this.game && this.game.isLoaded()) {
 					this.board.removeAll();
 					this.board.parseConfig(this.game.get('board'));
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
 			/**
 			 * Update the board
 			 */
-			updateBoard: function() {
+			updateBoard: function(node, position, pathChanged) {
 
-				//Premature call?
-				if (!this.board || !this.game || !this.game.isLoaded()) {
+				//Must have board
+				if (!this.board) {
 					return;
 				}
 
-				//Get current node and game position
-				var i,
-					node = this.game.getNode(),
-					path = this.game.getPath(),
-					position = this.game.getPosition();
+				//Update board with new position
+				this.board.updatePosition(position, pathChanged);
 
-				//Path change? That means a whole new board position
-				if (!path.compare(this.path)) {
-
-					//Copy new path and remove all markup
-					this.path = path.clone();
-					this.board.removeAll('markup');
-
-					//Broadcast
-					this.broadcast('pathChange', node);
-
-					//Mode change instruction?
-					if (node.mode) {
-						this.switchMode(node.mode);
-					}
+				//Mark last move
+				if (this.lastMoveMarker && node.move && !node.move.pass) {
+					this.board.add('markup', node.move.x, node.move.y, this.lastMoveMarker);
 				}
 
-				//Set new stones and markup grids
-				this.board.setAll('stones', position.stones);
-				this.board.setAll('markup', position.markup);
-
-				//Move made?
-				if (node.move) {
-
-					//Passed?
-					if (node.move.pass) {
-						this.broadcast('movePassed', node);
-					}
-
-					//Mark last move?
-					else if (this.lastMoveMarker) {
-						this.board.add('markup', node.move.x, node.move.y, this.lastMoveMarker);
-					}
-				}
-
-				//Broadcast event
+				//Broadcast board update event
 				this.broadcast('boardUpdate', node);
 			},
 
@@ -630,6 +685,7 @@ angular.module('ngGo.Player.Service', [
 
 				//Must have valid listener
 				if (typeof listener != 'function') {
+					console.warn('Listener is not a function:', listener);
 					return;
 				}
 
@@ -676,6 +732,11 @@ angular.module('ngGo.Player.Service', [
 			 * Event broadcaster
 			 */
 			broadcast: function(type, args) {
+
+				//Must have type
+				if (!type) {
+					return;
+				}
 
 				//Make sure we are in a digest cycle
 				if (!$rootScope.$$phase) {

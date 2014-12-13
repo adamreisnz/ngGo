@@ -10,7 +10,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-watch');
-	grunt.loadNpmTasks('grunt-html2js');
 	grunt.loadNpmTasks('grunt-recess');
 	grunt.loadNpmTasks('grunt-karma');
 	grunt.loadNpmTasks('grunt-bump');
@@ -28,15 +27,11 @@ module.exports = function(grunt) {
 	var buildConfig = {
 
 		/**
-		 * The 'temp_dir' folder is where temporary files are stashed.
 		 * The 'build_dir' folder is where the development build is constructed.
-		 * The 'compile_dir' folder is where the fully compiled files are constructed.
-		 * The 'deploy_dir' folder is where the final built/compiled code is stashed.
+		 * The 'release_dir' folder is where the fully compiled files are constructed.
 		 */
 		temp_dir:		'temp',
-		build_dir:		'<%= temp_dir %>/build',
-		compile_dir:	'<%= temp_dir %>/compile',
-		deploy_dir:		'build',
+		release_dir:	'release',
 
 		/**
 		 * This is a collection of file patterns that refer to the application code.
@@ -50,22 +45,7 @@ module.exports = function(grunt) {
 			unit: [
 				'src/**/*.spec.js',
 			],
-			tpl: {
-				app: [
-					'src/**/*.html'
-				]
-			},
 			less: 'src/ngGo.less'
-		},
-
-		/**
-		 * This is a collection of files used during testing only.
-		 */
-		test_files: {
-			js: [
-				'angular/angular.js',
-				'angular/angular-mocks.js'
-			]
 		}
 	};
 
@@ -87,7 +67,7 @@ module.exports = function(grunt) {
 		meta: {
 			banner:
 				'/**\n' +
-				' * <%= pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n' +
+				' * <%= pkg.name %> v<%= pkg.version %>, <%= grunt.template.today("dd-mm-yyyy") %>\n' +
 				' * <%= pkg.homepage %>\n' +
 				' *\n' +
 				' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' +
@@ -146,8 +126,8 @@ module.exports = function(grunt) {
 			temp: {
 				src:	['<%= temp_dir %>/**']
 			},
-			public: {
-				src:	['<%= deploy_dir %>/**']
+			release: {
+				src:	['<%= release_dir %>/**']
 			}
 		},
 
@@ -156,66 +136,14 @@ module.exports = function(grunt) {
 		 */
 		copy: {
 
-			//Application javascript code for the build
-			build_app_js: {
+			//Copy the app files to the temp dir
+			temp: {
 				files: [{
 					src: [ '<%= app_files.js %>' ],
-					dest: '<%= build_dir %>',
+					dest: '<%= temp_dir %>',
 					cwd: '.',
 					expand: true
 				}]
-			},
-
-			//Release the build to the public dir
-			public_build: {
-				files: [{
-					src: [ '**' ],
-					dest: '<%= deploy_dir %>',
-					cwd: '<%= build_dir %>',
-					expand: true
-				}]
-			},
-
-			//Restore the build from the public dir
-			public_build_restore: {
-				files: [{
-					src: [ '**' ],
-					dest: '<%= build_dir %>',
-					cwd: '<%= deploy_dir %>',
-					expand: true
-				}]
-			},
-
-			//Release the compiled app to the public dir
-			public_compile: {
-				files: [{
-					src: [ '**' ],
-					dest: '<%= deploy_dir %>',
-					cwd: '<%= compile_dir %>',
-					expand: true
-				}]
-			}
-		},
-
-		/**
-		 * HTML2JS is a Grunt plugin that takes all of your template files and
-		 * places them into JavaScript files as strings that are added to
-		 * AngularJS's template cache. This means that the templates too become
-		 * part of the initial payload as one JavaScript file and don't need to be
-		 * requested individually.
-		 */
-		html2js: {
-
-			/**
-			 * These are the templates from `app`.
-			 */
-			app: {
-				options: {
-					base: 'app',
-					module: 'ngGo.Templates'
-				},
-				src: [ '<%= app_files.tpl.app %>' ],
-				dest: '<%= build_dir %>/src/ngGo.templates.js'
 			}
 		},
 
@@ -225,20 +153,9 @@ module.exports = function(grunt) {
 		 * must be imported from within this file.
 		 */
 		recess: {
-			build: {
-				src: [ '<%= app_files.less %>' ],
-				dest: '<%= build_dir %>/<%= pkg.name %>.css',
-				options: {
-					compile: true,
-					compress: false,
-					noUnderscores: false,
-					noIDs: false,
-					zeroUnits: false
-				}
-			},
 			compile: {
-				src: [ '<%= recess.build.dest %>' ],
-				dest: '<%= compile_dir %>/<%= pkg.name %>.css',
+				src: [ '<%= app_files.less %>' ],
+				dest: '<%= release_dir %>/<%= pkg.name %>.css',
 				options: {
 					compile: true,
 					compress: true,
@@ -255,17 +172,6 @@ module.exports = function(grunt) {
 		concat: {
 
 			/**
-			 * The `build_css` target concatenates compiled CSS and vendor CSS
-			 * together.
-			 */
-			build_css: {
-				src: [
-					'<%= recess.build.dest %>'
-				],
-				dest: '<%= recess.build.dest %>'
-			},
-
-			/**
 			 * The `compile_js` target is the concatenation of our application source
 			 * code and all specified vendor source code into a single file.
 			 */
@@ -275,10 +181,10 @@ module.exports = function(grunt) {
 				},
 				src: [
 					'grunt.module.prefix',
-					'<%= build_dir %>/src/**/*.js',
+					'<%= temp_dir %>/src/**/*.js',
 					'grunt.module.suffix'
 				],
-				dest: '<%= compile_dir %>/<%= pkg.name %>.min.js'
+				dest: '<%= release_dir %>/<%= pkg.name %>.js'
 			}
 		},
 
@@ -290,8 +196,8 @@ module.exports = function(grunt) {
 			compile: {
 				files: [{
 					src: [ '<%= app_files.js %>' ],
-					cwd: '<%= build_dir %>',
-					dest: '<%= build_dir %>',
+					cwd: '<%= temp_dir_dir %>',
+					dest: '<%= temp_dir %>',
 					expand: true
 				}]
 			}
@@ -306,7 +212,7 @@ module.exports = function(grunt) {
 					banner: '<%= meta.banner %>'
 				},
 				files: {
-					'<%= concat.compile_js.dest %>': '<%= concat.compile_js.dest %>'
+					'<%= release_dir %>/<%= pkg.name %>.min.js': '<%= concat.compile_js.dest %>'
 				}
 			}
 		},
@@ -342,23 +248,11 @@ module.exports = function(grunt) {
 		},
 
 		/**
-		 * This task compiles the karma config file so that changes to the file array
-		 * don't have to be managed manually.
-		 */
-		karmaconfig: {
-			template: 'grunt.karma-unit.js',
-			dest: '<%= temp_dir %>/karma-unit.js',
-			src: [
-				'<%= test_files.js %>'
-			]
-		},
-
-		/**
 		 * The Karma unit tester configurations
 		 */
 		karma: {
 			options: {
-				configFile: '<%= karmaconfig.dest %>'
+				configFile: 'karma-unit.js'
 			},
 			continuous: {
 				runnerPort: 9101,
@@ -410,25 +304,7 @@ module.exports = function(grunt) {
 				files: [
 					'<%= app_files.js %>'
 				],
-				tasks: [ 'jshint:src', 'karma:unit:run', 'copy:build_app_js', 'copy:public_build', 'clean:temp' ]
-			},
-
-			/**
-			 * When our templates change, we only rewrite the template cache.
-			 */
-			tpls: {
-				files: [
-					'<%= app_files.tpl.app %>'
-				],
-				tasks: [ 'html2js', 'copy:build_app_js', 'copy:public_build', 'clean:temp' ]
-			},
-
-			/**
-			 * When the CSS files change, we need to compile and minify them.
-			 */
-			less: {
-				files: [ 'src/**/*.less' ],
-				tasks: [ 'recess:build', 'copy:public_build', 'clean:temp' ]
+				tasks: [ 'jshint:src', 'karma:unit:run' ]
 			},
 
 			/**
@@ -460,7 +336,7 @@ module.exports = function(grunt) {
 	 * before watching for changes.
 	 */
 	grunt.renameTask('watch', 'delta');
-	grunt.registerTask('watch', ['build', 'karma:continuous', 'delta']);
+	grunt.registerTask('watch', ['karma:continuous', 'delta']);
 
 	/**
 	 * The default task is to compile
@@ -468,30 +344,12 @@ module.exports = function(grunt) {
 	grunt.registerTask('default', ['compile']);
 
 	/**
-	 * The 'build' task gets the app ready to run for development and testing.
+	 * The 'test' task runs jshint and unit tests
 	 */
-	grunt.registerTask('build', [
+	grunt.registerTask('test', [
 
-		//Clean directories
-		'clean:temp', 'clean:public',
-
-		//Run JS hint
-		'jshint',
-
-		//Convert HTML templates to JS
-		'html2js',
-
-		//Compile CSS and merge with vendor CSS
-		'recess:build', 'concat:build_css',
-
-		//Copy application javascript files
-		'copy:build_app_js',
-
-		//Create karma config file and run unit tests
-		'karmaconfig', 'karma:unit',
-
-		//Copy everything to the public folder and clean the temp folder
-		'copy:public_build', 'clean:temp'
+		//Run JS hint and unit tests
+		'jshint', 'karma:unit'
 	]);
 
 	/**
@@ -502,61 +360,19 @@ module.exports = function(grunt) {
 		//Update the version number in the README and in ngGo.js
 		'replace:readmeVersion', 'replace:ngGoVersion',
 
-		//First, build the app, and copy stuff back to the build folder since we emptied the temp dir
-		'build', 'copy:public_build_restore', 'clean:public',
+		//Run JS hint and unit tests
+		'jshint', 'karma:unit',
 
-		//Compile the final CSS
+		//Compile the CSS
 		'recess:compile',
 
-		//Apply angular minification protection, concatenate all JS into a single file and minify the code
+		//Clean the temp folder and copy files to it
+		'clean:temp', 'copy:temp',
+
+		//Apply angular minification protection, concatenate all JS into a single file and minify
 		'ngAnnotate', 'concat:compile_js', 'uglify',
 
-		//Copy everything to the public folder, clean the temp folder
-		'copy:public_compile', 'clean:temp'
+		//Clean the temp folder again
+		'clean:temp'
 	]);
-
-	/**
-	 * Task to compile but not minify, for debugging
-	 */
-	grunt.registerTask('debug', [
-
-		//First, build the app, and copy stuff back to the build folder since we emptied the temp dir
-		'build', 'copy:public_build_restore', 'clean:public',
-
-		//Compile the final CSS
-		'recess:compile',
-
-		//Apply angular minification protection, concatenate all JS into a single file
-		'ngAnnotate', 'concat:compile_js',
-
-		//Copy everything to the public folder, clean the temp folder
-		'copy:public_compile', 'clean:temp'
-	]);
-
-	/**
-	 * A utility function to get all JavaScript sources.
-	 */
-	function filterForJS (files) {
-		return files.filter(function (file) {
-			return file.match(/\.js$/);
-		});
-	}
-
-	/**
-	 * In order to avoid having to specify manually the files needed for karma to
-	 * run, we use grunt to manage the list for us. The karma files are
-	 * compiled as grunt templates for use by Karma.
-	 */
-	grunt.registerMultiTask('karmaconfig', 'Build karma config file', function () {
-		var jsFiles = filterForJS(this.filesSrc);
-		grunt.file.copy(grunt.config('karmaconfig.template'), grunt.config('karmaconfig.dest'), {
-			process: function (contents, path) {
-				return grunt.template.process(contents, {
-					data: {
-						scripts: jsFiles
-					}
-				});
-			}
-		});
-	});
 };

@@ -160,7 +160,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		var updateHoverMark = function(x, y, isDrag) {
 
 			//Falling outside of grid?
-			if (!this.board.isOnBoard(x, y)) {
+			if (!this.board || !this.board.isOnBoard(x, y)) {
 				return;
 			}
 
@@ -361,6 +361,11 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			 */
 			hover: function(event) {
 
+				//Must have board
+				if (!this.board) {
+					return;
+				}
+
 				//Remove all hover items
 				this.board.removeAll('hover');
 
@@ -398,8 +403,10 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				}
 
 				//Update hover mark
-				this.board.removeAll('hover');
-				updateHoverMark.call(this, this.lastX, this.lastY);
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this, this.lastX, this.lastY);
+				}
 			},
 
 			/**
@@ -408,7 +415,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			click: function(event, mouseEvent) {
 
 				//Falling outside of grid?
-				if (!this.board.isOnBoard(event.x, event.y)) {
+				if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
 					return;
 				}
 
@@ -426,7 +433,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 						if (!this.game.play(event.x, event.y)) {
 							return;
 						}
-						this.updateBoard();
+						this.processPosition();
 						break;
 
 					//Setup tool
@@ -434,7 +441,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 						//Set stone and update board
 						setStone.call(this, event.x, event.y);
-						this.updateBoard();
+						this.processPosition();
 						break;
 
 					//Markup tool
@@ -442,7 +449,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 						//Set markup and update board
 						setMarkup.call(this, event.x, event.y);
-						this.updateBoard();
+						this.processPosition();
 						break;
 
 					//Score tool, mark stones dead or alive
@@ -468,7 +475,9 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 				//Remove all hover items now to restore actual stones and markup to the board,
 				//otherwise it will conflict when updating the board
-				this.board.removeAll('hover');
+				if (this.board) {
+					this.board.removeAll('hover');
+				}
 
 				//What happens, depends on the active tool
 				switch (this.tool) {
@@ -483,8 +492,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 							}
 						}
 
-						//Update board
-						this.updateBoard();
+						//Process position
+						this.processPosition();
 						break;
 
 					//Markup tool
@@ -497,8 +506,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 							}
 						}
 
-						//Update board
-						this.updateBoard();
+						//Process position
+						this.processPosition();
 						break;
 				}
 

@@ -49,16 +49,18 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
 
 			//Get theme properties
 			var blur = this.board.theme.get('shadow.blur', s),
+				offsetX = this.board.theme.get('shadow.offsetX', s),
+				offsetY = this.board.theme.get('shadow.offsetY', s),
 				shadowColor = this.board.theme.get('shadow.color');
 
 			//Configure context
-			this.context.fillStyle = this.context.createRadialGradient(x, y, r-1-blur, x, y, r+blur);
+			this.context.fillStyle = this.context.createRadialGradient(x + offsetX, y + offsetY, r-1-blur, x + offsetX, y + offsetY, r+blur);
 			this.context.fillStyle.addColorStop(0, shadowColor);
 			this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
 
 			//Draw shadow
 			this.context.beginPath();
-			this.context.arc(x, y, r+blur, 0, 2*Math.PI, true);
+			this.context.arc(x + offsetX, y + offsetY, r+blur, 0, 2*Math.PI, true);
 			this.context.fill();
 		},
 

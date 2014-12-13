@@ -4,10 +4,10 @@
 	<title>ngGo demo - Solve mode</title>
 	<meta charset="utf-8" />
 	<meta name="author" content="Adam Buczynski" />
-    <link rel="stylesheet" type="text/css" media="screen" href="../build/ngGo.css" />
-    <link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
-    <script src="../angular/angular.js"></script>
-    <script src="../build/ngGo.min.js"></script>
+	<link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
+	<script src="../angular/angular.js"></script>
+	<script src="../release/ngGo.js"></script>
 </head>
 <body lang="en">
 <main ng-controller="ngGoDemoController">
@@ -19,13 +19,13 @@
 	<aside class="goban-info">
 		<h3>{{gameInfo.name}}</h3>
 		<p>{{gameInfo.comment}}</p>
-		<p>You are playing as: {{Player.problemPlayerColor | stoneColor}}</p>
+		<p>You are playing as: {{Player.getPlayerColor(true) | stoneColor}}</p>
 		<p>{{solution}}</p>
 		<p>
 			Options:<br/>
 			<button ng-click="Player.board.swapColors()">Swap colors</button>
+			<!--<button ng-click="Player.setPlayerColor(-1*Player.playerColor)">Change player color</button>-->
 			<button ng-click="Player.board.toggleCoordinates()">Toggle coordinates</button>
-			<button ng-click="Player.toggleVariationMarkup()">Toggle variation markup</button>
 			<button ng-click="Player.toggleSolutionPaths()">Toggle solution paths</button>
 		</p/>
 	</aside>
@@ -268,12 +268,13 @@
 	 * Configuration
 	 */
 	.config(function(
-		PlayerProvider, BoardThemeProvider, MarkupTypes
+		PlayerProvider, BoardThemeProvider, MarkupTypes, StoneColor
 	) {
 
 		//Player configuration
 		PlayerProvider.setConfig({
 			solution_paths: true,
+			player_color: StoneColor.WHITE,
 			solve_auto_play: true,
 			solve_auto_play_delay: 750
 		});
@@ -348,10 +349,10 @@
 	 * Bootstrap angular
 	 */
 	angular.element(document).ready(function() {
-        setTimeout(function() {
-        	angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
-        }, 10);
-    });
+		setTimeout(function() {
+			angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
+		}, 10);
+	});
 </script>
 </body>
 </html>

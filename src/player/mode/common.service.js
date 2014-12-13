@@ -107,6 +107,11 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 				return true;
 			}
 
+			//No game?
+			if (!this.game || !this.game.isLoaded()) {
+				return true;
+			}
+
 			//Switch key code
 			switch (keyboardEvent.keyCode) {
 
@@ -123,12 +128,10 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 
 					//Arrow navigation enabled?
 					if (this.arrowKeysNavigation) {
-
-						//Don't scroll with arrows
 						keyboardEvent.preventDefault();
 
 						//Advance to the next move
-						if (this.tool == PlayerTools.MOVE) {
+						if (this.tool == PlayerTools.MOVE && this.game.node != this.restrictNodeEnd) {
 							this.next();
 						}
 					}
@@ -139,12 +142,10 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 
 					//Arrow navigation enabled?
 					if (this.arrowKeysNavigation) {
-
-						//Don't scroll with arrows
 						keyboardEvent.preventDefault();
 
 						//Go to the previous move
-						if (this.tool == PlayerTools.MOVE) {
+						if (this.tool == PlayerTools.MOVE && this.game.node != this.restrictNodeStart) {
 							this.previous();
 						}
 					}
@@ -166,18 +167,27 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 				return true;
 			}
 
+			//No game?
+			if (!this.game || !this.game.isLoaded()) {
+				return true;
+			}
+
 			//Find delta
 			var delta = mouseEvent.deltaY || mouseEvent.originalEvent.deltaY;
 
 			//Next move
 			if (delta < 0) {
-				this.board.layers.hover.remove();
+				if (this.board) {
+					this.board.layers.hover.remove();
+				}
 				this.next();
 			}
 
 			//Previous move
 			else if (delta > 0) {
-				this.board.layers.hover.remove();
+				if (this.board) {
+					this.board.layers.hover.remove();
+				}
 				this.previous();
 			}
 
@@ -191,7 +201,9 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		 * Mouse out handler
 		 */
 		mouseOut: function(event, mouseEvent) {
-			this.board.layers.hover.remove();
+			if (this.board) {
+				this.board.layers.hover.remove();
+			}
 		},
 
 		/**
@@ -205,7 +217,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			}
 
 			//Nothing else to do?
-			if (!this.board.layers.hover) {
+			if (!this.board || !this.board.layers.hover) {
 				return;
 			}
 

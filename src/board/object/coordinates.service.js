@@ -23,24 +23,48 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 		'三十一', '三十二', '三十三', '三十四', '三十五', '三十六', '三十七', '三十八', '三十九', '四十'
 	];
 
-	//A and I character codes
+	//Some character codes
 	var aChar = 'A'.charCodeAt(0),
-		iChar = 'I'.charCodeAt(0);
+		iChar = 'I'.charCodeAt(0),
+		aCharLc = 'a'.charCodeAt(0);
 
 	/**
 	 * Coordinate generators
 	 */
 	var coordinates = {
+
+		//Kanji coordinates
 		kanji: function(i) {
 			return kanji[i] || '';
 		},
+
+		//Numbers from 1
 		numbers: function(i) {
 			return i + 1;
 		},
+
+		//Capital letters from A
 		letters: function(i) {
 			var ch = aChar + i;
 			if (ch >= iChar) {
 				ch++;
+			}
+			return String.fromCharCode(ch);
+		},
+
+		//JGF coordinates (e.g. 0, 1, ...)
+		jgf: function(i) {
+			return i;
+		},
+
+		//SGF coordinates (e.g. a, b, ...)
+		sgf: function(i) {
+			var ch;
+			if (i <= 26) {
+				ch = aCharLc + i;
+			}
+			else {
+				ch = aChar + i;
 			}
 			return String.fromCharCode(ch);
 		}

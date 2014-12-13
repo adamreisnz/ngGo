@@ -141,11 +141,17 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/**
+		 * Link the board to a HTML element
+		 */
+		Board.prototype.linkElement = function(element) {
+			this.element = element;
+		};
+
+		/**
 		 * Make this board static (one canvas layer, only grid, stones and markup)
 		 */
 		Board.prototype.makeStatic = function() {
 			this.static = true;
-			this.theme.set('stone.style', 'mono');
 			this.layerOrder = ['grid', 'stones', 'markup'];
 		};
 
@@ -168,7 +174,7 @@ angular.module('ngGo.Board.Service', [
 
 			//Process settigns
 			this.toggleCoordinates(config.coordinates);
-			this.swapColors(config.colorMultiplier);
+			this.swapColors(config.color_multiplier);
 			this.setCutoff(config.cutoff);
 			this.setSection(config.section);
 			this.setSize(config.width, config.height);
@@ -450,6 +456,30 @@ angular.module('ngGo.Board.Service', [
 		};
 
 		/***********************************************************************************************
+		 * Position handling
+		 ***/
+
+		/**
+		 * Update the board with a new position
+		 */
+		Board.prototype.updatePosition = function(position, pathChanged) {
+
+			//If we have no grid size yet, use what's in the position
+			if (!this.width || !this.height) {
+				this.setSize(position.width, position.height);
+			}
+
+			//Remove markup if path changed
+			if (pathChanged) {
+				this.removeAll('markup');
+			}
+
+			//Set new stones and markup grids
+			this.setAll('stones', position.stones);
+			this.setAll('markup', position.markup);
+		};
+
+		/***********************************************************************************************
 		 * State handling
 		 ***/
 
@@ -506,7 +536,20 @@ angular.module('ngGo.Board.Service', [
 		/**
 		 * Clear the whole board
 		 */
-		Board.prototype.clear = function() {
+		Board.prototype.clear = function(layer) {
+
+			//Just clearing one layer?
+			if (layer) {
+
+				//If the board is static or the layer is unknown, we can't do this
+				if (this.static || !this.layers[layer]) {
+					return;
+				}
+
+				//Clear the layer
+				this.layers[layer].clear();
+				return;
+			}
 
 			//Static? One clear is enough
 			if (this.static) {
@@ -515,7 +558,7 @@ angular.module('ngGo.Board.Service', [
 			}
 
 			//Clear all layers
-			for (var layer in this.layers) {
+			for (layer in this.layers) {
 				this.layers[layer].clear();
 			}
 		};

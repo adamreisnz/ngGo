@@ -112,6 +112,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 		//Get theme properties
 		var cellSize = this.board.getCellSize(),
 			lineWidth = this.board.theme.get('grid.lineWidth', cellSize),
+			lineCap = this.board.theme.get('grid.lineCap'),
 			strokeStyle = this.board.theme.get('grid.lineColor'),
 			starRadius = this.board.theme.get('grid.star.radius', cellSize),
 			starColor = this.board.theme.get('grid.star.color'),
@@ -124,6 +125,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 		//Configure context
 		this.context.beginPath();
 		this.context.lineWidth = lineWidth;
+		this.context.lineCap = lineCap;
 		this.context.strokeStyle = strokeStyle;
 
 		//Helper vars

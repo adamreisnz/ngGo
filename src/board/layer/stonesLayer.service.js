@@ -80,6 +80,19 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
 	};
 
 	/**
+	 * Redraw layer
+	 */
+	StonesLayer.prototype.redraw = function() {
+
+		//Clear shadows layer
+		this.board.clear('shadow');
+
+		//Redraw ourselves
+		this.clear();
+		this.draw();
+	};
+
+	/**
 	 * Draw cell
 	 */
 	StonesLayer.prototype.drawCell = function(x, y) {

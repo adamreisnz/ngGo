@@ -2,5 +2,6 @@
 /temp
 npm-debug.log
 karma.log
+karma-unit.js
 .DS_Store
 Thumbs.db
