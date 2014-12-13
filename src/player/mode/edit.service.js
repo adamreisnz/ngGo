@@ -426,7 +426,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 						if (!this.game.play(event.x, event.y)) {
 							return;
 						}
-						this.updateBoard();
+						this.processPosition();
 						break;
 
 					//Setup tool
@@ -434,7 +434,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 						//Set stone and update board
 						setStone.call(this, event.x, event.y);
-						this.updateBoard();
+						this.processPosition();
 						break;
 
 					//Markup tool
@@ -442,7 +442,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 						//Set markup and update board
 						setMarkup.call(this, event.x, event.y);
-						this.updateBoard();
+						this.processPosition();
 						break;
 
 					//Score tool, mark stones dead or alive
@@ -483,8 +483,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 							}
 						}
 
-						//Update board
-						this.updateBoard();
+						//Process position
+						this.processPosition();
 						break;
 
 					//Markup tool
@@ -497,8 +497,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 							}
 						}
 
-						//Update board
-						this.updateBoard();
+						//Process position
+						this.processPosition();
 						break;
 				}
 

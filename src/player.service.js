@@ -402,7 +402,7 @@ angular.module('ngGo.Player.Service', [
 				if (this.board) {
 					this.board.removeAll();
 					this.board.parseConfig(this.game.get('board'));
-					this.updateBoard();
+					this.processPosition();
 				}
 
 				//Loaded ok
@@ -425,7 +425,7 @@ angular.module('ngGo.Player.Service', [
 				//Update board
 				if (this.board) {
 					this.board.removeAll();
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
@@ -456,7 +456,7 @@ angular.module('ngGo.Player.Service', [
 				//Update board
 				if (this.board) {
 					this.board.removeAll();
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
@@ -470,7 +470,7 @@ angular.module('ngGo.Player.Service', [
 			next: function(i) {
 				if (this.game) {
 					this.game.next(i);
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
@@ -480,7 +480,7 @@ angular.module('ngGo.Player.Service', [
 			previous: function() {
 				if (this.game) {
 					this.game.previous();
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
@@ -490,7 +490,7 @@ angular.module('ngGo.Player.Service', [
 			last: function() {
 				if (this.game) {
 					this.game.last();
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
@@ -500,7 +500,7 @@ angular.module('ngGo.Player.Service', [
 			first: function() {
 				if (this.game) {
 					this.game.first();
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
@@ -510,7 +510,7 @@ angular.module('ngGo.Player.Service', [
 			goto: function(target) {
 				if (this.game && target) {
 					this.game.goto(target);
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
@@ -533,6 +533,44 @@ angular.module('ngGo.Player.Service', [
 				}
 			},
 
+			/**
+			 * Process a new game position
+			 */
+			processPosition: function() {
+
+				//No game?
+				if (!this.game || !this.game.isLoaded()) {
+					return;
+				}
+
+				//Get current node and game position
+				var node = this.game.getNode(),
+					path = this.game.getPath(),
+					position = this.game.getPosition(),
+					pathChanged = !path.compare(this.path);
+
+				//Update board
+				this.updateBoard(node, position, pathChanged);
+
+				//Path change?
+				if (pathChanged) {
+
+					//Copy new path and broadcast path change
+					this.path = path.clone();
+					this.broadcast('pathChange', node);
+
+					//Named node reached? Broadcast event
+					if (node.name) {
+						this.broadcast('reachedNode.' + node.name, node);
+					}
+				}
+
+				//Passed?
+				if (node.move && node.move.pass) {
+					this.broadcast('movePassed', node);
+				}
+			},
+
 			/*******************************************************************************************************************************
 			 * Game handling
 			 ***/
@@ -542,7 +580,7 @@ angular.module('ngGo.Player.Service', [
 			 */
 			newGame: function() {
 				this.game = new Game();
-				this.updateBoard();
+				this.processPosition();
 			},
 
 			/**
@@ -594,61 +632,29 @@ angular.module('ngGo.Player.Service', [
 				if (this.game && this.game.isLoaded()) {
 					this.board.removeAll();
 					this.board.parseConfig(this.game.get('board'));
-					this.updateBoard();
+					this.processPosition();
 				}
 			},
 
 			/**
 			 * Update the board
 			 */
-			updateBoard: function() {
+			updateBoard: function(node, position, pathChanged) {
 
-				//Premature call?
-				if (!this.board || !this.game || !this.game.isLoaded()) {
+				//Must have board
+				if (!this.board) {
 					return;
 				}
 
-				//Get current node and game position
-				var i,
-					node = this.game.getNode(),
-					path = this.game.getPath(),
-					position = this.game.getPosition();
+				//Update board with new position
+				this.board.updatePosition(position, pathChanged);
 
-				//Path change? That means a whole new board position
-				if (!path.compare(this.path)) {
-
-					//Copy new path and remove all markup
-					this.path = path.clone();
-					this.board.removeAll('markup');
-
-					//Broadcast
-					this.broadcast('pathChange', node);
-
-					//Named node reached? Broadcast event
-					if (node.name) {
-						this.broadcast('reachedNode.' + node.name, node);
-					}
+				//Mark last move
+				if (this.lastMoveMarker && node.move && !node.move.pass) {
+					this.board.add('markup', node.move.x, node.move.y, this.lastMoveMarker);
 				}
 
-				//Set new stones and markup grids
-				this.board.setAll('stones', position.stones);
-				this.board.setAll('markup', position.markup);
-
-				//Move made?
-				if (node.move) {
-
-					//Passed?
-					if (node.move.pass) {
-						this.broadcast('movePassed', node);
-					}
-
-					//Mark last move?
-					else if (this.lastMoveMarker) {
-						this.board.add('markup', node.move.x, node.move.y, this.lastMoveMarker);
-					}
-				}
-
-				//Broadcast event
+				//Broadcast board update event
 				this.broadcast('boardUpdate', node);
 			},
 

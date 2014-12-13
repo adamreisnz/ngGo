@@ -467,7 +467,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 				//Unknown variation, try to play
 				else if (this.game.play(event.x, event.y)) {
 					this.problemOffPath = true;
-					this.updateBoard();
+					this.processPosition();
 					this.broadcast('solutionOffPath', this.game.getNode());
 				}
 

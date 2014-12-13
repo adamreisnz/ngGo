@@ -152,7 +152,6 @@ angular.module('ngGo.Board.Service', [
 		 */
 		Board.prototype.makeStatic = function() {
 			this.static = true;
-			this.theme.set('stone.style', 'mono');
 			this.layerOrder = ['grid', 'stones', 'markup'];
 		};
 
@@ -454,6 +453,25 @@ angular.module('ngGo.Board.Service', [
 					this.layers[layer].removeAll();
 				}
 			}
+		};
+
+		/***********************************************************************************************
+		 * Position handling
+		 ***/
+
+		/**
+		 * Update the board with a new position
+		 */
+		Board.prototype.updatePosition = function(position, pathChanged) {
+
+			//Remove markup if path changed
+			if (pathChanged) {
+				this.removeAll('markup');
+			}
+
+			//Set new stones and markup grids
+			this.setAll('stones', position.stones);
+			this.setAll('markup', position.markup);
 		};
 
 		/***********************************************************************************************
