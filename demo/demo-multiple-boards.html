@@ -4,47 +4,129 @@
 	<title>ngGo demo - Multiple static boards</title>
 	<meta charset="utf-8" />
 	<meta name="author" content="Adam Buczynski" />
-    <link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css" />
-    <link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
-    <script src="../angular/angular.js"></script>
-    <script src="../release/ngGo.min.js"></script>
+	<link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
+	<script src="../angular/angular.js"></script>
+	<script src="../release/ngGo.js"></script>
 </head>
 <body lang="en">
 <main ng-controller="ngGoDemoController">
-	<div class="static" ng-repeat="Board in Boards">
-		<board static="true"></board>
+	<h2>Random static boards</h2>
+	<div class="boards">
+		<div class="static" ng-repeat="Board in staticBoards">
+			<board static="true" instance="Board"></board>
+		</div>
+	</div>
+	<h2>Static boards with game positions</h2>
+	<div class="boards">
+		<div class="static" ng-repeat="Board in recordBoards">
+			<board static="true" instance="Board"></board>
+		</div>
 	</div>
 </main>
 <script>
 
-    /**
-     * Demo
-     */
-    angular.module('ngGoDemo', [
-        'ngGo.Player.Service'
-    ]).controller('ngGoDemoController', function($timeout, $scope, Board, StoneColor) {
+	/**
+	 * Some JGF data to work with, since Chrome doesnt allow loading a file due to cross domain policy
+	 */
+	var jgf = {
+		"record": {
+			"application": "ngGo v1.0.3",
+			"version": 1,
+			"charset": "UTF-8"
+		},
+		"game": {
+			"type": "go",
+			"name": "Demo JGF",
+			"players": [
+				{
+					"color": "black",
+					"name": "Black",
+					"rank": "5k"
+				},
+				{
+					"color": "white",
+					"name": "White",
+					"rank": "2d"
+				}
+			],
+			"rules": "Japanese",
+			"komi": 0.5
+		},
+		"board": {
+			"width": 9,
+			"height": 9
+		},
+		"tree": [{"root":true,"markup":{"circle":["af","bf","cf"],"label":[["ac","1"],["bc","2"],["cc","3"],["ag","A"],["bg","B"],["cg","C"]],"happy":["ah","ch"],"sad":["bh"],"triangle":["aa","ba","ca"],"square":["ab","bb","cb"],"select":["ae","be","ce"],"mark":["ad","bd","cd"]},"setup":{"W":["ba","bb","bc","bd","be","bf","bg","bh"],"B":["aa","ab","ac","ad","ae","af","ag","ah"]},"comments":["Comment at start of game"]},[[{"move":{"B":"gc"},"comments":["Comment at first variation"],"name":"First variation"},{"move":{"W":"gg"}},{"move":{"B":"cc"}},{"move":{"W":"dc"}},{"move":{"B":"cb"}},{"move":{"W":"db"}},{"move":{"B":"ca"}},{"move":{"W":"cd"}},{"move":{"B":"da"}},{"move":{"W":"ea"}},{"move":{"B":"bi"}},{"move":{"W":"ef"}},{"move":{"B":"ch"}},{"move":{"W":"cg"}},{"move":{"B":"dh"}},{"move":{"W":"dg"}},{"move":{"B":"eh"}},{"move":{"W":"ge"}},{"move":{"B":"fg"}},{"move":{"W":"ff"}},{"move":{"B":"gh"}},{"move":{"W":"hg"}},{"move":{"B":"hh"}},{"move":{"W":"ig"}},{"move":{"B":"ih"}},{"move":{"W":"fd"}},{"move":{"B":"ai"}},{"move":{"W":"hd"}},{"move":{"B":"ci"}},{"move":{"W":"eg"}},{"move":{"B":"fh"}},{"move":{"W":"gi"}},{"move":{"B":"fi"}}],[{"move":{"B":"gg"},"comments":["Comment at second variation"],"name":"Second variation"},[[{"move":{"W":"gc"}},{"mode":"solve","move":{"B":"eg"}},[[{"move":{"W":"ec","solution":true}},{"move":{"B":"fe","solution":true}}],[{"move":{"W":"ge","solution":true}},{"move":{"B":"dh","solution":true}}]]],[{"setup":{"E":["aa","ba","ab","bb","ac","bc","ad","bd","ae","be","af","bf","ag","bg","ah","bh"]},"comments":["Variation where setup stones have been removed"],"name":"Third variation"},{"move":{"W":"cc"}},{"move":{"B":"cg"}},{"move":{"W":"gc"}},{"move":{"B":"ef"}},{"move":{"W":"ed"}}]]]]]
+	};
 
-        //Prepare board container
-        $scope.Boards = [];
+	/**
+	 * Demo
+	 */
+	angular.module('ngGoDemo', [
+		'ngGo.Player.Service'
+	]).controller('ngGoDemoController', function($timeout, $scope, Board, Game, StoneColor) {
 
-        //Create some random boards
-        for (var i = 0; i < 5; i++) {
-            var board = new Board({width: 5, height: 5});
-            for (var j = 0; j <= i; j++) {
-                board.add('stones', j, j, j%2 ? StoneColor.B : StoneColor.W);
-            }
-            $scope.Boards.push(board);
-        }
-    });
+		//Init vars
+		var board, i, j, x, y;
 
-    /**
-     * Bootstrap angular
-     */
-    angular.element(document).ready(function() {
-        setTimeout(function() {
-            angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
-        }, 10);
-    });
+		//Load game record into game
+		var game = new Game(jgf);
+
+		//Prepare board containers for static boards
+		$scope.staticBoards = [];
+		$scope.recordBoards = [];
+
+		//Create some random static boards
+		for (i = 0; i < 5; i++) {
+			board = new Board({width: 9, height: 9});
+			for (j = 0; j <= 25; j++) {
+				x = Math.floor(Math.random() * 9);
+				y = Math.floor(Math.random() * 9);
+				board.add('stones', x, y, j%2 ? StoneColor.B : StoneColor.W);
+			}
+			$scope.staticBoards.push(board);
+		}
+
+		//Create board with first move
+		game.goto(1);
+		board = new Board();
+		board.updatePosition(game.getPosition());
+		$scope.recordBoards.push(board);
+
+		//Create board with intermediate position
+		game.goto(8);
+		board = new Board();
+		board.updatePosition(game.getPosition());
+		$scope.recordBoards.push(board);
+
+		//Create board with intermediate position
+		game.goto(15);
+		board = new Board();
+		board.updatePosition(game.getPosition());
+		$scope.recordBoards.push(board);
+
+		//Create board with intermediate position
+		game.goto(20);
+		board = new Board();
+		board.updatePosition(game.getPosition());
+		$scope.recordBoards.push(board);
+
+		//Create board with last position
+		game.last();
+		board = new Board();
+		board.updatePosition(game.getPosition());
+		$scope.recordBoards.push(board);
+	});
+
+	/**
+	 * Bootstrap angular
+	 */
+	angular.element(document).ready(function() {
+		setTimeout(function() {
+			angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
+		}, 10);
+	});
 </script>
 </body>
 </html>

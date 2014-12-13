@@ -221,7 +221,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 		var updateHoverMark = function(x, y) {
 
 			//Falling outside of grid?
-			if (!this.board.isOnBoard(x, y)) {
+			if (!this.board || !this.board.isOnBoard(x, y)) {
 				return;
 			}
 
@@ -340,8 +340,10 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			 * Hover handler
 			 */
 			hover: function(event) {
-				this.board.removeAll('hover');
-				updateHoverMark.call(this, event.x, event.y);
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this, event.x, event.y);
+				}
 			},
 
 			/**
@@ -410,8 +412,10 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 				}
 
 				//Update hover mark
-				this.board.removeAll('hover');
-				updateHoverMark.call(this, this.lastX, this.lastY);
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this, this.lastX, this.lastY);
+				}
 			},
 
 			/**
@@ -420,7 +424,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			click: function(event, mouseEvent) {
 
 				//Falling outside of grid?
-				if (!this.board.isOnBoard(event.x, event.y)) {
+				if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
 					return;
 				}
 

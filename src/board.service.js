@@ -174,7 +174,7 @@ angular.module('ngGo.Board.Service', [
 
 			//Process settigns
 			this.toggleCoordinates(config.coordinates);
-			this.swapColors(config.colorMultiplier);
+			this.swapColors(config.color_multiplier);
 			this.setCutoff(config.cutoff);
 			this.setSection(config.section);
 			this.setSize(config.width, config.height);
@@ -463,6 +463,11 @@ angular.module('ngGo.Board.Service', [
 		 * Update the board with a new position
 		 */
 		Board.prototype.updatePosition = function(position, pathChanged) {
+
+			//If we have no grid size yet, use what's in the position
+			if (!this.width || !this.height) {
+				this.setSize(position.width, position.height);
+			}
 
 			//Remove markup if path changed
 			if (pathChanged) {

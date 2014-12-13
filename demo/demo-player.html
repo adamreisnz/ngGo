@@ -4,10 +4,10 @@
 	<title>ngGo demo - Player</title>
 	<meta charset="utf-8" />
 	<meta name="author" content="Adam Buczynski" />
-    <link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css" />
-    <link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
-    <script src="../angular/angular.js"></script>
-    <script src="../release/ngGo.min.js"></script>
+	<link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
+	<script src="../angular/angular.js"></script>
+	<script src="../release/ngGo.js"></script>
 </head>
 <body lang="en">
 <main ng-controller="ngGoDemoController">
@@ -186,10 +186,10 @@
 	 * Bootstrap angular
 	 */
 	angular.element(document).ready(function() {
-        setTimeout(function() {
-        	angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
-        }, 10);
-    });
+		setTimeout(function() {
+			angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
+		}, 10);
+	});
 </script>
 </body>
 </html>

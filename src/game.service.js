@@ -284,14 +284,6 @@ angular.module('ngGo.Game.Service', [
 			//Extend config
 			this.config = angular.extend({}, defaultConfig, config || {});
 
-			//Load data
-			if (data) {
-				this.load(data);
-			}
-			else {
-				this.init();
-			}
-
 			//Define property getter/setter for position
 			Object.defineProperty(this, 'position', {
 
@@ -305,6 +297,14 @@ angular.module('ngGo.Game.Service', [
 					this.history[this.history.length] = newPosition;
 				}
 			});
+
+			//Load data
+			if (data) {
+				this.load(data);
+			}
+			else {
+				this.init();
+			}
 		};
 
 		/**
@@ -576,13 +576,6 @@ angular.module('ngGo.Game.Service', [
 		 */
 		Game.prototype.getPathToNode = function(nodeName) {
 			return GamePath.findNode(nodeName, this.root);
-		};
-
-		/**
-		 * Get the current game position
-		 */
-		Game.prototype.getPosition = function() {
-			return this.position;
 		};
 
 		/**

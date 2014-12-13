@@ -177,13 +177,17 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 
 			//Next move
 			if (delta < 0) {
-				this.board.layers.hover.remove();
+				if (this.board) {
+					this.board.layers.hover.remove();
+				}
 				this.next();
 			}
 
 			//Previous move
 			else if (delta > 0) {
-				this.board.layers.hover.remove();
+				if (this.board) {
+					this.board.layers.hover.remove();
+				}
 				this.previous();
 			}
 
@@ -197,7 +201,9 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		 * Mouse out handler
 		 */
 		mouseOut: function(event, mouseEvent) {
-			this.board.layers.hover.remove();
+			if (this.board) {
+				this.board.layers.hover.remove();
+			}
 		},
 
 		/**
@@ -211,7 +217,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			}
 
 			//Nothing else to do?
-			if (!this.board.layers.hover) {
+			if (!this.board || !this.board.layers.hover) {
 				return;
 			}
 

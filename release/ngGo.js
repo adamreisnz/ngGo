@@ -50,20 +50,20 @@ angular.module('ngGo.Board.Directive', [
 	/**
 	 * Helper to determine draw size
 	 */
-	var determineDrawSize = function($scope, availableWidth, availableHeight) {
+	var determineDrawSize = function(scope, availableWidth, availableHeight) {
 
 		//Init vars
 		var drawWidth, drawHeight, cellSize;
 
 		//Grid size known?
-		if ($scope.Board.width && $scope.Board.height) {
+		if (scope.Board.width && scope.Board.height) {
 
 			//Determine smallest cell size
-			cellSize = Math.min(availableWidth / $scope.Board.width, availableHeight / $scope.Board.height);
+			cellSize = Math.min(availableWidth / scope.Board.width, availableHeight / scope.Board.height);
 
 			//Set draw size
-			drawWidth = Math.floor(cellSize * $scope.Board.width);
-			drawHeight = Math.floor(cellSize * $scope.Board.height);
+			drawWidth = Math.floor(cellSize * scope.Board.width);
+			drawHeight = Math.floor(cellSize * scope.Board.height);
 		}
 
 		//Otherwise, use the lesser of the available width/height
@@ -72,10 +72,10 @@ angular.module('ngGo.Board.Directive', [
 		}
 
 		//Broadcast new size if changed
-		if ($scope.lastDrawWidth != drawWidth || $scope.lastDrawHeight != drawHeight) {
-			$scope.lastDrawWidth = drawWidth;
-			$scope.lastDrawHeight = drawHeight;
-			$scope.$broadcast('ngGo.board.drawSizeChanged', drawWidth, drawHeight);
+		if (scope.lastDrawWidth != drawWidth || scope.lastDrawHeight != drawHeight) {
+			scope.lastDrawWidth = drawWidth;
+			scope.lastDrawHeight = drawHeight;
+			scope.$broadcast('ngGo.board.drawSizeChanged', drawWidth, drawHeight);
 			return true;
 		}
 
@@ -88,29 +88,34 @@ angular.module('ngGo.Board.Directive', [
 	 */
 	return {
 		restrict:	'E',
-		scope:		true,
+		scope:		{
+			instance: '&'
+		},
 
 		/**
 		 * Linking function
 		 */
-		link: function($scope, element, attrs) {
+		link: function(scope, element, attrs) {
 
 			//Init vars
 			var i, context, layer, parent, playerElement,
 				existingInstance = true;
 
 			//Remember last draw width/height
-			$scope.lastDrawWidth = 0;
-			$scope.lastDrawHeight = 0;
+			scope.lastDrawWidth = 0;
+			scope.lastDrawHeight = 0;
+
+			//Get board instance
+			scope.Board = scope.instance();
 
 			//Instantiate board if not present in scope
-			if (!$scope.Board) {
+			if (!scope.Board) {
 				existingInstance = false;
-				$scope.Board = new Board();
+				scope.Board = new Board();
 			}
 
 			//Link element
-			$scope.Board.linkElement(element);
+			scope.Board.linkElement(element);
 
 			//Find player element
 			parent = element.parent();
@@ -119,7 +124,7 @@ angular.module('ngGo.Board.Directive', [
 			}
 
 			//Listen for board drawsize events
-			$scope.$on('ngGo.board.drawSizeChanged', function(event, width, height) {
+			scope.$on('ngGo.board.drawSizeChanged', function(event, width, height) {
 
 				//First set the new dimensions on the canvas elements
 				var canvas = element.find('canvas');
@@ -130,14 +135,14 @@ angular.module('ngGo.Board.Directive', [
 
 				//Next set it on the board itself
 				element.css({width: width + 'px', height: height + 'px'});
-				$scope.Board.setDrawSize(width * pixelRatio, height * pixelRatio);
+				scope.Board.setDrawSize(width * pixelRatio, height * pixelRatio);
 			});
 
 			//On board grid resize, determine the draw size again
-			$scope.$on('ngGo.board.resize', function(event, board, width, height) {
+			scope.$on('ngGo.board.resize', function(event, board, width, height) {
 
 				//Only relevent if this was our own board
-				if (board != $scope.Board) {
+				if (board != scope.Board) {
 					return;
 				}
 
@@ -145,8 +150,8 @@ angular.module('ngGo.Board.Directive', [
 				//However, that means we should call the resized() method now manually because
 				//it won't be called with the setDrawSize() call.
 				//This may seem a bit "off", but it's the best way to prevent redundant redraws.
-				if (!determineDrawSize($scope, parent[0].clientWidth, parent[0].clientHeight)) {
-					$scope.Board.resized();
+				if (!determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight)) {
+					scope.Board.resized();
 				}
 			});
 
@@ -157,11 +162,11 @@ angular.module('ngGo.Board.Directive', [
 				parent = parent.parent();
 
 				//Determine draw size based on parent
-				determineDrawSize($scope, parent[0].clientWidth, parent[0].clientHeight);
+				determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight);
 
 				//On window resize, determine the draw size again
 				angular.element($window).on('resize', function() {
-					determineDrawSize($scope, parent[0].clientWidth, parent[0].clientHeight);
+					determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight);
 				});
 			}
 
@@ -169,11 +174,11 @@ angular.module('ngGo.Board.Directive', [
 			else {
 
 				//Determine draw size based on element dimensions
-				determineDrawSize($scope, element[0].clientWidth, element[0].clientHeight);
+				determineDrawSize(scope, element[0].clientWidth, element[0].clientHeight);
 
 				//On window resize, determine the draw size again
 				angular.element($window).on('resize', function() {
-					determineDrawSize($scope, element[0].clientWidth, element[0].clientHeight);
+					determineDrawSize(scope, element[0].clientWidth, element[0].clientHeight);
 				});
 			}
 
@@ -182,13 +187,13 @@ angular.module('ngGo.Board.Directive', [
 
 				//Add static class and make the board static
 				element.addClass('static');
-				$scope.Board.makeStatic();
+				scope.Board.makeStatic();
 
 				//Create single canvas and link to all relevant layer service classes
 				context = createLayerCanvas.call(element[0], 'static');
-				for (i = 0; i < $scope.Board.layerOrder.length; i++) {
-					layer = $scope.Board.layerOrder[i];
-					$scope.Board.layers[layer].setContext(context);
+				for (i = 0; i < scope.Board.layerOrder.length; i++) {
+					layer = scope.Board.layerOrder[i];
+					scope.Board.layers[layer].setContext(context);
 				}
 			}
 
@@ -196,10 +201,10 @@ angular.module('ngGo.Board.Directive', [
 			else {
 
 				//Create individual layer canvasses and link the canvas context to the layer service class
-				for (i = 0; i < $scope.Board.layerOrder.length; i++) {
-					layer = $scope.Board.layerOrder[i];
+				for (i = 0; i < scope.Board.layerOrder.length; i++) {
+					layer = scope.Board.layerOrder[i];
 					context = createLayerCanvas.call(element[0], layer);
-					$scope.Board.layers[layer].setContext(context);
+					scope.Board.layers[layer].setContext(context);
 				}
 			}
 
@@ -207,36 +212,36 @@ angular.module('ngGo.Board.Directive', [
 			attrs.$observe('size', function(size) {
 				if (typeof size == 'string' && size.toLowerCase().indexOf('x') !== -1) {
 					size = size.split('x');
-					$scope.Board.setSize(size[0], size[1]);
+					scope.Board.setSize(size[0], size[1]);
 				}
 				else {
-					$scope.Board.setSize(size, size);
+					scope.Board.setSize(size, size);
 				}
 			});
 
 			//Observe the coordinates attribute
 			attrs.$observe('coordinates', function(attr) {
-				$scope.Board.toggleCoordinates(parseBool(attr));
+				scope.Board.toggleCoordinates(parseBool(attr));
 			});
 
 			//Observe the cutoff attribute
 			attrs.$observe('cutoff', function(attr) {
-				$scope.Board.setCutoff(attr.split(','));
+				scope.Board.setCutoff(attr.split(','));
 			});
 
 			//Observe color multiplier
 			attrs.$observe('colorMultiplier', function(attr) {
-				$scope.Board.swapColors(attr);
+				scope.Board.swapColors(attr);
 			});
 
-			//Link board to player if present
-			if ($scope.Player) {
-				$scope.Player.setBoard($scope.Board);
+			//Link board to player if present in parent scope
+			if (scope.$parent.Player) {
+				scope.$parent.Player.setBoard(scope.Board);
 			}
 
 			//Redraw board if we had an existing instance (it might contain data)
 			if (existingInstance) {
-				$scope.Board.redraw();
+				scope.Board.redraw();
 			}
 		}
 	};
@@ -417,7 +422,7 @@ angular.module('ngGo.Board.Service', [
 
 			//Process settigns
 			this.toggleCoordinates(config.coordinates);
-			this.swapColors(config.colorMultiplier);
+			this.swapColors(config.color_multiplier);
 			this.setCutoff(config.cutoff);
 			this.setSection(config.section);
 			this.setSize(config.width, config.height);
@@ -706,6 +711,11 @@ angular.module('ngGo.Board.Service', [
 		 * Update the board with a new position
 		 */
 		Board.prototype.updatePosition = function(position, pathChanged) {
+
+			//If we have no grid size yet, use what's in the position
+			if (!this.width || !this.height) {
+				this.setSize(position.width, position.height);
+			}
 
 			//Remove markup if path changed
 			if (pathChanged) {
@@ -4512,14 +4522,6 @@ angular.module('ngGo.Game.Service', [
 			//Extend config
 			this.config = angular.extend({}, defaultConfig, config || {});
 
-			//Load data
-			if (data) {
-				this.load(data);
-			}
-			else {
-				this.init();
-			}
-
 			//Define property getter/setter for position
 			Object.defineProperty(this, 'position', {
 
@@ -4533,6 +4535,14 @@ angular.module('ngGo.Game.Service', [
 					this.history[this.history.length] = newPosition;
 				}
 			});
+
+			//Load data
+			if (data) {
+				this.load(data);
+			}
+			else {
+				this.init();
+			}
 		};
 
 		/**
@@ -4804,13 +4814,6 @@ angular.module('ngGo.Game.Service', [
 		 */
 		Game.prototype.getPathToNode = function(nodeName) {
 			return GamePath.findNode(nodeName, this.root);
-		};
-
-		/**
-		 * Get the current game position
-		 */
-		Game.prototype.getPosition = function() {
-			return this.position;
 		};
 
 		/**
@@ -8454,7 +8457,7 @@ angular.module('ngGo.Player.Directive', [
 		/**
 		 * Linking function
 		 */
-		link: function($scope, element, attrs) {
+		link: function(scope, element, attrs) {
 
 			//Link the element
 			Player.linkElement(element);
@@ -9418,13 +9421,17 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 
 			//Next move
 			if (delta < 0) {
-				this.board.layers.hover.remove();
+				if (this.board) {
+					this.board.layers.hover.remove();
+				}
 				this.next();
 			}
 
 			//Previous move
 			else if (delta > 0) {
-				this.board.layers.hover.remove();
+				if (this.board) {
+					this.board.layers.hover.remove();
+				}
 				this.previous();
 			}
 
@@ -9438,7 +9445,9 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		 * Mouse out handler
 		 */
 		mouseOut: function(event, mouseEvent) {
-			this.board.layers.hover.remove();
+			if (this.board) {
+				this.board.layers.hover.remove();
+			}
 		},
 
 		/**
@@ -9452,7 +9461,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			}
 
 			//Nothing else to do?
-			if (!this.board.layers.hover) {
+			if (!this.board || !this.board.layers.hover) {
 				return;
 			}
 
@@ -9678,7 +9687,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		var updateHoverMark = function(x, y, isDrag) {
 
 			//Falling outside of grid?
-			if (!this.board.isOnBoard(x, y)) {
+			if (!this.board || !this.board.isOnBoard(x, y)) {
 				return;
 			}
 
@@ -9879,6 +9888,11 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			 */
 			hover: function(event) {
 
+				//Must have board
+				if (!this.board) {
+					return;
+				}
+
 				//Remove all hover items
 				this.board.removeAll('hover');
 
@@ -9916,8 +9930,10 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				}
 
 				//Update hover mark
-				this.board.removeAll('hover');
-				updateHoverMark.call(this, this.lastX, this.lastY);
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this, this.lastX, this.lastY);
+				}
 			},
 
 			/**
@@ -9926,7 +9942,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			click: function(event, mouseEvent) {
 
 				//Falling outside of grid?
-				if (!this.board.isOnBoard(event.x, event.y)) {
+				if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
 					return;
 				}
 
@@ -9986,7 +10002,9 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 				//Remove all hover items now to restore actual stones and markup to the board,
 				//otherwise it will conflict when updating the board
-				this.board.removeAll('hover');
+				if (this.board) {
+					this.board.removeAll('hover');
+				}
 
 				//What happens, depends on the active tool
 				switch (this.tool) {
@@ -10203,7 +10221,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 		var updateHoverMark = function(x, y) {
 
 			//Falling outside of grid?
-			if (!this.board.isOnBoard(x, y)) {
+			if (!this.board || !this.board.isOnBoard(x, y)) {
 				return;
 			}
 
@@ -10336,8 +10354,10 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			 * Hover handler
 			 */
 			hover: function(event) {
-				this.board.removeAll('hover');
-				updateHoverMark.call(this, event.x, event.y);
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this, event.x, event.y);
+				}
 			},
 
 			/**
@@ -10357,8 +10377,10 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			keyDown: function(event, keyboardEvent) {
 
 				//Update hover mark
-				this.board.removeAll('hover');
-				updateHoverMark.call(this, this.lastX, this.lastY);
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this, this.lastX, this.lastY);
+				}
 			},
 
 			/**
@@ -10367,7 +10389,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			click: function(event, mouseEvent) {
 
 				//Falling outside of grid?
-				if (!this.board.isOnBoard(event.x, event.y)) {
+				if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
 					return;
 				}
 
@@ -10661,7 +10683,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 		var updateHoverMark = function(x, y) {
 
 			//Falling outside of grid?
-			if (!this.board.isOnBoard(x, y)) {
+			if (!this.board || !this.board.isOnBoard(x, y)) {
 				return;
 			}
 
@@ -10780,8 +10802,10 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			 * Hover handler
 			 */
 			hover: function(event) {
-				this.board.removeAll('hover');
-				updateHoverMark.call(this, event.x, event.y);
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this, event.x, event.y);
+				}
 			},
 
 			/**
@@ -10850,8 +10874,10 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 				}
 
 				//Update hover mark
-				this.board.removeAll('hover');
-				updateHoverMark.call(this, this.lastX, this.lastY);
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this, this.lastX, this.lastY);
+				}
 			},
 
 			/**
@@ -10860,7 +10886,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			click: function(event, mouseEvent) {
 
 				//Falling outside of grid?
-				if (!this.board.isOnBoard(event.x, event.y)) {
+				if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
 					return;
 				}
 

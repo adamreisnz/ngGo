@@ -26,7 +26,7 @@ angular.module('ngGo.Player.Directive', [
 		/**
 		 * Linking function
 		 */
-		link: function($scope, element, attrs) {
+		link: function(scope, element, attrs) {
 
 			//Link the element
 			Player.linkElement(element);
