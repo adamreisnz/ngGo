@@ -41,10 +41,10 @@ angular.module('ngGo.Player.Directive', [
 
 			//Observe other settings attributes
 			attrs.$observe('variationMarkup', function(attr) {
-				Player.toggleVariationMarkup(parseBool(attr));
+				Player.setVariationMarkup(attr === 'true');
 			});
 			attrs.$observe('solutionPaths', function(attr) {
-				Player.toggleSolutionPaths(parseBool(attr));
+				Player.toggleSolutionPaths(attr === 'true');
 			});
 			attrs.$observe('lastMoveMarker', function(attr) {
 				Player.setLastMoveMarker(attr);

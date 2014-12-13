@@ -20,7 +20,13 @@
 	<h2>Static boards with game positions</h2>
 	<div class="boards">
 		<div class="static" ng-repeat="Board in recordBoards">
-			<board static="true" instance="Board"></board>
+			<board static="false" instance="Board"></board>
+		</div>
+	</div>
+	<h2>Referenced board</h2>
+	<div class="boards">
+		<div class="static">
+			<board static="true" instance="referencedBoard"></board>
 		</div>
 	</div>
 </main>
@@ -117,6 +123,17 @@
 		board = new Board();
 		board.updatePosition(game.getPosition());
 		$scope.recordBoards.push(board);
+
+		//Create board in local variable
+		var board = new Board({width: 9, height: 9});
+		board.add('markup', 4, 3, 'triangle');
+		board.add('markup', 3, 4, 'triangle');
+		board.add('markup', 5, 4, 'triangle');
+
+		//Supply it via a scope function
+		$scope.referencedBoard = function() {
+			return board;
+		}
 	});
 
 	/**

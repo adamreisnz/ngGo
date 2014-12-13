@@ -100,6 +100,11 @@ angular.module('ngGo.Board.Directive', [
 			//Get board instance
 			scope.Board = scope.instance();
 
+			//Function given?
+			if (typeof scope.Board == 'function') {
+				scope.Board = scope.Board();
+			}
+
 			//Instantiate board if not present in scope
 			if (!scope.Board) {
 				existingInstance = false;
@@ -175,7 +180,7 @@ angular.module('ngGo.Board.Directive', [
 			}
 
 			//Static board
-			if (attrs.static) {
+			if (attrs.static && attrs.static === 'true') {
 
 				//Add static class and make the board static
 				element.addClass('static');
@@ -213,7 +218,7 @@ angular.module('ngGo.Board.Directive', [
 
 			//Observe the coordinates attribute
 			attrs.$observe('coordinates', function(attr) {
-				scope.Board.toggleCoordinates(parseBool(attr));
+				scope.Board.toggleCoordinates(attr === 'true');
 			});
 
 			//Observe the cutoff attribute

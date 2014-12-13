@@ -111,12 +111,3 @@ if (typeof angular.extendDeep == 'undefined') {
 		return dest;
 	};
 }
-
-/**
- * Global helpers
- */
-if (typeof parseBool == 'undefined') {
-	var parseBool = function(b) {
-		return (b.toLowerCase() === 'true' || b === true || b === 1 || b === '1');
-	};
-}

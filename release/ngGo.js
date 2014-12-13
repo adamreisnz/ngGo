@@ -108,6 +108,11 @@ angular.module('ngGo.Board.Directive', [
 			//Get board instance
 			scope.Board = scope.instance();
 
+			//Function given?
+			if (typeof scope.Board == 'function') {
+				scope.Board = scope.Board();
+			}
+
 			//Instantiate board if not present in scope
 			if (!scope.Board) {
 				existingInstance = false;
@@ -183,7 +188,7 @@ angular.module('ngGo.Board.Directive', [
 			}
 
 			//Static board
-			if (attrs.static) {
+			if (attrs.static && attrs.static === 'true') {
 
 				//Add static class and make the board static
 				element.addClass('static');
@@ -221,7 +226,7 @@ angular.module('ngGo.Board.Directive', [
 
 			//Observe the coordinates attribute
 			attrs.$observe('coordinates', function(attr) {
-				scope.Board.toggleCoordinates(parseBool(attr));
+				scope.Board.toggleCoordinates(attr === 'true');
 			});
 
 			//Observe the cutoff attribute
@@ -8420,15 +8425,6 @@ if (typeof angular.extendDeep == 'undefined') {
 		return dest;
 	};
 }
-
-/**
- * Global helpers
- */
-if (typeof parseBool == 'undefined') {
-	var parseBool = function(b) {
-		return (b.toLowerCase() === 'true' || b === true || b === 1 || b === '1');
-	};
-}
 /**
  * Module definition and dependencies
  */
@@ -8472,10 +8468,10 @@ angular.module('ngGo.Player.Directive', [
 
 			//Observe other settings attributes
 			attrs.$observe('variationMarkup', function(attr) {
-				Player.toggleVariationMarkup(parseBool(attr));
+				Player.setVariationMarkup(attr === 'true');
 			});
 			attrs.$observe('solutionPaths', function(attr) {
-				Player.toggleSolutionPaths(parseBool(attr));
+				Player.toggleSolutionPaths(attr === 'true');
 			});
 			attrs.$observe('lastMoveMarker', function(attr) {
 				Player.setLastMoveMarker(attr);
