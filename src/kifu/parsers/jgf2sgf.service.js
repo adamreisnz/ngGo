@@ -24,6 +24,18 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 		jgfAliases[sgfAliases[sgfProp]] = sgfProp;
 	}
 
+	/**
+	 * Character index of "a"
+	 */
+	var aChar = 'a'.charCodeAt(0);
+
+	/**
+	 * Helper to convert to SGF coordinates
+	 */
+	var convertCoordinates = function(coords) {
+		return String.fromCharCode(aChar + coords[0]) + String.fromCharCode(aChar + coords[1]);
+	};
+
 	/***********************************************************************************************
 	 * Conversion helpers
 	 ***/
@@ -44,7 +56,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	var writeGroup = function(prop, values, output, escape) {
 		if (values.length) {
 			output.sgf += prop;
-			for (var i in values) {
+			for (var i = 0; i < values.length; i++) {
 				output.sgf += '[' + (escape ? escapeSgf(values[i]) : values[i]) + ']';
 			}
 		}
@@ -65,7 +77,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 		var coords = (move[color] == 'pass') ? '' : move[color];
 
 		//Append to SGF
-		output.sgf += color + '[' + coords + ']';
+		output.sgf += color + '[' + convertCoordinates(coords) + ']';
 	};
 
 	/**
@@ -74,11 +86,15 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	var parseSetup = function(setup, output) {
 
 		//Loop colors
-		for (var color in setup)	{
-			var coords = setup[color];
+		for (var color in setup) {
+
+			//Convert coordinates
+			for (var i = 0; i < setup[color].length; i++) {
+				setup[color][i] = convertCoordinates(setup[color][i]);
+			}
 
 			//Write as group
-			writeGroup('A' + color, coords, output);
+			writeGroup('A' + color, setup[color], output);
 		}
 	};
 
@@ -88,11 +104,15 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	var parseScore = function(score, output) {
 
 		//Loop colors
-		for (var color in score)	{
-			var coords = score[color];
+		for (var color in score) {
+
+			//Convert coordinates
+			for (var i = 0; i < score[color].length; i++) {
+				score[color][i] = convertCoordinates(score[color][i]);
+			}
 
 			//Write as group
-			writeGroup('T' + color, coords, output);
+			writeGroup('T' + color, score[color], output);
 		}
 	};
 
@@ -102,13 +122,18 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	var parseMarkup = function(markup, output) {
 
 		//Loop markup types
-		for (var type in markup)	{
-			var coords = markup[type];
+		for (var type in markup) {
+			var i;
 
 			//Label type has the label text appended to the coords
 			if (type == 'label') {
-				for (var i = 0; i < coords.length; i++) {
-					coords[i] = coords[i][0] + ':' + coords[i][1];
+				for (i = 0; i < markup[type].length; i++) {
+					markup[type][i] = convertCoordinates(markup[type][i]) + ':' + markup[type][i][2];
+				}
+			}
+			else {
+				for (i = 0; i < markup[type].length; i++) {
+					markup[type][i] = convertCoordinates(markup[type][i]);
 				}
 			}
 
@@ -118,7 +143,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 			}
 
 			//Write as group
-			writeGroup(type, coords, output);
+			writeGroup(type, markup[type], output);
 		}
 	};
 

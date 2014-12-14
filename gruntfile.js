@@ -254,71 +254,51 @@ module.exports = function(grunt) {
 			options: {
 				configFile: 'karma-unit.js'
 			},
-			continuous: {
-				runnerPort: 9101,
-				background: true
-			},
 			unit: {
 				singleRun: true
 			}
 		},
 
 		/**
-		 * And for rapid development, we have a watch set up that checks to see if
-		 * any of the files listed below change, and then to execute the listed
-		 * tasks when they do. This just saves us from having to type "grunt" into
-		 * the command-line every time we want to see what we're working on; we can
-		 * instead just leave "grunt watch" running in a background terminal.
-		 *
-		 * But we don't need the same thing to happen for all the files.
+		 * Watch task
 		 */
-		delta: {
+		watch: {
 
 			/**
-			 * By default, we want the Live Reload to work for all tasks; this is
-			 * overridden in some tasks (like this file) where browser resources are
-			 * unaffected. It runs by default on port 35729, which your browser
-			 * plugin should auto-detect.
+			 * No live reload needed
 			 */
 			options: {
-				livereload: true
+				livereload: false
 			},
 
 			/**
-			 * When the Gruntfile changes, we just want to lint it. In fact, when
-			 * your Gruntfile changes, it will automatically be reloaded!
+			 * When the Gruntfile changes, we just want to lint it.
 			 */
 			gruntfile: {
 				files: 'gruntfile.js',
-				tasks: [ 'jshint:gruntfile' ],
-				options: {
-					livereload: false
-				}
+				tasks: [ 'jshint:gruntfile' ]
 			},
 
 			/**
-			 * When our JavaScript source files change, we want to run lint them and
-			 * run our unit tests.
+			 * When our JavaScript source files change, we want to lint them,
+			 * run our unit tests and re-compile.
 			 */
 			jssrc: {
 				files: [
 					'<%= app_files.js %>'
 				],
-				tasks: [ 'jshint:src', 'karma:unit:run' ]
+				tasks: [ 'jshint:src', 'karma:unit:run', 'compile' ]
 			},
 
 			/**
-			 * When a JavaScript unit test file changes, we only want to lint it and
-			 * run the unit tests. We don't want to do any live reloading.
+			 * When a JavaScript unit test file changes, we only want to lint them
+			 * and run the unit tests.
 			 */
 			unit: {
 				files: [
 					'<%= app_files.unit %>'
 				],
-				tasks: [ 'jshint:test', 'karma:continuous:run' ],
-				options: {
-					livereload: false
-				}
+				tasks: [ 'jshint:test', 'karma:unit:run' ]
 			}
 		}
 	};
@@ -329,19 +309,9 @@ module.exports = function(grunt) {
 	grunt.initConfig(grunt.util._.extend(taskConfig, buildConfig));
 
 	/**
-	 * In order to make it safe to just compile or copy *only* what was changed,
-	 * we need to ensure we are starting from a clean, fresh build. So we rename
-	 * the `watch` task to `delta` (that's why the configuration var above is
-	 * `delta`) and then add a new task called `watch` that does a clean build
-	 * before watching for changes.
+	 * The default task is to test and compile
 	 */
-	grunt.renameTask('watch', 'delta');
-	grunt.registerTask('watch', ['karma:continuous', 'delta']);
-
-	/**
-	 * The default task is to compile
-	 */
-	grunt.registerTask('default', ['compile']);
+	grunt.registerTask('default', ['test', 'compile']);
 
 	/**
 	 * The 'test' task runs jshint and unit tests
@@ -353,15 +323,21 @@ module.exports = function(grunt) {
 	]);
 
 	/**
-	 * The 'compile' task gets the app ready for deployment by concatenating and minifying code.
+	 * Release a new version
 	 */
-	grunt.registerTask('compile', [
+	grunt.registerTask('release', [
 
 		//Update the version number in the README and in ngGo.js
 		'replace:readmeVersion', 'replace:ngGoVersion',
 
-		//Run JS hint and unit tests
-		'jshint', 'karma:unit',
+		//Test and compile
+		'test', 'compile'
+	]);
+
+	/**
+	 * The 'compile' task gets the app ready for deployment by concatenating and minifying code.
+	 */
+	grunt.registerTask('compile', [
 
 		//Compile the CSS
 		'recess:compile',

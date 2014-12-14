@@ -25,17 +25,10 @@ angular.module('ngGo.Game.Node.Service', [
 	var aChar = 'a'.charCodeAt(0);
 
 	/**
-	 * Helper to create flat coordinates
+	 * Helper to convert SGF coordinates
 	 */
-	var flattenCoordinates = function(x, y) {
-		return String.fromCharCode(aChar+x) + String.fromCharCode(aChar+y);
-	};
-
-	/**
-	 * Helper to expand flat coordinates
-	 */
-	var expandCoordinate = function(coords, index) {
-		return coords.charCodeAt(index)-aChar;
+	var convertCoordinates = function(coords) {
+		return [coords.charCodeAt(0)-aChar, coords.charCodeAt(1)-aChar];
 	};
 
 	/**
@@ -47,8 +40,15 @@ angular.module('ngGo.Game.Node.Service', [
 			baseObject.pass = true;
 		}
 		else {
-			baseObject.x = expandCoordinate(coords, 0);
-			baseObject.y = expandCoordinate(coords, 1);
+
+			//Backwards compatibility with SGF string coordinates in JGF
+			if (typeof coords == 'string') {
+				coords = convertCoordinates(coords);
+			}
+
+			//Append coordinates
+			baseObject.x = coords[0];
+			baseObject.y = coords[1];
 		}
 		return baseObject;
 	};
@@ -70,7 +70,7 @@ angular.module('ngGo.Game.Node.Service', [
 		else if (color == 'W') {
 			return StoneColor.W;
 		}
-		return StoneColor.EMPTY;
+		return StoneColor.E;
 	};
 
 	/***********************************************************************************************
@@ -98,7 +98,7 @@ angular.module('ngGo.Game.Node.Service', [
 
 		//Regular move
 		else {
-			jgfMove[color] = flattenCoordinates(move.x, move.y);
+			jgfMove[color] = [move.x, move.y];
 		}
 
 		//Delete coordinates and color
@@ -160,7 +160,7 @@ angular.module('ngGo.Game.Node.Service', [
 			}
 
 			//Add coordinates
-			jgfSetup[color].push(flattenCoordinates(setup[i].x, setup[i].y));
+			jgfSetup[color].push([setup[i].x, setup[i].y]);
 		}
 
 		//Return
@@ -214,11 +214,10 @@ angular.module('ngGo.Game.Node.Service', [
 
 			//Label?
 			if (type == 'LB') {
-				var label = flattenCoordinates(markup[i].x, markup[i].y) + ':' + markup[i].text;
-				jgfMarkup[type].push(label);
+				jgfMarkup[type].push([markup[i].x, markup[i].y, markup[i].text]);
 			}
 			else {
-				jgfMarkup[type].push(flattenCoordinates(markup[i].x, markup[i].y));
+				jgfMarkup[type].push([markup[i].x, markup[i].y]);
 			}
 		}
 
@@ -242,14 +241,26 @@ angular.module('ngGo.Game.Node.Service', [
 				for (l = 0; l < markup[type].length; l++) {
 
 					//Validate
-					if (!angular.isArray(markup[type][l]) || markup[type][l].length < 2) {
+					if (!angular.isArray(markup[type][l])) {
+						continue;
+					}
+
+					//SGF type coordinates?
+					if (markup[type][l].length == 2 && typeof markup[type][l][0] == 'string') {
+						var text = markup[type][l][1];
+						markup[type][l] = convertCoordinates(markup[type][l][0]);
+						markup[type][l].push(text);
+					}
+
+					//Validate length
+					if (markup[type][l].length < 3) {
 						continue;
 					}
 
 					//Add to stack
-					gameMarkup.push(coordinatesObject(markup[type][l][0], {
+					gameMarkup.push(coordinatesObject(markup[type][l], {
 						type: type,
-						text: markup[type][l][1]
+						text: markup[type][l][2]
 					}));
 				}
 			}

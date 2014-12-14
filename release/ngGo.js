@@ -4487,7 +4487,7 @@ angular.module('ngGo.Game.Service', [
 				else {
 					if (!this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition)) {
 						console.warn('Invalid move detected in game record');
-						return;
+						return false;
 					}
 				}
 			}
@@ -4513,6 +4513,7 @@ angular.module('ngGo.Game.Service', [
 
 			//Push the new position into the history now
 			pushPosition.call(this, newPosition);
+			return true;
 		};
 
 		/***********************************************************************************************
@@ -5270,7 +5271,11 @@ angular.module('ngGo.Game.Service', [
 
 			//Go to the next node
 			if (nextNode.call(this, i)) {
-				executeNode.call(this);
+
+				//If an invalid move is detected, we can't go on
+				if (!executeNode.call(this)) {
+					previousNode.call(this);
+				}
 			}
 		};
 
@@ -5292,7 +5297,12 @@ angular.module('ngGo.Game.Service', [
 
 			//Keep going to the next node until we reach the end
 			while (nextNode.call(this)) {
-				executeNode.call(this);
+
+				//If an invalid move is detected, we can't go on
+				if (!executeNode.call(this)) {
+					previousNode.call(this);
+					break;
+				}
 			}
 		};
 
@@ -5374,11 +5384,17 @@ angular.module('ngGo.Game.Service', [
 			//Loop path
 			var n = path.getMove();
 			for (var i = 0; i < n; i++) {
-				if (nextNode.call(this, path.nodeAt(i))) {
-					executeNode.call(this);
-					continue;
+
+				//Try going to the next node
+				if (!nextNode.call(this, path.nodeAt(i))) {
+					break;
 				}
-				break;
+
+				//If an invalid move is detected, we can't go on
+				if (!executeNode.call(this)) {
+					previousNode.call(this);
+					break;
+				}
 			}
 		};
 
@@ -5461,17 +5477,10 @@ angular.module('ngGo.Game.Node.Service', [
 	var aChar = 'a'.charCodeAt(0);
 
 	/**
-	 * Helper to create flat coordinates
+	 * Helper to convert SGF coordinates
 	 */
-	var flattenCoordinates = function(x, y) {
-		return String.fromCharCode(aChar+x) + String.fromCharCode(aChar+y);
-	};
-
-	/**
-	 * Helper to expand flat coordinates
-	 */
-	var expandCoordinate = function(coords, index) {
-		return coords.charCodeAt(index)-aChar;
+	var convertCoordinates = function(coords) {
+		return [coords.charCodeAt(0)-aChar, coords.charCodeAt(1)-aChar];
 	};
 
 	/**
@@ -5483,8 +5492,15 @@ angular.module('ngGo.Game.Node.Service', [
 			baseObject.pass = true;
 		}
 		else {
-			baseObject.x = expandCoordinate(coords, 0);
-			baseObject.y = expandCoordinate(coords, 1);
+
+			//Backwards compatibility with SGF string coordinates in JGF
+			if (typeof coords == 'string') {
+				coords = convertCoordinates(coords);
+			}
+
+			//Append coordinates
+			baseObject.x = coords[0];
+			baseObject.y = coords[1];
 		}
 		return baseObject;
 	};
@@ -5506,7 +5522,7 @@ angular.module('ngGo.Game.Node.Service', [
 		else if (color == 'W') {
 			return StoneColor.W;
 		}
-		return StoneColor.EMPTY;
+		return StoneColor.E;
 	};
 
 	/***********************************************************************************************
@@ -5534,7 +5550,7 @@ angular.module('ngGo.Game.Node.Service', [
 
 		//Regular move
 		else {
-			jgfMove[color] = flattenCoordinates(move.x, move.y);
+			jgfMove[color] = [move.x, move.y];
 		}
 
 		//Delete coordinates and color
@@ -5596,7 +5612,7 @@ angular.module('ngGo.Game.Node.Service', [
 			}
 
 			//Add coordinates
-			jgfSetup[color].push(flattenCoordinates(setup[i].x, setup[i].y));
+			jgfSetup[color].push([setup[i].x, setup[i].y]);
 		}
 
 		//Return
@@ -5650,11 +5666,10 @@ angular.module('ngGo.Game.Node.Service', [
 
 			//Label?
 			if (type == 'LB') {
-				var label = flattenCoordinates(markup[i].x, markup[i].y) + ':' + markup[i].text;
-				jgfMarkup[type].push(label);
+				jgfMarkup[type].push([markup[i].x, markup[i].y, markup[i].text]);
 			}
 			else {
-				jgfMarkup[type].push(flattenCoordinates(markup[i].x, markup[i].y));
+				jgfMarkup[type].push([markup[i].x, markup[i].y]);
 			}
 		}
 
@@ -5678,14 +5693,26 @@ angular.module('ngGo.Game.Node.Service', [
 				for (l = 0; l < markup[type].length; l++) {
 
 					//Validate
-					if (!angular.isArray(markup[type][l]) || markup[type][l].length < 2) {
+					if (!angular.isArray(markup[type][l])) {
+						continue;
+					}
+
+					//SGF type coordinates?
+					if (markup[type][l].length == 2 && typeof markup[type][l][0] == 'string') {
+						var text = markup[type][l][1];
+						markup[type][l] = convertCoordinates(markup[type][l][0]);
+						markup[type][l].push(text);
+					}
+
+					//Validate length
+					if (markup[type][l].length < 3) {
 						continue;
 					}
 
 					//Add to stack
-					gameMarkup.push(coordinatesObject(markup[type][l][0], {
+					gameMarkup.push(coordinatesObject(markup[type][l], {
 						type: type,
-						text: markup[type][l][1]
+						text: markup[type][l][2]
 					}));
 				}
 			}
@@ -7326,6 +7353,18 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 		jgfAliases[sgfAliases[sgfProp]] = sgfProp;
 	}
 
+	/**
+	 * Character index of "a"
+	 */
+	var aChar = 'a'.charCodeAt(0);
+
+	/**
+	 * Helper to convert to SGF coordinates
+	 */
+	var convertCoordinates = function(coords) {
+		return String.fromCharCode(aChar + coords[0]) + String.fromCharCode(aChar + coords[1]);
+	};
+
 	/***********************************************************************************************
 	 * Conversion helpers
 	 ***/
@@ -7346,7 +7385,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	var writeGroup = function(prop, values, output, escape) {
 		if (values.length) {
 			output.sgf += prop;
-			for (var i in values) {
+			for (var i = 0; i < values.length; i++) {
 				output.sgf += '[' + (escape ? escapeSgf(values[i]) : values[i]) + ']';
 			}
 		}
@@ -7367,7 +7406,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 		var coords = (move[color] == 'pass') ? '' : move[color];
 
 		//Append to SGF
-		output.sgf += color + '[' + coords + ']';
+		output.sgf += color + '[' + convertCoordinates(coords) + ']';
 	};
 
 	/**
@@ -7376,11 +7415,15 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	var parseSetup = function(setup, output) {
 
 		//Loop colors
-		for (var color in setup)	{
-			var coords = setup[color];
+		for (var color in setup) {
+
+			//Convert coordinates
+			for (var i = 0; i < setup[color].length; i++) {
+				setup[color][i] = convertCoordinates(setup[color][i]);
+			}
 
 			//Write as group
-			writeGroup('A' + color, coords, output);
+			writeGroup('A' + color, setup[color], output);
 		}
 	};
 
@@ -7390,11 +7433,15 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	var parseScore = function(score, output) {
 
 		//Loop colors
-		for (var color in score)	{
-			var coords = score[color];
+		for (var color in score) {
+
+			//Convert coordinates
+			for (var i = 0; i < score[color].length; i++) {
+				score[color][i] = convertCoordinates(score[color][i]);
+			}
 
 			//Write as group
-			writeGroup('T' + color, coords, output);
+			writeGroup('T' + color, score[color], output);
 		}
 	};
 
@@ -7404,13 +7451,18 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	var parseMarkup = function(markup, output) {
 
 		//Loop markup types
-		for (var type in markup)	{
-			var coords = markup[type];
+		for (var type in markup) {
+			var i;
 
 			//Label type has the label text appended to the coords
 			if (type == 'label') {
-				for (var i = 0; i < coords.length; i++) {
-					coords[i] = coords[i][0] + ':' + coords[i][1];
+				for (i = 0; i < markup[type].length; i++) {
+					markup[type][i] = convertCoordinates(markup[type][i]) + ':' + markup[type][i][2];
+				}
+			}
+			else {
+				for (i = 0; i < markup[type].length; i++) {
+					markup[type][i] = convertCoordinates(markup[type][i]);
 				}
 			}
 
@@ -7420,7 +7472,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 			}
 
 			//Write as group
-			writeGroup(type, coords, output);
+			writeGroup(type, markup[type], output);
 		}
 	};
 
@@ -7784,6 +7836,18 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		regProperty = /[A-Z]+/,
 		regValues = /(\[\])|(\[(.|\s)*?([^\\]\]))/g;
 
+	/**
+	 * Character index of "a"
+	 */
+	var aChar = 'a'.charCodeAt(0);
+
+	/**
+	 * Helper to convert SGF coordinates
+	 */
+	var convertCoordinates = function(coords) {
+		return [coords.charCodeAt(0)-aChar, coords.charCodeAt(1)-aChar];
+	};
+
 	/***********************************************************************************************
 	 * Conversion helpers
 	 ***/
@@ -7832,13 +7896,13 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		node.move = {};
 
 		//Pass
-		if (value[0] === '' || (jgf.width <= 19 && value[0].toLowerCase() == 'tt')) {
+		if (value[0] === '' || (jgf.width <= 19 && value[0] == 'tt')) {
 			node.move[key] = 'pass';
 		}
 
 		//Regular move
 		else {
-			node.move[key] = value[0].toLowerCase();
+			node.move[key] = convertCoordinates(value[0]);
 		}
 	};
 
@@ -7889,8 +7953,8 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		}
 
 		//Add values
-		for (var i in value) {
-			node.setup[key].push(value[i].toLowerCase());
+		for (var i = 0; i < value.length; i++) {
+			node.setup[key].push(convertCoordinates(value[i]));
 		}
 	};
 
@@ -7911,8 +7975,8 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		key = key.charAt(1);
 
 		//Add values
-		for (var i in value) {
-			node.score[key].push(value[i].toLowerCase());
+		for (var i = 0; i < value.length; i++) {
+			node.score[key].push(convertCoordinates(value[i]));
 		}
 	};
 
@@ -7944,14 +8008,14 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		}
 
 		//Add values
-		for (var i in value) {
+		for (var i = 0; i < value.length; i++) {
 
-			//Split coordinates and label
-			var coords = value[i].substr(0, 2).toLowerCase(),
-				label = value[i].substr(3);
+			//Split off coordinates and add label contents
+			var coords = convertCoordinates(value[i].substr(0, 2));
+			coords.push(value[i].substr(3));
 
 			//Add to node
-			node.markup[key].push([coords, label]);
+			node.markup[key].push(coords);
 		}
 	};
 
@@ -7977,7 +8041,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
 		//Add values
 		for (var i in value) {
-			node.markup[key].push(value[i].toLowerCase());
+			node.markup[key].push(convertCoordinates(value[i]));
 		}
 	};
 

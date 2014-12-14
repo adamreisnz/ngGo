@@ -244,7 +244,7 @@ angular.module('ngGo.Game.Service', [
 				else {
 					if (!this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition)) {
 						console.warn('Invalid move detected in game record');
-						return;
+						return false;
 					}
 				}
 			}
@@ -270,6 +270,7 @@ angular.module('ngGo.Game.Service', [
 
 			//Push the new position into the history now
 			pushPosition.call(this, newPosition);
+			return true;
 		};
 
 		/***********************************************************************************************
@@ -1027,7 +1028,11 @@ angular.module('ngGo.Game.Service', [
 
 			//Go to the next node
 			if (nextNode.call(this, i)) {
-				executeNode.call(this);
+
+				//If an invalid move is detected, we can't go on
+				if (!executeNode.call(this)) {
+					previousNode.call(this);
+				}
 			}
 		};
 
@@ -1049,7 +1054,12 @@ angular.module('ngGo.Game.Service', [
 
 			//Keep going to the next node until we reach the end
 			while (nextNode.call(this)) {
-				executeNode.call(this);
+
+				//If an invalid move is detected, we can't go on
+				if (!executeNode.call(this)) {
+					previousNode.call(this);
+					break;
+				}
 			}
 		};
 
@@ -1131,11 +1141,17 @@ angular.module('ngGo.Game.Service', [
 			//Loop path
 			var n = path.getMove();
 			for (var i = 0; i < n; i++) {
-				if (nextNode.call(this, path.nodeAt(i))) {
-					executeNode.call(this);
-					continue;
+
+				//Try going to the next node
+				if (!nextNode.call(this, path.nodeAt(i))) {
+					break;
 				}
-				break;
+
+				//If an invalid move is detected, we can't go on
+				if (!executeNode.call(this)) {
+					previousNode.call(this);
+					break;
+				}
 			}
 		};
 
