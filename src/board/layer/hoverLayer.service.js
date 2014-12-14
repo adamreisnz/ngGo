@@ -32,7 +32,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 	angular.extend(HoverLayer.prototype, BoardLayer.prototype);
 
 	/**
-	 * Add faded stone
+	 * Add hover item
 	 */
 	HoverLayer.prototype.add = function(x, y, hover) {
 
@@ -128,12 +128,22 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 			return;
 		}
 
+		//Get all item as objects
+		var i, hover = this.grid.all('layer');
+
+		//Clear them
+		for (i = 0; i < hover.length; i++) {
+			if (hover[i].objectClass && hover[i].objectClass.clear) {
+				hover[i].objectClass.clear.call(this, hover[i].object);
+			}
+		}
+
 		//Clear layer and empty grid
 		this.clear();
 		this.grid.empty();
 
 		//Restore objects on other layers
-		for (var i = 0; i < this.restore.length; i++) {
+		for (i = 0; i < this.restore.length; i++) {
 			this.board.add(this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value);
 		}
 

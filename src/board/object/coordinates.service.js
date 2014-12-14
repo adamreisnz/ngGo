@@ -45,11 +45,23 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 
 		//Capital letters from A
 		letters: function(i) {
-			var ch = aChar + i;
-			if (ch >= iChar) {
-				ch++;
+
+			//Initialize
+			var ch = '';
+
+			//Beyond Z? Prepend with A
+			if (i >= 25) {
+				ch = 'A';
+				i -= 25;
 			}
-			return String.fromCharCode(ch);
+
+			//The letter I is ommitted
+			if (i >= 8) {
+				i++;
+			}
+
+			//Return
+			return ch + String.fromCharCode(aChar + i);
 		},
 
 		//JGF coordinates (e.g. 0, 1, ...)
@@ -60,7 +72,7 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 		//SGF coordinates (e.g. a, b, ...)
 		sgf: function(i) {
 			var ch;
-			if (i <= 26) {
+			if (i < 26) {
 				ch = aCharLc + i;
 			}
 			else {

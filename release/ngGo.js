@@ -1821,7 +1821,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 	angular.extend(HoverLayer.prototype, BoardLayer.prototype);
 
 	/**
-	 * Add faded stone
+	 * Add hover item
 	 */
 	HoverLayer.prototype.add = function(x, y, hover) {
 
@@ -1917,12 +1917,22 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 			return;
 		}
 
+		//Get all item as objects
+		var i, hover = this.grid.all('layer');
+
+		//Clear them
+		for (i = 0; i < hover.length; i++) {
+			if (hover[i].objectClass && hover[i].objectClass.clear) {
+				hover[i].objectClass.clear.call(this, hover[i].object);
+			}
+		}
+
 		//Clear layer and empty grid
 		this.clear();
 		this.grid.empty();
 
 		//Restore objects on other layers
-		for (var i = 0; i < this.restore.length; i++) {
+		for (i = 0; i < this.restore.length; i++) {
 			this.board.add(this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value);
 		}
 
@@ -2479,11 +2489,23 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 
 		//Capital letters from A
 		letters: function(i) {
-			var ch = aChar + i;
-			if (ch >= iChar) {
-				ch++;
+
+			//Initialize
+			var ch = '';
+
+			//Beyond Z? Prepend with A
+			if (i >= 25) {
+				ch = 'A';
+				i -= 25;
 			}
-			return String.fromCharCode(ch);
+
+			//The letter I is ommitted
+			if (i >= 8) {
+				i++;
+			}
+
+			//Return
+			return ch + String.fromCharCode(aChar + i);
 		},
 
 		//JGF coordinates (e.g. 0, 1, ...)
@@ -2494,7 +2516,7 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 		//SGF coordinates (e.g. a, b, ...)
 		sgf: function(i) {
 			var ch;
-			if (i <= 26) {
+			if (i < 26) {
 				ch = aCharLc + i;
 			}
 			else {
@@ -5182,6 +5204,20 @@ angular.module('ngGo.Game.Service', [
 				return this.position.markup.is(x, y, type);
 			}
 			return this.position.markup.has(x, y);
+		};
+
+		/**
+		 * Get stone on coordinates
+		 */
+		Game.prototype.getStone = function(x, y) {
+			return this.position.stones.get(x, y);
+		};
+
+		/**
+		 * Get markup on coordinates
+		 */
+		Game.prototype.getMarkup = function(x, y) {
+			return this.position.markup.get(x, y);
 		};
 
 		/***********************************************************************************************
@@ -9607,6 +9643,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	/**
 	 * Register event handlers
 	 */
+	Player.on('pathChange', PlayerModeEdit.pathChange, PlayerModes.EDIT);
 	Player.on('modeEnter', PlayerModeEdit.modeEnter, PlayerModes.EDIT);
 	Player.on('mousedrag', PlayerModeEdit.mouseDrag, PlayerModes.EDIT);
 	Player.on('keydown', PlayerModeEdit.keyDown, PlayerModes.EDIT);
@@ -9638,9 +9675,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	Player.setupTool = Player.setupTools.BLACK;
 	Player.markupTool = Player.markupTools.TRIANGLE;
 
-	//Current text and number for labels
-	Player.markupTextLabel = 'A';
-	Player.markupNumberLabel = '1';
+	//Current markup labels on the board and current markup label
+	Player.markupLabels = [];
+	Player.markupLabel = '';
+
+	//Character codes
+	var aChar = 'A'.charCodeAt(0),
+		aCharLc = 'a'.charCodeAt(0);
 
 	/**
 	 * Set the setup tool
@@ -9654,6 +9695,9 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	 */
 	Player.switchMarkupTool = function(tool) {
 		this.markupTool = tool;
+		if (this.markupTool == this.markupTools.TEXT || this.markupTool == this.markupTools.NUMBER) {
+			this.determineMarkupLabel();
+		}
 	};
 
 	/**
@@ -9673,44 +9717,60 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	/**
 	 * Set the new text markup label
 	 */
-	Player.setMarkupTextLabel = function(label) {
+	Player.setMarkupLabel = function(label) {
 		if (label) {
-			this.markupTextLabel = label;
+			this.markupLabel = label;
 		}
 	};
 
 	/**
-	 * Set the new number markup label
+	 * Determine the new text markup label
 	 */
-	Player.setMarkupNumberLabel = function(label) {
-		if (label = parseInt(label)) {
-			this.markupNumberLabel = label;
+	Player.determineMarkupLabel = function() {
+
+		//Clear
+		this.markupLabel = '';
+
+		//Check what tool we're using
+		switch (this.markupTool) {
+
+			//Text tool?
+			case this.markupTools.TEXT:
+				var i = 0;
+
+				//Loop while the label is present
+				while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) != -1) {
+
+					//A-Z
+					if (i < 26) {
+						this.markupLabel = String.fromCharCode(aChar + i);
+					}
+
+					//a-z
+					else if (i < 52) {
+						this.markupLabel = String.fromCharCode(aCharLc + i - 26);
+					}
+
+					//AA, AB, AC, etc.
+					else {
+						this.markupLabel = String.fromCharCode(aChar + Math.floor(i / 26) - 2) + String.fromCharCode(aChar + (i % 26));
+					}
+
+					//Keep going
+					i++;
+				}
+				break;
+
+			//Number tool?
+			case this.markupTools.NUMBER:
+				this.markupLabel = 0;
+
+				//Loop while the label is present
+				while (this.markupLabel === 0 || this.markupLabels.indexOf(this.markupLabel) != -1) {
+					this.markupLabel++;
+				}
+				break;
 		}
-	};
-
-	/**
-	 * Set the new text markup label
-	 */
-	Player.incrementMarkupTextLabel = function() {
-
-		//Going beyond Z?
-		if (this.markupTextLabel == 'Z') {
-			this.markupTextLabel = 'a';
-			return;
-		}
-
-		//Get charcode of current label
-		var charCode = this.markupTextLabel.charCodeAt(0);
-
-		//Set new label
-		this.markupTextLabel = String.fromCharCode(++charCode);
-	};
-
-	/**
-	 * Set the new number markup label
-	 */
-	Player.incrementMarkupNumberLabel = function() {
-		this.markupNumberLabel++;
 	};
 
 	//Register mode
@@ -9793,8 +9853,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				//Markup tool
 				case PlayerTools.MARKUP:
 
-					//Clear tool
-					if (this.markupTool == this.markupTools.CLEAR) {
+					//Clear tool, or already markup in place?
+					if (this.markupTool == this.markupTools.CLEAR || this.game.hasMarkup(x, y)) {
 						if (this.game.hasMarkup(x, y)) {
 							this.board.add('hover', x, y, {
 								type: 'markup',
@@ -9803,24 +9863,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 						}
 					}
 
-					//Text
-					else if (this.markupTool == this.markupTools.TEXT) {
+					//Text or number
+					else if (this.markupTool == this.markupTools.TEXT || this.markupTool == this.markupTools.NUMBER) {
 						this.board.add('hover', x, y, {
 							type: 'markup',
 							value: {
 								type: MarkupTypes.LABEL,
-								text: this.markupTextLabel
-							}
-						});
-					}
-
-					//Number
-					else if (this.markupTool == this.markupTools.NUMBER) {
-						this.board.add('hover', x, y, {
-							type: 'markup',
-							value: {
-								type: MarkupTypes.LABEL,
-								text: this.markupNumberLabel
+								text: this.markupLabel
 							}
 						});
 					}
@@ -9867,7 +9916,21 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 			//Already markup in place? Remove it first
 			if (this.game.hasMarkup(x, y)) {
+
+				//Check what markup there is
+				var markup = this.game.getMarkup(x, y);
+
+				//Label? Also remove from our labels list
+				if (markup.type == MarkupTypes.LABEL && markup.text) {
+					var i = this.markupLabels.indexOf(markup.text);
+					if (i != -1) {
+						this.markupLabels.splice(i, 1);
+					}
+				}
+
+				//Remove from game
 				this.game.removeMarkup(x, y);
+				return;
 			}
 
 			//Clear tool used? Done
@@ -9879,22 +9942,24 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			else if (this.markupTool == this.markupTools.TEXT) {
 				this.game.addMarkup(x, y, {
 					type: MarkupTypes.LABEL,
-					text: this.markupTextLabel
+					text: this.markupLabel
 				});
 
-				//Increment text
-				this.incrementMarkupTextLabel();
+				//Determine next text label
+				this.markupLabels.push(this.markupLabel);
+				this.determineMarkupLabel();
 			}
 
 			//Number
 			else if (this.markupTool == this.markupTools.NUMBER) {
 				this.game.addMarkup(x, y, {
 					type: MarkupTypes.LABEL,
-					text: this.markupNumberLabel
+					text: this.markupLabel
 				});
 
-				//Increment number
-				this.incrementMarkupNumberLabel();
+				//Determine next number label
+				this.markupLabels.push(this.markupLabel);
+				this.determineMarkupLabel();
 			}
 
 			//Other markup
@@ -9939,6 +10004,28 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		};
 
 		/**
+		 * Find all markup labels in current position
+		 */
+		var findAllMarkupLabels = function() {
+
+			//Clear
+			this.markupLabels = [];
+
+			//Must have game
+			if (!this.game || !this.game.isLoaded()) {
+				return;
+			}
+
+			//Get all markup from position
+			var markup = this.game.position.markup.all('type');
+			for (var i = 0; i < markup.length; i++) {
+				if (markup[i].type == MarkupTypes.LABEL && markup[i].text !== '') {
+					this.markupLabels.push(markup[i].text);
+				}
+			}
+		};
+
+		/**
 		 * Player mode definition
 		 */
 		var PlayerModeEdit = {
@@ -9958,6 +10045,12 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 				//Single coordinate?
 				if (!event.drag || (this.tool != PlayerTools.SETUP && this.tool != PlayerTools.MARKUP)) {
+					updateHoverMark.call(this, event.x, event.y, false);
+					return;
+				}
+
+				//No dragging for labels
+				if (this.markupTool == this.markupTools.TEXT || this.markupTool == this.markupTools.NUMBER) {
 					updateHoverMark.call(this, event.x, event.y, false);
 					return;
 				}
@@ -10086,6 +10179,11 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 					//Markup tool
 					case PlayerTools.MARKUP:
 
+						//Don't do this for labels
+						if (this.markupTool == this.markupTools.TEXT || this.markupTool == this.markupTools.NUMBER) {
+							break;
+						}
+
 						//Loop dragging grid
 						for (x = event.drag.start.x; x <= event.drag.stop.x; x++) {
 							for (y = event.drag.start.y; y <= event.drag.stop.y; y++) {
@@ -10117,6 +10215,16 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 				//Set default tool
 				this.tool = this.tools[0];
+
+				//Find all markup labels in the current game position
+				findAllMarkupLabels.call(this);
+			},
+
+			/**
+			 * Path change
+			 */
+			pathChange: function(event, node) {
+				findAllMarkupLabels.call(this);
 			}
 		};
 

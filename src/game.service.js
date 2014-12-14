@@ -941,6 +941,20 @@ angular.module('ngGo.Game.Service', [
 			return this.position.markup.has(x, y);
 		};
 
+		/**
+		 * Get stone on coordinates
+		 */
+		Game.prototype.getStone = function(x, y) {
+			return this.position.stones.get(x, y);
+		};
+
+		/**
+		 * Get markup on coordinates
+		 */
+		Game.prototype.getMarkup = function(x, y) {
+			return this.position.markup.get(x, y);
+		};
+
 		/***********************************************************************************************
 		 * Move handling
 		 ***/
