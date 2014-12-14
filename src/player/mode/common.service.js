@@ -38,24 +38,12 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 	Player.on('mouseup', PlayerModeCommon.mouseUp, [
 		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
 	]);
-	Player.on('toolSwitch', PlayerModeCommon.toolSwitch, [
-		PlayerModes.REPLAY, PlayerModes.EDIT
-	]);
-
-	//Last x and y coordinates for mouse events
-	Player.lastX = -1;
-	Player.lastY = -1;
 })
 
 /**
  * Factory definition
  */
-.factory('PlayerModeCommon', function($document, PlayerTools, GameScorer) {
-
-	/**
-	 * Helper var to detect dragging
-	 */
-	var dragStart = null;
+.factory('PlayerModeCommon', function($document, Player, PlayerTools, GameScorer) {
 
 	/**
 	 * Helper to build drag object
@@ -65,12 +53,12 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		//Initialize drag object
 		var drag = {
 			start: {
-				x: (dragStart.x > event.x) ? event.x : dragStart.x,
-				y: (dragStart.y > event.y) ? event.y : dragStart.y,
+				x: (this.mouse.dragStart.x > event.x) ? event.x : this.mouse.dragStart.x,
+				y: (this.mouse.dragStart.y > event.y) ? event.y : this.mouse.dragStart.y,
 			},
 			stop: {
-				x: (dragStart.x > event.x) ? dragStart.x : event.x,
-				y: (dragStart.y > event.y) ? dragStart.y : event.y,
+				x: (this.mouse.dragStart.x > event.x) ? this.mouse.dragStart.x : event.x,
+				y: (this.mouse.dragStart.y > event.y) ? this.mouse.dragStart.y : event.y,
 			}
 		};
 
@@ -91,6 +79,25 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		//Return
 		return drag;
 	};
+
+	/**
+	 * Player extension
+	 */
+	angular.extend(Player, {
+
+		/**
+		 * Mouse coordinate helper vars
+		 */
+		mouse: {
+
+			//Drag start
+			dragStart: null,
+
+			//Last grid coordinates
+			lastX: -1,
+			lastY: -1
+		}
+	});
 
 	/**
 	 * Player mode definition
@@ -119,7 +126,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 				case 27:
 
 					//Cancel drag event, and prevent click event as well
-					dragStart = null;
+					this.mouse.dragStart = null;
 					this.preventClickEvent = true;
 					break;
 
@@ -212,7 +219,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		mouseMove: function(event, mouseEvent) {
 
 			//Attach drag object to events
-			if (dragStart && (dragStart.x != event.x || dragStart.y != event.y)) {
+			if (this.mouse.dragStart && (this.mouse.dragStart.x != event.x || this.mouse.dragStart.y != event.y)) {
 				mouseEvent.drag = dragObject.call(this, event);
 			}
 
@@ -222,13 +229,13 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			}
 
 			//Last coordinates are the same?
-			if (this.lastX == event.x && this.lastY == event.y) {
+			if (this.mouse.lastX == event.x && this.mouse.lastY == event.y) {
 				return;
 			}
 
 			//Remember last coordinates
-			this.lastX = event.x;
-			this.lastY = event.y;
+			this.mouse.lastX = event.x;
+			this.mouse.lastY = event.y;
 
 			//Broadcast hover event
 			this.broadcast('hover', mouseEvent);
@@ -238,43 +245,21 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		 * Mouse down handler
 		 */
 		mouseDown: function(event, mouseEvent) {
-			dragStart = {x: event.x, y: event.y};
+			this.mouse.dragStart = {
+				x: event.x,
+				y: event.y
+			};
 		},
 
 		/**
 		 * Mouse up handler
 		 */
 		mouseUp: function(event, mouseEvent) {
-			if (dragStart && (dragStart.x != event.x || dragStart.y != event.y)) {
+			if (this.mouse.dragStart && (this.mouse.dragStart.x != event.x || this.mouse.dragStart.y != event.y)) {
 				mouseEvent.drag = dragObject.call(this, event);
 				this.broadcast('mousedrag', mouseEvent);
 			}
-			dragStart = null;
-		},
-
-		/**
-		 * Handler for tool switches
-		 */
-		toolSwitch: function(event) {
-
-			//Switched to scoring?
-			if (this.tool == PlayerTools.SCORE) {
-
-				//Remember the current board state
-				this.statePreScoring = this.board.getState();
-
-				//Load game into scorer and score the game
-				GameScorer.load(this.game);
-				this.scoreGame();
-			}
-
-			//Back to another state?
-			else {
-				if (this.statePreScoring) {
-					this.board.restoreState(this.statePreScoring);
-					delete this.statePreScoring;
-				}
-			}
+			this.mouse.dragStart = null;
 		}
 	};
 

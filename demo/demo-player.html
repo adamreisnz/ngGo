@@ -37,12 +37,12 @@
 
 		<p ng-show="Player.tool == 'setup'">
 			Setup tool:<br/>
-			<button ng-repeat="tool in Player.setupTools" ng-click="Player.switchSetupTool(tool)" ng-disabled="Player.setupTool == tool">{{tool}}</button>
+			<button ng-repeat="tool in SetupTools" ng-click="Player.switchSetupTool(tool)" ng-disabled="Player.setupTool == tool">{{tool}}</button>
 		</p>
 
 		<p ng-show="Player.tool == 'markup'">
 			Markup tool:<br/>
-			<button ng-repeat="tool in Player.markupTools" ng-click="Player.switchMarkupTool(tool)" ng-disabled="Player.markupTool == tool">{{tool}}</button>
+			<button ng-repeat="tool in MarkupTools" ng-click="Player.switchMarkupTool(tool)" ng-disabled="Player.markupTool == tool">{{tool}}</button>
 		</p>
 
 		<p>
@@ -150,10 +150,14 @@
 	/**
 	 * Controller
 	 */
-	.controller('ngGoDemoController', function($scope, $http, Player) {
+	.controller('ngGoDemoController', function($scope, $http, Player, SetupTools, MarkupTools) {
 
 		//Set the game in scope for easy access
 		$scope.Game = Player.game;
+
+		//Set setup tools and markup tools in scope
+		$scope.SetupTools = SetupTools;
+		$scope.MarkupTools = MarkupTools;
 
 		//Load game data from external source
 		/*$http.get('test.jgf').success(function(data) {

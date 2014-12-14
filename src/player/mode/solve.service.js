@@ -14,11 +14,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 /**
  * Extend player functionality and register the mode
  */
-.run(function(Player, PlayerModes, PlayerModeSolve, $timeout) {
+.run(function(Player, PlayerModes, PlayerModeSolve) {
 
-	/**
-	 * Register event handlers
-	 */
+	//Register event handlers
 	Player.on('settingChange', PlayerModeSolve.settingChange, PlayerModes.SOLVE);
 	Player.on('boardUpdate', PlayerModeSolve.boardUpdate, PlayerModes.SOLVE);
 	Player.on('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
@@ -26,186 +24,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	Player.on('keydown', PlayerModeSolve.keyDown, PlayerModes.SOLVE);
 	Player.on('click', PlayerModeSolve.click, PlayerModes.SOLVE);
 	Player.on('hover', PlayerModeSolve.hover, PlayerModes.SOLVE);
-
-	/**
-	 * Set solve auto play delay
-	 */
-	Player.setSolveAutoPlay = function(autoPlay) {
-		if (this.solveAutoPlay != autoPlay) {
-			this.solveAutoPlay = autoPlay;
-			this.broadcast('settingChange', 'solveAutoPlay');
-		}
-	};
-
-	/**
-	 * Set solve auto play delay
-	 */
-	Player.setSolveAutoPlayDelay = function(delay) {
-		if (this.solveAutoPlayDelay != delay) {
-			this.solveAutoPlayDelay = delay;
-			this.broadcast('settingChange', 'solveAutoPlayDelay');
-		}
-	};
-
-	/**
-	 * Set player color
-	 */
-	Player.setPlayerColor = function(color) {
-		if (this.playerColor != color) {
-			this.playerColor = color;
-			this.broadcast('settingChange', 'playerColor');
-		}
-	};
-
-	/**
-	 * Get player color
-	 */
-	Player.getPlayerColor = function(asOnBoard) {
-		if (asOnBoard && this.board) {
-			return this.board.colorMultiplier * this.playerColor;
-		}
-		return this.playerColor;
-	};
-
-	/**
-	 * Toggle solution paths
-	 */
-	Player.toggleSolutionPaths = function(solutionPaths) {
-
-		//Toggle if not given
-		if (typeof solutionPaths == 'undefined') {
-			solutionPaths = !this.solutionPaths;
-		}
-
-		//Change?
-		if (solutionPaths != this.solutionPaths) {
-			this.solutionPaths = solutionPaths;
-			this.broadcast('settingChange', 'solutionPaths');
-		}
-	};
-
-	/**
-	 * Auto play next move
-	 */
-	Player.autoPlayNext = function(immediately) {
-
-		//Must have game and children
-		if (!this.game || !this.game.isLoaded() || this.game.node.children.length === 0) {
-			return;
-		}
-
-		//Init vars
-		var children = [], self = this, i;
-
-		//When picking a child node, we always prefer to pick a valid solution
-		for (i = 0; i < this.game.node.children.length; i++) {
-			if (this.game.node.children[i].solution) {
-				children.push(this.game.node.children[i]);
-			}
-		}
-
-		//No solution nodes? Just use all nodes then.
-		if (children.length === 0) {
-			children = this.game.node.children;
-		}
-
-		//Pick a random child node
-		i = Math.floor(Math.random() * children.length);
-
-		//No delay?
-		if (immediately || !this.solveAutoPlayDelay) {
-			this.next(children[i]);
-			return;
-		}
-
-		//Block navigation and run the timeout
-		this.solveNavigationBlocked = true;
-		$timeout(function() {
-
-			//Move to next move and unblock navigation
-			self.next(children[i]);
-			self.solveNavigationBlocked = false;
-
-			//TODO: Forget last hover position and update hover mark
-			//self.lastX = self.lastY = -1;
-			//updateHoverMark.call(self, x, y);
-
-		}, this.solveAutoPlayDelay);
-	};
-
-	/**
-	 * Start solving from the current game node
-	 */
-	Player.solve = function() {
-
-		//Switch player mode
-		this.switchMode(PlayerModes.SOLVE);
-
-		//Must have a game
-		if (!this.game || !this.game.isLoaded()) {
-			return false;
-		}
-
-		//Reset flags
-		this.problemSolved = false;
-		this.problemOffPath = false;
-
-		//Remember problem start path
-		this.problemStartPath = this.game.getPath(true);
-
-		//Restrict start of navigation to the current node
-		this.restrictNode();
-
-		//Auto play next move if it's not our turn
-		if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
-			this.autoPlayNext();
-		}
-	};
-
-	/**
-	 * Restart the problem
-	 */
-	Player.restartProblem = function() {
-
-		//Must be in solve mode, must have game
-		if (this.mode != PlayerModes.SOLVE || !this.game || !this.game.isLoaded()) {
-			return;
-		}
-
-		//Reset flags
-		this.problemSolved = false;
-		this.problemOffPath = false;
-
-		//Go back to the start path
-		if (this.problemStartPath) {
-			this.goto(this.problemStartPath);
-		}
-
-		//Auto play next move if it's not our turn
-		if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
-			this.autoPlayNext();
-		}
-	};
-
-	//Solved and off-path flags
-	Player.problemSolved = false;
-	Player.problemOffPath = false;
-
-	//Problem start path
-	Player.problemStartPath = null;
-
-	//The player color
-	Player.playerColor = 0;
-
-	//Solution paths
-	Player.solutionPaths = false;
-
-	//Auto play vars
-	Player.solveAutoPlay = true;
-	Player.solveAutoPlayDelay = 500;
-
-	//Navigation blocked flag
-	Player.solveNavigationBlocked = false;
 
 	//Register mode
 	Player.registerMode(PlayerModes.SOLVE, PlayerModeSolve);
@@ -242,7 +60,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function($document, Player, PlayerTools) {
+	this.$get = function($document, $timeout, Player, PlayerModes, PlayerTools) {
 
 		/**
 		 * Check if we can make a move
@@ -367,6 +185,192 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 		};
 
 		/**
+		 * Player extension
+		 */
+		angular.extend(Player, {
+
+			//Solved and off-path flags
+			problemSolved: false,
+			problemOffPath: false,
+
+			//Problem start path
+			problemStartPath: null,
+
+			//The player color
+			playerColor: 0,
+
+			//Solution paths
+			solutionPaths: false,
+
+			//Auto play vars
+			solveAutoPlay: true,
+			solveAutoPlayDelay: 500,
+
+			//Navigation blocked flag
+			solveNavigationBlocked: false,
+
+			/**
+			 * Set solve auto play delay
+			 */
+			setSolveAutoPlay: function(autoPlay) {
+				if (this.solveAutoPlay != autoPlay) {
+					this.solveAutoPlay = autoPlay;
+					this.broadcast('settingChange', 'solveAutoPlay');
+				}
+			},
+
+			/**
+			 * Set solve auto play delay
+			 */
+			setSolveAutoPlayDelay: function(delay) {
+				if (this.solveAutoPlayDelay != delay) {
+					this.solveAutoPlayDelay = delay;
+					this.broadcast('settingChange', 'solveAutoPlayDelay');
+				}
+			},
+
+			/**
+			 * Set player color
+			 */
+			setPlayerColor: function(color) {
+				if (this.playerColor != color) {
+					this.playerColor = color;
+					this.broadcast('settingChange', 'playerColor');
+				}
+			},
+
+			/**
+			 * Get player color
+			 */
+			getPlayerColor: function(asOnBoard) {
+				if (asOnBoard && this.board) {
+					return this.board.colorMultiplier * this.playerColor;
+				}
+				return this.playerColor;
+			},
+
+			/**
+			 * Toggle solution paths
+			 */
+			toggleSolutionPaths: function(solutionPaths) {
+
+				//Toggle if not given
+				if (typeof solutionPaths == 'undefined') {
+					solutionPaths = !this.solutionPaths;
+				}
+
+				//Change?
+				if (solutionPaths != this.solutionPaths) {
+					this.solutionPaths = solutionPaths;
+					this.broadcast('settingChange', 'solutionPaths');
+				}
+			},
+
+			/**
+			 * Auto play next move
+			 */
+			autoPlayNext: function(immediately) {
+
+				//Must have game and children
+				if (!this.game || !this.game.isLoaded() || this.game.node.children.length === 0) {
+					return;
+				}
+
+				//Init vars
+				var children = [], self = this, i;
+
+				//When picking a child node, we always prefer to pick a valid solution
+				for (i = 0; i < this.game.node.children.length; i++) {
+					if (this.game.node.children[i].solution) {
+						children.push(this.game.node.children[i]);
+					}
+				}
+
+				//No solution nodes? Just use all nodes then.
+				if (children.length === 0) {
+					children = this.game.node.children;
+				}
+
+				//Pick a random child node
+				i = Math.floor(Math.random() * children.length);
+
+				//No delay?
+				if (immediately || !this.solveAutoPlayDelay) {
+					this.next(children[i]);
+					return;
+				}
+
+				//Block navigation and run the timeout
+				this.solveNavigationBlocked = true;
+				$timeout(function() {
+
+					//Move to next move and unblock navigation
+					self.next(children[i]);
+					self.solveNavigationBlocked = false;
+
+					//TODO: Forget last hover position and update hover mark
+					//self.mouse.lastX = self.mouse.lastY = -1;
+					//updateHoverMark.call(self, x, y);
+
+				}, this.solveAutoPlayDelay);
+			},
+
+			/**
+			 * Start solving from the current game node
+			 */
+			solve: function() {
+
+				//Switch player mode
+				this.switchMode(PlayerModes.SOLVE);
+
+				//Must have a game
+				if (!this.game || !this.game.isLoaded()) {
+					return false;
+				}
+
+				//Reset flags
+				this.problemSolved = false;
+				this.problemOffPath = false;
+
+				//Remember problem start path
+				this.problemStartPath = this.game.getPath(true);
+
+				//Restrict start of navigation to the current node
+				this.restrictNode();
+
+				//Auto play next move if it's not our turn
+				if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+					this.autoPlayNext();
+				}
+			},
+
+			/**
+			 * Restart the problem
+			 */
+			restartProblem: function() {
+
+				//Must be in solve mode, must have game
+				if (this.mode != PlayerModes.SOLVE || !this.game || !this.game.isLoaded()) {
+					return;
+				}
+
+				//Reset flags
+				this.problemSolved = false;
+				this.problemOffPath = false;
+
+				//Go back to the start path
+				if (this.problemStartPath) {
+					this.goto(this.problemStartPath);
+				}
+
+				//Auto play next move if it's not our turn
+				if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+					this.autoPlayNext();
+				}
+			}
+		});
+
+		/**
 		 * Player mode definition
 		 */
 		var PlayerModeSolve = {
@@ -487,7 +491,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 				//Update hover mark
 				if (this.board) {
 					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.lastX, this.lastY);
+					updateHoverMark.call(this, this.mouse.lastX, this.mouse.lastY);
 				}
 			},
 

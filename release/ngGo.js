@@ -1,5 +1,5 @@
 /**
- * ngGo v1.0.8, 14-12-2014
+ * ngGo v1.0.8, 15-12-2014
  * https://github.com/AdamBuczynski/ngGo
  *
  * Copyright (c) 2014 Adam Buczynski
@@ -9389,24 +9389,12 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 	Player.on('mouseup', PlayerModeCommon.mouseUp, [
 		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
 	]);
-	Player.on('toolSwitch', PlayerModeCommon.toolSwitch, [
-		PlayerModes.REPLAY, PlayerModes.EDIT
-	]);
-
-	//Last x and y coordinates for mouse events
-	Player.lastX = -1;
-	Player.lastY = -1;
 }])
 
 /**
  * Factory definition
  */
-.factory('PlayerModeCommon', ["$document", "PlayerTools", "GameScorer", function($document, PlayerTools, GameScorer) {
-
-	/**
-	 * Helper var to detect dragging
-	 */
-	var dragStart = null;
+.factory('PlayerModeCommon', ["$document", "Player", "PlayerTools", "GameScorer", function($document, Player, PlayerTools, GameScorer) {
 
 	/**
 	 * Helper to build drag object
@@ -9416,12 +9404,12 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		//Initialize drag object
 		var drag = {
 			start: {
-				x: (dragStart.x > event.x) ? event.x : dragStart.x,
-				y: (dragStart.y > event.y) ? event.y : dragStart.y,
+				x: (this.mouse.dragStart.x > event.x) ? event.x : this.mouse.dragStart.x,
+				y: (this.mouse.dragStart.y > event.y) ? event.y : this.mouse.dragStart.y,
 			},
 			stop: {
-				x: (dragStart.x > event.x) ? dragStart.x : event.x,
-				y: (dragStart.y > event.y) ? dragStart.y : event.y,
+				x: (this.mouse.dragStart.x > event.x) ? this.mouse.dragStart.x : event.x,
+				y: (this.mouse.dragStart.y > event.y) ? this.mouse.dragStart.y : event.y,
 			}
 		};
 
@@ -9442,6 +9430,25 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		//Return
 		return drag;
 	};
+
+	/**
+	 * Player extension
+	 */
+	angular.extend(Player, {
+
+		/**
+		 * Mouse coordinate helper vars
+		 */
+		mouse: {
+
+			//Drag start
+			dragStart: null,
+
+			//Last grid coordinates
+			lastX: -1,
+			lastY: -1
+		}
+	});
 
 	/**
 	 * Player mode definition
@@ -9470,7 +9477,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 				case 27:
 
 					//Cancel drag event, and prevent click event as well
-					dragStart = null;
+					this.mouse.dragStart = null;
 					this.preventClickEvent = true;
 					break;
 
@@ -9563,7 +9570,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		mouseMove: function(event, mouseEvent) {
 
 			//Attach drag object to events
-			if (dragStart && (dragStart.x != event.x || dragStart.y != event.y)) {
+			if (this.mouse.dragStart && (this.mouse.dragStart.x != event.x || this.mouse.dragStart.y != event.y)) {
 				mouseEvent.drag = dragObject.call(this, event);
 			}
 
@@ -9573,13 +9580,13 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			}
 
 			//Last coordinates are the same?
-			if (this.lastX == event.x && this.lastY == event.y) {
+			if (this.mouse.lastX == event.x && this.mouse.lastY == event.y) {
 				return;
 			}
 
 			//Remember last coordinates
-			this.lastX = event.x;
-			this.lastY = event.y;
+			this.mouse.lastX = event.x;
+			this.mouse.lastY = event.y;
 
 			//Broadcast hover event
 			this.broadcast('hover', mouseEvent);
@@ -9589,43 +9596,21 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		 * Mouse down handler
 		 */
 		mouseDown: function(event, mouseEvent) {
-			dragStart = {x: event.x, y: event.y};
+			this.mouse.dragStart = {
+				x: event.x,
+				y: event.y
+			};
 		},
 
 		/**
 		 * Mouse up handler
 		 */
 		mouseUp: function(event, mouseEvent) {
-			if (dragStart && (dragStart.x != event.x || dragStart.y != event.y)) {
+			if (this.mouse.dragStart && (this.mouse.dragStart.x != event.x || this.mouse.dragStart.y != event.y)) {
 				mouseEvent.drag = dragObject.call(this, event);
 				this.broadcast('mousedrag', mouseEvent);
 			}
-			dragStart = null;
-		},
-
-		/**
-		 * Handler for tool switches
-		 */
-		toolSwitch: function(event) {
-
-			//Switched to scoring?
-			if (this.tool == PlayerTools.SCORE) {
-
-				//Remember the current board state
-				this.statePreScoring = this.board.getState();
-
-				//Load game into scorer and score the game
-				GameScorer.load(this.game);
-				this.scoreGame();
-			}
-
-			//Back to another state?
-			else {
-				if (this.statePreScoring) {
-					this.board.restoreState(this.statePreScoring);
-					delete this.statePreScoring;
-				}
-			}
+			this.mouse.dragStart = null;
 		}
 	};
 
@@ -9647,142 +9632,43 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 ])
 
 /**
+ * Setup tools
+ */
+.constant('SetupTools', {
+	BLACK:		'black',
+	WHITE:		'white',
+	CLEAR:		'clear'
+})
+
+/**
+ * Markup tools
+ */
+.constant('MarkupTools', {
+	TRIANGLE:	'triangle',
+	CIRCLE:		'circle',
+	SQUARE:		'square',
+	MARK:		'mark',
+	SELECT:		'select',
+	SAD:		'sad',
+	HAPPY:		'happy',
+	TEXT:		'text',
+	NUMBER:		'number',
+	CLEAR:		'clear'
+})
+
+/**
  * Extend player functionality and register the mode
  */
-.run(["Player", "PlayerModes", "PlayerModeEdit", "StoneColor", function(Player, PlayerModes, PlayerModeEdit, StoneColor) {
+.run(["Player", "PlayerModes", "PlayerModeEdit", function(Player, PlayerModes, PlayerModeEdit) {
 
-	/**
-	 * Register event handlers
-	 */
+	//Register event handlers
 	Player.on('pathChange', PlayerModeEdit.pathChange, PlayerModes.EDIT);
+	Player.on('toolSwitch', PlayerModeEdit.toolSwitch, PlayerModes.EDIT);
 	Player.on('modeEnter', PlayerModeEdit.modeEnter, PlayerModes.EDIT);
 	Player.on('mousedrag', PlayerModeEdit.mouseDrag, PlayerModes.EDIT);
 	Player.on('keydown', PlayerModeEdit.keyDown, PlayerModes.EDIT);
 	Player.on('click', PlayerModeEdit.click, PlayerModes.EDIT);
 	Player.on('hover', PlayerModeEdit.hover, PlayerModes.EDIT);
-
-	//Setup tools
-	Player.setupTools = {
-		BLACK:		'black',
-		WHITE:		'white',
-		CLEAR:		'clear'
-	};
-
-	//Markup tools
-	Player.markupTools = {
-		TRIANGLE:	'triangle',
-		CIRCLE:		'circle',
-		SQUARE:		'square',
-		MARK:		'mark',
-		SELECT:		'select',
-		SAD:		'sad',
-		HAPPY:		'happy',
-		TEXT:		'text',
-		NUMBER:		'number',
-		CLEAR:		'clear'
-	};
-
-	//Active setup type and markup type
-	Player.setupTool = Player.setupTools.BLACK;
-	Player.markupTool = Player.markupTools.TRIANGLE;
-
-	//Current markup labels on the board and current markup label
-	Player.markupLabels = [];
-	Player.markupLabel = '';
-
-	//Character codes
-	var aChar = 'A'.charCodeAt(0),
-		aCharLc = 'a'.charCodeAt(0);
-
-	/**
-	 * Set the setup tool
-	 */
-	Player.switchSetupTool = function(tool) {
-		this.setupTool = tool;
-	};
-
-	/**
-	 * Set the markup tool
-	 */
-	Player.switchMarkupTool = function(tool) {
-		this.markupTool = tool;
-		if (this.markupTool == this.markupTools.TEXT || this.markupTool == this.markupTools.NUMBER) {
-			this.determineMarkupLabel();
-		}
-	};
-
-	/**
-	 * Conversion of setup tool to stone color
-	 */
-	Player.setupToolColor = function() {
-		switch (this.setupTool) {
-			case this.setupTools.BLACK:
-				return StoneColor.B;
-			case this.setupTools.WHITE:
-				return StoneColor.W;
-			default:
-				return StoneColor.EMPTY;
-		}
-	};
-
-	/**
-	 * Set the new text markup label
-	 */
-	Player.setMarkupLabel = function(label) {
-		if (label) {
-			this.markupLabel = label;
-		}
-	};
-
-	/**
-	 * Determine the new text markup label
-	 */
-	Player.determineMarkupLabel = function() {
-
-		//Clear
-		this.markupLabel = '';
-
-		//Check what tool we're using
-		switch (this.markupTool) {
-
-			//Text tool?
-			case this.markupTools.TEXT:
-				var i = 0;
-
-				//Loop while the label is present
-				while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) != -1) {
-
-					//A-Z
-					if (i < 26) {
-						this.markupLabel = String.fromCharCode(aChar + i);
-					}
-
-					//a-z
-					else if (i < 52) {
-						this.markupLabel = String.fromCharCode(aCharLc + i - 26);
-					}
-
-					//AA, AB, AC, etc.
-					else {
-						this.markupLabel = String.fromCharCode(aChar + Math.floor(i / 26) - 2) + String.fromCharCode(aChar + (i % 26));
-					}
-
-					//Keep going
-					i++;
-				}
-				break;
-
-			//Number tool?
-			case this.markupTools.NUMBER:
-				this.markupLabel = 0;
-
-				//Loop while the label is present
-				while (this.markupLabel === 0 || this.markupLabels.indexOf(this.markupLabel) != -1) {
-					this.markupLabel++;
-				}
-				break;
-		}
-	};
 
 	//Register mode
 	Player.registerMode(PlayerModes.EDIT, PlayerModeEdit);
@@ -9810,7 +9696,11 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = ["$document", "PlayerTools", "MarkupTypes", "GameScorer", "StoneColor", function($document, PlayerTools, MarkupTypes, GameScorer, StoneColor) {
+	this.$get = ["$document", "Player", "PlayerTools", "SetupTools", "MarkupTools", "MarkupTypes", "GameScorer", "StoneColor", function($document, Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor) {
+
+		//Character codes
+		var aChar = 'A'.charCodeAt(0),
+			aCharLc = 'a'.charCodeAt(0);
 
 		/**
 		 * Update hover mark at specific coordinates
@@ -9829,7 +9719,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				case PlayerTools.SETUP:
 
 					//Clear tool
-					if (this.setupTool == this.setupTools.CLEAR) {
+					if (this.setupTool == SetupTools.CLEAR) {
 
 						//Stone present? Can remove it
 						if (this.game.hasStone(x, y)) {
@@ -9865,7 +9755,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				case PlayerTools.MARKUP:
 
 					//Clear tool, or already markup in place?
-					if (this.markupTool == this.markupTools.CLEAR || this.game.hasMarkup(x, y)) {
+					if (this.markupTool == MarkupTools.CLEAR || this.game.hasMarkup(x, y)) {
 						if (this.game.hasMarkup(x, y)) {
 							this.board.add('hover', x, y, {
 								type: 'markup',
@@ -9875,7 +9765,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 					}
 
 					//Text or number
-					else if (this.markupTool == this.markupTools.TEXT || this.markupTool == this.markupTools.NUMBER) {
+					else if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
 						this.board.add('hover', x, y, {
 							type: 'markup',
 							value: {
@@ -9945,12 +9835,12 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			}
 
 			//Clear tool used? Done
-			if (this.markupTool == this.markupTools.CLEAR) {
+			if (this.markupTool == MarkupTools.CLEAR) {
 				return;
 			}
 
 			//Text
-			else if (this.markupTool == this.markupTools.TEXT) {
+			else if (this.markupTool == MarkupTools.TEXT) {
 				this.game.addMarkup(x, y, {
 					type: MarkupTypes.LABEL,
 					text: this.markupLabel
@@ -9962,7 +9852,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			}
 
 			//Number
-			else if (this.markupTool == this.markupTools.NUMBER) {
+			else if (this.markupTool == MarkupTools.NUMBER) {
 				this.game.addMarkup(x, y, {
 					type: MarkupTypes.LABEL,
 					text: this.markupLabel
@@ -10037,6 +9927,110 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		};
 
 		/**
+		 * Player extension
+		 */
+		angular.extend(Player, {
+
+			//Active setup tool and markup tool
+			setupTool: SetupTools.BLACK,
+			markupTool: MarkupTools.TRIANGLE,
+
+			//Current markup labels on the board and current markup label
+			markupLabels: [],
+			markupLabel: '',
+
+			/**
+			 * Set the setup tool
+			 */
+			switchSetupTool: function(tool) {
+				this.setupTool = tool;
+			},
+
+			/**
+			 * Set the markup tool
+			 */
+			switchMarkupTool: function(tool) {
+				this.markupTool = tool;
+				if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+					this.determineMarkupLabel();
+				}
+			},
+
+			/**
+			 * Conversion of setup tool to stone color
+			 */
+			setupToolColor: function() {
+				switch (this.setupTool) {
+					case SetupTools.BLACK:
+						return StoneColor.B;
+					case SetupTools.WHITE:
+						return StoneColor.W;
+					default:
+						return StoneColor.EMPTY;
+				}
+			},
+
+			/**
+			 * Set the new text markup label
+			 */
+			setMarkupLabel: function(label) {
+				if (label) {
+					this.markupLabel = label;
+				}
+			},
+
+			/**
+			 * Determine the new text markup label
+			 */
+			determineMarkupLabel: function() {
+
+				//Clear
+				this.markupLabel = '';
+
+				//Check what tool we're using
+				switch (this.markupTool) {
+
+					//Text tool?
+					case MarkupTools.TEXT:
+						var i = 0;
+
+						//Loop while the label is present
+						while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) != -1) {
+
+							//A-Z
+							if (i < 26) {
+								this.markupLabel = String.fromCharCode(aChar + i);
+							}
+
+							//a-z
+							else if (i < 52) {
+								this.markupLabel = String.fromCharCode(aCharLc + i - 26);
+							}
+
+							//AA, AB, AC, etc.
+							else {
+								this.markupLabel = String.fromCharCode(aChar + Math.floor(i / 26) - 2) + String.fromCharCode(aChar + (i % 26));
+							}
+
+							//Keep going
+							i++;
+						}
+						break;
+
+					//Number tool?
+					case MarkupTools.NUMBER:
+						this.markupLabel = 0;
+
+						//Loop while the label is present
+						while (this.markupLabel === 0 || this.markupLabels.indexOf(this.markupLabel) != -1) {
+							this.markupLabel++;
+						}
+						break;
+				}
+			}
+		});
+
+		/**
 		 * Player mode definition
 		 */
 		var PlayerModeEdit = {
@@ -10061,7 +10055,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				}
 
 				//No dragging for labels
-				if (this.markupTool == this.markupTools.TEXT || this.markupTool == this.markupTools.NUMBER) {
+				if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
 					updateHoverMark.call(this, event.x, event.y, false);
 					return;
 				}
@@ -10096,7 +10090,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				//Update hover mark
 				if (this.board) {
 					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.lastX, this.lastY);
+					updateHoverMark.call(this, this.mouse.lastX, this.mouse.lastY);
 				}
 			},
 
@@ -10191,7 +10185,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 					case PlayerTools.MARKUP:
 
 						//Don't do this for labels
-						if (this.markupTool == this.markupTools.TEXT || this.markupTool == this.markupTools.NUMBER) {
+						if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
 							break;
 						}
 
@@ -10236,6 +10230,31 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			 */
 			pathChange: function(event, node) {
 				findAllMarkupLabels.call(this);
+			},
+
+			/**
+			 * Handler for tool switches
+			 */
+			toolSwitch: function(event) {
+
+				//Switched to scoring?
+				if (this.tool == PlayerTools.SCORE) {
+
+					//Remember the current board state
+					this.statePreScoring = this.board.getState();
+
+					//Load game into scorer and score the game
+					GameScorer.load(this.game);
+					this.scoreGame();
+				}
+
+				//Back to another state?
+				else {
+					if (this.statePreScoring) {
+						this.board.restoreState(this.statePreScoring);
+						delete this.statePreScoring;
+					}
+				}
 			}
 		};
 
@@ -10260,109 +10279,17 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 /**
  * Extend player functionality and register the mode
  */
-.run(["$interval", "Player", "PlayerModes", "PlayerTools", "PlayerModeReplay", function($interval, Player, PlayerModes, PlayerTools, PlayerModeReplay) {
+.run(["Player", "PlayerModes", "PlayerModeReplay", function(Player, PlayerModes, PlayerModeReplay) {
 
-	/**
-	 * Register event handlers
-	 */
+	//Register event handlers
 	Player.on('settingChange', PlayerModeReplay.settingChange, PlayerModes.REPLAY);
 	Player.on('boardUpdate', PlayerModeReplay.boardUpdate, PlayerModes.REPLAY);
+	Player.on('toolSwitch', PlayerModeReplay.toolSwitch, PlayerModes.REPLAY);
 	Player.on('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
 	Player.on('modeExit', PlayerModeReplay.modeExit, PlayerModes.REPLAY);
 	Player.on('keydown', PlayerModeReplay.keyDown, PlayerModes.REPLAY);
 	Player.on('click', PlayerModeReplay.click, PlayerModes.REPLAY);
 	Player.on('hover', PlayerModeReplay.hover, PlayerModes.REPLAY);
-
-	/**
-	 * Set auto play delay
-	 */
-	Player.setAutoPlayDelay = function(delay) {
-		if (this.autoPlayDelay != delay) {
-			this.autoPlayDelay = delay;
-			this.broadcast('settingChange', 'autoPlayDelay');
-		}
-	};
-
-	/**
-	 * Start auto play with a given delay
-	 */
-	Player.start = function(delay) {
-
-		//Not in replay mode or already auto playing?
-		if (this.mode != PlayerModes.REPLAY || this.autoPlaying) {
-			return;
-		}
-
-		//Already auto playing, no game or no move children?
-		if (!this.game || !this.game.node.hasChildren()) {
-			return;
-		}
-
-		//Get self
-		var self = this;
-
-		//Determine delay
-		delay = (typeof delay == 'number') ? delay : this.autoPlayDelay;
-
-		//Switch tool
-		this.switchTool(PlayerTools.NONE);
-
-		//Create interval
-		this.autoPlaying = true;
-		this.autoPlayPromise = $interval(function() {
-
-			//Advance to the next node
-			self.next(0, true);
-
-			//Ran out of children?
-			if (!self.game.node.hasChildren()) {
-				self.stop();
-			}
-		}, delay);
-
-		//Broadcast event
-		this.broadcast('autoPlayStarted', this.game.node);
-	};
-
-	/**
-	 * Stop auto play
-	 */
-	Player.stop = function() {
-
-		//Not in replay mode or not auto playing?
-		if (this.mode != PlayerModes.REPLAY || !this.autoPlaying) {
-			return;
-		}
-
-		//Cancel interval
-		if (this.autoPlayPromise) {
-			$interval.cancel(this.autoPlayPromise);
-		}
-
-		//Clear flags
-		this.autoPlayPromise = null;
-		this.autoPlaying = false;
-
-		//Broadcast event
-		this.broadcast('autoPlayStopped', this.game.node);
-	};
-
-	/**
-	 * Helper to start in "demo" mode, which is replay mode with no tool
-	 */
-	Player.demo = function() {
-
-		//Switch mode to replay
-		this.switchMode(PlayerModes.REPLAY);
-
-		//Switch tool to none
-		this.switchTool(PlayerTools.NONE);
-	};
-
-	//Auto play vars
-	Player.autoPlaying = false;
-	Player.autoPlayDelay = 1000;
-	Player.autoPlayPromise = null;
 
 	//Register the mode
 	Player.registerMode(PlayerModes.REPLAY, PlayerModeReplay);
@@ -10379,7 +10306,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	var defaultConfig = {
 
 		//Auto play delay
-		auto_play_delay: 1000,
+		auto_play_delay: 1000
 	};
 
 	/**
@@ -10392,7 +10319,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = ["Player", "PlayerTools", "MarkupTypes", "GameScorer", function(Player, PlayerTools, MarkupTypes, GameScorer) {
+	this.$get = ["$interval", "Player", "PlayerModes", "PlayerTools", "MarkupTypes", "GameScorer", function($interval, Player, PlayerModes, PlayerTools, MarkupTypes, GameScorer) {
 
 		/**
 		 * Helper to update the hover mark
@@ -10502,6 +10429,99 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 		};
 
 		/**
+		 * Player extension
+		 */
+		angular.extend(Player, {
+
+			//Auto play vars
+			autoPlaying: false,
+			autoPlayDelay: 1000,
+			autoPlayPromise: null,
+
+			/**
+			 * Set auto play delay
+			 */
+			setAutoPlayDelay: function(delay) {
+				if (this.autoPlayDelay != delay) {
+					this.autoPlayDelay = delay;
+					this.broadcast('settingChange', 'autoPlayDelay');
+				}
+			},
+
+			/**
+			 * Start auto play with a given delay
+			 */
+			start: function(delay) {
+
+				//Not in replay mode or already auto playing?
+				if (this.mode != PlayerModes.REPLAY || this.autoPlaying) {
+					return;
+				}
+
+				//Already auto playing, no game or no move children?
+				if (!this.game || !this.game.node.hasChildren()) {
+					return;
+				}
+
+				//Get self
+				var self = this;
+
+				//Determine delay
+				delay = (typeof delay == 'number') ? delay : this.autoPlayDelay;
+
+				//Switch tool
+				this.switchTool(PlayerTools.NONE);
+
+				//Create interval
+				this.autoPlaying = true;
+				this.autoPlayPromise = $interval(function() {
+
+					//Advance to the next node
+					self.next(0, true);
+
+					//Ran out of children?
+					if (!self.game.node.hasChildren()) {
+						self.stop();
+					}
+				}, delay);
+
+				//Broadcast event
+				this.broadcast('autoPlayStarted', this.game.node);
+			},
+
+			/**
+			 * Stop auto play
+			 */
+			stop: function() {
+
+				//Not in replay mode or not auto playing?
+				if (this.mode != PlayerModes.REPLAY || !this.autoPlaying) {
+					return;
+				}
+
+				//Cancel interval
+				if (this.autoPlayPromise) {
+					$interval.cancel(this.autoPlayPromise);
+				}
+
+				//Clear flags
+				this.autoPlayPromise = null;
+				this.autoPlaying = false;
+
+				//Broadcast event
+				this.broadcast('autoPlayStopped', this.game.node);
+			},
+
+			/**
+			 * Helper to switch to demo "mode", which is replay mode with no tool
+			 */
+			demo: function() {
+				this.switchMode(PlayerModes.REPLAY);
+				this.switchTool(PlayerTools.NONE);
+			}
+		});
+
+		/**
 		 * Player mode definition
 		 */
 		var PlayerModeReplay = {
@@ -10558,7 +10578,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 				//Update hover mark
 				if (this.board) {
 					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.lastX, this.lastY);
+					updateHoverMark.call(this, this.mouse.lastX, this.mouse.lastY);
 				}
 			},
 
@@ -10632,6 +10652,31 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 				if (this.variationMarkup) {
 					drawMoveVariations.call(this, false);
 				}
+			},
+
+			/**
+			 * Handler for tool switches
+			 */
+			toolSwitch: function(event) {
+
+				//Switched to scoring?
+				if (this.tool == PlayerTools.SCORE) {
+
+					//Remember the current board state
+					this.statePreScoring = this.board.getState();
+
+					//Load game into scorer and score the game
+					GameScorer.load(this.game);
+					this.scoreGame();
+				}
+
+				//Back to another state?
+				else {
+					if (this.statePreScoring) {
+						this.board.restoreState(this.statePreScoring);
+						delete this.statePreScoring;
+					}
+				}
 			}
 		};
 
@@ -10655,11 +10700,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 /**
  * Extend player functionality and register the mode
  */
-.run(["Player", "PlayerModes", "PlayerModeSolve", "$timeout", function(Player, PlayerModes, PlayerModeSolve, $timeout) {
+.run(["Player", "PlayerModes", "PlayerModeSolve", function(Player, PlayerModes, PlayerModeSolve) {
 
-	/**
-	 * Register event handlers
-	 */
+	//Register event handlers
 	Player.on('settingChange', PlayerModeSolve.settingChange, PlayerModes.SOLVE);
 	Player.on('boardUpdate', PlayerModeSolve.boardUpdate, PlayerModes.SOLVE);
 	Player.on('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
@@ -10667,186 +10710,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	Player.on('keydown', PlayerModeSolve.keyDown, PlayerModes.SOLVE);
 	Player.on('click', PlayerModeSolve.click, PlayerModes.SOLVE);
 	Player.on('hover', PlayerModeSolve.hover, PlayerModes.SOLVE);
-
-	/**
-	 * Set solve auto play delay
-	 */
-	Player.setSolveAutoPlay = function(autoPlay) {
-		if (this.solveAutoPlay != autoPlay) {
-			this.solveAutoPlay = autoPlay;
-			this.broadcast('settingChange', 'solveAutoPlay');
-		}
-	};
-
-	/**
-	 * Set solve auto play delay
-	 */
-	Player.setSolveAutoPlayDelay = function(delay) {
-		if (this.solveAutoPlayDelay != delay) {
-			this.solveAutoPlayDelay = delay;
-			this.broadcast('settingChange', 'solveAutoPlayDelay');
-		}
-	};
-
-	/**
-	 * Set player color
-	 */
-	Player.setPlayerColor = function(color) {
-		if (this.playerColor != color) {
-			this.playerColor = color;
-			this.broadcast('settingChange', 'playerColor');
-		}
-	};
-
-	/**
-	 * Get player color
-	 */
-	Player.getPlayerColor = function(asOnBoard) {
-		if (asOnBoard && this.board) {
-			return this.board.colorMultiplier * this.playerColor;
-		}
-		return this.playerColor;
-	};
-
-	/**
-	 * Toggle solution paths
-	 */
-	Player.toggleSolutionPaths = function(solutionPaths) {
-
-		//Toggle if not given
-		if (typeof solutionPaths == 'undefined') {
-			solutionPaths = !this.solutionPaths;
-		}
-
-		//Change?
-		if (solutionPaths != this.solutionPaths) {
-			this.solutionPaths = solutionPaths;
-			this.broadcast('settingChange', 'solutionPaths');
-		}
-	};
-
-	/**
-	 * Auto play next move
-	 */
-	Player.autoPlayNext = function(immediately) {
-
-		//Must have game and children
-		if (!this.game || !this.game.isLoaded() || this.game.node.children.length === 0) {
-			return;
-		}
-
-		//Init vars
-		var children = [], self = this, i;
-
-		//When picking a child node, we always prefer to pick a valid solution
-		for (i = 0; i < this.game.node.children.length; i++) {
-			if (this.game.node.children[i].solution) {
-				children.push(this.game.node.children[i]);
-			}
-		}
-
-		//No solution nodes? Just use all nodes then.
-		if (children.length === 0) {
-			children = this.game.node.children;
-		}
-
-		//Pick a random child node
-		i = Math.floor(Math.random() * children.length);
-
-		//No delay?
-		if (immediately || !this.solveAutoPlayDelay) {
-			this.next(children[i]);
-			return;
-		}
-
-		//Block navigation and run the timeout
-		this.solveNavigationBlocked = true;
-		$timeout(function() {
-
-			//Move to next move and unblock navigation
-			self.next(children[i]);
-			self.solveNavigationBlocked = false;
-
-			//TODO: Forget last hover position and update hover mark
-			//self.lastX = self.lastY = -1;
-			//updateHoverMark.call(self, x, y);
-
-		}, this.solveAutoPlayDelay);
-	};
-
-	/**
-	 * Start solving from the current game node
-	 */
-	Player.solve = function() {
-
-		//Switch player mode
-		this.switchMode(PlayerModes.SOLVE);
-
-		//Must have a game
-		if (!this.game || !this.game.isLoaded()) {
-			return false;
-		}
-
-		//Reset flags
-		this.problemSolved = false;
-		this.problemOffPath = false;
-
-		//Remember problem start path
-		this.problemStartPath = this.game.getPath(true);
-
-		//Restrict start of navigation to the current node
-		this.restrictNode();
-
-		//Auto play next move if it's not our turn
-		if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
-			this.autoPlayNext();
-		}
-	};
-
-	/**
-	 * Restart the problem
-	 */
-	Player.restartProblem = function() {
-
-		//Must be in solve mode, must have game
-		if (this.mode != PlayerModes.SOLVE || !this.game || !this.game.isLoaded()) {
-			return;
-		}
-
-		//Reset flags
-		this.problemSolved = false;
-		this.problemOffPath = false;
-
-		//Go back to the start path
-		if (this.problemStartPath) {
-			this.goto(this.problemStartPath);
-		}
-
-		//Auto play next move if it's not our turn
-		if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
-			this.autoPlayNext();
-		}
-	};
-
-	//Solved and off-path flags
-	Player.problemSolved = false;
-	Player.problemOffPath = false;
-
-	//Problem start path
-	Player.problemStartPath = null;
-
-	//The player color
-	Player.playerColor = 0;
-
-	//Solution paths
-	Player.solutionPaths = false;
-
-	//Auto play vars
-	Player.solveAutoPlay = true;
-	Player.solveAutoPlayDelay = 500;
-
-	//Navigation blocked flag
-	Player.solveNavigationBlocked = false;
 
 	//Register mode
 	Player.registerMode(PlayerModes.SOLVE, PlayerModeSolve);
@@ -10883,7 +10746,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = ["$document", "Player", "PlayerTools", function($document, Player, PlayerTools) {
+	this.$get = ["$document", "$timeout", "Player", "PlayerModes", "PlayerTools", function($document, $timeout, Player, PlayerModes, PlayerTools) {
 
 		/**
 		 * Check if we can make a move
@@ -11008,6 +10871,192 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 		};
 
 		/**
+		 * Player extension
+		 */
+		angular.extend(Player, {
+
+			//Solved and off-path flags
+			problemSolved: false,
+			problemOffPath: false,
+
+			//Problem start path
+			problemStartPath: null,
+
+			//The player color
+			playerColor: 0,
+
+			//Solution paths
+			solutionPaths: false,
+
+			//Auto play vars
+			solveAutoPlay: true,
+			solveAutoPlayDelay: 500,
+
+			//Navigation blocked flag
+			solveNavigationBlocked: false,
+
+			/**
+			 * Set solve auto play delay
+			 */
+			setSolveAutoPlay: function(autoPlay) {
+				if (this.solveAutoPlay != autoPlay) {
+					this.solveAutoPlay = autoPlay;
+					this.broadcast('settingChange', 'solveAutoPlay');
+				}
+			},
+
+			/**
+			 * Set solve auto play delay
+			 */
+			setSolveAutoPlayDelay: function(delay) {
+				if (this.solveAutoPlayDelay != delay) {
+					this.solveAutoPlayDelay = delay;
+					this.broadcast('settingChange', 'solveAutoPlayDelay');
+				}
+			},
+
+			/**
+			 * Set player color
+			 */
+			setPlayerColor: function(color) {
+				if (this.playerColor != color) {
+					this.playerColor = color;
+					this.broadcast('settingChange', 'playerColor');
+				}
+			},
+
+			/**
+			 * Get player color
+			 */
+			getPlayerColor: function(asOnBoard) {
+				if (asOnBoard && this.board) {
+					return this.board.colorMultiplier * this.playerColor;
+				}
+				return this.playerColor;
+			},
+
+			/**
+			 * Toggle solution paths
+			 */
+			toggleSolutionPaths: function(solutionPaths) {
+
+				//Toggle if not given
+				if (typeof solutionPaths == 'undefined') {
+					solutionPaths = !this.solutionPaths;
+				}
+
+				//Change?
+				if (solutionPaths != this.solutionPaths) {
+					this.solutionPaths = solutionPaths;
+					this.broadcast('settingChange', 'solutionPaths');
+				}
+			},
+
+			/**
+			 * Auto play next move
+			 */
+			autoPlayNext: function(immediately) {
+
+				//Must have game and children
+				if (!this.game || !this.game.isLoaded() || this.game.node.children.length === 0) {
+					return;
+				}
+
+				//Init vars
+				var children = [], self = this, i;
+
+				//When picking a child node, we always prefer to pick a valid solution
+				for (i = 0; i < this.game.node.children.length; i++) {
+					if (this.game.node.children[i].solution) {
+						children.push(this.game.node.children[i]);
+					}
+				}
+
+				//No solution nodes? Just use all nodes then.
+				if (children.length === 0) {
+					children = this.game.node.children;
+				}
+
+				//Pick a random child node
+				i = Math.floor(Math.random() * children.length);
+
+				//No delay?
+				if (immediately || !this.solveAutoPlayDelay) {
+					this.next(children[i]);
+					return;
+				}
+
+				//Block navigation and run the timeout
+				this.solveNavigationBlocked = true;
+				$timeout(function() {
+
+					//Move to next move and unblock navigation
+					self.next(children[i]);
+					self.solveNavigationBlocked = false;
+
+					//TODO: Forget last hover position and update hover mark
+					//self.mouse.lastX = self.mouse.lastY = -1;
+					//updateHoverMark.call(self, x, y);
+
+				}, this.solveAutoPlayDelay);
+			},
+
+			/**
+			 * Start solving from the current game node
+			 */
+			solve: function() {
+
+				//Switch player mode
+				this.switchMode(PlayerModes.SOLVE);
+
+				//Must have a game
+				if (!this.game || !this.game.isLoaded()) {
+					return false;
+				}
+
+				//Reset flags
+				this.problemSolved = false;
+				this.problemOffPath = false;
+
+				//Remember problem start path
+				this.problemStartPath = this.game.getPath(true);
+
+				//Restrict start of navigation to the current node
+				this.restrictNode();
+
+				//Auto play next move if it's not our turn
+				if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+					this.autoPlayNext();
+				}
+			},
+
+			/**
+			 * Restart the problem
+			 */
+			restartProblem: function() {
+
+				//Must be in solve mode, must have game
+				if (this.mode != PlayerModes.SOLVE || !this.game || !this.game.isLoaded()) {
+					return;
+				}
+
+				//Reset flags
+				this.problemSolved = false;
+				this.problemOffPath = false;
+
+				//Go back to the start path
+				if (this.problemStartPath) {
+					this.goto(this.problemStartPath);
+				}
+
+				//Auto play next move if it's not our turn
+				if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+					this.autoPlayNext();
+				}
+			}
+		});
+
+		/**
 		 * Player mode definition
 		 */
 		var PlayerModeSolve = {
@@ -11128,7 +11177,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 				//Update hover mark
 				if (this.board) {
 					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.lastX, this.lastY);
+					updateHoverMark.call(this, this.mouse.lastX, this.mouse.lastY);
 				}
 			},
 

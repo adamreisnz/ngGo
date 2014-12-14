@@ -13,142 +13,43 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 ])
 
 /**
+ * Setup tools
+ */
+.constant('SetupTools', {
+	BLACK:		'black',
+	WHITE:		'white',
+	CLEAR:		'clear'
+})
+
+/**
+ * Markup tools
+ */
+.constant('MarkupTools', {
+	TRIANGLE:	'triangle',
+	CIRCLE:		'circle',
+	SQUARE:		'square',
+	MARK:		'mark',
+	SELECT:		'select',
+	SAD:		'sad',
+	HAPPY:		'happy',
+	TEXT:		'text',
+	NUMBER:		'number',
+	CLEAR:		'clear'
+})
+
+/**
  * Extend player functionality and register the mode
  */
-.run(function(Player, PlayerModes, PlayerModeEdit, StoneColor) {
+.run(function(Player, PlayerModes, PlayerModeEdit) {
 
-	/**
-	 * Register event handlers
-	 */
+	//Register event handlers
 	Player.on('pathChange', PlayerModeEdit.pathChange, PlayerModes.EDIT);
+	Player.on('toolSwitch', PlayerModeEdit.toolSwitch, PlayerModes.EDIT);
 	Player.on('modeEnter', PlayerModeEdit.modeEnter, PlayerModes.EDIT);
 	Player.on('mousedrag', PlayerModeEdit.mouseDrag, PlayerModes.EDIT);
 	Player.on('keydown', PlayerModeEdit.keyDown, PlayerModes.EDIT);
 	Player.on('click', PlayerModeEdit.click, PlayerModes.EDIT);
 	Player.on('hover', PlayerModeEdit.hover, PlayerModes.EDIT);
-
-	//Setup tools
-	Player.setupTools = {
-		BLACK:		'black',
-		WHITE:		'white',
-		CLEAR:		'clear'
-	};
-
-	//Markup tools
-	Player.markupTools = {
-		TRIANGLE:	'triangle',
-		CIRCLE:		'circle',
-		SQUARE:		'square',
-		MARK:		'mark',
-		SELECT:		'select',
-		SAD:		'sad',
-		HAPPY:		'happy',
-		TEXT:		'text',
-		NUMBER:		'number',
-		CLEAR:		'clear'
-	};
-
-	//Active setup type and markup type
-	Player.setupTool = Player.setupTools.BLACK;
-	Player.markupTool = Player.markupTools.TRIANGLE;
-
-	//Current markup labels on the board and current markup label
-	Player.markupLabels = [];
-	Player.markupLabel = '';
-
-	//Character codes
-	var aChar = 'A'.charCodeAt(0),
-		aCharLc = 'a'.charCodeAt(0);
-
-	/**
-	 * Set the setup tool
-	 */
-	Player.switchSetupTool = function(tool) {
-		this.setupTool = tool;
-	};
-
-	/**
-	 * Set the markup tool
-	 */
-	Player.switchMarkupTool = function(tool) {
-		this.markupTool = tool;
-		if (this.markupTool == this.markupTools.TEXT || this.markupTool == this.markupTools.NUMBER) {
-			this.determineMarkupLabel();
-		}
-	};
-
-	/**
-	 * Conversion of setup tool to stone color
-	 */
-	Player.setupToolColor = function() {
-		switch (this.setupTool) {
-			case this.setupTools.BLACK:
-				return StoneColor.B;
-			case this.setupTools.WHITE:
-				return StoneColor.W;
-			default:
-				return StoneColor.EMPTY;
-		}
-	};
-
-	/**
-	 * Set the new text markup label
-	 */
-	Player.setMarkupLabel = function(label) {
-		if (label) {
-			this.markupLabel = label;
-		}
-	};
-
-	/**
-	 * Determine the new text markup label
-	 */
-	Player.determineMarkupLabel = function() {
-
-		//Clear
-		this.markupLabel = '';
-
-		//Check what tool we're using
-		switch (this.markupTool) {
-
-			//Text tool?
-			case this.markupTools.TEXT:
-				var i = 0;
-
-				//Loop while the label is present
-				while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) != -1) {
-
-					//A-Z
-					if (i < 26) {
-						this.markupLabel = String.fromCharCode(aChar + i);
-					}
-
-					//a-z
-					else if (i < 52) {
-						this.markupLabel = String.fromCharCode(aCharLc + i - 26);
-					}
-
-					//AA, AB, AC, etc.
-					else {
-						this.markupLabel = String.fromCharCode(aChar + Math.floor(i / 26) - 2) + String.fromCharCode(aChar + (i % 26));
-					}
-
-					//Keep going
-					i++;
-				}
-				break;
-
-			//Number tool?
-			case this.markupTools.NUMBER:
-				this.markupLabel = 0;
-
-				//Loop while the label is present
-				while (this.markupLabel === 0 || this.markupLabels.indexOf(this.markupLabel) != -1) {
-					this.markupLabel++;
-				}
-				break;
-		}
-	};
 
 	//Register mode
 	Player.registerMode(PlayerModes.EDIT, PlayerModeEdit);
@@ -176,7 +77,11 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function($document, PlayerTools, MarkupTypes, GameScorer, StoneColor) {
+	this.$get = function($document, Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor) {
+
+		//Character codes
+		var aChar = 'A'.charCodeAt(0),
+			aCharLc = 'a'.charCodeAt(0);
 
 		/**
 		 * Update hover mark at specific coordinates
@@ -195,7 +100,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				case PlayerTools.SETUP:
 
 					//Clear tool
-					if (this.setupTool == this.setupTools.CLEAR) {
+					if (this.setupTool == SetupTools.CLEAR) {
 
 						//Stone present? Can remove it
 						if (this.game.hasStone(x, y)) {
@@ -231,7 +136,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				case PlayerTools.MARKUP:
 
 					//Clear tool, or already markup in place?
-					if (this.markupTool == this.markupTools.CLEAR || this.game.hasMarkup(x, y)) {
+					if (this.markupTool == MarkupTools.CLEAR || this.game.hasMarkup(x, y)) {
 						if (this.game.hasMarkup(x, y)) {
 							this.board.add('hover', x, y, {
 								type: 'markup',
@@ -241,7 +146,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 					}
 
 					//Text or number
-					else if (this.markupTool == this.markupTools.TEXT || this.markupTool == this.markupTools.NUMBER) {
+					else if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
 						this.board.add('hover', x, y, {
 							type: 'markup',
 							value: {
@@ -311,12 +216,12 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			}
 
 			//Clear tool used? Done
-			if (this.markupTool == this.markupTools.CLEAR) {
+			if (this.markupTool == MarkupTools.CLEAR) {
 				return;
 			}
 
 			//Text
-			else if (this.markupTool == this.markupTools.TEXT) {
+			else if (this.markupTool == MarkupTools.TEXT) {
 				this.game.addMarkup(x, y, {
 					type: MarkupTypes.LABEL,
 					text: this.markupLabel
@@ -328,7 +233,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			}
 
 			//Number
-			else if (this.markupTool == this.markupTools.NUMBER) {
+			else if (this.markupTool == MarkupTools.NUMBER) {
 				this.game.addMarkup(x, y, {
 					type: MarkupTypes.LABEL,
 					text: this.markupLabel
@@ -403,6 +308,110 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		};
 
 		/**
+		 * Player extension
+		 */
+		angular.extend(Player, {
+
+			//Active setup tool and markup tool
+			setupTool: SetupTools.BLACK,
+			markupTool: MarkupTools.TRIANGLE,
+
+			//Current markup labels on the board and current markup label
+			markupLabels: [],
+			markupLabel: '',
+
+			/**
+			 * Set the setup tool
+			 */
+			switchSetupTool: function(tool) {
+				this.setupTool = tool;
+			},
+
+			/**
+			 * Set the markup tool
+			 */
+			switchMarkupTool: function(tool) {
+				this.markupTool = tool;
+				if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+					this.determineMarkupLabel();
+				}
+			},
+
+			/**
+			 * Conversion of setup tool to stone color
+			 */
+			setupToolColor: function() {
+				switch (this.setupTool) {
+					case SetupTools.BLACK:
+						return StoneColor.B;
+					case SetupTools.WHITE:
+						return StoneColor.W;
+					default:
+						return StoneColor.EMPTY;
+				}
+			},
+
+			/**
+			 * Set the new text markup label
+			 */
+			setMarkupLabel: function(label) {
+				if (label) {
+					this.markupLabel = label;
+				}
+			},
+
+			/**
+			 * Determine the new text markup label
+			 */
+			determineMarkupLabel: function() {
+
+				//Clear
+				this.markupLabel = '';
+
+				//Check what tool we're using
+				switch (this.markupTool) {
+
+					//Text tool?
+					case MarkupTools.TEXT:
+						var i = 0;
+
+						//Loop while the label is present
+						while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) != -1) {
+
+							//A-Z
+							if (i < 26) {
+								this.markupLabel = String.fromCharCode(aChar + i);
+							}
+
+							//a-z
+							else if (i < 52) {
+								this.markupLabel = String.fromCharCode(aCharLc + i - 26);
+							}
+
+							//AA, AB, AC, etc.
+							else {
+								this.markupLabel = String.fromCharCode(aChar + Math.floor(i / 26) - 2) + String.fromCharCode(aChar + (i % 26));
+							}
+
+							//Keep going
+							i++;
+						}
+						break;
+
+					//Number tool?
+					case MarkupTools.NUMBER:
+						this.markupLabel = 0;
+
+						//Loop while the label is present
+						while (this.markupLabel === 0 || this.markupLabels.indexOf(this.markupLabel) != -1) {
+							this.markupLabel++;
+						}
+						break;
+				}
+			}
+		});
+
+		/**
 		 * Player mode definition
 		 */
 		var PlayerModeEdit = {
@@ -427,7 +436,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				}
 
 				//No dragging for labels
-				if (this.markupTool == this.markupTools.TEXT || this.markupTool == this.markupTools.NUMBER) {
+				if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
 					updateHoverMark.call(this, event.x, event.y, false);
 					return;
 				}
@@ -462,7 +471,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				//Update hover mark
 				if (this.board) {
 					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.lastX, this.lastY);
+					updateHoverMark.call(this, this.mouse.lastX, this.mouse.lastY);
 				}
 			},
 
@@ -557,7 +566,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 					case PlayerTools.MARKUP:
 
 						//Don't do this for labels
-						if (this.markupTool == this.markupTools.TEXT || this.markupTool == this.markupTools.NUMBER) {
+						if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
 							break;
 						}
 
@@ -602,6 +611,31 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			 */
 			pathChange: function(event, node) {
 				findAllMarkupLabels.call(this);
+			},
+
+			/**
+			 * Handler for tool switches
+			 */
+			toolSwitch: function(event) {
+
+				//Switched to scoring?
+				if (this.tool == PlayerTools.SCORE) {
+
+					//Remember the current board state
+					this.statePreScoring = this.board.getState();
+
+					//Load game into scorer and score the game
+					GameScorer.load(this.game);
+					this.scoreGame();
+				}
+
+				//Back to another state?
+				else {
+					if (this.statePreScoring) {
+						this.board.restoreState(this.statePreScoring);
+						delete this.statePreScoring;
+					}
+				}
 			}
 		};
 
