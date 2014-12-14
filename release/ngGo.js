@@ -4381,6 +4381,9 @@ angular.module('ngGo.Game.Service', [
 
 			//Determine which child node to process
 			i = i || 0;
+			if (i == -1) {
+				i = 0;
+			}
 
 			//Validate
 			if (i >= this.node.children.length || !this.node.children[i]) {
@@ -4826,7 +4829,10 @@ angular.module('ngGo.Game.Service', [
 		/**
 		 * Get the game path
 		 */
-		Game.prototype.getPath = function() {
+		Game.prototype.getPath = function(clone) {
+			if (clone) {
+				return this.path.clone();
+			}
 			return this.path;
 		};
 
@@ -5304,6 +5310,11 @@ angular.module('ngGo.Game.Service', [
 		 * Go to the next position
 		 */
 		Game.prototype.next = function(i) {
+
+			//Object (node) given as parameter? Find index
+			if (typeof i == 'object') {
+				i = this.node.children.indexOf(i);
+			}
 
 			//Go to the next node
 			if (nextNode.call(this, i)) {
@@ -10644,7 +10655,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 /**
  * Extend player functionality and register the mode
  */
-.run(["Player", "PlayerModes", "PlayerModeSolve", function(Player, PlayerModes, PlayerModeSolve) {
+.run(["Player", "PlayerModes", "PlayerModeSolve", "$timeout", function(Player, PlayerModes, PlayerModeSolve, $timeout) {
 
 	/**
 	 * Register event handlers
@@ -10715,6 +10726,55 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	};
 
 	/**
+	 * Auto play next move
+	 */
+	Player.autoPlayNext = function(immediately) {
+
+		//Must have game and children
+		if (!this.game || !this.game.isLoaded() || this.game.node.children.length === 0) {
+			return;
+		}
+
+		//Init vars
+		var children = [], self = this, i;
+
+		//When picking a child node, we always prefer to pick a valid solution
+		for (i = 0; i < this.game.node.children.length; i++) {
+			if (this.game.node.children[i].solution) {
+				children.push(this.game.node.children[i]);
+			}
+		}
+
+		//No solution nodes? Just use all nodes then.
+		if (children.length === 0) {
+			children = this.game.node.children;
+		}
+
+		//Pick a random child node
+		i = Math.floor(Math.random() * children.length);
+
+		//No delay?
+		if (immediately || !this.solveAutoPlayDelay) {
+			this.next(children[i]);
+			return;
+		}
+
+		//Block navigation and run the timeout
+		this.solveNavigationBlocked = true;
+		$timeout(function() {
+
+			//Move to next move and unblock navigation
+			self.next(children[i]);
+			self.solveNavigationBlocked = false;
+
+			//TODO: Forget last hover position and update hover mark
+			//self.lastX = self.lastY = -1;
+			//updateHoverMark.call(self, x, y);
+
+		}, this.solveAutoPlayDelay);
+	};
+
+	/**
 	 * Start solving from the current game node
 	 */
 	Player.solve = function() {
@@ -10731,38 +10791,49 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 		this.problemSolved = false;
 		this.problemOffPath = false;
 
+		//Remember problem start path
+		this.problemStartPath = this.game.getPath(true);
+
 		//Restrict start of navigation to the current node
 		this.restrictNode();
 
-		//Current turn is not our color?
-		if (this.game.getTurn() != this.playerColor) {
+		//Auto play next move if it's not our turn
+		if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+			this.autoPlayNext();
+		}
+	};
 
-			//Auto-play?
-			if (this.solveAutoPlay) {
+	/**
+	 * Restart the problem
+	 */
+	Player.restartProblem = function() {
 
-				//Pick a random child node
-				var i = Math.floor(Math.random() * node.children.length), self = this;
+		//Must be in solve mode, must have game
+		if (this.mode != PlayerModes.SOLVE || !this.game || !this.game.isLoaded()) {
+			return;
+		}
 
-				//Using a delay? Block navigation and run the timeout
-				if (this.solveAutoPlayDelay) {
-					this.solveNavigationBlocked = true;
-					$timeout(function() {
-						self.next(i);
-						self.solveNavigationBlocked = false;
-					}, this.solveAutoPlayDelay);
-				}
+		//Reset flags
+		this.problemSolved = false;
+		this.problemOffPath = false;
 
-				//Just move to the next node immediately
-				else {
-					this.next(i);
-				}
-			}
+		//Go back to the start path
+		if (this.problemStartPath) {
+			this.goto(this.problemStartPath);
+		}
+
+		//Auto play next move if it's not our turn
+		if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+			this.autoPlayNext();
 		}
 	};
 
 	//Solved and off-path flags
 	Player.problemSolved = false;
 	Player.problemOffPath = false;
+
+	//Problem start path
+	Player.problemStartPath = null;
 
 	//The player color
 	Player.playerColor = 0;
@@ -10812,7 +10883,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = ["$document", "$timeout", "Player", "PlayerTools", function($document, $timeout, Player, PlayerTools) {
+	this.$get = ["$document", "Player", "PlayerTools", function($document, Player, PlayerTools) {
 
 		/**
 		 * Check if we can make a move
@@ -10922,6 +10993,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			//When showing, make sure it's not during the auto solver's move
 			if (show && !this.problemSolved && this.solveAutoPlay) {
 				if (this.game.getTurn() != this.playerColor) {
+					hideSolutionPaths.call(this, variations);
 					return;
 				}
 			}
@@ -10963,6 +11035,18 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 				//Solution paths setting changes?
 				if (setting == 'solutionPaths')	{
 					drawSolutionPaths.call(this, this.solutionPaths);
+				}
+
+				//Player color changed?
+				if (setting == 'playerColor') {
+
+					//Draw (or hide) solution paths
+					drawSolutionPaths.call(this, this.solutionPaths);
+
+					//Make an auto play move if it's not our turn
+					if (!this.problemSolved && this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+						this.autoPlayNext(true);
+					}
 				}
 			},
 
@@ -11079,32 +11163,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 						}
 					}
 
-					//Auto-play?
+					//Auto-play next move?
 					else if (!this.problemSolved && this.solveAutoPlay) {
-
-						//Children left, pick a random one and make a move
-						i = Math.floor(Math.random() * node.children.length), self = this;
-
-						//Using a delay? Block navigation and run the timeout
-						if (this.solveAutoPlayDelay) {
-							this.solveNavigationBlocked = true;
-							$timeout(function() {
-
-								//Move to next move and unblock navigation
-								self.next(i);
-								self.solveNavigationBlocked = false;
-
-								//Forget last hover position and update hover mark
-								self.lastX = self.lastY = -1;
-								updateHoverMark.call(self, event.x, event.y);
-
-							}, this.solveAutoPlayDelay);
-						}
-
-						//Just move to the next node immediately
-						else {
-							this.next(i);
-						}
+						this.autoPlayNext();
 					}
 				}
 

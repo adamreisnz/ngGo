@@ -116,6 +116,9 @@ angular.module('ngGo.Game.Service', [
 
 			//Determine which child node to process
 			i = i || 0;
+			if (i == -1) {
+				i = 0;
+			}
 
 			//Validate
 			if (i >= this.node.children.length || !this.node.children[i]) {
@@ -561,7 +564,10 @@ angular.module('ngGo.Game.Service', [
 		/**
 		 * Get the game path
 		 */
-		Game.prototype.getPath = function() {
+		Game.prototype.getPath = function(clone) {
+			if (clone) {
+				return this.path.clone();
+			}
 			return this.path;
 		};
 
@@ -1039,6 +1045,11 @@ angular.module('ngGo.Game.Service', [
 		 * Go to the next position
 		 */
 		Game.prototype.next = function(i) {
+
+			//Object (node) given as parameter? Find index
+			if (typeof i == 'object') {
+				i = this.node.children.indexOf(i);
+			}
 
 			//Go to the next node
 			if (nextNode.call(this, i)) {

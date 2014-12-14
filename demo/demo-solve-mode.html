@@ -23,10 +23,11 @@
 		<p>{{solution}}</p>
 		<p>
 			Options:<br/>
-			<button ng-click="Player.board.swapColors()">Swap colors</button>
-			<!--<button ng-click="Player.setPlayerColor(-1*Player.playerColor)">Change player color</button>-->
+			<button ng-click="Player.board.swapColors()">Swap board colors</button>
+			<button ng-click="Player.setPlayerColor(-1*Player.playerColor)">Switch player color</button>
 			<button ng-click="Player.board.toggleCoordinates()">Toggle coordinates</button>
 			<button ng-click="Player.toggleSolutionPaths()">Toggle solution paths</button>
+			<button ng-click="Player.restartProblem()">Restart problem</button>
 		</p/>
 	</aside>
 </main>
@@ -306,8 +307,9 @@
 	 */
 	.controller('ngGoDemoController', function($scope, Player) {
 
-		//Load JGF
+		//Load JGF and start solving
 		Player.load(jgf);
+		Player.solve();
 
 		//Extract game info
 		$scope.gameInfo = Player.game.get('game');

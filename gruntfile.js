@@ -254,15 +254,19 @@ module.exports = function(grunt) {
 			options: {
 				configFile: 'karma-unit.js'
 			},
+			continuous: {
+				runnerPort: 9102,
+				background: true
+			},
 			unit: {
 				singleRun: true
 			}
 		},
 
 		/**
-		 * Watch task
+		 * Delta task
 		 */
-		watch: {
+		delta: {
 
 			/**
 			 * No live reload needed
@@ -307,6 +311,16 @@ module.exports = function(grunt) {
 	 * Initialize configuration
 	 */
 	grunt.initConfig(grunt.util._.extend(taskConfig, buildConfig));
+
+	/**
+	 * In order to make it safe to just compile or copy *only* what was changed,
+	 * we need to ensure we are starting from a clean, fresh build. So we rename
+	 * the `watch` task to `delta` (that's why the configuration var above is
+	 * `delta`) and then add a new task called `watch` that does a clean build
+	 * before watching for changes.
+	 */
+	grunt.renameTask('watch', 'delta');
+	grunt.registerTask('watch', ['karma:continuous', 'delta']);
 
 	/**
 	 * The default task is to test and compile
