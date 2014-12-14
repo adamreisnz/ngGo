@@ -320,7 +320,7 @@ module.exports = function(grunt) {
 	 * before watching for changes.
 	 */
 	grunt.renameTask('watch', 'delta');
-	grunt.registerTask('watch', ['karma:continuous', 'delta']);
+	grunt.registerTask('watch', ['test', 'karma:continuous', 'delta']);
 
 	/**
 	 * The default task is to test and compile

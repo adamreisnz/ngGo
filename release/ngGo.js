@@ -7255,7 +7255,7 @@ angular.module('ngGo.Kifu.Blank.Service', [
 			//Base given?
 			if (base) {
 				for (var p in base) {
-					blank[p] = angular.extend(blank[p] || {}, base[p]);
+					blank[p] = base[p];
 				}
 			}
 
