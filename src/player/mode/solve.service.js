@@ -317,9 +317,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			 */
 			solve: function() {
 
-				//Switch player mode
-				this.switchMode(PlayerModes.SOLVE);
-
 				//Must have a game
 				if (!this.game || !this.game.isLoaded()) {
 					return false;

@@ -10533,14 +10533,6 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 
 				//Broadcast event
 				this.broadcast('autoPlayStopped', this.game.node);
-			},
-
-			/**
-			 * Helper to switch to demo "mode", which is replay mode with no tool
-			 */
-			demo: function() {
-				this.switchMode(PlayerModes.REPLAY);
-				this.switchTool(PlayerTools.NONE);
 			}
 		});
 
@@ -11027,9 +11019,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			 * Start solving from the current game node
 			 */
 			solve: function() {
-
-				//Switch player mode
-				this.switchMode(PlayerModes.SOLVE);
 
 				//Must have a game
 				if (!this.game || !this.game.isLoaded()) {

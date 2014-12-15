@@ -252,14 +252,6 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 
 				//Broadcast event
 				this.broadcast('autoPlayStopped', this.game.node);
-			},
-
-			/**
-			 * Helper to switch to demo "mode", which is replay mode with no tool
-			 */
-			demo: function() {
-				this.switchMode(PlayerModes.REPLAY);
-				this.switchTool(PlayerTools.NONE);
 			}
 		});
 
