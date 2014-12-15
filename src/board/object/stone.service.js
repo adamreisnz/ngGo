@@ -138,12 +138,12 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
 		//Determine stone texture
 		if (color == StoneColor.W) {
-			this.context.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
+			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
 			this.context.fillStyle.addColorStop(0, '#fff');
 			this.context.fillStyle.addColorStop(1, '#aaa');
 		}
 		else {
-			this.context.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/5, y - r/5, 4*r/5);
+			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/5, y - r/5, 4*r/5);
 			this.context.fillStyle.addColorStop(0, '#666');
 			this.context.fillStyle.addColorStop(1, '#000');
 		}
