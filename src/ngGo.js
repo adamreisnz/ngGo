@@ -89,6 +89,27 @@ angular.module('ngGo', [])
 	SCORE:	'score',
 	SETUP:	'setup',
 	MARKUP:	'markup'
+})
+
+/**
+ * Key codes
+ */
+.constant('KeyCodes', {
+	LEFT:		37,
+	RIGHT:		39,
+	UP:			38,
+	DOWN:		40,
+	ESC:		27,
+	ENTER:		13,
+	SPACE:		32,
+	TAB:		9,
+	SHIFT:		16,
+	CTRL:		17,
+	ALT:		18,
+	HOME:		36,
+	END:		35,
+	PAGEUP:		33,
+	PAGEDOWN:	34
 });
 
 /**

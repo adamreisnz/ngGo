@@ -709,6 +709,11 @@ angular.module('ngGo.Player.Service', [
 						}
 					}
 
+					//Inside a text field?
+					if (type == 'keydown' && $document[0].querySelector(':focus')) {
+						return;
+					}
+
 					//Append grid coordinates for mouse events
 					if (type == 'click' || type == 'hover' || type.substr(0, 5) == 'mouse') {
 						processMouseEvent.call(self, arguments[0], arguments[1]);

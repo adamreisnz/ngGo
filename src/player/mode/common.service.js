@@ -43,7 +43,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 /**
  * Factory definition
  */
-.factory('PlayerModeCommon', function($document, Player, PlayerTools, GameScorer) {
+.factory('PlayerModeCommon', function(Player, PlayerTools, GameScorer, KeyCodes) {
 
 	/**
 	 * Helper to build drag object
@@ -109,21 +109,16 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		 */
 		keyDown: function(event, keyboardEvent) {
 
-			//Inside a text field?
-			if ($document[0].querySelector(':focus')) {
-				return true;
-			}
-
 			//No game?
 			if (!this.game || !this.game.isLoaded()) {
-				return true;
+				return;
 			}
 
 			//Switch key code
 			switch (keyboardEvent.keyCode) {
 
 				//ESC
-				case 27:
+				case KeyCodes.ESC:
 
 					//Cancel drag event, and prevent click event as well
 					this.mouse.dragStart = null;
@@ -131,7 +126,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 					break;
 
 				//Right arrow
-				case 39:
+				case KeyCodes.RIGHT:
 
 					//Arrow navigation enabled?
 					if (this.arrowKeysNavigation) {
@@ -145,7 +140,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 					break;
 
 				//Left arrow
-				case 37:
+				case KeyCodes.LEFT:
 
 					//Arrow navigation enabled?
 					if (this.arrowKeysNavigation) {
@@ -158,9 +153,13 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 					}
 					break;
 
-				//TODO: up down for variation selection
-				default:
-					return true;
+				//Up arrow
+				case KeyCodes.UP:
+					break;
+
+				//Down arrow
+				case KeyCodes.DOWN:
+					break;
 			}
 		},
 

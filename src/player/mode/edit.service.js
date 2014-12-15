@@ -77,7 +77,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function($document, Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor) {
+	this.$get = function(Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor, KeyCodes) {
 
 		//Character codes
 		var aChar = 'A'.charCodeAt(0),
@@ -87,6 +87,12 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		 * Update hover mark at specific coordinates
 		 */
 		var updateHoverMark = function(x, y, isDrag) {
+
+			//If no coordinates specified, use last mouse coordinates
+			if (typeof x == 'undefined' || typeof y == 'undefined') {
+				x = this.mouse.lastX;
+				y = this.mouse.lastY;
+			}
 
 			//Falling outside of grid?
 			if (!this.board || !this.board.isOnBoard(x, y)) {
@@ -431,13 +437,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 				//Single coordinate?
 				if (!event.drag || (this.tool != PlayerTools.SETUP && this.tool != PlayerTools.MARKUP)) {
-					updateHoverMark.call(this, event.x, event.y, false);
+					updateHoverMark.call(this);
 					return;
 				}
 
 				//No dragging for labels
 				if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
-					updateHoverMark.call(this, event.x, event.y, false);
+					updateHoverMark.call(this);
 					return;
 				}
 
@@ -454,24 +460,10 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			 */
 			keyDown: function(event, keyboardEvent) {
 
-				//Inside a text field?
-				if ($document[0].querySelector(':focus')) {
-					return true;
-				}
-
 				//Switch key code
 				switch (keyboardEvent.keyCode) {
 
 					//TODO: tool switching via keyboard input
-
-					default:
-						return true;
-				}
-
-				//Update hover mark
-				if (this.board) {
-					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.mouse.lastX, this.mouse.lastY);
 				}
 			},
 
@@ -587,6 +579,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			},
 
 			/**
+			 * Path change
+			 */
+			pathChange: function(event, node) {
+				findAllMarkupLabels.call(this);
+			},
+
+			/**
 			 * Handler for mode entry
 			 */
 			modeEnter: function(event) {
@@ -603,13 +602,6 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				this.tool = this.tools[0];
 
 				//Find all markup labels in the current game position
-				findAllMarkupLabels.call(this);
-			},
-
-			/**
-			 * Path change
-			 */
-			pathChange: function(event, node) {
 				findAllMarkupLabels.call(this);
 			},
 

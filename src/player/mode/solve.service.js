@@ -19,6 +19,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	//Register event handlers
 	Player.on('settingChange', PlayerModeSolve.settingChange, PlayerModes.SOLVE);
 	Player.on('boardUpdate', PlayerModeSolve.boardUpdate, PlayerModes.SOLVE);
+	Player.on('pathChange', PlayerModeSolve.pathChange, PlayerModes.SOLVE);
 	Player.on('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
 	Player.on('modeExit', PlayerModeSolve.modeExit, PlayerModes.SOLVE);
 	Player.on('keydown', PlayerModeSolve.keyDown, PlayerModes.SOLVE);
@@ -60,7 +61,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function($document, $timeout, Player, PlayerModes, PlayerTools) {
+	this.$get = function($timeout, Player, PlayerModes, PlayerTools, KeyCodes) {
 
 		/**
 		 * Check if we can make a move
@@ -308,10 +309,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 					self.next(children[i]);
 					self.solveNavigationBlocked = false;
 
-					//TODO: Forget last hover position and update hover mark
-					//self.mouse.lastX = self.mouse.lastY = -1;
-					//updateHoverMark.call(self, x, y);
-
 				}, this.solveAutoPlayDelay);
 			},
 
@@ -417,6 +414,8 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			 * Hover handler
 			 */
 			hover: function(event) {
+
+				//Update hover mark
 				if (this.board) {
 					this.board.removeAll('hover');
 					updateHoverMark.call(this, event.x, event.y);
@@ -439,16 +438,11 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			 */
 			keyDown: function(event, keyboardEvent) {
 
-				//Inside a text field?
-				if ($document[0].querySelector(':focus')) {
-					return true;
-				}
-
 				//Switch key code
 				switch (keyboardEvent.keyCode) {
 
 					//Right arrow
-					case 39:
+					case KeyCodes.RIGHT:
 
 						//Arrow keys navigation enabled?
 						if (this.arrowKeysNavigation) {
@@ -466,7 +460,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 						break;
 
 					//Left arrow
-					case 37:
+					case KeyCodes.LEFT:
 
 						//Arrow keys navigation enabled?
 						if (this.arrowKeysNavigation) {
@@ -486,12 +480,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 							}
 						}
 						break;
-				}
-
-				//Update hover mark
-				if (this.board) {
-					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.mouse.lastX, this.mouse.lastY);
 				}
 			},
 
@@ -538,10 +526,18 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 					this.processPosition();
 					this.broadcast('solutionOffPath', this.game.getNode());
 				}
+			},
+
+			/**
+			 * Path change event
+			 */
+			pathChange: function(event, node) {
 
 				//Update hover mark
-				this.board.removeAll('hover');
-				updateHoverMark.call(this, event.x, event.y);
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this);
+				}
 			},
 
 			/**

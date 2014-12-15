@@ -8514,6 +8514,27 @@ angular.module('ngGo', [])
 	SCORE:	'score',
 	SETUP:	'setup',
 	MARKUP:	'markup'
+})
+
+/**
+ * Key codes
+ */
+.constant('KeyCodes', {
+	LEFT:		37,
+	RIGHT:		39,
+	UP:			38,
+	DOWN:		40,
+	ESC:		27,
+	ENTER:		13,
+	SPACE:		32,
+	TAB:		9,
+	SHIFT:		16,
+	CTRL:		17,
+	ALT:		18,
+	HOME:		36,
+	END:		35,
+	PAGEUP:		33,
+	PAGEDOWN:	34
 });
 
 /**
@@ -9301,6 +9322,11 @@ angular.module('ngGo.Player.Service', [
 						}
 					}
 
+					//Inside a text field?
+					if (type == 'keydown' && $document[0].querySelector(':focus')) {
+						return;
+					}
+
 					//Append grid coordinates for mouse events
 					if (type == 'click' || type == 'hover' || type.substr(0, 5) == 'mouse') {
 						processMouseEvent.call(self, arguments[0], arguments[1]);
@@ -9394,7 +9420,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 /**
  * Factory definition
  */
-.factory('PlayerModeCommon', ["$document", "Player", "PlayerTools", "GameScorer", function($document, Player, PlayerTools, GameScorer) {
+.factory('PlayerModeCommon', ["Player", "PlayerTools", "GameScorer", "KeyCodes", function(Player, PlayerTools, GameScorer, KeyCodes) {
 
 	/**
 	 * Helper to build drag object
@@ -9460,21 +9486,16 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		 */
 		keyDown: function(event, keyboardEvent) {
 
-			//Inside a text field?
-			if ($document[0].querySelector(':focus')) {
-				return true;
-			}
-
 			//No game?
 			if (!this.game || !this.game.isLoaded()) {
-				return true;
+				return;
 			}
 
 			//Switch key code
 			switch (keyboardEvent.keyCode) {
 
 				//ESC
-				case 27:
+				case KeyCodes.ESC:
 
 					//Cancel drag event, and prevent click event as well
 					this.mouse.dragStart = null;
@@ -9482,7 +9503,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 					break;
 
 				//Right arrow
-				case 39:
+				case KeyCodes.RIGHT:
 
 					//Arrow navigation enabled?
 					if (this.arrowKeysNavigation) {
@@ -9496,7 +9517,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 					break;
 
 				//Left arrow
-				case 37:
+				case KeyCodes.LEFT:
 
 					//Arrow navigation enabled?
 					if (this.arrowKeysNavigation) {
@@ -9509,9 +9530,13 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 					}
 					break;
 
-				//TODO: up down for variation selection
-				default:
-					return true;
+				//Up arrow
+				case KeyCodes.UP:
+					break;
+
+				//Down arrow
+				case KeyCodes.DOWN:
+					break;
 			}
 		},
 
@@ -9696,7 +9721,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = ["$document", "Player", "PlayerTools", "SetupTools", "MarkupTools", "MarkupTypes", "GameScorer", "StoneColor", function($document, Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor) {
+	this.$get = ["Player", "PlayerTools", "SetupTools", "MarkupTools", "MarkupTypes", "GameScorer", "StoneColor", "KeyCodes", function(Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor, KeyCodes) {
 
 		//Character codes
 		var aChar = 'A'.charCodeAt(0),
@@ -9706,6 +9731,12 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		 * Update hover mark at specific coordinates
 		 */
 		var updateHoverMark = function(x, y, isDrag) {
+
+			//If no coordinates specified, use last mouse coordinates
+			if (typeof x == 'undefined' || typeof y == 'undefined') {
+				x = this.mouse.lastX;
+				y = this.mouse.lastY;
+			}
 
 			//Falling outside of grid?
 			if (!this.board || !this.board.isOnBoard(x, y)) {
@@ -10050,13 +10081,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 				//Single coordinate?
 				if (!event.drag || (this.tool != PlayerTools.SETUP && this.tool != PlayerTools.MARKUP)) {
-					updateHoverMark.call(this, event.x, event.y, false);
+					updateHoverMark.call(this);
 					return;
 				}
 
 				//No dragging for labels
 				if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
-					updateHoverMark.call(this, event.x, event.y, false);
+					updateHoverMark.call(this);
 					return;
 				}
 
@@ -10073,24 +10104,10 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			 */
 			keyDown: function(event, keyboardEvent) {
 
-				//Inside a text field?
-				if ($document[0].querySelector(':focus')) {
-					return true;
-				}
-
 				//Switch key code
 				switch (keyboardEvent.keyCode) {
 
 					//TODO: tool switching via keyboard input
-
-					default:
-						return true;
-				}
-
-				//Update hover mark
-				if (this.board) {
-					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.mouse.lastX, this.mouse.lastY);
 				}
 			},
 
@@ -10206,6 +10223,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			},
 
 			/**
+			 * Path change
+			 */
+			pathChange: function(event, node) {
+				findAllMarkupLabels.call(this);
+			},
+
+			/**
 			 * Handler for mode entry
 			 */
 			modeEnter: function(event) {
@@ -10222,13 +10246,6 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				this.tool = this.tools[0];
 
 				//Find all markup labels in the current game position
-				findAllMarkupLabels.call(this);
-			},
-
-			/**
-			 * Path change
-			 */
-			pathChange: function(event, node) {
 				findAllMarkupLabels.call(this);
 			},
 
@@ -10284,10 +10301,10 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	//Register event handlers
 	Player.on('settingChange', PlayerModeReplay.settingChange, PlayerModes.REPLAY);
 	Player.on('boardUpdate', PlayerModeReplay.boardUpdate, PlayerModes.REPLAY);
+	Player.on('pathChange', PlayerModeReplay.pathChange, PlayerModes.REPLAY);
 	Player.on('toolSwitch', PlayerModeReplay.toolSwitch, PlayerModes.REPLAY);
 	Player.on('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
 	Player.on('modeExit', PlayerModeReplay.modeExit, PlayerModes.REPLAY);
-	Player.on('keydown', PlayerModeReplay.keyDown, PlayerModes.REPLAY);
 	Player.on('click', PlayerModeReplay.click, PlayerModes.REPLAY);
 	Player.on('hover', PlayerModeReplay.hover, PlayerModes.REPLAY);
 
@@ -10325,6 +10342,12 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 		 * Helper to update the hover mark
 		 */
 		var updateHoverMark = function(x, y) {
+
+			//If no coordinates specified, use last mouse coordinates
+			if (typeof x == 'undefined' || typeof y == 'undefined') {
+				x = this.mouse.lastX;
+				y = this.mouse.lastY;
+			}
 
 			//Falling outside of grid?
 			if (!this.board || !this.board.isOnBoard(x, y)) {
@@ -10553,9 +10576,11 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			 * Hover handler
 			 */
 			hover: function(event) {
+
+				//Update hover mark
 				if (this.board) {
 					this.board.removeAll('hover');
-					updateHoverMark.call(this, event.x, event.y);
+					updateHoverMark.call(this);
 				}
 			},
 
@@ -10567,18 +10592,6 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 				//Show move variations
 				if (this.variationMarkup) {
 					drawMoveVariations.call(this, true);
-				}
-			},
-
-			/**
-			 * Handler for keydown events
-			 */
-			keyDown: function(event, keyboardEvent) {
-
-				//Update hover mark
-				if (this.board) {
-					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.mouse.lastX, this.mouse.lastY);
 				}
 			},
 
@@ -10615,6 +10628,18 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 
 				//Handle hover
 				PlayerModeReplay.hover.call(this, event);
+			},
+
+			/**
+			 * Path change event
+			 */
+			pathChange: function(event, node) {
+
+				//Update hover mark
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this);
+				}
 			},
 
 			/**
@@ -10705,6 +10730,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	//Register event handlers
 	Player.on('settingChange', PlayerModeSolve.settingChange, PlayerModes.SOLVE);
 	Player.on('boardUpdate', PlayerModeSolve.boardUpdate, PlayerModes.SOLVE);
+	Player.on('pathChange', PlayerModeSolve.pathChange, PlayerModes.SOLVE);
 	Player.on('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
 	Player.on('modeExit', PlayerModeSolve.modeExit, PlayerModes.SOLVE);
 	Player.on('keydown', PlayerModeSolve.keyDown, PlayerModes.SOLVE);
@@ -10746,7 +10772,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = ["$document", "$timeout", "Player", "PlayerModes", "PlayerTools", function($document, $timeout, Player, PlayerModes, PlayerTools) {
+	this.$get = ["$timeout", "Player", "PlayerModes", "PlayerTools", "KeyCodes", function($timeout, Player, PlayerModes, PlayerTools, KeyCodes) {
 
 		/**
 		 * Check if we can make a move
@@ -10994,10 +11020,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 					self.next(children[i]);
 					self.solveNavigationBlocked = false;
 
-					//TODO: Forget last hover position and update hover mark
-					//self.mouse.lastX = self.mouse.lastY = -1;
-					//updateHoverMark.call(self, x, y);
-
 				}, this.solveAutoPlayDelay);
 			},
 
@@ -11103,6 +11125,8 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			 * Hover handler
 			 */
 			hover: function(event) {
+
+				//Update hover mark
 				if (this.board) {
 					this.board.removeAll('hover');
 					updateHoverMark.call(this, event.x, event.y);
@@ -11125,16 +11149,11 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			 */
 			keyDown: function(event, keyboardEvent) {
 
-				//Inside a text field?
-				if ($document[0].querySelector(':focus')) {
-					return true;
-				}
-
 				//Switch key code
 				switch (keyboardEvent.keyCode) {
 
 					//Right arrow
-					case 39:
+					case KeyCodes.RIGHT:
 
 						//Arrow keys navigation enabled?
 						if (this.arrowKeysNavigation) {
@@ -11152,7 +11171,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 						break;
 
 					//Left arrow
-					case 37:
+					case KeyCodes.LEFT:
 
 						//Arrow keys navigation enabled?
 						if (this.arrowKeysNavigation) {
@@ -11172,12 +11191,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 							}
 						}
 						break;
-				}
-
-				//Update hover mark
-				if (this.board) {
-					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.mouse.lastX, this.mouse.lastY);
 				}
 			},
 
@@ -11224,10 +11237,18 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 					this.processPosition();
 					this.broadcast('solutionOffPath', this.game.getNode());
 				}
+			},
+
+			/**
+			 * Path change event
+			 */
+			pathChange: function(event, node) {
 
 				//Update hover mark
-				this.board.removeAll('hover');
-				updateHoverMark.call(this, event.x, event.y);
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this);
+				}
 			},
 
 			/**

@@ -20,10 +20,10 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	//Register event handlers
 	Player.on('settingChange', PlayerModeReplay.settingChange, PlayerModes.REPLAY);
 	Player.on('boardUpdate', PlayerModeReplay.boardUpdate, PlayerModes.REPLAY);
+	Player.on('pathChange', PlayerModeReplay.pathChange, PlayerModes.REPLAY);
 	Player.on('toolSwitch', PlayerModeReplay.toolSwitch, PlayerModes.REPLAY);
 	Player.on('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
 	Player.on('modeExit', PlayerModeReplay.modeExit, PlayerModes.REPLAY);
-	Player.on('keydown', PlayerModeReplay.keyDown, PlayerModes.REPLAY);
 	Player.on('click', PlayerModeReplay.click, PlayerModes.REPLAY);
 	Player.on('hover', PlayerModeReplay.hover, PlayerModes.REPLAY);
 
@@ -61,6 +61,12 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 		 * Helper to update the hover mark
 		 */
 		var updateHoverMark = function(x, y) {
+
+			//If no coordinates specified, use last mouse coordinates
+			if (typeof x == 'undefined' || typeof y == 'undefined') {
+				x = this.mouse.lastX;
+				y = this.mouse.lastY;
+			}
 
 			//Falling outside of grid?
 			if (!this.board || !this.board.isOnBoard(x, y)) {
@@ -289,9 +295,11 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			 * Hover handler
 			 */
 			hover: function(event) {
+
+				//Update hover mark
 				if (this.board) {
 					this.board.removeAll('hover');
-					updateHoverMark.call(this, event.x, event.y);
+					updateHoverMark.call(this);
 				}
 			},
 
@@ -303,18 +311,6 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 				//Show move variations
 				if (this.variationMarkup) {
 					drawMoveVariations.call(this, true);
-				}
-			},
-
-			/**
-			 * Handler for keydown events
-			 */
-			keyDown: function(event, keyboardEvent) {
-
-				//Update hover mark
-				if (this.board) {
-					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.mouse.lastX, this.mouse.lastY);
 				}
 			},
 
@@ -351,6 +347,18 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 
 				//Handle hover
 				PlayerModeReplay.hover.call(this, event);
+			},
+
+			/**
+			 * Path change event
+			 */
+			pathChange: function(event, node) {
+
+				//Update hover mark
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this);
+				}
 			},
 
 			/**
