@@ -98,7 +98,7 @@ angular.module('ngGo.Board.Directive', [
 		link: function(scope, element, attrs) {
 
 			//Init vars
-			var i, context, layer, parent, playerElement,
+			var i, context, layer, parent, playerElement, sizingElement,
 				existingInstance = true;
 
 			//Remember last draw width/height
@@ -126,6 +126,10 @@ angular.module('ngGo.Board.Directive', [
 			parent = element.parent();
 			if (parent[0].tagName == 'PLAYER') {
 				playerElement = parent;
+				sizingElement = parent.parent()[0];
+			}
+			else {
+				sizingElement = element[0];
 			}
 
 			//Listen for board drawsize events
@@ -160,32 +164,18 @@ angular.module('ngGo.Board.Directive', [
 				}
 			});
 
-			//Board with player element?
-			if (playerElement) {
+			//Determine initial draw size
+			determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
 
-				//Get player element parent
-				parent = parent.parent();
+			//On window resize, determine the draw size again
+			angular.element($window).on('resize', function() {
+				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
+			});
 
-				//Determine draw size based on parent
-				determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight);
-
-				//On window resize, determine the draw size again
-				angular.element($window).on('resize', function() {
-					determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight);
-				});
-			}
-
-			//Board without player
-			else {
-
-				//Determine draw size based on element dimensions
-				determineDrawSize(scope, element[0].clientWidth, element[0].clientHeight);
-
-				//On window resize, determine the draw size again
-				angular.element($window).on('resize', function() {
-					determineDrawSize(scope, element[0].clientWidth, element[0].clientHeight);
-				});
-			}
+			//On manual resize, determine draw size again
+			scope.$on('ngGo.board.determineDrawSize', function() {
+				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
+			});
 
 			//Static board
 			if (attrs.static && attrs.static === 'true') {

@@ -236,6 +236,7 @@ module.exports = function(grunt) {
 				'gruntfile.js'
 			],
 			options: {
+				debug: true,
 				curly: true,
 				immed: true,
 				newcap: false,
