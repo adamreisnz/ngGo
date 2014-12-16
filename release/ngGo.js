@@ -1,5 +1,5 @@
 /**
- * ngGo v1.0.8, 15-12-2014
+ * ngGo v1.0.8, 16-12-2014
  * https://github.com/AdamBuczynski/ngGo
  *
  * Copyright (c) 2014 Adam Buczynski
@@ -628,7 +628,7 @@ angular.module('ngGo.Board.Service', [
 			}
 		};
 
-		/*******************************************************************************************************************************
+		/***********************************************************************************************
 		 * Theme handling
 		 ***/
 
@@ -782,7 +782,7 @@ angular.module('ngGo.Board.Service', [
 			}
 		};
 
-		/*******************************************************************************************************************************
+		/***********************************************************************************************
 		 * Drawing control
 		 ***/
 
@@ -1112,7 +1112,7 @@ angular.module('ngGo.Board.Grid.Service', [
 		return toObject.call(this, x, y, valueKey);
 	};
 
-	/*******************************************************************************************************************************
+	/***********************************************************************************************
 	 * Mass operations
 	 ***/
 
@@ -1197,7 +1197,7 @@ angular.module('ngGo.Board.Grid.Service', [
 		return newGrid;
 	};
 
-	/*******************************************************************************************************************************
+	/***********************************************************************************************
 	 * Comparison
 	 ***/
 
@@ -1258,7 +1258,7 @@ angular.module('ngGo.Board.Grid.Service', [
 		return changes;
 	};
 
-	/*******************************************************************************************************************************
+	/***********************************************************************************************
 	 * Helpers
 	 ***/
 
@@ -3093,13 +3093,8 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		 */
 		draw: function(markup) {
 
-			//No context?
-			if (!this.context) {
-				return;
-			}
-
-			//Can only draw when we have dimensions
-			if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+			//Can only draw when we have dimensions and context
+			if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 				return;
 			}
 
@@ -3159,8 +3154,8 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		 */
 		clear: function(markup) {
 
-			//No context?
-			if (!this.context) {
+			//Can only draw when we have dimensions and context
+			if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 				return;
 			}
 
@@ -3449,8 +3444,8 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		 */
 		draw: function(stone) {
 
-			//No context?
-			if (!this.context) {
+			//Can only draw when we have dimensions and context
+			if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 				return;
 			}
 
@@ -3494,8 +3489,8 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		 */
 		clear: function(stone) {
 
-			//No context?
-			if (!this.context) {
+			//Can only draw when we have dimensions and context
+			if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 				return;
 			}
 
@@ -6483,7 +6478,7 @@ angular.module('ngGo.Game.Position.Service', [
 		this.markup.set(x, y, markup);
 	};
 
-	/*******************************************************************************************************************************
+	/***********************************************************************************************
 	 * Liberties and capturing
 	 ***/
 
@@ -6668,7 +6663,7 @@ angular.module('ngGo.Game.Position.Service', [
 		return this.captures[-color].length;
 	};
 
-	/*******************************************************************************************************************************
+	/***********************************************************************************************
 	 * Turn control
 	 ***/
 
@@ -6693,7 +6688,7 @@ angular.module('ngGo.Game.Position.Service', [
 		this.turn = -this.turn;
 	};
 
-	/*******************************************************************************************************************************
+	/***********************************************************************************************
 	 * Cloning and comparison
 	 ***/
 
@@ -8801,7 +8796,7 @@ angular.module('ngGo.Player.Service', [
 				this.registerElementEvent('mousewheel');
 			},
 
-			/*******************************************************************************************************************************
+			/***********************************************************************************************
 			 * Configuration
 			 ***/
 
@@ -8895,7 +8890,7 @@ angular.module('ngGo.Player.Service', [
 				}
 			},
 
-			/*******************************************************************************************************************************
+			/***********************************************************************************************
 			 * Mode and tool handling
 			 ***/
 
@@ -9184,7 +9179,7 @@ angular.module('ngGo.Player.Service', [
 				}
 			},
 
-			/*******************************************************************************************************************************
+			/***********************************************************************************************
 			 * Game handling
 			 ***/
 
@@ -9217,7 +9212,7 @@ angular.module('ngGo.Player.Service', [
 				this.broadcast('scoreCalculated', score);
 			},
 
-			/*******************************************************************************************************************************
+			/***********************************************************************************************
 			 * Board handling
 			 ***/
 
