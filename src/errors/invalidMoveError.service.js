@@ -21,17 +21,13 @@ angular.module('ngGo.Errors.InvalidMoveError.Service', [
 	var InvalidMoveError = function(code, node) {
 
 		//Set name and message
+		this.code = code;
 		this.name = 'InvalidMoveError';
-	    this.message = 'Invalid move detected in kifu.';
+	    this.message = 'Invalid move detected.';
 
 		//Check if we can add move data
 		if (node.move && node.move.color !== undefined && node.move.x !== undefined && node.move.y !== undefined) {
-			var letter = node.move.x;
-			if (node.move.x > 7) {
-				letter++;
-			}
-			letter = String.fromCharCode(letter + 65);
-			this.message += " Trying to play " + (node.move.color == StoneColor.W ? "white" : "black") + " move on (" + node.move.x + ", " + node.move.y + ")";
+			this.message += " Trying to play a " + (node.move.color == StoneColor.W ? "white" : "black") + " move on (" + node.move.x + ", " + node.move.y + ")";
 		}
 
 		//Append code message
