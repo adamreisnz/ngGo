@@ -138,7 +138,7 @@ JGF = {
 	},
 
 	// Instructions for the game record replayer
-	player: {
+	settings: {
 
 		// Indicate variations with markup on the board or not
 		variation_markup: true,

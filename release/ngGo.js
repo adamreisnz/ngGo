@@ -1,5 +1,5 @@
 /**
- * ngGo v1.0.8, 16-12-2014
+ * ngGo v1.0.8, 17-12-2014
  * https://github.com/AdamBuczynski/ngGo
  *
  * Copyright (c) 2014 Adam Buczynski
@@ -8990,7 +8990,7 @@ angular.module('ngGo.Player.Service', [
 
 				//Parse configuration from JGF if allowed
 				if (allowPlayerConfig || typeof allowPlayerConfig == 'undefined') {
-					this.parseConfig(this.game.get('player'));
+					this.parseConfig(this.game.get('settings'));
 				}
 
 				//Dispatch game loaded event

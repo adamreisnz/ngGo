@@ -392,7 +392,7 @@ angular.module('ngGo.Player.Service', [
 
 				//Parse configuration from JGF if allowed
 				if (allowPlayerConfig || typeof allowPlayerConfig == 'undefined') {
-					this.parseConfig(this.game.get('player'));
+					this.parseConfig(this.game.get('settings'));
 				}
 
 				//Dispatch game loaded event
