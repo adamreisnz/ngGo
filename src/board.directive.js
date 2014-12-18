@@ -139,6 +139,19 @@ angular.module('ngGo.Board.Directive', [
 				scope.Board.setDrawSize(width * pixelRatio, height * pixelRatio);
 			});
 
+			//Determine initial draw size
+			determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
+
+			//On window resize, determine the draw size again
+			angular.element($window).on('resize', function() {
+				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
+			});
+
+			//On manual resize, determine draw size again
+			scope.$on('ngGo.board.determineDrawSize', function() {
+				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
+			});
+
 			//On board grid resize, determine the draw size again
 			scope.$on('ngGo.board.resize', function(event, board, width, height) {
 
@@ -151,22 +164,9 @@ angular.module('ngGo.Board.Directive', [
 				//However, that means we should call the resized() method now manually because
 				//it won't be called with the setDrawSize() call.
 				//This may seem a bit "off", but it's the best way to prevent redundant redraws.
-				if (!determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight)) {
+				if (!determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight)) {
 					scope.Board.resized();
 				}
-			});
-
-			//Determine initial draw size
-			determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
-
-			//On window resize, determine the draw size again
-			angular.element($window).on('resize', function() {
-				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
-			});
-
-			//On manual resize, determine draw size again
-			scope.$on('ngGo.board.determineDrawSize', function() {
-				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
 			});
 
 			//Static board

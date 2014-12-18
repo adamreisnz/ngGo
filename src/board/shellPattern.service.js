@@ -18,10 +18,11 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 	/**
 	 * Helper to draw a shell line
 	 */
-	var shellLine = function(ctx, x, y, radius, startAngle, endAngle) {
+	var shellLine = function(ctx, x, y, radius, startAngle, endAngle, strokeStyle) {
 
 		//Initialize
-		ctx.strokeStyle = 'rgba(64,64,64,0.2)';
+		ctx.shadowBlur = 2;
+		ctx.strokeStyle = strokeStyle;
 		ctx.lineWidth = (radius/30) * this.thickness;
 		ctx.beginPath();
 
@@ -48,12 +49,12 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 			angle = Math.atan(m)-Math.PI;
 		}
 
-		//More math magic
+		//Curvature factor
 		var c = this.factor * radius,
 			diff_x = Math.sin(angle) * c,
 			diff_y = Math.cos(angle) * c;
 
-		//More coordinates
+		//Curvature coordinates
 		var bx1 = x1 + diff_x,
 			by1 = y1 - diff_y,
 			bx2 = x2 + diff_x,
@@ -68,7 +69,7 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 	/**
 	 * Shell pattern drawer
 	 */
-	return function(ctx, x, y, radius, angle) {
+	return function(ctx, x, y, radius, angle, strokeStyle) {
 
 		//Initialize start and end angle
 		var startAngle = angle,
@@ -78,7 +79,7 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 		for (var i = 0; i < this.lines.length; i++) {
 			startAngle += this.lines[i];
 			endAngle -= this.lines[i];
-			shellLine.call(this, ctx, x, y, radius, startAngle, endAngle);
+			shellLine.call(this, ctx, x, y, radius, startAngle, endAngle, strokeStyle);
 		}
 	};
 });

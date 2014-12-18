@@ -40,6 +40,34 @@ angular.module('ngGo.Board.Theme.Service', [
 				return Math.floor(cellSize / 2);
 			},
 
+			//Shell stones
+			shell: {
+				color: function(stoneColor) {
+					if (stoneColor == StoneColor.B) {
+						return '#111';
+					}
+					return '#acaba1';
+				},
+				stroke: 'rgba(128,128,128,0.15)',
+				types: [
+					{
+						lines: [0.10, 0.12, 0.11, 0.10, 0.09, 0.09, 0.09, 0.09],
+						factor: 0.15,
+						thickness: 1.75
+					},
+					{
+						lines: [0.10, 0.09, 0.08, 0.07, 0.09, 0.06, 0.06, 0.07, 0.07, 0.06, 0.06],
+						factor: 0.1,
+						thickness: 1.5
+					},
+					{
+						lines: [0.22, 0.11, 0.13, 0.06, 0.11, 0.09],
+						factor: 0.05,
+						thickness: 1.75
+					}
+				]
+			},
+
 			//Mono stones
 			mono: {
 				lineWidth: 1,

@@ -1,5 +1,5 @@
 /**
- * ngGo v1.0.8, 17-12-2014
+ * ngGo v1.0.8, 18-12-2014
  * https://github.com/AdamBuczynski/ngGo
  *
  * Copyright (c) 2014 Adam Buczynski
@@ -147,6 +147,19 @@ angular.module('ngGo.Board.Directive', [
 				scope.Board.setDrawSize(width * pixelRatio, height * pixelRatio);
 			});
 
+			//Determine initial draw size
+			determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
+
+			//On window resize, determine the draw size again
+			angular.element($window).on('resize', function() {
+				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
+			});
+
+			//On manual resize, determine draw size again
+			scope.$on('ngGo.board.determineDrawSize', function() {
+				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
+			});
+
 			//On board grid resize, determine the draw size again
 			scope.$on('ngGo.board.resize', function(event, board, width, height) {
 
@@ -159,22 +172,9 @@ angular.module('ngGo.Board.Directive', [
 				//However, that means we should call the resized() method now manually because
 				//it won't be called with the setDrawSize() call.
 				//This may seem a bit "off", but it's the best way to prevent redundant redraws.
-				if (!determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight)) {
+				if (!determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight)) {
 					scope.Board.resized();
 				}
-			});
-
-			//Determine initial draw size
-			determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
-
-			//On window resize, determine the draw size again
-			angular.element($window).on('resize', function() {
-				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
-			});
-
-			//On manual resize, determine draw size again
-			scope.$on('ngGo.board.determineDrawSize', function() {
-				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
 			});
 
 			//Static board
@@ -3187,27 +3187,6 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 	var shellSeed;
 
 	/**
-	 * Pre-defined shell types
-	 */
-	var shellTypes = [
-		{
-			lines: [0.10, 0.12, 0.11, 0.10, 0.09, 0.09, 0.09, 0.09],
-			factor: 0.25,
-			thickness: 1.75
-		},
-		{
-			lines: [0.10, 0.09, 0.08, 0.07, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06],
-			factor: 0.2,
-			thickness: 1.5
-		},
-		{
-			lines: [0.12, 0.14, 0.13, 0.12, 0.12, 0.12],
-			factor: 0.3,
-			thickness: 2
-		}
-	];
-
-	/**
 	 * Mono colored stones
 	 */
 	var drawMono = function(stone) {
@@ -3309,7 +3288,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		else {
 			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/5, y - r/5, 4*r/5);
 			this.context.fillStyle.addColorStop(0, '#666');
-			this.context.fillStyle.addColorStop(1, '#000');
+			this.context.fillStyle.addColorStop(1, '#111');
 		}
 
 		//Complete drawing
@@ -3348,7 +3327,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		var color = stone.color * this.board.colorMultiplier;
 
 		//Get theme variables
-		var canvasTranslate = this.board.theme.canvasTranslate();
+		var shellTypes = this.board.theme.get('stone.shell.types'),
+			fillStyle = this.board.theme.get('stone.shell.color', color),
+			strokeStyle = this.board.theme.get('stone.shell.stroke'),
+			canvasTranslate = this.board.theme.canvasTranslate();
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -3358,19 +3340,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 			this.context.globalAlpha = stone.alpha;
 		}
 
-		//Begin path
+		//Draw stone
 		this.context.beginPath();
-
-		//Determine fill color
-		if (color == StoneColor.W) {
-			this.context.fillStyle = '#aaa';
-		}
-		else {
-			this.context.fillStyle = '#000';
-		}
-
-		//Draw filler
 		this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
+		this.context.fillStyle = fillStyle;
 		this.context.fill();
 
 		//Shell stones
@@ -3384,7 +3357,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 				angle = (2/z)*(shellSeed%z);
 
 			//Draw shell pattern
-			ShellPattern.call(shellTypes[type], this.context, x, y, r, angle);
+			ShellPattern.call(shellTypes[type], this.context, x, y, r, angle, strokeStyle);
 
 			//Add radial gradient
 			this.context.beginPath();
@@ -3727,10 +3700,11 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 	/**
 	 * Helper to draw a shell line
 	 */
-	var shellLine = function(ctx, x, y, radius, startAngle, endAngle) {
+	var shellLine = function(ctx, x, y, radius, startAngle, endAngle, strokeStyle) {
 
 		//Initialize
-		ctx.strokeStyle = 'rgba(64,64,64,0.2)';
+		ctx.shadowBlur = 2;
+		ctx.strokeStyle = strokeStyle;
 		ctx.lineWidth = (radius/30) * this.thickness;
 		ctx.beginPath();
 
@@ -3757,12 +3731,12 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 			angle = Math.atan(m)-Math.PI;
 		}
 
-		//More math magic
+		//Curvature factor
 		var c = this.factor * radius,
 			diff_x = Math.sin(angle) * c,
 			diff_y = Math.cos(angle) * c;
 
-		//More coordinates
+		//Curvature coordinates
 		var bx1 = x1 + diff_x,
 			by1 = y1 - diff_y,
 			bx2 = x2 + diff_x,
@@ -3777,7 +3751,7 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 	/**
 	 * Shell pattern drawer
 	 */
-	return function(ctx, x, y, radius, angle) {
+	return function(ctx, x, y, radius, angle, strokeStyle) {
 
 		//Initialize start and end angle
 		var startAngle = angle,
@@ -3787,7 +3761,7 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 		for (var i = 0; i < this.lines.length; i++) {
 			startAngle += this.lines[i];
 			endAngle -= this.lines[i];
-			shellLine.call(this, ctx, x, y, radius, startAngle, endAngle);
+			shellLine.call(this, ctx, x, y, radius, startAngle, endAngle, strokeStyle);
 		}
 	};
 });
@@ -3831,6 +3805,34 @@ angular.module('ngGo.Board.Theme.Service', [
 			shadow: true,
 			radius: function(cellSize) {
 				return Math.floor(cellSize / 2);
+			},
+
+			//Shell stones
+			shell: {
+				color: function(stoneColor) {
+					if (stoneColor == StoneColor.B) {
+						return '#111';
+					}
+					return '#acaba1';
+				},
+				stroke: 'rgba(128,128,128,0.15)',
+				types: [
+					{
+						lines: [0.10, 0.12, 0.11, 0.10, 0.09, 0.09, 0.09, 0.09],
+						factor: 0.15,
+						thickness: 1.75
+					},
+					{
+						lines: [0.10, 0.09, 0.08, 0.07, 0.09, 0.06, 0.06, 0.07, 0.07, 0.06, 0.06],
+						factor: 0.1,
+						thickness: 1.5
+					},
+					{
+						lines: [0.22, 0.11, 0.13, 0.06, 0.11, 0.09],
+						factor: 0.05,
+						thickness: 1.75
+					}
+				]
 			},
 
 			//Mono stones
@@ -4207,17 +4209,13 @@ angular.module('ngGo.Errors.InvalidMoveError.Service', [
 	var InvalidMoveError = function(code, node) {
 
 		//Set name and message
+		this.code = code;
 		this.name = 'InvalidMoveError';
-	    this.message = 'Invalid move detected in kifu.';
+	    this.message = 'Invalid move detected.';
 
 		//Check if we can add move data
 		if (node.move && node.move.color !== undefined && node.move.x !== undefined && node.move.y !== undefined) {
-			var letter = node.move.x;
-			if (node.move.x > 7) {
-				letter++;
-			}
-			letter = String.fromCharCode(letter + 65);
-			this.message += " Trying to play " + (node.move.color == StoneColor.W ? "white" : "black") + " move on (" + node.move.x + ", " + node.move.y + ")";
+			this.message += " Trying to play a " + (node.move.color == StoneColor.W ? "white" : "black") + " move on (" + node.move.x + ", " + node.move.y + ")";
 		}
 
 		//Append code message
@@ -7269,35 +7267,6 @@ angular.module('ngGo.Kifu.Parser.Service', [
 ])
 
 /**
- * Factory definition
- */
-.factory('KifuParser', ["Sgf2Jgf", "Jgf2Sgf", function(Sgf2Jgf, Jgf2Sgf) {
-
-	/**
-	 * Parser wrapper class
-	 */
-	var KifuParser = {
-
-		/**
-		 * Parse SGF string into a JGF object or string
-		 */
-		sgf2jgf: function(sgf, stringified) {
-			return Sgf2Jgf.parse(sgf, stringified);
-		},
-
-		/**
-		 * Parse JGF object or string into an SGF string
-		 */
-		jgf2sgf: function(jgf) {
-			return Jgf2Sgf.parse(jgf);
-		}
-	};
-
-	//Return object
-	return KifuParser;
-}])
-
-/**
  * SGF/JGF aliases constant for conversion between the two formats
  * Note: not all properties can be translated directly, so some are
  * not present here in this constant
@@ -7358,7 +7327,36 @@ angular.module('ngGo.Kifu.Parser.Service', [
 	6: 'backgammon',
 	7: 'chinese chess',
 	8: 'shogi'
-});
+})
+
+/**
+ * Factory definition
+ */
+.factory('KifuParser', ["Sgf2Jgf", "Jgf2Sgf", function(Sgf2Jgf, Jgf2Sgf) {
+
+	/**
+	 * Parser wrapper class
+	 */
+	var KifuParser = {
+
+		/**
+		 * Parse SGF string into a JGF object or string
+		 */
+		sgf2jgf: function(sgf, stringified) {
+			return Sgf2Jgf.parse(sgf, stringified);
+		},
+
+		/**
+		 * Parse JGF object or string into an SGF string
+		 */
+		jgf2sgf: function(jgf) {
+			return Jgf2Sgf.parse(jgf);
+		}
+	};
+
+	//Return object
+	return KifuParser;
+}]);
 
 /**
  * Jgf2Sgf :: This is a parser wrapped by the KifuParser which is used to convert fom JGF to SGF
