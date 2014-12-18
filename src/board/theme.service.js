@@ -213,7 +213,7 @@ angular.module('ngGo.Board.Theme.Service', [
 		grid: {
 
 			//Line properties
-			lineColor: 'rgba(40,30,20,1)',
+			lineColor: 'rgba(60,40,15,1)',
 			lineWidth: function(cellSize) {
 				if (cellSize > 60) {
 					return 2;
@@ -229,7 +229,7 @@ angular.module('ngGo.Board.Theme.Service', [
 			star: {
 
 				//Color and radius
-				color: 'rgba(40,30,20,1)',
+				color: 'rgba(60,40,15,1)',
 				radius: function(cellSize) {
 					if (cellSize > 50) {
 						return Math.floor((cellSize / 16) + 1);
