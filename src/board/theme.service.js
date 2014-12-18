@@ -109,7 +109,7 @@ angular.module('ngGo.Board.Theme.Service', [
 		shadow: {
 
 			//Shadow gradient colors
-			color: 'rgba(62,32,32,0.2)',
+			color: 'rgba(40,30,20,0.5)',
 
 			//Shadow size
 			size: function(cellSize) {
@@ -213,17 +213,37 @@ angular.module('ngGo.Board.Theme.Service', [
 		grid: {
 
 			//Line properties
-			lineColor: 'rgba(71,39,7,0.7)', //'rgba(101,69,37,0.4)',
-			lineWidth: 1,
+			lineColor: 'rgba(40,30,20,0.9)',
+			lineWidth: function(cellSize) {
+				if (cellSize > 60) {
+					return 2;
+				}
+				else if (cellSize > 50) {
+					return 1.5;
+				}
+				return 1;
+			},
 			lineCap: 'square',
 
 			//Star points
 			star: {
 
 				//Color and radius
-				color: 'rgba(81,49,17,1)', //'rgba(168,132,81,1)',
+				color: 'rgba(40,30,20,1)',
 				radius: function(cellSize) {
-					return Math.floor((cellSize / 16) + 1);
+					if (cellSize > 50) {
+						return Math.floor((cellSize / 16) + 1);
+					}
+					else if (cellSize > 30) {
+						return 3;
+					}
+					else if (cellSize > 15) {
+						return 2;
+					}
+					else if (cellSize > 5) {
+						return 1.5;
+					}
+					return 1;
 				},
 
 				//Locations

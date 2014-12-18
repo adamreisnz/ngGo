@@ -37,6 +37,11 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
 			return;
 		}
 
+		//Already have a stone here?
+		if (this.grid.has(stone.x, stone.y)) {
+			return;
+		}
+
 		//Add to grid
 		this.grid.set(stone.x, stone.y, stone.color);
 
