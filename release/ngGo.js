@@ -3831,6 +3831,11 @@ angular.module('ngGo.Board.Theme.Service', [
 						lines: [0.22, 0.11, 0.13, 0.06, 0.11, 0.09],
 						factor: 0.05,
 						thickness: 1.75
+					},
+					{
+						lines: [0.18, 0.23, 0.09, 0.17, 0.14],
+						factor: 0.1,
+						thickness: 2
 					}
 				]
 			},
@@ -4650,6 +4655,7 @@ angular.module('ngGo.Game.Service', [
 
 			//No data, can't do much
 			if (!data) {
+				this.error = ngGo.error.NO_DATA;
 				return false;
 			}
 
@@ -4678,6 +4684,7 @@ angular.module('ngGo.Game.Service', [
 			//Use the kifu parser
 			var jgf = KifuParser.sgf2jgf(sgf);
 			if (!jgf) {
+				this.error = ngGo.error.INVALID_SGF;
 				return false;
 			}
 
@@ -4697,6 +4704,7 @@ angular.module('ngGo.Game.Service', [
 				}
 				catch (error) {
 					console.warn('Could not parse JGF data');
+					this.error = ngGo.error.INVALID_JGF_JSON;
 					return false;
 				}
 			}
@@ -4709,6 +4717,7 @@ angular.module('ngGo.Game.Service', [
 					}
 					catch (error) {
 						console.warn('Could not parse JGF tree');
+						this.error = ngGo.error.INVALID_JGF_TREE_JSON;
 						return false;
 					}
 				}
@@ -8444,10 +8453,18 @@ angular.module('ngGo', [])
 	name:		'ngGo',
 	version:	'1.0.8',
 	error:		{
+
+		//Move errors
 		MOVE_OUT_OF_BOUNDS:			1,
 		MOVE_ALREADY_HAS_STONE:		2,
 		MOVE_IS_SUICIDE:			3,
-		MOVE_IS_REPEATING:			4
+		MOVE_IS_REPEATING:			4,
+
+		//Data loading errors
+		NO_DATA:					5,
+		INVALID_SGF:				6,
+		INVALID_JGF_JSON:			7,
+		INVALID_JGF_TREE_JSON:		8
 	}
 })
 

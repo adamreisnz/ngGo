@@ -36,10 +36,18 @@ angular.module('ngGo', [])
 	name:		'ngGo',
 	version:	'1.0.8',
 	error:		{
+
+		//Move errors
 		MOVE_OUT_OF_BOUNDS:			1,
 		MOVE_ALREADY_HAS_STONE:		2,
 		MOVE_IS_SUICIDE:			3,
-		MOVE_IS_REPEATING:			4
+		MOVE_IS_REPEATING:			4,
+
+		//Data loading errors
+		NO_DATA:					5,
+		INVALID_SGF:				6,
+		INVALID_JGF_JSON:			7,
+		INVALID_JGF_TREE_JSON:		8
 	}
 })
 

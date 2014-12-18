@@ -64,6 +64,11 @@ angular.module('ngGo.Board.Theme.Service', [
 						lines: [0.22, 0.11, 0.13, 0.06, 0.11, 0.09],
 						factor: 0.05,
 						thickness: 1.75
+					},
+					{
+						lines: [0.18, 0.23, 0.09, 0.17, 0.14],
+						factor: 0.1,
+						thickness: 2
 					}
 				]
 			},

@@ -402,6 +402,7 @@ angular.module('ngGo.Game.Service', [
 
 			//No data, can't do much
 			if (!data) {
+				this.error = ngGo.error.NO_DATA;
 				return false;
 			}
 
@@ -430,6 +431,7 @@ angular.module('ngGo.Game.Service', [
 			//Use the kifu parser
 			var jgf = KifuParser.sgf2jgf(sgf);
 			if (!jgf) {
+				this.error = ngGo.error.INVALID_SGF;
 				return false;
 			}
 
@@ -449,6 +451,7 @@ angular.module('ngGo.Game.Service', [
 				}
 				catch (error) {
 					console.warn('Could not parse JGF data');
+					this.error = ngGo.error.INVALID_JGF_JSON;
 					return false;
 				}
 			}
@@ -461,6 +464,7 @@ angular.module('ngGo.Game.Service', [
 					}
 					catch (error) {
 						console.warn('Could not parse JGF tree');
+						this.error = ngGo.error.INVALID_JGF_TREE_JSON;
 						return false;
 					}
 				}
