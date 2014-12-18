@@ -3881,7 +3881,7 @@ angular.module('ngGo.Board.Theme.Service', [
 		shadow: {
 
 			//Shadow gradient colors
-			color: 'rgba(40,30,20,0.5)',
+			color: 'rgba(40,30,20,0.6)',
 
 			//Shadow size
 			size: function(cellSize) {
@@ -3985,7 +3985,7 @@ angular.module('ngGo.Board.Theme.Service', [
 		grid: {
 
 			//Line properties
-			lineColor: 'rgba(40,30,20,0.9)',
+			lineColor: 'rgba(40,30,20,1)',
 			lineWidth: function(cellSize) {
 				if (cellSize > 60) {
 					return 2;
