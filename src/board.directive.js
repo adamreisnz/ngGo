@@ -90,7 +90,9 @@ angular.module('ngGo.Board.Directive', [
 		link: function(scope, element, attrs) {
 
 			//Init vars
-			var i, context, layer, parent, playerElement, sizingElement,
+			var i, context, layer, playerElement,
+				parent = element.parent(),
+				sizingElement = element[0],
 				existingInstance = true;
 
 			//Remember last draw width/height
@@ -115,13 +117,9 @@ angular.module('ngGo.Board.Directive', [
 			scope.Board.linkElement(element);
 
 			//Find player element
-			parent = element.parent();
 			if (parent[0].tagName == 'PLAYER') {
 				playerElement = parent;
 				sizingElement = parent.parent()[0];
-			}
-			else {
-				sizingElement = element[0];
 			}
 
 			//Listen for board drawsize events
@@ -134,8 +132,12 @@ angular.module('ngGo.Board.Directive', [
 					canvas[i].height = height * pixelRatio;
 				}
 
+				//Set on the element if we're using a player element
+				if (playerElement || attrs.forceSize === 'true') {
+					element.css({width: width + 'px', height: height + 'px'});
+				}
+
 				//Next set it on the board itself
-				element.css({width: width + 'px', height: height + 'px'});
 				scope.Board.setDrawSize(width * pixelRatio, height * pixelRatio);
 			});
 
