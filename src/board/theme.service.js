@@ -109,7 +109,7 @@ angular.module('ngGo.Board.Theme.Service', [
 		shadow: {
 
 			//Shadow gradient colors
-			color: 'rgba(40,30,20,0.6)',
+			color: 'rgba(40,30,20,0.5)',
 
 			//Shadow size
 			size: function(cellSize) {

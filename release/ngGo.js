@@ -55,6 +55,11 @@ angular.module('ngGo.Board.Directive', [
 		//Init vars
 		var drawWidth, drawHeight, cellSize;
 
+		//Stretch available height to width if zero
+		if (availableHeight === 0 && availableWidth > 0) {
+			availableHeight = availableWidth;
+		}
+
 		//Grid size known?
 		if (scope.Board.width && scope.Board.height) {
 
@@ -333,6 +338,7 @@ angular.module('ngGo.Board.Service', [
 			this.theme = new BoardTheme();
 
 			//Initialize board draw dimensions in pixels
+			this.cellSize = 0;
 			this.drawWidth = 0;
 			this.drawHeight = 0;
 			this.drawMarginHor = 0;
@@ -3883,7 +3889,7 @@ angular.module('ngGo.Board.Theme.Service', [
 		shadow: {
 
 			//Shadow gradient colors
-			color: 'rgba(40,30,20,0.6)',
+			color: 'rgba(40,30,20,0.5)',
 
 			//Shadow size
 			size: function(cellSize) {

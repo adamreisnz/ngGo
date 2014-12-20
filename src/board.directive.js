@@ -47,6 +47,11 @@ angular.module('ngGo.Board.Directive', [
 		//Init vars
 		var drawWidth, drawHeight, cellSize;
 
+		//Stretch available height to width if zero
+		if (availableHeight === 0 && availableWidth > 0) {
+			availableHeight = availableWidth;
+		}
+
 		//Grid size known?
 		if (scope.Board.width && scope.Board.height) {
 

@@ -88,6 +88,7 @@ angular.module('ngGo.Board.Service', [
 			this.theme = new BoardTheme();
 
 			//Initialize board draw dimensions in pixels
+			this.cellSize = 0;
 			this.drawWidth = 0;
 			this.drawHeight = 0;
 			this.drawMarginHor = 0;
