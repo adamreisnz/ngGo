@@ -1,5 +1,5 @@
 /**
- * ngGo v1.0.8, 20-12-2014
+ * ngGo v1.0.8
  * https://github.com/AdamBuczynski/ngGo
  *
  * Copyright (c) 2014 Adam Buczynski
