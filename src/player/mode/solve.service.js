@@ -99,6 +99,12 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 		 */
 		var updateHoverMark = function(x, y) {
 
+			//If no coordinates specified, use last mouse coordinates
+			if (typeof x == 'undefined' || typeof y == 'undefined') {
+				x = this.mouse.lastX;
+				y = this.mouse.lastY;
+			}
+
 			//Falling outside of grid?
 			if (!this.board || !this.board.isOnBoard(x, y)) {
 				return;
