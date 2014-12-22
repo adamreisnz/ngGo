@@ -373,6 +373,43 @@ angular.module('ngGo.Player.Service', [
 				return true;
 			},
 
+			/**
+			 * Save the full player state
+			 */
+			saveState: function() {
+
+				//Save player state
+				this.playerState = {
+					mode: this.mode,
+					tool: this.tool,
+					restrictNodeStart: this.restrictNodeStart,
+					restrictNodeEnd: this.restrictNodeEnd
+				};
+
+				//Save game state
+				this.saveGameState();
+			},
+
+			/**
+			 * Restore to the saved player state
+			 */
+			restoreState: function() {
+
+				//Must have player state
+				if (!this.playerState) {
+					return;
+				}
+
+				//Restore
+				this.switchMode(this.playerState.mode);
+				this.switchTool(this.playerState.tool);
+				this.restrictNodeStart = this.playerState.restrictNodeStart;
+				this.restrictNodeEnd = this.playerState.restrictNodeEnd;
+
+				//Restore game state
+				this.restoreGameState();
+			},
+
 			/***********************************************************************************************
 			 * Game record handling
 			 ***/
@@ -432,9 +469,7 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Save the current state
 			 */
-			saveState: function() {
-
-				//Remember game state
+			saveGameState: function() {
 				if (this.game && this.game.isLoaded()) {
 					this.gameState = this.game.getState();
 				}
@@ -443,7 +478,7 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Restore to the saved state
 			 */
-			restoreState: function() {
+			restoreGameState: function(mode) {
 
 				//Must have game and saved state
 				if (!this.game || !this.gameState) {

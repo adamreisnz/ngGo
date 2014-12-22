@@ -145,7 +145,7 @@ angular.module('ngGo.Board.Directive', [
 					canvas[i].height = height * pixelRatio;
 				}
 
-				//Set on the element if we're using a player element
+				//Set on the element if we're using a player element and if there is a size
 				if (playerElement || attrs.forceSize === 'true') {
 					element.css({width: width + 'px', height: height + 'px'});
 				}
@@ -3374,7 +3374,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
 			//Add radial gradient
 			this.context.beginPath();
-			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
+			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/6, x - r/5, y - r/5, r);
 			this.context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.9)');
 			this.context.fillStyle.addColorStop(1, 'rgba(255,255,255,0)');
 			this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
@@ -3826,7 +3826,7 @@ angular.module('ngGo.Board.Theme.Service', [
 					if (stoneColor == StoneColor.B) {
 						return '#111';
 					}
-					return '#acaba1';
+					return '#BFBFBA';
 				},
 				stroke: 'rgba(128,128,128,0.15)',
 				types: [
@@ -9019,6 +9019,43 @@ angular.module('ngGo.Player.Service', [
 				return true;
 			},
 
+			/**
+			 * Save the full player state
+			 */
+			saveState: function() {
+
+				//Save player state
+				this.playerState = {
+					mode: this.mode,
+					tool: this.tool,
+					restrictNodeStart: this.restrictNodeStart,
+					restrictNodeEnd: this.restrictNodeEnd
+				};
+
+				//Save game state
+				this.saveGameState();
+			},
+
+			/**
+			 * Restore to the saved player state
+			 */
+			restoreState: function() {
+
+				//Must have player state
+				if (!this.playerState) {
+					return;
+				}
+
+				//Restore
+				this.switchMode(this.playerState.mode);
+				this.switchTool(this.playerState.tool);
+				this.restrictNodeStart = this.playerState.restrictNodeStart;
+				this.restrictNodeEnd = this.playerState.restrictNodeEnd;
+
+				//Restore game state
+				this.restoreGameState();
+			},
+
 			/***********************************************************************************************
 			 * Game record handling
 			 ***/
@@ -9078,9 +9115,7 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Save the current state
 			 */
-			saveState: function() {
-
-				//Remember game state
+			saveGameState: function() {
 				if (this.game && this.game.isLoaded()) {
 					this.gameState = this.game.getState();
 				}
@@ -9089,7 +9124,7 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Restore to the saved state
 			 */
-			restoreState: function() {
+			restoreGameState: function(mode) {
 
 				//Must have game and saved state
 				if (!this.game || !this.gameState) {

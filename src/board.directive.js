@@ -137,7 +137,7 @@ angular.module('ngGo.Board.Directive', [
 					canvas[i].height = height * pixelRatio;
 				}
 
-				//Set on the element if we're using a player element
+				//Set on the element if we're using a player element and if there is a size
 				if (playerElement || attrs.forceSize === 'true') {
 					element.css({width: width + 'px', height: height + 'px'});
 				}

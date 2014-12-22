@@ -46,7 +46,7 @@ angular.module('ngGo.Board.Theme.Service', [
 					if (stoneColor == StoneColor.B) {
 						return '#111';
 					}
-					return '#acaba1';
+					return '#BFBFBA';
 				},
 				stroke: 'rgba(128,128,128,0.15)',
 				types: [

@@ -197,7 +197,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
 			//Add radial gradient
 			this.context.beginPath();
-			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
+			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/6, x - r/5, y - r/5, r);
 			this.context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.9)');
 			this.context.fillStyle.addColorStop(1, 'rgba(255,255,255,0)');
 			this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
