@@ -503,7 +503,7 @@ angular.module('ngGo.Player.Service', [
 			 * Go to the next position
 			 */
 			next: function(i) {
-				if (this.game) {
+				if (this.game && this.game.node != this.restrictNodeEnd) {
 					this.game.next(i);
 					this.processPosition();
 				}
@@ -513,7 +513,7 @@ angular.module('ngGo.Player.Service', [
 			 * Go back to the previous position
 			 */
 			previous: function() {
-				if (this.game) {
+				if (this.game && this.game.node != this.restrictNodeStart) {
 					this.game.previous();
 					this.processPosition();
 				}

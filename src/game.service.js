@@ -198,10 +198,7 @@ angular.module('ngGo.Game.Service', [
 
 			//Position not given?
 			if (!newPosition) {
-
-				//Clone current position and switch turn
 				newPosition = this.position.clone();
-				newPosition.switchTurn();
 			}
 
 			//Push
@@ -566,6 +563,25 @@ angular.module('ngGo.Game.Service', [
 		};
 
 		/**
+		 * Duplicate the current game position
+		 */
+		Game.prototype.duplicatePosition = function() {
+
+			//Clone our position
+			pushPosition.call(this);
+
+			//Create new node
+			var node = new GameNode();
+
+			//Append it to the current node and change the pointer
+			var i = node.appendTo(this.node);
+			this.node = node;
+
+			//Advance path to the added node index
+			this.path.advance(i);
+		};
+
+		/**
 		 * Get the game path
 		 */
 		Game.prototype.getPath = function(clone) {
@@ -841,19 +857,7 @@ angular.module('ngGo.Game.Service', [
 
 				//Is this a move node?
 				if (this.node.move) {
-
-					//Clone our position
-					pushPosition.call(this);
-
-					//Create new node
-					var node = new GameNode();
-
-					//Append it to the current node and change the pointer
-					var i = node.appendTo(this.node);
-					this.node = node;
-
-					//Advance path to the added node index
-					this.path.advance(i);
+					this.duplicatePosition();
 				}
 
 				//Create setup container
