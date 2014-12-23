@@ -435,7 +435,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
 			//String given?
 			if (typeof jgf == 'string') {
-				jgf = JSON.parse(jgf);
+				jgf = angular.fromJson(jgf);
 			}
 
 			//Must have moves tree
