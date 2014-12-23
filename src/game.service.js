@@ -444,7 +444,7 @@ angular.module('ngGo.Game.Service', [
 			//Parse jgf string
 			if (typeof jgf == 'string') {
 				try {
-					jgf = JSON.parse(jgf);
+					jgf = angular.fromJson(jgf);
 				}
 				catch (error) {
 					console.warn('Could not parse JGF data');
@@ -457,7 +457,7 @@ angular.module('ngGo.Game.Service', [
 			if (typeof jgf.tree == 'string') {
 				if (jgf.tree.charAt(0) == '[') {
 					try {
-						jgf.tree = JSON.parse(jgf.tree);
+						jgf.tree = angular.fromJson(jgf.tree);
 					}
 					catch (error) {
 						console.warn('Could not parse JGF tree');
@@ -534,7 +534,7 @@ angular.module('ngGo.Game.Service', [
 			jgf.tree = this.root.toJgf();
 
 			//Return
-			return stringify ? JSON.stringify(jgf) : jgf;
+			return stringify ? angular.toJson(jgf) : jgf;
 		};
 
 		/***********************************************************************************************

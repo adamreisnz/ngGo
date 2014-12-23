@@ -3977,13 +3977,13 @@ angular.module('ngGo.Board.Theme.Service', [
 				valid: {
 					type: MarkupTypes.SELECT,
 					text: null,
-					color: 'rgba(86,114,30,0.9)',
+					color: 'rgba(86,114,30,1)',
 					scale: 0.5
 				},
 				invalid: {
 					type: MarkupTypes.MARK,
 					text: null,
-					color: 'rgba(237,9,15,0.8)',
+					color: 'rgba(237,9,15,1)',
 					scale: 0.3
 				}
 			}
@@ -4730,7 +4730,7 @@ angular.module('ngGo.Game.Service', [
 			//Parse jgf string
 			if (typeof jgf == 'string') {
 				try {
-					jgf = JSON.parse(jgf);
+					jgf = angular.fromJson(jgf);
 				}
 				catch (error) {
 					console.warn('Could not parse JGF data');
@@ -4743,7 +4743,7 @@ angular.module('ngGo.Game.Service', [
 			if (typeof jgf.tree == 'string') {
 				if (jgf.tree.charAt(0) == '[') {
 					try {
-						jgf.tree = JSON.parse(jgf.tree);
+						jgf.tree = angular.fromJson(jgf.tree);
 					}
 					catch (error) {
 						console.warn('Could not parse JGF tree');
@@ -4820,7 +4820,7 @@ angular.module('ngGo.Game.Service', [
 			jgf.tree = this.root.toJgf();
 
 			//Return
-			return stringify ? JSON.stringify(jgf) : jgf;
+			return stringify ? angular.toJson(jgf) : jgf;
 		};
 
 		/***********************************************************************************************
@@ -7840,7 +7840,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
 			//String given?
 			if (typeof jgf == 'string') {
-				jgf = JSON.parse(jgf);
+				jgf = angular.fromJson(jgf);
 			}
 
 			//Must have moves tree
