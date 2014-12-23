@@ -197,13 +197,13 @@ angular.module('ngGo.Board.Theme.Service', [
 				valid: {
 					type: MarkupTypes.SELECT,
 					text: null,
-					color: 'rgba(86,114,30,0.9)',
+					color: 'rgba(86,114,30,1)',
 					scale: 0.5
 				},
 				invalid: {
 					type: MarkupTypes.MARK,
 					text: null,
-					color: 'rgba(237,9,15,0.8)',
+					color: 'rgba(237,9,15,1)',
 					scale: 0.3
 				}
 			}
