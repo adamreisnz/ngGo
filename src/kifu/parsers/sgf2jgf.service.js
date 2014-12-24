@@ -24,6 +24,18 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		regProperty = /[A-Z]+/,
 		regValues = /(\[\])|(\[(.|\s)*?([^\\]\]))/g;
 
+	/**
+	 * Character index of "a"
+	 */
+	var aChar = 'a'.charCodeAt(0);
+
+	/**
+	 * Helper to convert SGF coordinates
+	 */
+	var convertCoordinates = function(coords) {
+		return [coords.charCodeAt(0)-aChar, coords.charCodeAt(1)-aChar];
+	};
+
 	/***********************************************************************************************
 	 * Conversion helpers
 	 ***/
@@ -72,13 +84,13 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		node.move = {};
 
 		//Pass
-		if (value[0] === '' || (jgf.width <= 19 && value[0].toLowerCase() == 'tt')) {
+		if (value[0] === '' || (jgf.width <= 19 && value[0] == 'tt')) {
 			node.move[key] = 'pass';
 		}
 
 		//Regular move
 		else {
-			node.move[key] = value[0].toLowerCase();
+			node.move[key] = convertCoordinates(value[0]);
 		}
 	};
 
@@ -129,8 +141,8 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		}
 
 		//Add values
-		for (var i in value) {
-			node.setup[key].push(value[i].toLowerCase());
+		for (var i = 0; i < value.length; i++) {
+			node.setup[key].push(convertCoordinates(value[i]));
 		}
 	};
 
@@ -151,8 +163,8 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		key = key.charAt(1);
 
 		//Add values
-		for (var i in value) {
-			node.score[key].push(value[i].toLowerCase());
+		for (var i = 0; i < value.length; i++) {
+			node.score[key].push(convertCoordinates(value[i]));
 		}
 	};
 
@@ -184,14 +196,14 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		}
 
 		//Add values
-		for (var i in value) {
+		for (var i = 0; i < value.length; i++) {
 
-			//Split coordinates and label
-			var coords = value[i].substr(0, 2).toLowerCase(),
-				label = value[i].substr(3);
+			//Split off coordinates and add label contents
+			var coords = convertCoordinates(value[i].substr(0, 2));
+			coords.push(value[i].substr(3));
 
 			//Add to node
-			node.markup[key].push([coords, label]);
+			node.markup[key].push(coords);
 		}
 	};
 
@@ -217,7 +229,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
 		//Add values
 		for (var i in value) {
-			node.markup[key].push(value[i].toLowerCase());
+			node.markup[key].push(convertCoordinates(value[i]));
 		}
 	};
 

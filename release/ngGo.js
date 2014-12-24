@@ -1,5 +1,5 @@
 /**
- * ngGo v1.0.8, 14-12-2014
+ * ngGo v1.0.9
  * https://github.com/AdamBuczynski/ngGo
  *
  * Copyright (c) 2014 Adam Buczynski
@@ -55,6 +55,11 @@ angular.module('ngGo.Board.Directive', [
 		//Init vars
 		var drawWidth, drawHeight, cellSize;
 
+		//Stretch available height to width if zero
+		if (availableHeight === 0 && availableWidth > 0) {
+			availableHeight = availableWidth;
+		}
+
 		//Grid size known?
 		if (scope.Board.width && scope.Board.height) {
 
@@ -98,7 +103,9 @@ angular.module('ngGo.Board.Directive', [
 		link: function(scope, element, attrs) {
 
 			//Init vars
-			var i, context, layer, parent, playerElement,
+			var i, context, layer, playerElement,
+				parent = element.parent(),
+				sizingElement = element[0],
 				existingInstance = true;
 
 			//Remember last draw width/height
@@ -123,9 +130,9 @@ angular.module('ngGo.Board.Directive', [
 			scope.Board.linkElement(element);
 
 			//Find player element
-			parent = element.parent();
 			if (parent[0].tagName == 'PLAYER') {
 				playerElement = parent;
+				sizingElement = parent.parent()[0];
 			}
 
 			//Listen for board drawsize events
@@ -138,9 +145,26 @@ angular.module('ngGo.Board.Directive', [
 					canvas[i].height = height * pixelRatio;
 				}
 
+				//Set on the element if we're using a player element and if there is a size
+				if (playerElement || attrs.forceSize === 'true') {
+					element.css({width: width + 'px', height: height + 'px'});
+				}
+
 				//Next set it on the board itself
-				element.css({width: width + 'px', height: height + 'px'});
 				scope.Board.setDrawSize(width * pixelRatio, height * pixelRatio);
+			});
+
+			//Determine initial draw size
+			determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
+
+			//On window resize, determine the draw size again
+			angular.element($window).on('resize', function() {
+				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
+			});
+
+			//On manual resize, determine draw size again
+			scope.$on('ngGo.board.determineDrawSize', function() {
+				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
 			});
 
 			//On board grid resize, determine the draw size again
@@ -155,37 +179,10 @@ angular.module('ngGo.Board.Directive', [
 				//However, that means we should call the resized() method now manually because
 				//it won't be called with the setDrawSize() call.
 				//This may seem a bit "off", but it's the best way to prevent redundant redraws.
-				if (!determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight)) {
+				if (!determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight)) {
 					scope.Board.resized();
 				}
 			});
-
-			//Board with player element?
-			if (playerElement) {
-
-				//Get player element parent
-				parent = parent.parent();
-
-				//Determine draw size based on parent
-				determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight);
-
-				//On window resize, determine the draw size again
-				angular.element($window).on('resize', function() {
-					determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight);
-				});
-			}
-
-			//Board without player
-			else {
-
-				//Determine draw size based on element dimensions
-				determineDrawSize(scope, element[0].clientWidth, element[0].clientHeight);
-
-				//On window resize, determine the draw size again
-				angular.element($window).on('resize', function() {
-					determineDrawSize(scope, element[0].clientWidth, element[0].clientHeight);
-				});
-			}
 
 			//Static board
 			if (attrs.static && attrs.static === 'true') {
@@ -341,6 +338,7 @@ angular.module('ngGo.Board.Service', [
 			this.theme = new BoardTheme();
 
 			//Initialize board draw dimensions in pixels
+			this.cellSize = 0;
 			this.drawWidth = 0;
 			this.drawHeight = 0;
 			this.drawMarginHor = 0;
@@ -628,7 +626,7 @@ angular.module('ngGo.Board.Service', [
 			}
 		};
 
-		/*******************************************************************************************************************************
+		/***********************************************************************************************
 		 * Theme handling
 		 ***/
 
@@ -782,7 +780,7 @@ angular.module('ngGo.Board.Service', [
 			}
 		};
 
-		/*******************************************************************************************************************************
+		/***********************************************************************************************
 		 * Drawing control
 		 ***/
 
@@ -1112,7 +1110,7 @@ angular.module('ngGo.Board.Grid.Service', [
 		return toObject.call(this, x, y, valueKey);
 	};
 
-	/*******************************************************************************************************************************
+	/***********************************************************************************************
 	 * Mass operations
 	 ***/
 
@@ -1197,7 +1195,7 @@ angular.module('ngGo.Board.Grid.Service', [
 		return newGrid;
 	};
 
-	/*******************************************************************************************************************************
+	/***********************************************************************************************
 	 * Comparison
 	 ***/
 
@@ -1258,7 +1256,7 @@ angular.module('ngGo.Board.Grid.Service', [
 		return changes;
 	};
 
-	/*******************************************************************************************************************************
+	/***********************************************************************************************
 	 * Helpers
 	 ***/
 
@@ -1821,7 +1819,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 	angular.extend(HoverLayer.prototype, BoardLayer.prototype);
 
 	/**
-	 * Add faded stone
+	 * Add hover item
 	 */
 	HoverLayer.prototype.add = function(x, y, hover) {
 
@@ -1917,12 +1915,22 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 			return;
 		}
 
+		//Get all item as objects
+		var i, hover = this.grid.all('layer');
+
+		//Clear them
+		for (i = 0; i < hover.length; i++) {
+			if (hover[i].objectClass && hover[i].objectClass.clear) {
+				hover[i].objectClass.clear.call(this, hover[i].object);
+			}
+		}
+
 		//Clear layer and empty grid
 		this.clear();
 		this.grid.empty();
 
 		//Restore objects on other layers
-		for (var i = 0; i < this.restore.length; i++) {
+		for (i = 0; i < this.restore.length; i++) {
 			this.board.add(this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value);
 		}
 
@@ -2218,6 +2226,11 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
 			return;
 		}
 
+		//Already have a stone here?
+		if (this.grid.has(stone.x, stone.y)) {
+			return;
+		}
+
 		//Add to grid
 		this.grid.set(stone.x, stone.y, stone.color);
 
@@ -2354,7 +2367,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
 	StonesLayer.prototype.redraw = function() {
 
 		//Clear shadows layer
-		this.board.clear('shadow');
+		this.board.removeAll('shadow');
 
 		//Redraw ourselves
 		this.clear();
@@ -2479,11 +2492,23 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 
 		//Capital letters from A
 		letters: function(i) {
-			var ch = aChar + i;
-			if (ch >= iChar) {
-				ch++;
+
+			//Initialize
+			var ch = '';
+
+			//Beyond Z? Prepend with A
+			if (i >= 25) {
+				ch = 'A';
+				i -= 25;
 			}
-			return String.fromCharCode(ch);
+
+			//The letter I is ommitted
+			if (i >= 8) {
+				i++;
+			}
+
+			//Return
+			return ch + String.fromCharCode(aChar + i);
 		},
 
 		//JGF coordinates (e.g. 0, 1, ...)
@@ -2494,7 +2519,7 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 		//SGF coordinates (e.g. a, b, ...)
 		sgf: function(i) {
 			var ch;
-			if (i <= 26) {
+			if (i < 26) {
 				ch = aCharLc + i;
 			}
 			else {
@@ -3071,13 +3096,8 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		 */
 		draw: function(markup) {
 
-			//No context?
-			if (!this.context) {
-				return;
-			}
-
-			//Can only draw when we have dimensions
-			if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+			//Can only draw when we have dimensions and context
+			if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 				return;
 			}
 
@@ -3137,8 +3157,8 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		 */
 		clear: function(markup) {
 
-			//No context?
-			if (!this.context) {
+			//Can only draw when we have dimensions and context
+			if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 				return;
 			}
 
@@ -3178,27 +3198,6 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 	 * Shell random seed
 	 */
 	var shellSeed;
-
-	/**
-	 * Pre-defined shell types
-	 */
-	var shellTypes = [
-		{
-			lines: [0.10, 0.12, 0.11, 0.10, 0.09, 0.09, 0.09, 0.09],
-			factor: 0.25,
-			thickness: 1.75
-		},
-		{
-			lines: [0.10, 0.09, 0.08, 0.07, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06],
-			factor: 0.2,
-			thickness: 1.5
-		},
-		{
-			lines: [0.12, 0.14, 0.13, 0.12, 0.12, 0.12],
-			factor: 0.3,
-			thickness: 2
-		}
-	];
 
 	/**
 	 * Mono colored stones
@@ -3295,14 +3294,14 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
 		//Determine stone texture
 		if (color == StoneColor.W) {
-			this.context.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
+			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
 			this.context.fillStyle.addColorStop(0, '#fff');
 			this.context.fillStyle.addColorStop(1, '#aaa');
 		}
 		else {
-			this.context.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/5, y - r/5, 4*r/5);
+			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/5, y - r/5, 4*r/5);
 			this.context.fillStyle.addColorStop(0, '#666');
-			this.context.fillStyle.addColorStop(1, '#000');
+			this.context.fillStyle.addColorStop(1, '#111');
 		}
 
 		//Complete drawing
@@ -3341,7 +3340,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		var color = stone.color * this.board.colorMultiplier;
 
 		//Get theme variables
-		var canvasTranslate = this.board.theme.canvasTranslate();
+		var shellTypes = this.board.theme.get('stone.shell.types'),
+			fillStyle = this.board.theme.get('stone.shell.color', color),
+			strokeStyle = this.board.theme.get('stone.shell.stroke'),
+			canvasTranslate = this.board.theme.canvasTranslate();
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -3351,19 +3353,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 			this.context.globalAlpha = stone.alpha;
 		}
 
-		//Begin path
+		//Draw stone
 		this.context.beginPath();
-
-		//Determine fill color
-		if (color == StoneColor.W) {
-			this.context.fillStyle = '#aaa';
-		}
-		else {
-			this.context.fillStyle = '#000';
-		}
-
-		//Draw filler
 		this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
+		this.context.fillStyle = fillStyle;
 		this.context.fill();
 
 		//Shell stones
@@ -3377,11 +3370,11 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 				angle = (2/z)*(shellSeed%z);
 
 			//Draw shell pattern
-			ShellPattern.call(shellTypes[type], this.context, x, y, r, angle);
+			ShellPattern.call(shellTypes[type], this.context, x, y, r, angle, strokeStyle);
 
 			//Add radial gradient
 			this.context.beginPath();
-			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
+			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/6, x - r/5, y - r/5, r);
 			this.context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.9)');
 			this.context.fillStyle.addColorStop(1, 'rgba(255,255,255,0)');
 			this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
@@ -3427,8 +3420,8 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		 */
 		draw: function(stone) {
 
-			//No context?
-			if (!this.context) {
+			//Can only draw when we have dimensions and context
+			if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 				return;
 			}
 
@@ -3472,8 +3465,8 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		 */
 		clear: function(stone) {
 
-			//No context?
-			if (!this.context) {
+			//Can only draw when we have dimensions and context
+			if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 				return;
 			}
 
@@ -3720,10 +3713,11 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 	/**
 	 * Helper to draw a shell line
 	 */
-	var shellLine = function(ctx, x, y, radius, startAngle, endAngle) {
+	var shellLine = function(ctx, x, y, radius, startAngle, endAngle, strokeStyle) {
 
 		//Initialize
-		ctx.strokeStyle = 'rgba(64,64,64,0.2)';
+		ctx.shadowBlur = 2;
+		ctx.strokeStyle = strokeStyle;
 		ctx.lineWidth = (radius/30) * this.thickness;
 		ctx.beginPath();
 
@@ -3750,12 +3744,12 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 			angle = Math.atan(m)-Math.PI;
 		}
 
-		//More math magic
+		//Curvature factor
 		var c = this.factor * radius,
 			diff_x = Math.sin(angle) * c,
 			diff_y = Math.cos(angle) * c;
 
-		//More coordinates
+		//Curvature coordinates
 		var bx1 = x1 + diff_x,
 			by1 = y1 - diff_y,
 			bx2 = x2 + diff_x,
@@ -3770,7 +3764,7 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 	/**
 	 * Shell pattern drawer
 	 */
-	return function(ctx, x, y, radius, angle) {
+	return function(ctx, x, y, radius, angle, strokeStyle) {
 
 		//Initialize start and end angle
 		var startAngle = angle,
@@ -3780,7 +3774,7 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 		for (var i = 0; i < this.lines.length; i++) {
 			startAngle += this.lines[i];
 			endAngle -= this.lines[i];
-			shellLine.call(this, ctx, x, y, radius, startAngle, endAngle);
+			shellLine.call(this, ctx, x, y, radius, startAngle, endAngle, strokeStyle);
 		}
 	};
 });
@@ -3826,6 +3820,39 @@ angular.module('ngGo.Board.Theme.Service', [
 				return Math.floor(cellSize / 2);
 			},
 
+			//Shell stones
+			shell: {
+				color: function(stoneColor) {
+					if (stoneColor == StoneColor.B) {
+						return '#111';
+					}
+					return '#BFBFBA';
+				},
+				stroke: 'rgba(128,128,128,0.15)',
+				types: [
+					{
+						lines: [0.10, 0.12, 0.11, 0.10, 0.09, 0.09, 0.09, 0.09],
+						factor: 0.15,
+						thickness: 1.75
+					},
+					{
+						lines: [0.10, 0.09, 0.08, 0.07, 0.09, 0.06, 0.06, 0.07, 0.07, 0.06, 0.06],
+						factor: 0.1,
+						thickness: 1.5
+					},
+					{
+						lines: [0.22, 0.11, 0.13, 0.06, 0.11, 0.09],
+						factor: 0.05,
+						thickness: 1.75
+					},
+					{
+						lines: [0.18, 0.23, 0.09, 0.17, 0.14],
+						factor: 0.1,
+						thickness: 2
+					}
+				]
+			},
+
 			//Mono stones
 			mono: {
 				lineWidth: 1,
@@ -3862,7 +3889,7 @@ angular.module('ngGo.Board.Theme.Service', [
 		shadow: {
 
 			//Shadow gradient colors
-			color: 'rgba(62,32,32,0.2)',
+			color: 'rgba(40,30,20,0.5)',
 
 			//Shadow size
 			size: function(cellSize) {
@@ -3950,13 +3977,13 @@ angular.module('ngGo.Board.Theme.Service', [
 				valid: {
 					type: MarkupTypes.SELECT,
 					text: null,
-					color: 'rgba(86,114,30,0.9)',
+					color: 'rgba(86,114,30,1)',
 					scale: 0.5
 				},
 				invalid: {
 					type: MarkupTypes.MARK,
 					text: null,
-					color: 'rgba(237,9,15,0.8)',
+					color: 'rgba(237,9,15,1)',
 					scale: 0.3
 				}
 			}
@@ -3966,17 +3993,37 @@ angular.module('ngGo.Board.Theme.Service', [
 		grid: {
 
 			//Line properties
-			lineColor: 'rgba(71,39,7,0.7)', //'rgba(101,69,37,0.4)',
-			lineWidth: 1,
+			lineColor: 'rgba(60,40,15,1)',
+			lineWidth: function(cellSize) {
+				if (cellSize > 60) {
+					return 2;
+				}
+				else if (cellSize > 50) {
+					return 1.5;
+				}
+				return 1;
+			},
 			lineCap: 'square',
 
 			//Star points
 			star: {
 
 				//Color and radius
-				color: 'rgba(81,49,17,1)', //'rgba(168,132,81,1)',
+				color: 'rgba(60,40,15,1)',
 				radius: function(cellSize) {
-					return Math.floor((cellSize / 16) + 1);
+					if (cellSize > 50) {
+						return Math.floor((cellSize / 16) + 1);
+					}
+					else if (cellSize > 30) {
+						return 3;
+					}
+					else if (cellSize > 15) {
+						return 2;
+					}
+					else if (cellSize > 5) {
+						return 1.5;
+					}
+					return 1;
 				},
 
 				//Locations
@@ -4200,17 +4247,13 @@ angular.module('ngGo.Errors.InvalidMoveError.Service', [
 	var InvalidMoveError = function(code, node) {
 
 		//Set name and message
+		this.code = code;
 		this.name = 'InvalidMoveError';
-	    this.message = 'Invalid move detected in kifu.';
+	    this.message = 'Invalid move detected.';
 
 		//Check if we can add move data
 		if (node.move && node.move.color !== undefined && node.move.x !== undefined && node.move.y !== undefined) {
-			var letter = node.move.x;
-			if (node.move.x > 7) {
-				letter++;
-			}
-			letter = String.fromCharCode(letter + 65);
-			this.message += " Trying to play " + (node.move.color == StoneColor.W ? "white" : "black") + " move on (" + node.move.x + ", " + node.move.y + ")";
+			this.message += " Trying to play a " + (node.move.color == StoneColor.W ? "white" : "black") + " move on (" + node.move.x + ", " + node.move.y + ")";
 		}
 
 		//Append code message
@@ -4359,6 +4402,9 @@ angular.module('ngGo.Game.Service', [
 
 			//Determine which child node to process
 			i = i || 0;
+			if (i == -1) {
+				i = 0;
+			}
 
 			//Validate
 			if (i >= this.node.children.length || !this.node.children[i]) {
@@ -4438,10 +4484,7 @@ angular.module('ngGo.Game.Service', [
 
 			//Position not given?
 			if (!newPosition) {
-
-				//Clone current position and switch turn
 				newPosition = this.position.clone();
-				newPosition.switchTurn();
 			}
 
 			//Push
@@ -4487,7 +4530,7 @@ angular.module('ngGo.Game.Service', [
 				else {
 					if (!this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition)) {
 						console.warn('Invalid move detected in game record');
-						return;
+						return false;
 					}
 				}
 			}
@@ -4513,6 +4556,7 @@ angular.module('ngGo.Game.Service', [
 
 			//Push the new position into the history now
 			pushPosition.call(this, newPosition);
+			return true;
 		};
 
 		/***********************************************************************************************
@@ -4641,6 +4685,7 @@ angular.module('ngGo.Game.Service', [
 
 			//No data, can't do much
 			if (!data) {
+				this.error = ngGo.error.NO_DATA;
 				return false;
 			}
 
@@ -4669,6 +4714,7 @@ angular.module('ngGo.Game.Service', [
 			//Use the kifu parser
 			var jgf = KifuParser.sgf2jgf(sgf);
 			if (!jgf) {
+				this.error = ngGo.error.INVALID_SGF;
 				return false;
 			}
 
@@ -4684,10 +4730,11 @@ angular.module('ngGo.Game.Service', [
 			//Parse jgf string
 			if (typeof jgf == 'string') {
 				try {
-					jgf = JSON.parse(jgf);
+					jgf = angular.fromJson(jgf);
 				}
 				catch (error) {
 					console.warn('Could not parse JGF data');
+					this.error = ngGo.error.INVALID_JGF_JSON;
 					return false;
 				}
 			}
@@ -4696,10 +4743,11 @@ angular.module('ngGo.Game.Service', [
 			if (typeof jgf.tree == 'string') {
 				if (jgf.tree.charAt(0) == '[') {
 					try {
-						jgf.tree = JSON.parse(jgf.tree);
+						jgf.tree = angular.fromJson(jgf.tree);
 					}
 					catch (error) {
 						console.warn('Could not parse JGF tree');
+						this.error = ngGo.error.INVALID_JGF_TREE_JSON;
 						return false;
 					}
 				}
@@ -4772,7 +4820,7 @@ angular.module('ngGo.Game.Service', [
 			jgf.tree = this.root.toJgf();
 
 			//Return
-			return stringify ? JSON.stringify(jgf) : jgf;
+			return stringify ? angular.toJson(jgf) : jgf;
 		};
 
 		/***********************************************************************************************
@@ -4801,9 +4849,31 @@ angular.module('ngGo.Game.Service', [
 		};
 
 		/**
+		 * Duplicate the current game position
+		 */
+		Game.prototype.duplicatePosition = function() {
+
+			//Clone our position
+			pushPosition.call(this);
+
+			//Create new node
+			var node = new GameNode();
+
+			//Append it to the current node and change the pointer
+			var i = node.appendTo(this.node);
+			this.node = node;
+
+			//Advance path to the added node index
+			this.path.advance(i);
+		};
+
+		/**
 		 * Get the game path
 		 */
-		Game.prototype.getPath = function() {
+		Game.prototype.getPath = function(clone) {
+			if (clone) {
+				return this.path.clone();
+			}
 			return this.path;
 		};
 
@@ -5073,19 +5143,7 @@ angular.module('ngGo.Game.Service', [
 
 				//Is this a move node?
 				if (this.node.move) {
-
-					//Clone our position
-					pushPosition.call(this);
-
-					//Create new node
-					var node = new GameNode();
-
-					//Append it to the current node and change the pointer
-					var i = node.appendTo(this.node);
-					this.node = node;
-
-					//Advance path to the added node index
-					this.path.advance(i);
+					this.duplicatePosition();
 				}
 
 				//Create setup container
@@ -5183,6 +5241,20 @@ angular.module('ngGo.Game.Service', [
 			return this.position.markup.has(x, y);
 		};
 
+		/**
+		 * Get stone on coordinates
+		 */
+		Game.prototype.getStone = function(x, y) {
+			return this.position.stones.get(x, y);
+		};
+
+		/**
+		 * Get markup on coordinates
+		 */
+		Game.prototype.getMarkup = function(x, y) {
+			return this.position.markup.get(x, y);
+		};
+
 		/***********************************************************************************************
 		 * Move handling
 		 ***/
@@ -5268,9 +5340,18 @@ angular.module('ngGo.Game.Service', [
 		 */
 		Game.prototype.next = function(i) {
 
+			//Object (node) given as parameter? Find index
+			if (typeof i == 'object') {
+				i = this.node.children.indexOf(i);
+			}
+
 			//Go to the next node
 			if (nextNode.call(this, i)) {
-				executeNode.call(this);
+
+				//If an invalid move is detected, we can't go on
+				if (!executeNode.call(this)) {
+					previousNode.call(this);
+				}
 			}
 		};
 
@@ -5292,7 +5373,12 @@ angular.module('ngGo.Game.Service', [
 
 			//Keep going to the next node until we reach the end
 			while (nextNode.call(this)) {
-				executeNode.call(this);
+
+				//If an invalid move is detected, we can't go on
+				if (!executeNode.call(this)) {
+					previousNode.call(this);
+					break;
+				}
 			}
 		};
 
@@ -5374,11 +5460,17 @@ angular.module('ngGo.Game.Service', [
 			//Loop path
 			var n = path.getMove();
 			for (var i = 0; i < n; i++) {
-				if (nextNode.call(this, path.nodeAt(i))) {
-					executeNode.call(this);
-					continue;
+
+				//Try going to the next node
+				if (!nextNode.call(this, path.nodeAt(i))) {
+					break;
 				}
-				break;
+
+				//If an invalid move is detected, we can't go on
+				if (!executeNode.call(this)) {
+					previousNode.call(this);
+					break;
+				}
 			}
 		};
 
@@ -5461,17 +5553,10 @@ angular.module('ngGo.Game.Node.Service', [
 	var aChar = 'a'.charCodeAt(0);
 
 	/**
-	 * Helper to create flat coordinates
+	 * Helper to convert SGF coordinates
 	 */
-	var flattenCoordinates = function(x, y) {
-		return String.fromCharCode(aChar+x) + String.fromCharCode(aChar+y);
-	};
-
-	/**
-	 * Helper to expand flat coordinates
-	 */
-	var expandCoordinate = function(coords, index) {
-		return coords.charCodeAt(index)-aChar;
+	var convertCoordinates = function(coords) {
+		return [coords.charCodeAt(0)-aChar, coords.charCodeAt(1)-aChar];
 	};
 
 	/**
@@ -5483,8 +5568,15 @@ angular.module('ngGo.Game.Node.Service', [
 			baseObject.pass = true;
 		}
 		else {
-			baseObject.x = expandCoordinate(coords, 0);
-			baseObject.y = expandCoordinate(coords, 1);
+
+			//Backwards compatibility with SGF string coordinates in JGF
+			if (typeof coords == 'string') {
+				coords = convertCoordinates(coords);
+			}
+
+			//Append coordinates
+			baseObject.x = coords[0];
+			baseObject.y = coords[1];
 		}
 		return baseObject;
 	};
@@ -5506,7 +5598,7 @@ angular.module('ngGo.Game.Node.Service', [
 		else if (color == 'W') {
 			return StoneColor.W;
 		}
-		return StoneColor.EMPTY;
+		return StoneColor.E;
 	};
 
 	/***********************************************************************************************
@@ -5534,7 +5626,7 @@ angular.module('ngGo.Game.Node.Service', [
 
 		//Regular move
 		else {
-			jgfMove[color] = flattenCoordinates(move.x, move.y);
+			jgfMove[color] = [move.x, move.y];
 		}
 
 		//Delete coordinates and color
@@ -5596,7 +5688,7 @@ angular.module('ngGo.Game.Node.Service', [
 			}
 
 			//Add coordinates
-			jgfSetup[color].push(flattenCoordinates(setup[i].x, setup[i].y));
+			jgfSetup[color].push([setup[i].x, setup[i].y]);
 		}
 
 		//Return
@@ -5650,11 +5742,10 @@ angular.module('ngGo.Game.Node.Service', [
 
 			//Label?
 			if (type == 'LB') {
-				var label = flattenCoordinates(markup[i].x, markup[i].y) + ':' + markup[i].text;
-				jgfMarkup[type].push(label);
+				jgfMarkup[type].push([markup[i].x, markup[i].y, markup[i].text]);
 			}
 			else {
-				jgfMarkup[type].push(flattenCoordinates(markup[i].x, markup[i].y));
+				jgfMarkup[type].push([markup[i].x, markup[i].y]);
 			}
 		}
 
@@ -5678,14 +5769,26 @@ angular.module('ngGo.Game.Node.Service', [
 				for (l = 0; l < markup[type].length; l++) {
 
 					//Validate
-					if (!angular.isArray(markup[type][l]) || markup[type][l].length < 2) {
+					if (!angular.isArray(markup[type][l])) {
+						continue;
+					}
+
+					//SGF type coordinates?
+					if (markup[type][l].length == 2 && typeof markup[type][l][0] == 'string') {
+						var text = markup[type][l][1];
+						markup[type][l] = convertCoordinates(markup[type][l][0]);
+						markup[type][l].push(text);
+					}
+
+					//Validate length
+					if (markup[type][l].length < 3) {
 						continue;
 					}
 
 					//Add to stack
-					gameMarkup.push(coordinatesObject(markup[type][l][0], {
+					gameMarkup.push(coordinatesObject(markup[type][l], {
 						type: type,
-						text: markup[type][l][1]
+						text: markup[type][l][2]
 					}));
 				}
 			}
@@ -6409,7 +6512,7 @@ angular.module('ngGo.Game.Position.Service', [
 		this.markup.set(x, y, markup);
 	};
 
-	/*******************************************************************************************************************************
+	/***********************************************************************************************
 	 * Liberties and capturing
 	 ***/
 
@@ -6594,7 +6697,7 @@ angular.module('ngGo.Game.Position.Service', [
 		return this.captures[-color].length;
 	};
 
-	/*******************************************************************************************************************************
+	/***********************************************************************************************
 	 * Turn control
 	 ***/
 
@@ -6619,7 +6722,7 @@ angular.module('ngGo.Game.Position.Service', [
 		this.turn = -this.turn;
 	};
 
-	/*******************************************************************************************************************************
+	/***********************************************************************************************
 	 * Cloning and comparison
 	 ***/
 
@@ -7181,7 +7284,7 @@ angular.module('ngGo.Kifu.Blank.Service', [
 			//Base given?
 			if (base) {
 				for (var p in base) {
-					blank[p] = angular.extend(blank[p] || {}, base[p]);
+					blank[p] = base[p];
 				}
 			}
 
@@ -7208,35 +7311,6 @@ angular.module('ngGo.Kifu.Parser.Service', [
 	'ngGo.Kifu.Parsers.Sgf2Jgf.Service',
 	'ngGo.Kifu.Parsers.Jgf2Sgf.Service'
 ])
-
-/**
- * Factory definition
- */
-.factory('KifuParser', ["Sgf2Jgf", "Jgf2Sgf", function(Sgf2Jgf, Jgf2Sgf) {
-
-	/**
-	 * Parser wrapper class
-	 */
-	var KifuParser = {
-
-		/**
-		 * Parse SGF string into a JGF object or string
-		 */
-		sgf2jgf: function(sgf, stringified) {
-			return Sgf2Jgf.parse(sgf, stringified);
-		},
-
-		/**
-		 * Parse JGF object or string into an SGF string
-		 */
-		jgf2sgf: function(jgf) {
-			return Jgf2Sgf.parse(jgf);
-		}
-	};
-
-	//Return object
-	return KifuParser;
-}])
 
 /**
  * SGF/JGF aliases constant for conversion between the two formats
@@ -7299,7 +7373,36 @@ angular.module('ngGo.Kifu.Parser.Service', [
 	6: 'backgammon',
 	7: 'chinese chess',
 	8: 'shogi'
-});
+})
+
+/**
+ * Factory definition
+ */
+.factory('KifuParser', ["Sgf2Jgf", "Jgf2Sgf", function(Sgf2Jgf, Jgf2Sgf) {
+
+	/**
+	 * Parser wrapper class
+	 */
+	var KifuParser = {
+
+		/**
+		 * Parse SGF string into a JGF object or string
+		 */
+		sgf2jgf: function(sgf, stringified) {
+			return Sgf2Jgf.parse(sgf, stringified);
+		},
+
+		/**
+		 * Parse JGF object or string into an SGF string
+		 */
+		jgf2sgf: function(jgf) {
+			return Jgf2Sgf.parse(jgf);
+		}
+	};
+
+	//Return object
+	return KifuParser;
+}]);
 
 /**
  * Jgf2Sgf :: This is a parser wrapped by the KifuParser which is used to convert fom JGF to SGF
@@ -7326,6 +7429,18 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 		jgfAliases[sgfAliases[sgfProp]] = sgfProp;
 	}
 
+	/**
+	 * Character index of "a"
+	 */
+	var aChar = 'a'.charCodeAt(0);
+
+	/**
+	 * Helper to convert to SGF coordinates
+	 */
+	var convertCoordinates = function(coords) {
+		return String.fromCharCode(aChar + coords[0]) + String.fromCharCode(aChar + coords[1]);
+	};
+
 	/***********************************************************************************************
 	 * Conversion helpers
 	 ***/
@@ -7346,7 +7461,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	var writeGroup = function(prop, values, output, escape) {
 		if (values.length) {
 			output.sgf += prop;
-			for (var i in values) {
+			for (var i = 0; i < values.length; i++) {
 				output.sgf += '[' + (escape ? escapeSgf(values[i]) : values[i]) + ']';
 			}
 		}
@@ -7367,7 +7482,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 		var coords = (move[color] == 'pass') ? '' : move[color];
 
 		//Append to SGF
-		output.sgf += color + '[' + coords + ']';
+		output.sgf += color + '[' + convertCoordinates(coords) + ']';
 	};
 
 	/**
@@ -7376,11 +7491,15 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	var parseSetup = function(setup, output) {
 
 		//Loop colors
-		for (var color in setup)	{
-			var coords = setup[color];
+		for (var color in setup) {
+
+			//Convert coordinates
+			for (var i = 0; i < setup[color].length; i++) {
+				setup[color][i] = convertCoordinates(setup[color][i]);
+			}
 
 			//Write as group
-			writeGroup('A' + color, coords, output);
+			writeGroup('A' + color, setup[color], output);
 		}
 	};
 
@@ -7390,11 +7509,15 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	var parseScore = function(score, output) {
 
 		//Loop colors
-		for (var color in score)	{
-			var coords = score[color];
+		for (var color in score) {
+
+			//Convert coordinates
+			for (var i = 0; i < score[color].length; i++) {
+				score[color][i] = convertCoordinates(score[color][i]);
+			}
 
 			//Write as group
-			writeGroup('T' + color, coords, output);
+			writeGroup('T' + color, score[color], output);
 		}
 	};
 
@@ -7404,13 +7527,18 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 	var parseMarkup = function(markup, output) {
 
 		//Loop markup types
-		for (var type in markup)	{
-			var coords = markup[type];
+		for (var type in markup) {
+			var i;
 
 			//Label type has the label text appended to the coords
 			if (type == 'label') {
-				for (var i = 0; i < coords.length; i++) {
-					coords[i] = coords[i][0] + ':' + coords[i][1];
+				for (i = 0; i < markup[type].length; i++) {
+					markup[type][i] = convertCoordinates(markup[type][i]) + ':' + markup[type][i][2];
+				}
+			}
+			else {
+				for (i = 0; i < markup[type].length; i++) {
+					markup[type][i] = convertCoordinates(markup[type][i]);
 				}
 			}
 
@@ -7420,7 +7548,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 			}
 
 			//Write as group
-			writeGroup(type, coords, output);
+			writeGroup(type, markup[type], output);
 		}
 	};
 
@@ -7712,7 +7840,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
 			//String given?
 			if (typeof jgf == 'string') {
-				jgf = JSON.parse(jgf);
+				jgf = angular.fromJson(jgf);
 			}
 
 			//Must have moves tree
@@ -7784,6 +7912,18 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		regProperty = /[A-Z]+/,
 		regValues = /(\[\])|(\[(.|\s)*?([^\\]\]))/g;
 
+	/**
+	 * Character index of "a"
+	 */
+	var aChar = 'a'.charCodeAt(0);
+
+	/**
+	 * Helper to convert SGF coordinates
+	 */
+	var convertCoordinates = function(coords) {
+		return [coords.charCodeAt(0)-aChar, coords.charCodeAt(1)-aChar];
+	};
+
 	/***********************************************************************************************
 	 * Conversion helpers
 	 ***/
@@ -7832,13 +7972,13 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		node.move = {};
 
 		//Pass
-		if (value[0] === '' || (jgf.width <= 19 && value[0].toLowerCase() == 'tt')) {
+		if (value[0] === '' || (jgf.width <= 19 && value[0] == 'tt')) {
 			node.move[key] = 'pass';
 		}
 
 		//Regular move
 		else {
-			node.move[key] = value[0].toLowerCase();
+			node.move[key] = convertCoordinates(value[0]);
 		}
 	};
 
@@ -7889,8 +8029,8 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		}
 
 		//Add values
-		for (var i in value) {
-			node.setup[key].push(value[i].toLowerCase());
+		for (var i = 0; i < value.length; i++) {
+			node.setup[key].push(convertCoordinates(value[i]));
 		}
 	};
 
@@ -7911,8 +8051,8 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		key = key.charAt(1);
 
 		//Add values
-		for (var i in value) {
-			node.score[key].push(value[i].toLowerCase());
+		for (var i = 0; i < value.length; i++) {
+			node.score[key].push(convertCoordinates(value[i]));
 		}
 	};
 
@@ -7944,14 +8084,14 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		}
 
 		//Add values
-		for (var i in value) {
+		for (var i = 0; i < value.length; i++) {
 
-			//Split coordinates and label
-			var coords = value[i].substr(0, 2).toLowerCase(),
-				label = value[i].substr(3);
+			//Split off coordinates and add label contents
+			var coords = convertCoordinates(value[i].substr(0, 2));
+			coords.push(value[i].substr(3));
 
 			//Add to node
-			node.markup[key].push([coords, label]);
+			node.markup[key].push(coords);
 		}
 	};
 
@@ -7977,7 +8117,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
 		//Add values
 		for (var i in value) {
-			node.markup[key].push(value[i].toLowerCase());
+			node.markup[key].push(convertCoordinates(value[i]));
 		}
 	};
 
@@ -8348,12 +8488,20 @@ angular.module('ngGo', [])
  */
 .constant('ngGo', {
 	name:		'ngGo',
-	version:	'1.0.8',
+	version:	'1.0.9',
 	error:		{
+
+		//Move errors
 		MOVE_OUT_OF_BOUNDS:			1,
 		MOVE_ALREADY_HAS_STONE:		2,
 		MOVE_IS_SUICIDE:			3,
-		MOVE_IS_REPEATING:			4
+		MOVE_IS_REPEATING:			4,
+
+		//Data loading errors
+		NO_DATA:					5,
+		INVALID_SGF:				6,
+		INVALID_JGF_JSON:			7,
+		INVALID_JGF_TREE_JSON:		8
 	}
 })
 
@@ -8403,6 +8551,27 @@ angular.module('ngGo', [])
 	SCORE:	'score',
 	SETUP:	'setup',
 	MARKUP:	'markup'
+})
+
+/**
+ * Key codes
+ */
+.constant('KeyCodes', {
+	LEFT:		37,
+	RIGHT:		39,
+	UP:			38,
+	DOWN:		40,
+	ESC:		27,
+	ENTER:		13,
+	SPACE:		32,
+	TAB:		9,
+	SHIFT:		16,
+	CTRL:		17,
+	ALT:		18,
+	HOME:		36,
+	END:		35,
+	PAGEUP:		33,
+	PAGEDOWN:	34
 });
 
 /**
@@ -8669,7 +8838,7 @@ angular.module('ngGo.Player.Service', [
 				this.registerElementEvent('mousewheel');
 			},
 
-			/*******************************************************************************************************************************
+			/***********************************************************************************************
 			 * Configuration
 			 ***/
 
@@ -8763,7 +8932,7 @@ angular.module('ngGo.Player.Service', [
 				}
 			},
 
-			/*******************************************************************************************************************************
+			/***********************************************************************************************
 			 * Mode and tool handling
 			 ***/
 
@@ -8854,6 +9023,43 @@ angular.module('ngGo.Player.Service', [
 				return true;
 			},
 
+			/**
+			 * Save the full player state
+			 */
+			saveState: function() {
+
+				//Save player state
+				this.playerState = {
+					mode: this.mode,
+					tool: this.tool,
+					restrictNodeStart: this.restrictNodeStart,
+					restrictNodeEnd: this.restrictNodeEnd
+				};
+
+				//Save game state
+				this.saveGameState();
+			},
+
+			/**
+			 * Restore to the saved player state
+			 */
+			restoreState: function() {
+
+				//Must have player state
+				if (!this.playerState) {
+					return;
+				}
+
+				//Restore
+				this.switchMode(this.playerState.mode);
+				this.switchTool(this.playerState.tool);
+				this.restrictNodeStart = this.playerState.restrictNodeStart;
+				this.restrictNodeEnd = this.playerState.restrictNodeEnd;
+
+				//Restore game state
+				this.restoreGameState();
+			},
+
 			/***********************************************************************************************
 			 * Game record handling
 			 ***/
@@ -8873,7 +9079,7 @@ angular.module('ngGo.Player.Service', [
 
 				//Parse configuration from JGF if allowed
 				if (allowPlayerConfig || typeof allowPlayerConfig == 'undefined') {
-					this.parseConfig(this.game.get('player'));
+					this.parseConfig(this.game.get('settings'));
 				}
 
 				//Dispatch game loaded event
@@ -8913,9 +9119,7 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Save the current state
 			 */
-			saveState: function() {
-
-				//Remember game state
+			saveGameState: function() {
 				if (this.game && this.game.isLoaded()) {
 					this.gameState = this.game.getState();
 				}
@@ -8924,7 +9128,7 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Restore to the saved state
 			 */
-			restoreState: function() {
+			restoreGameState: function(mode) {
 
 				//Must have game and saved state
 				if (!this.game || !this.gameState) {
@@ -8949,7 +9153,7 @@ angular.module('ngGo.Player.Service', [
 			 * Go to the next position
 			 */
 			next: function(i) {
-				if (this.game) {
+				if (this.game && this.game.node != this.restrictNodeEnd) {
 					this.game.next(i);
 					this.processPosition();
 				}
@@ -8959,7 +9163,7 @@ angular.module('ngGo.Player.Service', [
 			 * Go back to the previous position
 			 */
 			previous: function() {
-				if (this.game) {
+				if (this.game && this.game.node != this.restrictNodeStart) {
 					this.game.previous();
 					this.processPosition();
 				}
@@ -9052,7 +9256,7 @@ angular.module('ngGo.Player.Service', [
 				}
 			},
 
-			/*******************************************************************************************************************************
+			/***********************************************************************************************
 			 * Game handling
 			 ***/
 
@@ -9085,7 +9289,7 @@ angular.module('ngGo.Player.Service', [
 				this.broadcast('scoreCalculated', score);
 			},
 
-			/*******************************************************************************************************************************
+			/***********************************************************************************************
 			 * Board handling
 			 ***/
 
@@ -9190,6 +9394,11 @@ angular.module('ngGo.Player.Service', [
 						}
 					}
 
+					//Inside a text field?
+					if (type == 'keydown' && $document[0].querySelector(':focus')) {
+						return;
+					}
+
 					//Append grid coordinates for mouse events
 					if (type == 'click' || type == 'hover' || type.substr(0, 5) == 'mouse') {
 						processMouseEvent.call(self, arguments[0], arguments[1]);
@@ -9278,24 +9487,12 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 	Player.on('mouseup', PlayerModeCommon.mouseUp, [
 		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
 	]);
-	Player.on('toolSwitch', PlayerModeCommon.toolSwitch, [
-		PlayerModes.REPLAY, PlayerModes.EDIT
-	]);
-
-	//Last x and y coordinates for mouse events
-	Player.lastX = -1;
-	Player.lastY = -1;
 }])
 
 /**
  * Factory definition
  */
-.factory('PlayerModeCommon', ["$document", "PlayerTools", "GameScorer", function($document, PlayerTools, GameScorer) {
-
-	/**
-	 * Helper var to detect dragging
-	 */
-	var dragStart = null;
+.factory('PlayerModeCommon', ["Player", "PlayerTools", "GameScorer", "KeyCodes", function(Player, PlayerTools, GameScorer, KeyCodes) {
 
 	/**
 	 * Helper to build drag object
@@ -9305,12 +9502,12 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		//Initialize drag object
 		var drag = {
 			start: {
-				x: (dragStart.x > event.x) ? event.x : dragStart.x,
-				y: (dragStart.y > event.y) ? event.y : dragStart.y,
+				x: (this.mouse.dragStart.x > event.x) ? event.x : this.mouse.dragStart.x,
+				y: (this.mouse.dragStart.y > event.y) ? event.y : this.mouse.dragStart.y,
 			},
 			stop: {
-				x: (dragStart.x > event.x) ? dragStart.x : event.x,
-				y: (dragStart.y > event.y) ? dragStart.y : event.y,
+				x: (this.mouse.dragStart.x > event.x) ? this.mouse.dragStart.x : event.x,
+				y: (this.mouse.dragStart.y > event.y) ? this.mouse.dragStart.y : event.y,
 			}
 		};
 
@@ -9333,6 +9530,25 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 	};
 
 	/**
+	 * Player extension
+	 */
+	angular.extend(Player, {
+
+		/**
+		 * Mouse coordinate helper vars
+		 */
+		mouse: {
+
+			//Drag start
+			dragStart: null,
+
+			//Last grid coordinates
+			lastX: -1,
+			lastY: -1
+		}
+	});
+
+	/**
 	 * Player mode definition
 	 */
 	var PlayerMode = {
@@ -9342,29 +9558,24 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		 */
 		keyDown: function(event, keyboardEvent) {
 
-			//Inside a text field?
-			if ($document[0].querySelector(':focus')) {
-				return true;
-			}
-
 			//No game?
 			if (!this.game || !this.game.isLoaded()) {
-				return true;
+				return;
 			}
 
 			//Switch key code
 			switch (keyboardEvent.keyCode) {
 
 				//ESC
-				case 27:
+				case KeyCodes.ESC:
 
 					//Cancel drag event, and prevent click event as well
-					dragStart = null;
+					this.mouse.dragStart = null;
 					this.preventClickEvent = true;
 					break;
 
 				//Right arrow
-				case 39:
+				case KeyCodes.RIGHT:
 
 					//Arrow navigation enabled?
 					if (this.arrowKeysNavigation) {
@@ -9378,7 +9589,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 					break;
 
 				//Left arrow
-				case 37:
+				case KeyCodes.LEFT:
 
 					//Arrow navigation enabled?
 					if (this.arrowKeysNavigation) {
@@ -9391,9 +9602,13 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 					}
 					break;
 
-				//TODO: up down for variation selection
-				default:
-					return true;
+				//Up arrow
+				case KeyCodes.UP:
+					break;
+
+				//Down arrow
+				case KeyCodes.DOWN:
+					break;
 			}
 		},
 
@@ -9418,7 +9633,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			//Next move
 			if (delta < 0) {
 				if (this.board) {
-					this.board.layers.hover.remove();
+					this.board.removeAll('hover');
 				}
 				this.next();
 			}
@@ -9426,7 +9641,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			//Previous move
 			else if (delta > 0) {
 				if (this.board) {
-					this.board.layers.hover.remove();
+					this.board.removeAll('hover');
 				}
 				this.previous();
 			}
@@ -9442,7 +9657,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		 */
 		mouseOut: function(event, mouseEvent) {
 			if (this.board) {
-				this.board.layers.hover.remove();
+				this.board.removeAll('hover');
 			}
 		},
 
@@ -9452,7 +9667,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		mouseMove: function(event, mouseEvent) {
 
 			//Attach drag object to events
-			if (dragStart && (dragStart.x != event.x || dragStart.y != event.y)) {
+			if (this.mouse.dragStart && (this.mouse.dragStart.x != event.x || this.mouse.dragStart.y != event.y)) {
 				mouseEvent.drag = dragObject.call(this, event);
 			}
 
@@ -9462,13 +9677,13 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			}
 
 			//Last coordinates are the same?
-			if (this.lastX == event.x && this.lastY == event.y) {
+			if (this.mouse.lastX == event.x && this.mouse.lastY == event.y) {
 				return;
 			}
 
 			//Remember last coordinates
-			this.lastX = event.x;
-			this.lastY = event.y;
+			this.mouse.lastX = event.x;
+			this.mouse.lastY = event.y;
 
 			//Broadcast hover event
 			this.broadcast('hover', mouseEvent);
@@ -9478,43 +9693,21 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		 * Mouse down handler
 		 */
 		mouseDown: function(event, mouseEvent) {
-			dragStart = {x: event.x, y: event.y};
+			this.mouse.dragStart = {
+				x: event.x,
+				y: event.y
+			};
 		},
 
 		/**
 		 * Mouse up handler
 		 */
 		mouseUp: function(event, mouseEvent) {
-			if (dragStart && (dragStart.x != event.x || dragStart.y != event.y)) {
+			if (this.mouse.dragStart && (this.mouse.dragStart.x != event.x || this.mouse.dragStart.y != event.y)) {
 				mouseEvent.drag = dragObject.call(this, event);
 				this.broadcast('mousedrag', mouseEvent);
 			}
-			dragStart = null;
-		},
-
-		/**
-		 * Handler for tool switches
-		 */
-		toolSwitch: function(event) {
-
-			//Switched to scoring?
-			if (this.tool == PlayerTools.SCORE) {
-
-				//Remember the current board state
-				this.statePreScoring = this.board.getState();
-
-				//Load game into scorer and score the game
-				GameScorer.load(this.game);
-				this.scoreGame();
-			}
-
-			//Back to another state?
-			else {
-				if (this.statePreScoring) {
-					this.board.restoreState(this.statePreScoring);
-					delete this.statePreScoring;
-				}
-			}
+			this.mouse.dragStart = null;
 		}
 	};
 
@@ -9536,118 +9729,43 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 ])
 
 /**
+ * Setup tools
+ */
+.constant('SetupTools', {
+	BLACK:		'black',
+	WHITE:		'white',
+	CLEAR:		'clear'
+})
+
+/**
+ * Markup tools
+ */
+.constant('MarkupTools', {
+	TRIANGLE:	'triangle',
+	CIRCLE:		'circle',
+	SQUARE:		'square',
+	MARK:		'mark',
+	SELECT:		'select',
+	SAD:		'sad',
+	HAPPY:		'happy',
+	TEXT:		'text',
+	NUMBER:		'number',
+	CLEAR:		'clear'
+})
+
+/**
  * Extend player functionality and register the mode
  */
-.run(["Player", "PlayerModes", "PlayerModeEdit", "StoneColor", function(Player, PlayerModes, PlayerModeEdit, StoneColor) {
+.run(["Player", "PlayerModes", "PlayerModeEdit", function(Player, PlayerModes, PlayerModeEdit) {
 
-	/**
-	 * Register event handlers
-	 */
+	//Register event handlers
+	Player.on('pathChange', PlayerModeEdit.pathChange, PlayerModes.EDIT);
+	Player.on('toolSwitch', PlayerModeEdit.toolSwitch, PlayerModes.EDIT);
 	Player.on('modeEnter', PlayerModeEdit.modeEnter, PlayerModes.EDIT);
 	Player.on('mousedrag', PlayerModeEdit.mouseDrag, PlayerModes.EDIT);
 	Player.on('keydown', PlayerModeEdit.keyDown, PlayerModes.EDIT);
 	Player.on('click', PlayerModeEdit.click, PlayerModes.EDIT);
 	Player.on('hover', PlayerModeEdit.hover, PlayerModes.EDIT);
-
-	//Setup tools
-	Player.setupTools = {
-		BLACK:		'black',
-		WHITE:		'white',
-		CLEAR:		'clear'
-	};
-
-	//Markup tools
-	Player.markupTools = {
-		TRIANGLE:	'triangle',
-		CIRCLE:		'circle',
-		SQUARE:		'square',
-		MARK:		'mark',
-		SELECT:		'select',
-		SAD:		'sad',
-		HAPPY:		'happy',
-		TEXT:		'text',
-		NUMBER:		'number',
-		CLEAR:		'clear'
-	};
-
-	//Active setup type and markup type
-	Player.setupTool = Player.setupTools.BLACK;
-	Player.markupTool = Player.markupTools.TRIANGLE;
-
-	//Current text and number for labels
-	Player.markupTextLabel = 'A';
-	Player.markupNumberLabel = '1';
-
-	/**
-	 * Set the setup tool
-	 */
-	Player.switchSetupTool = function(tool) {
-		this.setupTool = tool;
-	};
-
-	/**
-	 * Set the markup tool
-	 */
-	Player.switchMarkupTool = function(tool) {
-		this.markupTool = tool;
-	};
-
-	/**
-	 * Conversion of setup tool to stone color
-	 */
-	Player.setupToolColor = function() {
-		switch (this.setupTool) {
-			case this.setupTools.BLACK:
-				return StoneColor.B;
-			case this.setupTools.WHITE:
-				return StoneColor.W;
-			default:
-				return StoneColor.EMPTY;
-		}
-	};
-
-	/**
-	 * Set the new text markup label
-	 */
-	Player.setMarkupTextLabel = function(label) {
-		if (label) {
-			this.markupTextLabel = label;
-		}
-	};
-
-	/**
-	 * Set the new number markup label
-	 */
-	Player.setMarkupNumberLabel = function(label) {
-		if (label = parseInt(label)) {
-			this.markupNumberLabel = label;
-		}
-	};
-
-	/**
-	 * Set the new text markup label
-	 */
-	Player.incrementMarkupTextLabel = function() {
-
-		//Going beyond Z?
-		if (this.markupTextLabel == 'Z') {
-			this.markupTextLabel = 'a';
-			return;
-		}
-
-		//Get charcode of current label
-		var charCode = this.markupTextLabel.charCodeAt(0);
-
-		//Set new label
-		this.markupTextLabel = String.fromCharCode(++charCode);
-	};
-
-	/**
-	 * Set the new number markup label
-	 */
-	Player.incrementMarkupNumberLabel = function() {
-		this.markupNumberLabel++;
-	};
 
 	//Register mode
 	Player.registerMode(PlayerModes.EDIT, PlayerModeEdit);
@@ -9675,12 +9793,22 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = ["$document", "PlayerTools", "MarkupTypes", "GameScorer", "StoneColor", function($document, PlayerTools, MarkupTypes, GameScorer, StoneColor) {
+	this.$get = ["Player", "PlayerTools", "SetupTools", "MarkupTools", "MarkupTypes", "GameScorer", "StoneColor", "KeyCodes", function(Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor, KeyCodes) {
+
+		//Character codes
+		var aChar = 'A'.charCodeAt(0),
+			aCharLc = 'a'.charCodeAt(0);
 
 		/**
 		 * Update hover mark at specific coordinates
 		 */
 		var updateHoverMark = function(x, y, isDrag) {
+
+			//If no coordinates specified, use last mouse coordinates
+			if (typeof x == 'undefined' || typeof y == 'undefined') {
+				x = this.mouse.lastX;
+				y = this.mouse.lastY;
+			}
 
 			//Falling outside of grid?
 			if (!this.board || !this.board.isOnBoard(x, y)) {
@@ -9694,7 +9822,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				case PlayerTools.SETUP:
 
 					//Clear tool
-					if (this.setupTool == this.setupTools.CLEAR) {
+					if (this.setupTool == SetupTools.CLEAR) {
 
 						//Stone present? Can remove it
 						if (this.game.hasStone(x, y)) {
@@ -9729,8 +9857,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				//Markup tool
 				case PlayerTools.MARKUP:
 
-					//Clear tool
-					if (this.markupTool == this.markupTools.CLEAR) {
+					//Clear tool, or already markup in place?
+					if (this.markupTool == MarkupTools.CLEAR || this.game.hasMarkup(x, y)) {
 						if (this.game.hasMarkup(x, y)) {
 							this.board.add('hover', x, y, {
 								type: 'markup',
@@ -9739,24 +9867,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 						}
 					}
 
-					//Text
-					else if (this.markupTool == this.markupTools.TEXT) {
+					//Text or number
+					else if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
 						this.board.add('hover', x, y, {
 							type: 'markup',
 							value: {
 								type: MarkupTypes.LABEL,
-								text: this.markupTextLabel
-							}
-						});
-					}
-
-					//Number
-					else if (this.markupTool == this.markupTools.NUMBER) {
-						this.board.add('hover', x, y, {
-							type: 'markup',
-							value: {
-								type: MarkupTypes.LABEL,
-								text: this.markupNumberLabel
+								text: this.markupLabel
 							}
 						});
 					}
@@ -9803,34 +9920,50 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 			//Already markup in place? Remove it first
 			if (this.game.hasMarkup(x, y)) {
+
+				//Check what markup there is
+				var markup = this.game.getMarkup(x, y);
+
+				//Label? Also remove from our labels list
+				if (markup.type == MarkupTypes.LABEL && markup.text) {
+					var i = this.markupLabels.indexOf(markup.text);
+					if (i != -1) {
+						this.markupLabels.splice(i, 1);
+					}
+				}
+
+				//Remove from game
 				this.game.removeMarkup(x, y);
+				return;
 			}
 
 			//Clear tool used? Done
-			if (this.markupTool == this.markupTools.CLEAR) {
+			if (this.markupTool == MarkupTools.CLEAR) {
 				return;
 			}
 
 			//Text
-			else if (this.markupTool == this.markupTools.TEXT) {
+			else if (this.markupTool == MarkupTools.TEXT) {
 				this.game.addMarkup(x, y, {
 					type: MarkupTypes.LABEL,
-					text: this.markupTextLabel
+					text: this.markupLabel
 				});
 
-				//Increment text
-				this.incrementMarkupTextLabel();
+				//Determine next text label
+				this.markupLabels.push(this.markupLabel);
+				this.determineMarkupLabel();
 			}
 
 			//Number
-			else if (this.markupTool == this.markupTools.NUMBER) {
+			else if (this.markupTool == MarkupTools.NUMBER) {
 				this.game.addMarkup(x, y, {
 					type: MarkupTypes.LABEL,
-					text: this.markupNumberLabel
+					text: this.markupLabel
 				});
 
-				//Increment number
-				this.incrementMarkupNumberLabel();
+				//Determine next number label
+				this.markupLabels.push(this.markupLabel);
+				this.determineMarkupLabel();
 			}
 
 			//Other markup
@@ -9875,6 +10008,132 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		};
 
 		/**
+		 * Find all markup labels in current position
+		 */
+		var findAllMarkupLabels = function() {
+
+			//Clear
+			this.markupLabels = [];
+
+			//Must have game
+			if (!this.game || !this.game.isLoaded()) {
+				return;
+			}
+
+			//Get all markup from position
+			var markup = this.game.position.markup.all('type');
+			for (var i = 0; i < markup.length; i++) {
+				if (markup[i].type == MarkupTypes.LABEL && markup[i].text !== '') {
+					this.markupLabels.push(markup[i].text);
+				}
+			}
+		};
+
+		/**
+		 * Player extension
+		 */
+		angular.extend(Player, {
+
+			//Active setup tool and markup tool
+			setupTool: SetupTools.BLACK,
+			markupTool: MarkupTools.TRIANGLE,
+
+			//Current markup labels on the board and current markup label
+			markupLabels: [],
+			markupLabel: '',
+
+			/**
+			 * Set the setup tool
+			 */
+			switchSetupTool: function(tool) {
+				this.setupTool = tool;
+			},
+
+			/**
+			 * Set the markup tool
+			 */
+			switchMarkupTool: function(tool) {
+				this.markupTool = tool;
+				if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+					this.determineMarkupLabel();
+				}
+			},
+
+			/**
+			 * Conversion of setup tool to stone color
+			 */
+			setupToolColor: function() {
+				switch (this.setupTool) {
+					case SetupTools.BLACK:
+						return StoneColor.B;
+					case SetupTools.WHITE:
+						return StoneColor.W;
+					default:
+						return StoneColor.EMPTY;
+				}
+			},
+
+			/**
+			 * Set the new text markup label
+			 */
+			setMarkupLabel: function(label) {
+				if (label) {
+					this.markupLabel = label;
+				}
+			},
+
+			/**
+			 * Determine the new text markup label
+			 */
+			determineMarkupLabel: function() {
+
+				//Clear
+				this.markupLabel = '';
+
+				//Check what tool we're using
+				switch (this.markupTool) {
+
+					//Text tool?
+					case MarkupTools.TEXT:
+						var i = 0;
+
+						//Loop while the label is present
+						while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) != -1) {
+
+							//A-Z
+							if (i < 26) {
+								this.markupLabel = String.fromCharCode(aChar + i);
+							}
+
+							//a-z
+							else if (i < 52) {
+								this.markupLabel = String.fromCharCode(aCharLc + i - 26);
+							}
+
+							//AA, AB, AC, etc.
+							else {
+								this.markupLabel = String.fromCharCode(aChar + Math.floor(i / 26) - 2) + String.fromCharCode(aChar + (i % 26));
+							}
+
+							//Keep going
+							i++;
+						}
+						break;
+
+					//Number tool?
+					case MarkupTools.NUMBER:
+						this.markupLabel = 0;
+
+						//Loop while the label is present
+						while (this.markupLabel === 0 || this.markupLabels.indexOf(this.markupLabel) != -1) {
+							this.markupLabel++;
+						}
+						break;
+				}
+			}
+		});
+
+		/**
 		 * Player mode definition
 		 */
 		var PlayerModeEdit = {
@@ -9894,7 +10153,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 				//Single coordinate?
 				if (!event.drag || (this.tool != PlayerTools.SETUP && this.tool != PlayerTools.MARKUP)) {
-					updateHoverMark.call(this, event.x, event.y, false);
+					updateHoverMark.call(this);
+					return;
+				}
+
+				//No dragging for labels
+				if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+					updateHoverMark.call(this);
 					return;
 				}
 
@@ -9911,24 +10176,10 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			 */
 			keyDown: function(event, keyboardEvent) {
 
-				//Inside a text field?
-				if ($document[0].querySelector(':focus')) {
-					return true;
-				}
-
 				//Switch key code
 				switch (keyboardEvent.keyCode) {
 
 					//TODO: tool switching via keyboard input
-
-					default:
-						return true;
-				}
-
-				//Update hover mark
-				if (this.board) {
-					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.lastX, this.lastY);
 				}
 			},
 
@@ -10022,6 +10273,11 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 					//Markup tool
 					case PlayerTools.MARKUP:
 
+						//Don't do this for labels
+						if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+							break;
+						}
+
 						//Loop dragging grid
 						for (x = event.drag.start.x; x <= event.drag.stop.x; x++) {
 							for (y = event.drag.start.y; y <= event.drag.stop.y; y++) {
@@ -10039,6 +10295,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			},
 
 			/**
+			 * Path change
+			 */
+			pathChange: function(event, node) {
+				findAllMarkupLabels.call(this);
+			},
+
+			/**
 			 * Handler for mode entry
 			 */
 			modeEnter: function(event) {
@@ -10053,6 +10316,34 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
 				//Set default tool
 				this.tool = this.tools[0];
+
+				//Find all markup labels in the current game position
+				findAllMarkupLabels.call(this);
+			},
+
+			/**
+			 * Handler for tool switches
+			 */
+			toolSwitch: function(event) {
+
+				//Switched to scoring?
+				if (this.tool == PlayerTools.SCORE) {
+
+					//Remember the current board state
+					this.statePreScoring = this.board.getState();
+
+					//Load game into scorer and score the game
+					GameScorer.load(this.game);
+					this.scoreGame();
+				}
+
+				//Back to another state?
+				else {
+					if (this.statePreScoring) {
+						this.board.restoreState(this.statePreScoring);
+						delete this.statePreScoring;
+					}
+				}
 			}
 		};
 
@@ -10077,109 +10368,17 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 /**
  * Extend player functionality and register the mode
  */
-.run(["$interval", "Player", "PlayerModes", "PlayerTools", "PlayerModeReplay", function($interval, Player, PlayerModes, PlayerTools, PlayerModeReplay) {
+.run(["Player", "PlayerModes", "PlayerModeReplay", function(Player, PlayerModes, PlayerModeReplay) {
 
-	/**
-	 * Register event handlers
-	 */
+	//Register event handlers
 	Player.on('settingChange', PlayerModeReplay.settingChange, PlayerModes.REPLAY);
 	Player.on('boardUpdate', PlayerModeReplay.boardUpdate, PlayerModes.REPLAY);
+	Player.on('pathChange', PlayerModeReplay.pathChange, PlayerModes.REPLAY);
+	Player.on('toolSwitch', PlayerModeReplay.toolSwitch, PlayerModes.REPLAY);
 	Player.on('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
 	Player.on('modeExit', PlayerModeReplay.modeExit, PlayerModes.REPLAY);
-	Player.on('keydown', PlayerModeReplay.keyDown, PlayerModes.REPLAY);
 	Player.on('click', PlayerModeReplay.click, PlayerModes.REPLAY);
 	Player.on('hover', PlayerModeReplay.hover, PlayerModes.REPLAY);
-
-	/**
-	 * Set auto play delay
-	 */
-	Player.setAutoPlayDelay = function(delay) {
-		if (this.autoPlayDelay != delay) {
-			this.autoPlayDelay = delay;
-			this.broadcast('settingChange', 'autoPlayDelay');
-		}
-	};
-
-	/**
-	 * Start auto play with a given delay
-	 */
-	Player.start = function(delay) {
-
-		//Not in replay mode or already auto playing?
-		if (this.mode != PlayerModes.REPLAY || this.autoPlaying) {
-			return;
-		}
-
-		//Already auto playing, no game or no move children?
-		if (!this.game || !this.game.node.hasChildren()) {
-			return;
-		}
-
-		//Get self
-		var self = this;
-
-		//Determine delay
-		delay = (typeof delay == 'number') ? delay : this.autoPlayDelay;
-
-		//Switch tool
-		this.switchTool(PlayerTools.NONE);
-
-		//Create interval
-		this.autoPlaying = true;
-		this.autoPlayPromise = $interval(function() {
-
-			//Advance to the next node
-			self.next(0, true);
-
-			//Ran out of children?
-			if (!self.game.node.hasChildren()) {
-				self.stop();
-			}
-		}, delay);
-
-		//Broadcast event
-		this.broadcast('autoPlayStarted', this.game.node);
-	};
-
-	/**
-	 * Stop auto play
-	 */
-	Player.stop = function() {
-
-		//Not in replay mode or not auto playing?
-		if (this.mode != PlayerModes.REPLAY || !this.autoPlaying) {
-			return;
-		}
-
-		//Cancel interval
-		if (this.autoPlayPromise) {
-			$interval.cancel(this.autoPlayPromise);
-		}
-
-		//Clear flags
-		this.autoPlayPromise = null;
-		this.autoPlaying = false;
-
-		//Broadcast event
-		this.broadcast('autoPlayStopped', this.game.node);
-	};
-
-	/**
-	 * Helper to start in "demo" mode, which is replay mode with no tool
-	 */
-	Player.demo = function() {
-
-		//Switch mode to replay
-		this.switchMode(PlayerModes.REPLAY);
-
-		//Switch tool to none
-		this.switchTool(PlayerTools.NONE);
-	};
-
-	//Auto play vars
-	Player.autoPlaying = false;
-	Player.autoPlayDelay = 1000;
-	Player.autoPlayPromise = null;
 
 	//Register the mode
 	Player.registerMode(PlayerModes.REPLAY, PlayerModeReplay);
@@ -10196,7 +10395,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	var defaultConfig = {
 
 		//Auto play delay
-		auto_play_delay: 1000,
+		auto_play_delay: 1000
 	};
 
 	/**
@@ -10209,12 +10408,18 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = ["Player", "PlayerTools", "MarkupTypes", "GameScorer", function(Player, PlayerTools, MarkupTypes, GameScorer) {
+	this.$get = ["$interval", "Player", "PlayerModes", "PlayerTools", "MarkupTypes", "GameScorer", function($interval, Player, PlayerModes, PlayerTools, MarkupTypes, GameScorer) {
 
 		/**
 		 * Helper to update the hover mark
 		 */
 		var updateHoverMark = function(x, y) {
+
+			//If no coordinates specified, use last mouse coordinates
+			if (typeof x == 'undefined' || typeof y == 'undefined') {
+				x = this.mouse.lastX;
+				y = this.mouse.lastY;
+			}
 
 			//Falling outside of grid?
 			if (!this.board || !this.board.isOnBoard(x, y)) {
@@ -10319,6 +10524,91 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 		};
 
 		/**
+		 * Player extension
+		 */
+		angular.extend(Player, {
+
+			//Auto play vars
+			autoPlaying: false,
+			autoPlayDelay: 1000,
+			autoPlayPromise: null,
+
+			/**
+			 * Set auto play delay
+			 */
+			setAutoPlayDelay: function(delay) {
+				if (this.autoPlayDelay != delay) {
+					this.autoPlayDelay = delay;
+					this.broadcast('settingChange', 'autoPlayDelay');
+				}
+			},
+
+			/**
+			 * Start auto play with a given delay
+			 */
+			start: function(delay) {
+
+				//Not in replay mode or already auto playing?
+				if (this.mode != PlayerModes.REPLAY || this.autoPlaying) {
+					return;
+				}
+
+				//Already auto playing, no game or no move children?
+				if (!this.game || !this.game.node.hasChildren()) {
+					return;
+				}
+
+				//Get self
+				var self = this;
+
+				//Determine delay
+				delay = (typeof delay == 'number') ? delay : this.autoPlayDelay;
+
+				//Switch tool
+				this.switchTool(PlayerTools.NONE);
+
+				//Create interval
+				this.autoPlaying = true;
+				this.autoPlayPromise = $interval(function() {
+
+					//Advance to the next node
+					self.next(0, true);
+
+					//Ran out of children?
+					if (!self.game.node.hasChildren()) {
+						self.stop();
+					}
+				}, delay);
+
+				//Broadcast event
+				this.broadcast('autoPlayStarted', this.game.node);
+			},
+
+			/**
+			 * Stop auto play
+			 */
+			stop: function() {
+
+				//Not in replay mode or not auto playing?
+				if (this.mode != PlayerModes.REPLAY || !this.autoPlaying) {
+					return;
+				}
+
+				//Cancel interval
+				if (this.autoPlayPromise) {
+					$interval.cancel(this.autoPlayPromise);
+				}
+
+				//Clear flags
+				this.autoPlayPromise = null;
+				this.autoPlaying = false;
+
+				//Broadcast event
+				this.broadcast('autoPlayStopped', this.game.node);
+			}
+		});
+
+		/**
 		 * Player mode definition
 		 */
 		var PlayerModeReplay = {
@@ -10350,9 +10640,11 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			 * Hover handler
 			 */
 			hover: function(event) {
+
+				//Update hover mark
 				if (this.board) {
 					this.board.removeAll('hover');
-					updateHoverMark.call(this, event.x, event.y);
+					updateHoverMark.call(this);
 				}
 			},
 
@@ -10364,18 +10656,6 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 				//Show move variations
 				if (this.variationMarkup) {
 					drawMoveVariations.call(this, true);
-				}
-			},
-
-			/**
-			 * Handler for keydown events
-			 */
-			keyDown: function(event, keyboardEvent) {
-
-				//Update hover mark
-				if (this.board) {
-					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.lastX, this.lastY);
 				}
 			},
 
@@ -10415,6 +10695,18 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			},
 
 			/**
+			 * Path change event
+			 */
+			pathChange: function(event, node) {
+
+				//Update hover mark
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this);
+				}
+			},
+
+			/**
 			 * Handler for mode entry
 			 */
 			modeEnter: function(event) {
@@ -10449,6 +10741,31 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 				if (this.variationMarkup) {
 					drawMoveVariations.call(this, false);
 				}
+			},
+
+			/**
+			 * Handler for tool switches
+			 */
+			toolSwitch: function(event) {
+
+				//Switched to scoring?
+				if (this.tool == PlayerTools.SCORE) {
+
+					//Remember the current board state
+					this.statePreScoring = this.board.getState();
+
+					//Load game into scorer and score the game
+					GameScorer.load(this.game);
+					this.scoreGame();
+				}
+
+				//Back to another state?
+				else {
+					if (this.statePreScoring) {
+						this.board.restoreState(this.statePreScoring);
+						delete this.statePreScoring;
+					}
+				}
 			}
 		};
 
@@ -10474,136 +10791,15 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
  */
 .run(["Player", "PlayerModes", "PlayerModeSolve", function(Player, PlayerModes, PlayerModeSolve) {
 
-	/**
-	 * Register event handlers
-	 */
+	//Register event handlers
 	Player.on('settingChange', PlayerModeSolve.settingChange, PlayerModes.SOLVE);
 	Player.on('boardUpdate', PlayerModeSolve.boardUpdate, PlayerModes.SOLVE);
+	Player.on('pathChange', PlayerModeSolve.pathChange, PlayerModes.SOLVE);
 	Player.on('modeEnter', PlayerModeSolve.modeEnter, PlayerModes.SOLVE);
 	Player.on('modeExit', PlayerModeSolve.modeExit, PlayerModes.SOLVE);
 	Player.on('keydown', PlayerModeSolve.keyDown, PlayerModes.SOLVE);
 	Player.on('click', PlayerModeSolve.click, PlayerModes.SOLVE);
 	Player.on('hover', PlayerModeSolve.hover, PlayerModes.SOLVE);
-
-	/**
-	 * Set solve auto play delay
-	 */
-	Player.setSolveAutoPlay = function(autoPlay) {
-		if (this.solveAutoPlay != autoPlay) {
-			this.solveAutoPlay = autoPlay;
-			this.broadcast('settingChange', 'solveAutoPlay');
-		}
-	};
-
-	/**
-	 * Set solve auto play delay
-	 */
-	Player.setSolveAutoPlayDelay = function(delay) {
-		if (this.solveAutoPlayDelay != delay) {
-			this.solveAutoPlayDelay = delay;
-			this.broadcast('settingChange', 'solveAutoPlayDelay');
-		}
-	};
-
-	/**
-	 * Set player color
-	 */
-	Player.setPlayerColor = function(color) {
-		if (this.playerColor != color) {
-			this.playerColor = color;
-			this.broadcast('settingChange', 'playerColor');
-		}
-	};
-
-	/**
-	 * Get player color
-	 */
-	Player.getPlayerColor = function(asOnBoard) {
-		if (asOnBoard && this.board) {
-			return this.board.colorMultiplier * this.playerColor;
-		}
-		return this.playerColor;
-	};
-
-	/**
-	 * Toggle solution paths
-	 */
-	Player.toggleSolutionPaths = function(solutionPaths) {
-
-		//Toggle if not given
-		if (typeof solutionPaths == 'undefined') {
-			solutionPaths = !this.solutionPaths;
-		}
-
-		//Change?
-		if (solutionPaths != this.solutionPaths) {
-			this.solutionPaths = solutionPaths;
-			this.broadcast('settingChange', 'solutionPaths');
-		}
-	};
-
-	/**
-	 * Start solving from the current game node
-	 */
-	Player.solve = function() {
-
-		//Switch player mode
-		this.switchMode(PlayerModes.SOLVE);
-
-		//Must have a game
-		if (!this.game || !this.game.isLoaded()) {
-			return false;
-		}
-
-		//Reset flags
-		this.problemSolved = false;
-		this.problemOffPath = false;
-
-		//Restrict start of navigation to the current node
-		this.restrictNode();
-
-		//Current turn is not our color?
-		if (this.game.getTurn() != this.playerColor) {
-
-			//Auto-play?
-			if (this.solveAutoPlay) {
-
-				//Pick a random child node
-				var i = Math.floor(Math.random() * node.children.length), self = this;
-
-				//Using a delay? Block navigation and run the timeout
-				if (this.solveAutoPlayDelay) {
-					this.solveNavigationBlocked = true;
-					$timeout(function() {
-						self.next(i);
-						self.solveNavigationBlocked = false;
-					}, this.solveAutoPlayDelay);
-				}
-
-				//Just move to the next node immediately
-				else {
-					this.next(i);
-				}
-			}
-		}
-	};
-
-	//Solved and off-path flags
-	Player.problemSolved = false;
-	Player.problemOffPath = false;
-
-	//The player color
-	Player.playerColor = 0;
-
-	//Solution paths
-	Player.solutionPaths = false;
-
-	//Auto play vars
-	Player.solveAutoPlay = true;
-	Player.solveAutoPlayDelay = 500;
-
-	//Navigation blocked flag
-	Player.solveNavigationBlocked = false;
 
 	//Register mode
 	Player.registerMode(PlayerModes.SOLVE, PlayerModeSolve);
@@ -10640,7 +10836,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = ["$document", "$timeout", "Player", "PlayerTools", function($document, $timeout, Player, PlayerTools) {
+	this.$get = ["$timeout", "Player", "PlayerModes", "PlayerTools", "KeyCodes", function($timeout, Player, PlayerModes, PlayerTools, KeyCodes) {
 
 		/**
 		 * Check if we can make a move
@@ -10677,6 +10873,12 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 		 * Helper to update the hover mark
 		 */
 		var updateHoverMark = function(x, y) {
+
+			//If no coordinates specified, use last mouse coordinates
+			if (typeof x == 'undefined' || typeof y == 'undefined') {
+				x = this.mouse.lastX;
+				y = this.mouse.lastY;
+			}
 
 			//Falling outside of grid?
 			if (!this.board || !this.board.isOnBoard(x, y)) {
@@ -10750,6 +10952,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			//When showing, make sure it's not during the auto solver's move
 			if (show && !this.problemSolved && this.solveAutoPlay) {
 				if (this.game.getTurn() != this.playerColor) {
+					hideSolutionPaths.call(this, variations);
 					return;
 				}
 			}
@@ -10762,6 +10965,185 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 				hideSolutionPaths.call(this, variations);
 			}
 		};
+
+		/**
+		 * Player extension
+		 */
+		angular.extend(Player, {
+
+			//Solved and off-path flags
+			problemSolved: false,
+			problemOffPath: false,
+
+			//Problem start path
+			problemStartPath: null,
+
+			//The player color
+			playerColor: 0,
+
+			//Solution paths
+			solutionPaths: false,
+
+			//Auto play vars
+			solveAutoPlay: true,
+			solveAutoPlayDelay: 500,
+
+			//Navigation blocked flag
+			solveNavigationBlocked: false,
+
+			/**
+			 * Set solve auto play delay
+			 */
+			setSolveAutoPlay: function(autoPlay) {
+				if (this.solveAutoPlay != autoPlay) {
+					this.solveAutoPlay = autoPlay;
+					this.broadcast('settingChange', 'solveAutoPlay');
+				}
+			},
+
+			/**
+			 * Set solve auto play delay
+			 */
+			setSolveAutoPlayDelay: function(delay) {
+				if (this.solveAutoPlayDelay != delay) {
+					this.solveAutoPlayDelay = delay;
+					this.broadcast('settingChange', 'solveAutoPlayDelay');
+				}
+			},
+
+			/**
+			 * Set player color
+			 */
+			setPlayerColor: function(color) {
+				if (this.playerColor != color) {
+					this.playerColor = color;
+					this.broadcast('settingChange', 'playerColor');
+				}
+			},
+
+			/**
+			 * Get player color
+			 */
+			getPlayerColor: function(asOnBoard) {
+				if (asOnBoard && this.board) {
+					return this.board.colorMultiplier * this.playerColor;
+				}
+				return this.playerColor;
+			},
+
+			/**
+			 * Toggle solution paths
+			 */
+			toggleSolutionPaths: function(solutionPaths) {
+
+				//Toggle if not given
+				if (typeof solutionPaths == 'undefined') {
+					solutionPaths = !this.solutionPaths;
+				}
+
+				//Change?
+				if (solutionPaths != this.solutionPaths) {
+					this.solutionPaths = solutionPaths;
+					this.broadcast('settingChange', 'solutionPaths');
+				}
+			},
+
+			/**
+			 * Auto play next move
+			 */
+			autoPlayNext: function(immediately) {
+
+				//Must have game and children
+				if (!this.game || !this.game.isLoaded() || this.game.node.children.length === 0) {
+					return;
+				}
+
+				//Init vars
+				var children = [], self = this, i;
+
+				//When picking a child node, we always prefer to pick a valid solution
+				for (i = 0; i < this.game.node.children.length; i++) {
+					if (this.game.node.children[i].solution) {
+						children.push(this.game.node.children[i]);
+					}
+				}
+
+				//No solution nodes? Just use all nodes then.
+				if (children.length === 0) {
+					children = this.game.node.children;
+				}
+
+				//Pick a random child node
+				i = Math.floor(Math.random() * children.length);
+
+				//No delay?
+				if (immediately || !this.solveAutoPlayDelay) {
+					this.next(children[i]);
+					return;
+				}
+
+				//Block navigation and run the timeout
+				this.solveNavigationBlocked = true;
+				$timeout(function() {
+
+					//Move to next move and unblock navigation
+					self.next(children[i]);
+					self.solveNavigationBlocked = false;
+
+				}, this.solveAutoPlayDelay);
+			},
+
+			/**
+			 * Start solving from the current game node
+			 */
+			solve: function() {
+
+				//Must have a game
+				if (!this.game || !this.game.isLoaded()) {
+					return false;
+				}
+
+				//Reset flags
+				this.problemSolved = false;
+				this.problemOffPath = false;
+
+				//Remember problem start path
+				this.problemStartPath = this.game.getPath(true);
+
+				//Restrict start of navigation to the current node
+				this.restrictNode();
+
+				//Auto play next move if it's not our turn
+				if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+					this.autoPlayNext();
+				}
+			},
+
+			/**
+			 * Restart the problem
+			 */
+			restartProblem: function() {
+
+				//Must be in solve mode, must have game
+				if (this.mode != PlayerModes.SOLVE || !this.game || !this.game.isLoaded()) {
+					return;
+				}
+
+				//Reset flags
+				this.problemSolved = false;
+				this.problemOffPath = false;
+
+				//Go back to the start path
+				if (this.problemStartPath) {
+					this.goto(this.problemStartPath);
+				}
+
+				//Auto play next move if it's not our turn
+				if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+					this.autoPlayNext();
+				}
+			}
+		});
 
 		/**
 		 * Player mode definition
@@ -10792,12 +11174,26 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 				if (setting == 'solutionPaths')	{
 					drawSolutionPaths.call(this, this.solutionPaths);
 				}
+
+				//Player color changed?
+				if (setting == 'playerColor') {
+
+					//Draw (or hide) solution paths
+					drawSolutionPaths.call(this, this.solutionPaths);
+
+					//Make an auto play move if it's not our turn
+					if (!this.problemSolved && this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+						this.autoPlayNext(true);
+					}
+				}
 			},
 
 			/**
 			 * Hover handler
 			 */
 			hover: function(event) {
+
+				//Update hover mark
 				if (this.board) {
 					this.board.removeAll('hover');
 					updateHoverMark.call(this, event.x, event.y);
@@ -10820,16 +11216,11 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			 */
 			keyDown: function(event, keyboardEvent) {
 
-				//Inside a text field?
-				if ($document[0].querySelector(':focus')) {
-					return true;
-				}
-
 				//Switch key code
 				switch (keyboardEvent.keyCode) {
 
 					//Right arrow
-					case 39:
+					case KeyCodes.RIGHT:
 
 						//Arrow keys navigation enabled?
 						if (this.arrowKeysNavigation) {
@@ -10847,7 +11238,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 						break;
 
 					//Left arrow
-					case 37:
+					case KeyCodes.LEFT:
 
 						//Arrow keys navigation enabled?
 						if (this.arrowKeysNavigation) {
@@ -10867,12 +11258,6 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 							}
 						}
 						break;
-				}
-
-				//Update hover mark
-				if (this.board) {
-					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.lastX, this.lastY);
 				}
 			},
 
@@ -10907,32 +11292,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 						}
 					}
 
-					//Auto-play?
+					//Auto-play next move?
 					else if (!this.problemSolved && this.solveAutoPlay) {
-
-						//Children left, pick a random one and make a move
-						i = Math.floor(Math.random() * node.children.length), self = this;
-
-						//Using a delay? Block navigation and run the timeout
-						if (this.solveAutoPlayDelay) {
-							this.solveNavigationBlocked = true;
-							$timeout(function() {
-
-								//Move to next move and unblock navigation
-								self.next(i);
-								self.solveNavigationBlocked = false;
-
-								//Forget last hover position and update hover mark
-								self.lastX = self.lastY = -1;
-								updateHoverMark.call(self, event.x, event.y);
-
-							}, this.solveAutoPlayDelay);
-						}
-
-						//Just move to the next node immediately
-						else {
-							this.next(i);
-						}
+						this.autoPlayNext();
 					}
 				}
 
@@ -10942,10 +11304,18 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 					this.processPosition();
 					this.broadcast('solutionOffPath', this.game.getNode());
 				}
+			},
+
+			/**
+			 * Path change event
+			 */
+			pathChange: function(event, node) {
 
 				//Update hover mark
-				this.board.removeAll('hover');
-				updateHoverMark.call(this, event.x, event.y);
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this);
+				}
 			},
 
 			/**

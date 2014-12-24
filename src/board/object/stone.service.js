@@ -23,27 +23,6 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 	var shellSeed;
 
 	/**
-	 * Pre-defined shell types
-	 */
-	var shellTypes = [
-		{
-			lines: [0.10, 0.12, 0.11, 0.10, 0.09, 0.09, 0.09, 0.09],
-			factor: 0.25,
-			thickness: 1.75
-		},
-		{
-			lines: [0.10, 0.09, 0.08, 0.07, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06],
-			factor: 0.2,
-			thickness: 1.5
-		},
-		{
-			lines: [0.12, 0.14, 0.13, 0.12, 0.12, 0.12],
-			factor: 0.3,
-			thickness: 2
-		}
-	];
-
-	/**
 	 * Mono colored stones
 	 */
 	var drawMono = function(stone) {
@@ -138,14 +117,14 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
 		//Determine stone texture
 		if (color == StoneColor.W) {
-			this.context.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
+			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
 			this.context.fillStyle.addColorStop(0, '#fff');
 			this.context.fillStyle.addColorStop(1, '#aaa');
 		}
 		else {
-			this.context.fillStyle = ctx.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/5, y - r/5, 4*r/5);
+			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/5, y - r/5, 4*r/5);
 			this.context.fillStyle.addColorStop(0, '#666');
-			this.context.fillStyle.addColorStop(1, '#000');
+			this.context.fillStyle.addColorStop(1, '#111');
 		}
 
 		//Complete drawing
@@ -184,7 +163,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		var color = stone.color * this.board.colorMultiplier;
 
 		//Get theme variables
-		var canvasTranslate = this.board.theme.canvasTranslate();
+		var shellTypes = this.board.theme.get('stone.shell.types'),
+			fillStyle = this.board.theme.get('stone.shell.color', color),
+			strokeStyle = this.board.theme.get('stone.shell.stroke'),
+			canvasTranslate = this.board.theme.canvasTranslate();
 
 		//Translate canvas
 		this.context.translate(canvasTranslate, canvasTranslate);
@@ -194,19 +176,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 			this.context.globalAlpha = stone.alpha;
 		}
 
-		//Begin path
+		//Draw stone
 		this.context.beginPath();
-
-		//Determine fill color
-		if (color == StoneColor.W) {
-			this.context.fillStyle = '#aaa';
-		}
-		else {
-			this.context.fillStyle = '#000';
-		}
-
-		//Draw filler
 		this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
+		this.context.fillStyle = fillStyle;
 		this.context.fill();
 
 		//Shell stones
@@ -220,11 +193,11 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 				angle = (2/z)*(shellSeed%z);
 
 			//Draw shell pattern
-			ShellPattern.call(shellTypes[type], this.context, x, y, r, angle);
+			ShellPattern.call(shellTypes[type], this.context, x, y, r, angle, strokeStyle);
 
 			//Add radial gradient
 			this.context.beginPath();
-			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
+			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/6, x - r/5, y - r/5, r);
 			this.context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.9)');
 			this.context.fillStyle.addColorStop(1, 'rgba(255,255,255,0)');
 			this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
@@ -270,8 +243,8 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		 */
 		draw: function(stone) {
 
-			//No context?
-			if (!this.context) {
+			//Can only draw when we have dimensions and context
+			if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 				return;
 			}
 
@@ -315,8 +288,8 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		 */
 		clear: function(stone) {
 
-			//No context?
-			if (!this.context) {
+			//Can only draw when we have dimensions and context
+			if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
 				return;
 			}
 

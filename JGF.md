@@ -138,7 +138,7 @@ JGF = {
 	},
 
 	// Instructions for the game record replayer
-	player: {
+	settings: {
 
 		// Indicate variations with markup on the board or not
 		variation_markup: true,
@@ -150,7 +150,7 @@ JGF = {
 		variation_siblings: false,
 
 		// Show solution paths for problems
-		solution_paths: false,
+		solution_paths: false
 	},
 
 	// Moves tree
@@ -185,51 +185,56 @@ JGF = {
 			]
 		},
 
-		// Second node and onwards contain moves, setup instructions or variations
-		// Moves are indicated by the player whose turn it was color and the move
-		// coordinates. Move coordinates are indicated by letters, where the first
-		// coordinate is the x coordinate and the latter is the y coordinate.
-		{ move: {B: "mm"} },
+		// Second node and onwards contain moves, setup instructions or variations.
+		// Moves are indicated by the color of the player whose turn it was and the
+		// move coordinates. Move coordinates are an array with the X and Y coordinate.
+		{
+			move: { B: [2,3] }
+		},
 
-		// Pass moves are indicated by a "pass" or empty string
-		{ move: {W: "pass"} },
+		// Pass moves are indicated with a "pass" string
+		{
+			move: { W: "pass" }
+		},
 
 		// A move node may contain other annotation as well, like comments or markup
-		{ move: {B: "nn"}, comments: ["Move comment", "Another comment"] },
+		{
+			move: { B: [4,2] },
+			comments: [ "Move comment", "Another comment" ]
+		},
 
 		// A node can be named using the name property
-		{ name: "Node name", move: {W: "ch"} },
-
-		// Markup is contained in its own container, with the key defining the type of
-		// markup. Default types are "circle", "triangle", "square", "mark", "label"
-		// and "selected". However, any other type can be specified in order to store
-		// any custom markup types in the game record as well.
 		{
-			move: {B: "cf"},
+			name: "Node name",
+			move: { W: [15,15] }
+		},
+
+		// Markup can be added to any node
+		{
+			move: { B: [3,15] },
+
+			// Markup is contained in its own container with an array per markup type.
 			markup: {
 
-				// Regular markup has an array of coordinates to mark with that type.
-				triangle: ["mm", "nn"],
-				circle: ["me"],
+				// Default types are "circle", "triangle", "square", "mark", "label" and "selected".
+				// However, any other type can be specified in order to store custom markup types.
+				triangle: [ [4,2], [2,3] ],
 
-				// Label markup has an array of label arrays, each containing the
-				// coordinate as the first value, and the label to apply as the second.
-				label: [["ab", "A"], ["bc", "B"], ["dg", "1"]]
+				// Label markup gets a third entry in the array with the label contents.
+				label: [ [3,15, "A"], [15,15, "B"] ]
 			}
 		},
 
-		// Setup instructions are placed in their own container
+		// Setup instructions always get their own node and cannot be combined with moves.
 		{
+			// Stone positions are indicated per color, with "E" reserved for empty grid spots.
+			setup: [
+				B: [ [4,16], [2,15] ],
+				W: [ [9,9] ],
+				E: [ [3,15] ]
+			],
 
-			// Setup can contain three keys, B for black stones to place, W for white
-			// stones to place, and E for empty spots (e.g. remove stones)
-			setup: {
-				B: ["mm", "nn"],
-				W: ["mf"],
-				E: ["aa", "ab"]
-			},
-
-			// The player turn can be specified as well.
+			// The player turn can be specified in setup nodes as well.
 			turn: "W"
 		},
 
@@ -241,17 +246,15 @@ JGF = {
 			// For japanese scoring, existing (living) stone positions can be
 			// excluded. For chinese scoring, they can be included.
 			score: {
-				B: ["aa", "ab", "ac"],
-				W: ["gg", "gh"],
+				B: [ [0,0], [0,1], [1,1], ... ],
+				W: [ [6,2], [6,3], [7,2], ... ],
 			}
 		},
 
 		// For problems, a node with the correct solution can be marked as follows
 		{
 			solution: true,
-			move: {
-				W: "gb"
-			}
+			move: { W: [15,9] }
 		},
 
 		// Variations are contained in a variations container.
@@ -259,12 +262,12 @@ JGF = {
 			// Each variation's nodes are contained in a child moves container.
 			// Variation nodes themselves adhere to the same specifications.
 			[
-				{ move: {B: "de"} },
-				{ move: {W: "ed"} }
+				{ move: { B: [9,15] } },
+				{ move: { W: [9,16] } }
 			],
 			[
-				{ move: {B: "ed"} },
-				{ move: {W: "de"} }
+				{ move: { B: [9,16] } },
+				{ move: { W: [9,15] } }
 			]
 		]
 	]

@@ -34,12 +34,20 @@ angular.module('ngGo', [])
  */
 .constant('ngGo', {
 	name:		'ngGo',
-	version:	'1.0.8',
+	version:	'1.0.9',
 	error:		{
+
+		//Move errors
 		MOVE_OUT_OF_BOUNDS:			1,
 		MOVE_ALREADY_HAS_STONE:		2,
 		MOVE_IS_SUICIDE:			3,
-		MOVE_IS_REPEATING:			4
+		MOVE_IS_REPEATING:			4,
+
+		//Data loading errors
+		NO_DATA:					5,
+		INVALID_SGF:				6,
+		INVALID_JGF_JSON:			7,
+		INVALID_JGF_TREE_JSON:		8
 	}
 })
 
@@ -89,6 +97,27 @@ angular.module('ngGo', [])
 	SCORE:	'score',
 	SETUP:	'setup',
 	MARKUP:	'markup'
+})
+
+/**
+ * Key codes
+ */
+.constant('KeyCodes', {
+	LEFT:		37,
+	RIGHT:		39,
+	UP:			38,
+	DOWN:		40,
+	ESC:		27,
+	ENTER:		13,
+	SPACE:		32,
+	TAB:		9,
+	SHIFT:		16,
+	CTRL:		17,
+	ALT:		18,
+	HOME:		36,
+	END:		35,
+	PAGEUP:		33,
+	PAGEDOWN:	34
 });
 
 /**

@@ -47,6 +47,11 @@ angular.module('ngGo.Board.Directive', [
 		//Init vars
 		var drawWidth, drawHeight, cellSize;
 
+		//Stretch available height to width if zero
+		if (availableHeight === 0 && availableWidth > 0) {
+			availableHeight = availableWidth;
+		}
+
 		//Grid size known?
 		if (scope.Board.width && scope.Board.height) {
 
@@ -90,7 +95,9 @@ angular.module('ngGo.Board.Directive', [
 		link: function(scope, element, attrs) {
 
 			//Init vars
-			var i, context, layer, parent, playerElement,
+			var i, context, layer, playerElement,
+				parent = element.parent(),
+				sizingElement = element[0],
 				existingInstance = true;
 
 			//Remember last draw width/height
@@ -115,9 +122,9 @@ angular.module('ngGo.Board.Directive', [
 			scope.Board.linkElement(element);
 
 			//Find player element
-			parent = element.parent();
 			if (parent[0].tagName == 'PLAYER') {
 				playerElement = parent;
+				sizingElement = parent.parent()[0];
 			}
 
 			//Listen for board drawsize events
@@ -130,9 +137,26 @@ angular.module('ngGo.Board.Directive', [
 					canvas[i].height = height * pixelRatio;
 				}
 
+				//Set on the element if we're using a player element and if there is a size
+				if (playerElement || attrs.forceSize === 'true') {
+					element.css({width: width + 'px', height: height + 'px'});
+				}
+
 				//Next set it on the board itself
-				element.css({width: width + 'px', height: height + 'px'});
 				scope.Board.setDrawSize(width * pixelRatio, height * pixelRatio);
+			});
+
+			//Determine initial draw size
+			determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
+
+			//On window resize, determine the draw size again
+			angular.element($window).on('resize', function() {
+				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
+			});
+
+			//On manual resize, determine draw size again
+			scope.$on('ngGo.board.determineDrawSize', function() {
+				determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
 			});
 
 			//On board grid resize, determine the draw size again
@@ -147,37 +171,10 @@ angular.module('ngGo.Board.Directive', [
 				//However, that means we should call the resized() method now manually because
 				//it won't be called with the setDrawSize() call.
 				//This may seem a bit "off", but it's the best way to prevent redundant redraws.
-				if (!determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight)) {
+				if (!determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight)) {
 					scope.Board.resized();
 				}
 			});
-
-			//Board with player element?
-			if (playerElement) {
-
-				//Get player element parent
-				parent = parent.parent();
-
-				//Determine draw size based on parent
-				determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight);
-
-				//On window resize, determine the draw size again
-				angular.element($window).on('resize', function() {
-					determineDrawSize(scope, parent[0].clientWidth, parent[0].clientHeight);
-				});
-			}
-
-			//Board without player
-			else {
-
-				//Determine draw size based on element dimensions
-				determineDrawSize(scope, element[0].clientWidth, element[0].clientHeight);
-
-				//On window resize, determine the draw size again
-				angular.element($window).on('resize', function() {
-					determineDrawSize(scope, element[0].clientWidth, element[0].clientHeight);
-				});
-			}
 
 			//Static board
 			if (attrs.static && attrs.static === 'true') {

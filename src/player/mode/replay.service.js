@@ -15,109 +15,17 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 /**
  * Extend player functionality and register the mode
  */
-.run(function($interval, Player, PlayerModes, PlayerTools, PlayerModeReplay) {
+.run(function(Player, PlayerModes, PlayerModeReplay) {
 
-	/**
-	 * Register event handlers
-	 */
+	//Register event handlers
 	Player.on('settingChange', PlayerModeReplay.settingChange, PlayerModes.REPLAY);
 	Player.on('boardUpdate', PlayerModeReplay.boardUpdate, PlayerModes.REPLAY);
+	Player.on('pathChange', PlayerModeReplay.pathChange, PlayerModes.REPLAY);
+	Player.on('toolSwitch', PlayerModeReplay.toolSwitch, PlayerModes.REPLAY);
 	Player.on('modeEnter', PlayerModeReplay.modeEnter, PlayerModes.REPLAY);
 	Player.on('modeExit', PlayerModeReplay.modeExit, PlayerModes.REPLAY);
-	Player.on('keydown', PlayerModeReplay.keyDown, PlayerModes.REPLAY);
 	Player.on('click', PlayerModeReplay.click, PlayerModes.REPLAY);
 	Player.on('hover', PlayerModeReplay.hover, PlayerModes.REPLAY);
-
-	/**
-	 * Set auto play delay
-	 */
-	Player.setAutoPlayDelay = function(delay) {
-		if (this.autoPlayDelay != delay) {
-			this.autoPlayDelay = delay;
-			this.broadcast('settingChange', 'autoPlayDelay');
-		}
-	};
-
-	/**
-	 * Start auto play with a given delay
-	 */
-	Player.start = function(delay) {
-
-		//Not in replay mode or already auto playing?
-		if (this.mode != PlayerModes.REPLAY || this.autoPlaying) {
-			return;
-		}
-
-		//Already auto playing, no game or no move children?
-		if (!this.game || !this.game.node.hasChildren()) {
-			return;
-		}
-
-		//Get self
-		var self = this;
-
-		//Determine delay
-		delay = (typeof delay == 'number') ? delay : this.autoPlayDelay;
-
-		//Switch tool
-		this.switchTool(PlayerTools.NONE);
-
-		//Create interval
-		this.autoPlaying = true;
-		this.autoPlayPromise = $interval(function() {
-
-			//Advance to the next node
-			self.next(0, true);
-
-			//Ran out of children?
-			if (!self.game.node.hasChildren()) {
-				self.stop();
-			}
-		}, delay);
-
-		//Broadcast event
-		this.broadcast('autoPlayStarted', this.game.node);
-	};
-
-	/**
-	 * Stop auto play
-	 */
-	Player.stop = function() {
-
-		//Not in replay mode or not auto playing?
-		if (this.mode != PlayerModes.REPLAY || !this.autoPlaying) {
-			return;
-		}
-
-		//Cancel interval
-		if (this.autoPlayPromise) {
-			$interval.cancel(this.autoPlayPromise);
-		}
-
-		//Clear flags
-		this.autoPlayPromise = null;
-		this.autoPlaying = false;
-
-		//Broadcast event
-		this.broadcast('autoPlayStopped', this.game.node);
-	};
-
-	/**
-	 * Helper to start in "demo" mode, which is replay mode with no tool
-	 */
-	Player.demo = function() {
-
-		//Switch mode to replay
-		this.switchMode(PlayerModes.REPLAY);
-
-		//Switch tool to none
-		this.switchTool(PlayerTools.NONE);
-	};
-
-	//Auto play vars
-	Player.autoPlaying = false;
-	Player.autoPlayDelay = 1000;
-	Player.autoPlayPromise = null;
 
 	//Register the mode
 	Player.registerMode(PlayerModes.REPLAY, PlayerModeReplay);
@@ -134,7 +42,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	var defaultConfig = {
 
 		//Auto play delay
-		auto_play_delay: 1000,
+		auto_play_delay: 1000
 	};
 
 	/**
@@ -147,12 +55,18 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function(Player, PlayerTools, MarkupTypes, GameScorer) {
+	this.$get = function($interval, Player, PlayerModes, PlayerTools, MarkupTypes, GameScorer) {
 
 		/**
 		 * Helper to update the hover mark
 		 */
 		var updateHoverMark = function(x, y) {
+
+			//If no coordinates specified, use last mouse coordinates
+			if (typeof x == 'undefined' || typeof y == 'undefined') {
+				x = this.mouse.lastX;
+				y = this.mouse.lastY;
+			}
 
 			//Falling outside of grid?
 			if (!this.board || !this.board.isOnBoard(x, y)) {
@@ -257,6 +171,91 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 		};
 
 		/**
+		 * Player extension
+		 */
+		angular.extend(Player, {
+
+			//Auto play vars
+			autoPlaying: false,
+			autoPlayDelay: 1000,
+			autoPlayPromise: null,
+
+			/**
+			 * Set auto play delay
+			 */
+			setAutoPlayDelay: function(delay) {
+				if (this.autoPlayDelay != delay) {
+					this.autoPlayDelay = delay;
+					this.broadcast('settingChange', 'autoPlayDelay');
+				}
+			},
+
+			/**
+			 * Start auto play with a given delay
+			 */
+			start: function(delay) {
+
+				//Not in replay mode or already auto playing?
+				if (this.mode != PlayerModes.REPLAY || this.autoPlaying) {
+					return;
+				}
+
+				//Already auto playing, no game or no move children?
+				if (!this.game || !this.game.node.hasChildren()) {
+					return;
+				}
+
+				//Get self
+				var self = this;
+
+				//Determine delay
+				delay = (typeof delay == 'number') ? delay : this.autoPlayDelay;
+
+				//Switch tool
+				this.switchTool(PlayerTools.NONE);
+
+				//Create interval
+				this.autoPlaying = true;
+				this.autoPlayPromise = $interval(function() {
+
+					//Advance to the next node
+					self.next(0, true);
+
+					//Ran out of children?
+					if (!self.game.node.hasChildren()) {
+						self.stop();
+					}
+				}, delay);
+
+				//Broadcast event
+				this.broadcast('autoPlayStarted', this.game.node);
+			},
+
+			/**
+			 * Stop auto play
+			 */
+			stop: function() {
+
+				//Not in replay mode or not auto playing?
+				if (this.mode != PlayerModes.REPLAY || !this.autoPlaying) {
+					return;
+				}
+
+				//Cancel interval
+				if (this.autoPlayPromise) {
+					$interval.cancel(this.autoPlayPromise);
+				}
+
+				//Clear flags
+				this.autoPlayPromise = null;
+				this.autoPlaying = false;
+
+				//Broadcast event
+				this.broadcast('autoPlayStopped', this.game.node);
+			}
+		});
+
+		/**
 		 * Player mode definition
 		 */
 		var PlayerModeReplay = {
@@ -288,9 +287,11 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			 * Hover handler
 			 */
 			hover: function(event) {
+
+				//Update hover mark
 				if (this.board) {
 					this.board.removeAll('hover');
-					updateHoverMark.call(this, event.x, event.y);
+					updateHoverMark.call(this);
 				}
 			},
 
@@ -302,18 +303,6 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 				//Show move variations
 				if (this.variationMarkup) {
 					drawMoveVariations.call(this, true);
-				}
-			},
-
-			/**
-			 * Handler for keydown events
-			 */
-			keyDown: function(event, keyboardEvent) {
-
-				//Update hover mark
-				if (this.board) {
-					this.board.removeAll('hover');
-					updateHoverMark.call(this, this.lastX, this.lastY);
 				}
 			},
 
@@ -353,6 +342,18 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			},
 
 			/**
+			 * Path change event
+			 */
+			pathChange: function(event, node) {
+
+				//Update hover mark
+				if (this.board) {
+					this.board.removeAll('hover');
+					updateHoverMark.call(this);
+				}
+			},
+
+			/**
 			 * Handler for mode entry
 			 */
 			modeEnter: function(event) {
@@ -386,6 +387,31 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 				//Hide move variations
 				if (this.variationMarkup) {
 					drawMoveVariations.call(this, false);
+				}
+			},
+
+			/**
+			 * Handler for tool switches
+			 */
+			toolSwitch: function(event) {
+
+				//Switched to scoring?
+				if (this.tool == PlayerTools.SCORE) {
+
+					//Remember the current board state
+					this.statePreScoring = this.board.getState();
+
+					//Load game into scorer and score the game
+					GameScorer.load(this.game);
+					this.scoreGame();
+				}
+
+				//Back to another state?
+				else {
+					if (this.statePreScoring) {
+						this.board.restoreState(this.statePreScoring);
+						delete this.statePreScoring;
+					}
 				}
 			}
 		};

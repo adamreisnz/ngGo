@@ -40,6 +40,39 @@ angular.module('ngGo.Board.Theme.Service', [
 				return Math.floor(cellSize / 2);
 			},
 
+			//Shell stones
+			shell: {
+				color: function(stoneColor) {
+					if (stoneColor == StoneColor.B) {
+						return '#111';
+					}
+					return '#BFBFBA';
+				},
+				stroke: 'rgba(128,128,128,0.15)',
+				types: [
+					{
+						lines: [0.10, 0.12, 0.11, 0.10, 0.09, 0.09, 0.09, 0.09],
+						factor: 0.15,
+						thickness: 1.75
+					},
+					{
+						lines: [0.10, 0.09, 0.08, 0.07, 0.09, 0.06, 0.06, 0.07, 0.07, 0.06, 0.06],
+						factor: 0.1,
+						thickness: 1.5
+					},
+					{
+						lines: [0.22, 0.11, 0.13, 0.06, 0.11, 0.09],
+						factor: 0.05,
+						thickness: 1.75
+					},
+					{
+						lines: [0.18, 0.23, 0.09, 0.17, 0.14],
+						factor: 0.1,
+						thickness: 2
+					}
+				]
+			},
+
 			//Mono stones
 			mono: {
 				lineWidth: 1,
@@ -76,7 +109,7 @@ angular.module('ngGo.Board.Theme.Service', [
 		shadow: {
 
 			//Shadow gradient colors
-			color: 'rgba(62,32,32,0.2)',
+			color: 'rgba(40,30,20,0.5)',
 
 			//Shadow size
 			size: function(cellSize) {
@@ -164,13 +197,13 @@ angular.module('ngGo.Board.Theme.Service', [
 				valid: {
 					type: MarkupTypes.SELECT,
 					text: null,
-					color: 'rgba(86,114,30,0.9)',
+					color: 'rgba(86,114,30,1)',
 					scale: 0.5
 				},
 				invalid: {
 					type: MarkupTypes.MARK,
 					text: null,
-					color: 'rgba(237,9,15,0.8)',
+					color: 'rgba(237,9,15,1)',
 					scale: 0.3
 				}
 			}
@@ -180,17 +213,37 @@ angular.module('ngGo.Board.Theme.Service', [
 		grid: {
 
 			//Line properties
-			lineColor: 'rgba(71,39,7,0.7)', //'rgba(101,69,37,0.4)',
-			lineWidth: 1,
+			lineColor: 'rgba(60,40,15,1)',
+			lineWidth: function(cellSize) {
+				if (cellSize > 60) {
+					return 2;
+				}
+				else if (cellSize > 50) {
+					return 1.5;
+				}
+				return 1;
+			},
 			lineCap: 'square',
 
 			//Star points
 			star: {
 
 				//Color and radius
-				color: 'rgba(81,49,17,1)', //'rgba(168,132,81,1)',
+				color: 'rgba(60,40,15,1)',
 				radius: function(cellSize) {
-					return Math.floor((cellSize / 16) + 1);
+					if (cellSize > 50) {
+						return Math.floor((cellSize / 16) + 1);
+					}
+					else if (cellSize > 30) {
+						return 3;
+					}
+					else if (cellSize > 15) {
+						return 2;
+					}
+					else if (cellSize > 5) {
+						return 1.5;
+					}
+					return 1;
 				},
 
 				//Locations

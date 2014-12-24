@@ -116,6 +116,9 @@ angular.module('ngGo.Game.Service', [
 
 			//Determine which child node to process
 			i = i || 0;
+			if (i == -1) {
+				i = 0;
+			}
 
 			//Validate
 			if (i >= this.node.children.length || !this.node.children[i]) {
@@ -195,10 +198,7 @@ angular.module('ngGo.Game.Service', [
 
 			//Position not given?
 			if (!newPosition) {
-
-				//Clone current position and switch turn
 				newPosition = this.position.clone();
-				newPosition.switchTurn();
 			}
 
 			//Push
@@ -244,7 +244,7 @@ angular.module('ngGo.Game.Service', [
 				else {
 					if (!this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition)) {
 						console.warn('Invalid move detected in game record');
-						return;
+						return false;
 					}
 				}
 			}
@@ -270,6 +270,7 @@ angular.module('ngGo.Game.Service', [
 
 			//Push the new position into the history now
 			pushPosition.call(this, newPosition);
+			return true;
 		};
 
 		/***********************************************************************************************
@@ -398,6 +399,7 @@ angular.module('ngGo.Game.Service', [
 
 			//No data, can't do much
 			if (!data) {
+				this.error = ngGo.error.NO_DATA;
 				return false;
 			}
 
@@ -426,6 +428,7 @@ angular.module('ngGo.Game.Service', [
 			//Use the kifu parser
 			var jgf = KifuParser.sgf2jgf(sgf);
 			if (!jgf) {
+				this.error = ngGo.error.INVALID_SGF;
 				return false;
 			}
 
@@ -441,10 +444,11 @@ angular.module('ngGo.Game.Service', [
 			//Parse jgf string
 			if (typeof jgf == 'string') {
 				try {
-					jgf = JSON.parse(jgf);
+					jgf = angular.fromJson(jgf);
 				}
 				catch (error) {
 					console.warn('Could not parse JGF data');
+					this.error = ngGo.error.INVALID_JGF_JSON;
 					return false;
 				}
 			}
@@ -453,10 +457,11 @@ angular.module('ngGo.Game.Service', [
 			if (typeof jgf.tree == 'string') {
 				if (jgf.tree.charAt(0) == '[') {
 					try {
-						jgf.tree = JSON.parse(jgf.tree);
+						jgf.tree = angular.fromJson(jgf.tree);
 					}
 					catch (error) {
 						console.warn('Could not parse JGF tree');
+						this.error = ngGo.error.INVALID_JGF_TREE_JSON;
 						return false;
 					}
 				}
@@ -529,7 +534,7 @@ angular.module('ngGo.Game.Service', [
 			jgf.tree = this.root.toJgf();
 
 			//Return
-			return stringify ? JSON.stringify(jgf) : jgf;
+			return stringify ? angular.toJson(jgf) : jgf;
 		};
 
 		/***********************************************************************************************
@@ -558,9 +563,31 @@ angular.module('ngGo.Game.Service', [
 		};
 
 		/**
+		 * Duplicate the current game position
+		 */
+		Game.prototype.duplicatePosition = function() {
+
+			//Clone our position
+			pushPosition.call(this);
+
+			//Create new node
+			var node = new GameNode();
+
+			//Append it to the current node and change the pointer
+			var i = node.appendTo(this.node);
+			this.node = node;
+
+			//Advance path to the added node index
+			this.path.advance(i);
+		};
+
+		/**
 		 * Get the game path
 		 */
-		Game.prototype.getPath = function() {
+		Game.prototype.getPath = function(clone) {
+			if (clone) {
+				return this.path.clone();
+			}
 			return this.path;
 		};
 
@@ -830,19 +857,7 @@ angular.module('ngGo.Game.Service', [
 
 				//Is this a move node?
 				if (this.node.move) {
-
-					//Clone our position
-					pushPosition.call(this);
-
-					//Create new node
-					var node = new GameNode();
-
-					//Append it to the current node and change the pointer
-					var i = node.appendTo(this.node);
-					this.node = node;
-
-					//Advance path to the added node index
-					this.path.advance(i);
+					this.duplicatePosition();
 				}
 
 				//Create setup container
@@ -940,6 +955,20 @@ angular.module('ngGo.Game.Service', [
 			return this.position.markup.has(x, y);
 		};
 
+		/**
+		 * Get stone on coordinates
+		 */
+		Game.prototype.getStone = function(x, y) {
+			return this.position.stones.get(x, y);
+		};
+
+		/**
+		 * Get markup on coordinates
+		 */
+		Game.prototype.getMarkup = function(x, y) {
+			return this.position.markup.get(x, y);
+		};
+
 		/***********************************************************************************************
 		 * Move handling
 		 ***/
@@ -1025,9 +1054,18 @@ angular.module('ngGo.Game.Service', [
 		 */
 		Game.prototype.next = function(i) {
 
+			//Object (node) given as parameter? Find index
+			if (typeof i == 'object') {
+				i = this.node.children.indexOf(i);
+			}
+
 			//Go to the next node
 			if (nextNode.call(this, i)) {
-				executeNode.call(this);
+
+				//If an invalid move is detected, we can't go on
+				if (!executeNode.call(this)) {
+					previousNode.call(this);
+				}
 			}
 		};
 
@@ -1049,7 +1087,12 @@ angular.module('ngGo.Game.Service', [
 
 			//Keep going to the next node until we reach the end
 			while (nextNode.call(this)) {
-				executeNode.call(this);
+
+				//If an invalid move is detected, we can't go on
+				if (!executeNode.call(this)) {
+					previousNode.call(this);
+					break;
+				}
 			}
 		};
 
@@ -1131,11 +1174,17 @@ angular.module('ngGo.Game.Service', [
 			//Loop path
 			var n = path.getMove();
 			for (var i = 0; i < n; i++) {
-				if (nextNode.call(this, path.nodeAt(i))) {
-					executeNode.call(this);
-					continue;
+
+				//Try going to the next node
+				if (!nextNode.call(this, path.nodeAt(i))) {
+					break;
 				}
-				break;
+
+				//If an invalid move is detected, we can't go on
+				if (!executeNode.call(this)) {
+					previousNode.call(this);
+					break;
+				}
 			}
 		};
 

@@ -67,7 +67,8 @@ module.exports = function(grunt) {
 		meta: {
 			banner:
 				'/**\n' +
-				' * <%= pkg.name %> v<%= pkg.version %>, <%= grunt.template.today("dd-mm-yyyy") %>\n' +
+				' * <%= pkg.name %> v<%= pkg.version %>\n' +
+				//<%= grunt.template.today("dd-mm-yyyy") %>
 				' * <%= pkg.homepage %>\n' +
 				' *\n' +
 				' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' +
@@ -236,6 +237,7 @@ module.exports = function(grunt) {
 				'gruntfile.js'
 			],
 			options: {
+				debug: true,
 				curly: true,
 				immed: true,
 				newcap: false,
@@ -255,7 +257,7 @@ module.exports = function(grunt) {
 				configFile: 'karma-unit.js'
 			},
 			continuous: {
-				runnerPort: 9101,
+				runnerPort: 9102,
 				background: true
 			},
 			unit: {
@@ -264,61 +266,45 @@ module.exports = function(grunt) {
 		},
 
 		/**
-		 * And for rapid development, we have a watch set up that checks to see if
-		 * any of the files listed below change, and then to execute the listed
-		 * tasks when they do. This just saves us from having to type "grunt" into
-		 * the command-line every time we want to see what we're working on; we can
-		 * instead just leave "grunt watch" running in a background terminal.
-		 *
-		 * But we don't need the same thing to happen for all the files.
+		 * Delta task
 		 */
 		delta: {
 
 			/**
-			 * By default, we want the Live Reload to work for all tasks; this is
-			 * overridden in some tasks (like this file) where browser resources are
-			 * unaffected. It runs by default on port 35729, which your browser
-			 * plugin should auto-detect.
+			 * No live reload needed
 			 */
 			options: {
-				livereload: true
+				livereload: false
 			},
 
 			/**
-			 * When the Gruntfile changes, we just want to lint it. In fact, when
-			 * your Gruntfile changes, it will automatically be reloaded!
+			 * When the Gruntfile changes, we just want to lint it.
 			 */
 			gruntfile: {
 				files: 'gruntfile.js',
-				tasks: [ 'jshint:gruntfile' ],
-				options: {
-					livereload: false
-				}
+				tasks: [ 'jshint:gruntfile' ]
 			},
 
 			/**
-			 * When our JavaScript source files change, we want to run lint them and
-			 * run our unit tests.
+			 * When our JavaScript source files change, we want to lint them,
+			 * run our unit tests and re-compile.
 			 */
 			jssrc: {
 				files: [
 					'<%= app_files.js %>'
 				],
-				tasks: [ 'jshint:src', 'karma:unit:run' ]
+				tasks: [ 'jshint:src', 'karma:unit:run', 'compile' ]
 			},
 
 			/**
-			 * When a JavaScript unit test file changes, we only want to lint it and
-			 * run the unit tests. We don't want to do any live reloading.
+			 * When a JavaScript unit test file changes, we only want to lint them
+			 * and run the unit tests.
 			 */
 			unit: {
 				files: [
 					'<%= app_files.unit %>'
 				],
-				tasks: [ 'jshint:test', 'karma:continuous:run' ],
-				options: {
-					livereload: false
-				}
+				tasks: [ 'jshint:test', 'karma:unit:run' ]
 			}
 		}
 	};
@@ -336,12 +322,12 @@ module.exports = function(grunt) {
 	 * before watching for changes.
 	 */
 	grunt.renameTask('watch', 'delta');
-	grunt.registerTask('watch', ['karma:continuous', 'delta']);
+	grunt.registerTask('watch', ['test', 'karma:continuous', 'delta']);
 
 	/**
-	 * The default task is to compile
+	 * The default task is to test and compile
 	 */
-	grunt.registerTask('default', ['compile']);
+	grunt.registerTask('default', ['test', 'compile']);
 
 	/**
 	 * The 'test' task runs jshint and unit tests
@@ -353,15 +339,21 @@ module.exports = function(grunt) {
 	]);
 
 	/**
-	 * The 'compile' task gets the app ready for deployment by concatenating and minifying code.
+	 * Release a new version
 	 */
-	grunt.registerTask('compile', [
+	grunt.registerTask('release', [
 
 		//Update the version number in the README and in ngGo.js
 		'replace:readmeVersion', 'replace:ngGoVersion',
 
-		//Run JS hint and unit tests
-		'jshint', 'karma:unit',
+		//Test and compile
+		'test', 'compile'
+	]);
+
+	/**
+	 * The 'compile' task gets the app ready for deployment by concatenating and minifying code.
+	 */
+	grunt.registerTask('compile', [
 
 		//Compile the CSS
 		'recess:compile',

@@ -188,7 +188,7 @@ angular.module('ngGo.Player.Service', [
 				this.registerElementEvent('mousewheel');
 			},
 
-			/*******************************************************************************************************************************
+			/***********************************************************************************************
 			 * Configuration
 			 ***/
 
@@ -282,7 +282,7 @@ angular.module('ngGo.Player.Service', [
 				}
 			},
 
-			/*******************************************************************************************************************************
+			/***********************************************************************************************
 			 * Mode and tool handling
 			 ***/
 
@@ -373,6 +373,43 @@ angular.module('ngGo.Player.Service', [
 				return true;
 			},
 
+			/**
+			 * Save the full player state
+			 */
+			saveState: function() {
+
+				//Save player state
+				this.playerState = {
+					mode: this.mode,
+					tool: this.tool,
+					restrictNodeStart: this.restrictNodeStart,
+					restrictNodeEnd: this.restrictNodeEnd
+				};
+
+				//Save game state
+				this.saveGameState();
+			},
+
+			/**
+			 * Restore to the saved player state
+			 */
+			restoreState: function() {
+
+				//Must have player state
+				if (!this.playerState) {
+					return;
+				}
+
+				//Restore
+				this.switchMode(this.playerState.mode);
+				this.switchTool(this.playerState.tool);
+				this.restrictNodeStart = this.playerState.restrictNodeStart;
+				this.restrictNodeEnd = this.playerState.restrictNodeEnd;
+
+				//Restore game state
+				this.restoreGameState();
+			},
+
 			/***********************************************************************************************
 			 * Game record handling
 			 ***/
@@ -392,7 +429,7 @@ angular.module('ngGo.Player.Service', [
 
 				//Parse configuration from JGF if allowed
 				if (allowPlayerConfig || typeof allowPlayerConfig == 'undefined') {
-					this.parseConfig(this.game.get('player'));
+					this.parseConfig(this.game.get('settings'));
 				}
 
 				//Dispatch game loaded event
@@ -432,9 +469,7 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Save the current state
 			 */
-			saveState: function() {
-
-				//Remember game state
+			saveGameState: function() {
 				if (this.game && this.game.isLoaded()) {
 					this.gameState = this.game.getState();
 				}
@@ -443,7 +478,7 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Restore to the saved state
 			 */
-			restoreState: function() {
+			restoreGameState: function(mode) {
 
 				//Must have game and saved state
 				if (!this.game || !this.gameState) {
@@ -468,7 +503,7 @@ angular.module('ngGo.Player.Service', [
 			 * Go to the next position
 			 */
 			next: function(i) {
-				if (this.game) {
+				if (this.game && this.game.node != this.restrictNodeEnd) {
 					this.game.next(i);
 					this.processPosition();
 				}
@@ -478,7 +513,7 @@ angular.module('ngGo.Player.Service', [
 			 * Go back to the previous position
 			 */
 			previous: function() {
-				if (this.game) {
+				if (this.game && this.game.node != this.restrictNodeStart) {
 					this.game.previous();
 					this.processPosition();
 				}
@@ -571,7 +606,7 @@ angular.module('ngGo.Player.Service', [
 				}
 			},
 
-			/*******************************************************************************************************************************
+			/***********************************************************************************************
 			 * Game handling
 			 ***/
 
@@ -604,7 +639,7 @@ angular.module('ngGo.Player.Service', [
 				this.broadcast('scoreCalculated', score);
 			},
 
-			/*******************************************************************************************************************************
+			/***********************************************************************************************
 			 * Board handling
 			 ***/
 
@@ -707,6 +742,11 @@ angular.module('ngGo.Player.Service', [
 						if ((typeof mode == 'string' && mode != self.mode) || mode.indexOf(self.mode) === -1) {
 							return;
 						}
+					}
+
+					//Inside a text field?
+					if (type == 'keydown' && $document[0].querySelector(':focus')) {
+						return;
 					}
 
 					//Append grid coordinates for mouse events

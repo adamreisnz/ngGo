@@ -15,35 +15,6 @@ angular.module('ngGo.Kifu.Parser.Service', [
 ])
 
 /**
- * Factory definition
- */
-.factory('KifuParser', function(Sgf2Jgf, Jgf2Sgf) {
-
-	/**
-	 * Parser wrapper class
-	 */
-	var KifuParser = {
-
-		/**
-		 * Parse SGF string into a JGF object or string
-		 */
-		sgf2jgf: function(sgf, stringified) {
-			return Sgf2Jgf.parse(sgf, stringified);
-		},
-
-		/**
-		 * Parse JGF object or string into an SGF string
-		 */
-		jgf2sgf: function(jgf) {
-			return Jgf2Sgf.parse(jgf);
-		}
-	};
-
-	//Return object
-	return KifuParser;
-})
-
-/**
  * SGF/JGF aliases constant for conversion between the two formats
  * Note: not all properties can be translated directly, so some are
  * not present here in this constant
@@ -104,4 +75,33 @@ angular.module('ngGo.Kifu.Parser.Service', [
 	6: 'backgammon',
 	7: 'chinese chess',
 	8: 'shogi'
+})
+
+/**
+ * Factory definition
+ */
+.factory('KifuParser', function(Sgf2Jgf, Jgf2Sgf) {
+
+	/**
+	 * Parser wrapper class
+	 */
+	var KifuParser = {
+
+		/**
+		 * Parse SGF string into a JGF object or string
+		 */
+		sgf2jgf: function(sgf, stringified) {
+			return Sgf2Jgf.parse(sgf, stringified);
+		},
+
+		/**
+		 * Parse JGF object or string into an SGF string
+		 */
+		jgf2sgf: function(jgf) {
+			return Jgf2Sgf.parse(jgf);
+		}
+	};
+
+	//Return object
+	return KifuParser;
 });
