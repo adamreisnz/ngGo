@@ -85,7 +85,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
 	StonesLayer.prototype.redraw = function() {
 
 		//Clear shadows layer
-		this.board.clear('shadow');
+		this.board.removeAll('shadow');
 
 		//Redraw ourselves
 		this.clear();
