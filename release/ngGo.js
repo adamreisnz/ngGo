@@ -1,5 +1,5 @@
 /**
- * ngGo v1.0.8
+ * ngGo v1.0.9
  * https://github.com/AdamBuczynski/ngGo
  *
  * Copyright (c) 2014 Adam Buczynski
@@ -8488,7 +8488,7 @@ angular.module('ngGo', [])
  */
 .constant('ngGo', {
 	name:		'ngGo',
-	version:	'1.0.8',
+	version:	'1.0.9',
 	error:		{
 
 		//Move errors
