@@ -243,7 +243,8 @@ angular.module('ngGo.Game.Service', [
 				}
 				else {
 					if (!this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition)) {
-						console.warn('Invalid move detected in game record');
+						//TODO better error handling
+						console.warn('Invalid move detected in game record:', this.node.move, this.error);
 						return false;
 					}
 				}
@@ -403,7 +404,7 @@ angular.module('ngGo.Game.Service', [
 				return false;
 			}
 
-			//String given, could be stringified JGF or an SGF file
+			//String given, could be stringified JGF, an SGF or GIB file
 			if (typeof data == 'string') {
 				var c = data.charAt(0);
 				if (c == '(') {
@@ -412,12 +413,35 @@ angular.module('ngGo.Game.Service', [
 				else if (c == '{') {
 					return this.fromJgf(data);
 				}
+				else if (c == '\\') {
+					return this.fromGib(data);
+				}
+				else {
+					this.error = ngGo.error.UNKNOWN_DATA;
+					return false;
+				}
 			}
 
 			//Object given? Probably a JGF object
 			else if (typeof data == 'object') {
 				return this.fromJgf(data);
 			}
+		};
+
+		/**
+		 * Load from GIB data
+		 */
+		Game.prototype.fromGib = function(gib) {
+
+			//Use the kifu parser
+			var jgf = KifuParser.gib2jgf(gib);
+			if (!jgf) {
+				this.error = ngGo.error.INVALID_GIB;
+				return false;
+			}
+
+			//Now load from JGF
+			return this.fromJgf(jgf);
 		};
 
 		/**
