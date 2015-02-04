@@ -2,7 +2,7 @@
  * ngGo v1.0.9
  * https://github.com/AdamBuczynski/ngGo
  *
- * Copyright (c) 2014 Adam Buczynski
+ * Copyright (c) 2015 Adam Buczynski
  */
 (function (window, angular, undefined) {
 	'use strict';
@@ -4529,7 +4529,8 @@ angular.module('ngGo.Game.Service', [
 				}
 				else {
 					if (!this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition)) {
-						console.warn('Invalid move detected in game record');
+						//TODO better error handling
+						console.warn('Invalid move detected in game record:', this.node.move, this.error);
 						return false;
 					}
 				}
@@ -4689,7 +4690,7 @@ angular.module('ngGo.Game.Service', [
 				return false;
 			}
 
-			//String given, could be stringified JGF or an SGF file
+			//String given, could be stringified JGF, an SGF or GIB file
 			if (typeof data == 'string') {
 				var c = data.charAt(0);
 				if (c == '(') {
@@ -4698,12 +4699,35 @@ angular.module('ngGo.Game.Service', [
 				else if (c == '{') {
 					return this.fromJgf(data);
 				}
+				else if (c == '\\') {
+					return this.fromGib(data);
+				}
+				else {
+					this.error = ngGo.error.UNKNOWN_DATA;
+					return false;
+				}
 			}
 
 			//Object given? Probably a JGF object
 			else if (typeof data == 'object') {
 				return this.fromJgf(data);
 			}
+		};
+
+		/**
+		 * Load from GIB data
+		 */
+		Game.prototype.fromGib = function(gib) {
+
+			//Use the kifu parser
+			var jgf = KifuParser.gib2jgf(gib);
+			if (!jgf) {
+				this.error = ngGo.error.INVALID_GIB;
+				return false;
+			}
+
+			//Now load from JGF
+			return this.fromJgf(jgf);
 		};
 
 		/**
@@ -5575,8 +5599,8 @@ angular.module('ngGo.Game.Node.Service', [
 			}
 
 			//Append coordinates
-			baseObject.x = coords[0];
-			baseObject.y = coords[1];
+			baseObject.x = coords[0] * 1;
+			baseObject.y = coords[1] * 1;
 		}
 		return baseObject;
 	};
@@ -7298,9 +7322,8 @@ angular.module('ngGo.Kifu.Blank.Service', [
 }]);
 
 /**
- * KifuParser :: This is a wrapper class for all available kifu parsers. Currently, it only
- * wraps the parsers to convert SGF to JGF and vice versa. It also provides constants used
- * by the parsers to aid conversion.
+ * KifuParser :: This is a wrapper class for all available kifu parsers. It also provides
+ * constants used by the parsers to aid conversion.
  */
 
 /**
@@ -7308,9 +7331,17 @@ angular.module('ngGo.Kifu.Blank.Service', [
  */
 angular.module('ngGo.Kifu.Parser.Service', [
 	'ngGo',
+	'ngGo.Kifu.Parsers.Gib2Jgf.Service',
 	'ngGo.Kifu.Parsers.Sgf2Jgf.Service',
 	'ngGo.Kifu.Parsers.Jgf2Sgf.Service'
 ])
+
+/**
+ * GIB/JGF aliases constant for conversion between the two formats.
+ */
+.constant('gibAliases', {
+
+})
 
 /**
  * SGF/JGF aliases constant for conversion between the two formats
@@ -7378,12 +7409,19 @@ angular.module('ngGo.Kifu.Parser.Service', [
 /**
  * Factory definition
  */
-.factory('KifuParser', ["Sgf2Jgf", "Jgf2Sgf", function(Sgf2Jgf, Jgf2Sgf) {
+.factory('KifuParser', ["Gib2Jgf", "Sgf2Jgf", "Jgf2Sgf", function(Gib2Jgf, Sgf2Jgf, Jgf2Sgf) {
 
 	/**
 	 * Parser wrapper class
 	 */
 	var KifuParser = {
+
+		/**
+		 * Parse GIB string into a JGF object or string
+		 */
+		gib2jgf: function(gib, stringified) {
+			return Gib2Jgf.parse(gib, stringified);
+		},
 
 		/**
 		 * Parse SGF string into a JGF object or string
@@ -7402,6 +7440,206 @@ angular.module('ngGo.Kifu.Parser.Service', [
 
 	//Return object
 	return KifuParser;
+}]);
+
+/**
+ * Gib2Jgf :: This is a parser wrapped by the KifuParser which is used to convert fom GIB to JGF.
+ * Since the Gib format is not public, the accuracy of this parser is not guaranteed.
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
+	'ngGo',
+	'ngGo.Kifu.Blank.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('Gib2Jgf', ["ngGo", "gibAliases", "KifuBlank", function(ngGo, gibAliases, KifuBlank) {
+
+	/**
+	 * Regular expressions
+	 */
+	var regMove = /STO\s0\s([0-9]+)\s(1|2)\s([0-9]+)\s([0-9]+)/gi,
+		regPlayer = /GAME(BLACK|WHITE)NAME=([A-Za-z0-9]+)\s\(([0-9]+D|K)\)/gi,
+		regKomi = /GAMEGONGJE=([0-9]+)/gi,
+		regDate = /GAMEDATE=([0-9]+)-\s?([0-9]+)-\s?([0-9]+)/g,
+		regResultMargin = /GAMERESULT=(white|black)\s([0-9]+\.?[0-9]?)/gi,
+		regResultOther = /GAMERESULT=(white|black)\s[a-z\s]+(resignation|time)/gi;
+
+	/**
+	 * Player parser function
+	 */
+	var parsePlayer = function(jgf, match) {
+
+		//Initialize players container
+		if (typeof jgf.game.players == 'undefined') {
+			jgf.game.players = [];
+		}
+
+		//Determine player color
+		var color = (match[1].toUpperCase() == 'BLACK') ? 'black' : 'white';
+
+		//Create player object
+		var player = {
+			color: color,
+			name: match[2],
+			rank: match[3].toLowerCase()
+		};
+
+		//Check if player of this color already exists, if so, overwrite
+		for (var p = 0; p < jgf.game.players.length; p++) {
+			if (jgf.game.players[p].color == color) {
+				jgf.game.players[p] = player;
+				return;
+			}
+		}
+
+		//Player of this color not found, push
+		jgf.game.players.push(player);
+	};
+
+	/**
+	 * Komi parser function
+	 */
+	var parseKomi = function(jgf, match) {
+		jgf.game.komi = parseFloat(match[1]/10);
+	};
+
+	/**
+	 * Date parser function
+	 */
+	var parseDate = function(jgf, match) {
+
+		//Initialize dates container
+		if (typeof jgf.game.dates == 'undefined') {
+			jgf.game.dates = [];
+		}
+
+		//Push date
+		jgf.game.dates.push(match[1]+'-'+match[2]+'-'+match[3]);
+	};
+
+	/**
+	 * Result parser function
+	 */
+	var parseResult = function(jgf, match) {
+
+		//Winner color
+		var result = (match[1].toLowerCase() == 'black') ? 'B' : 'W';
+		result += '+';
+
+		//Win condition
+		if (match[2].match(/res/i)) {
+			result += 'R';
+		}
+		else if (match[2].match(/time/i)) {
+			result += 'T';
+		}
+		else {
+			result += match[2];
+		}
+
+		//Set in JGF
+		jgf.game.result = result;
+	};
+
+	/**
+	 * Move parser function
+	 */
+	var parseMove = function(jgf, node, match) {
+
+		//Determine player color
+		var color = match[2];
+		if (color == 1) {
+			color = 'B';
+		}
+		else if (color == 2) {
+			color = 'W';
+		}
+		else {
+			return;
+		}
+
+		//Create move container
+		node.move = {};
+
+		//Pass
+		if (false) {
+
+		}
+
+		//Regular move
+		else {
+			node.move[color] = [match[3] * 1, match[4] * 1];
+		}
+	};
+
+	/**
+	 * Parser class
+	 */
+	var Parser = {
+
+		/**
+		 * Parse GIB string into a JGF object or string
+		 */
+		parse: function(gib, stringified) {
+
+			//Get new JGF object
+			var jgf = KifuBlank.jgf();
+
+			//Initialize
+			var match, container = jgf.tree;
+
+			//Create first node for game, which is usually an empty board position, but can
+			//contain comments or board setup instructions, which will be added to the node
+			//later if needed.
+			var node = {root: true};
+			container.push(node);
+
+			//Find player information
+			while (match = regPlayer.exec(gib)) {
+				parsePlayer(jgf, match);
+			}
+
+			//Find komi
+			if (match = regKomi.exec(gib)) {
+				parseKomi(jgf, match);
+			}
+
+			//Find game date
+			if (match = regDate.exec(gib)) {
+				parseDate(jgf, match);
+			}
+
+			//Find game result
+			if ((match = regResultMargin.exec(gib)) || (match = regResultOther.exec(gib))) {
+				parseResult(jgf, match);
+			}
+
+			//Find moves
+			while (match = regMove.exec(gib)) {
+
+				//Create new node
+				node = {};
+
+				//Parse move
+				parseMove(jgf, node, match);
+
+				//Push node to container
+				container.push(node);
+			}
+
+			//Return jgf
+			return jgf;
+		}
+	};
+
+	//Return object
+	return Parser;
 }]);
 
 /**
@@ -8143,6 +8381,23 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	};
 
 	/**
+	 * Date parser function
+	 */
+	var parseDate = function(jgf, node, key, value) {
+
+		//Initialize dates container
+		if (typeof jgf.game.dates == 'undefined') {
+			jgf.game.dates = [];
+		}
+
+		//Explode dates
+		var dates = value[0].split(',');
+		for (var d = 0; d < dates.length; d++) {
+			jgf.game.dates.push(dates[d]);
+		}
+	};
+
+	/**
 	 * Komi parser function
 	 */
 	var parseKomi = function(jgf, node, key, value) {
@@ -8223,12 +8478,13 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	 */
 	var parsingMap = {
 
-		//Application, game type, board size, komi
+		//Application, game type, board size, komi, date
 		'AP':	parseApp,
 		'FF':	parseSgfFormat,
 		'GM':	parseGame,
 		'SZ':	parseSize,
 		'KM':	parseKomi,
+		'DT':	parseDate,
 
 		//Variations handling
 		'ST':	parseVariations,
@@ -8499,9 +8755,11 @@ angular.module('ngGo', [])
 
 		//Data loading errors
 		NO_DATA:					5,
-		INVALID_SGF:				6,
-		INVALID_JGF_JSON:			7,
-		INVALID_JGF_TREE_JSON:		8
+		UNKNOWN_DATA:				6,
+		INVALID_SGF:				7,
+		INVALID_GIB:				8,
+		INVALID_JGF_JSON:			9,
+		INVALID_JGF_TREE_JSON:		10
 	}
 })
 
@@ -9447,6 +9705,7 @@ angular.module('ngGo.Player.Service', [
 		return Player;
 	}];
 }]);
+
 
 /**
  * PlayerModeCommon :: This class governs common event handling of the player shared by
