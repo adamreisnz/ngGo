@@ -255,6 +255,23 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	};
 
 	/**
+	 * Date parser function
+	 */
+	var parseDate = function(jgf, node, key, value) {
+
+		//Initialize dates container
+		if (typeof jgf.game.dates == 'undefined') {
+			jgf.game.dates = [];
+		}
+
+		//Explode dates
+		var dates = value[0].split(',');
+		for (var d = 0; d < dates.length; d++) {
+			jgf.game.dates.push(dates[d]);
+		}
+	};
+
+	/**
 	 * Komi parser function
 	 */
 	var parseKomi = function(jgf, node, key, value) {
@@ -335,12 +352,13 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	 */
 	var parsingMap = {
 
-		//Application, game type, board size, komi
+		//Application, game type, board size, komi, date
 		'AP':	parseApp,
 		'FF':	parseSgfFormat,
 		'GM':	parseGame,
 		'SZ':	parseSize,
 		'KM':	parseKomi,
+		'DT':	parseDate,
 
 		//Variations handling
 		'ST':	parseVariations,

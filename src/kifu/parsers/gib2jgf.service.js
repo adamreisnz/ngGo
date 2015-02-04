@@ -1,6 +1,7 @@
 
 /**
- * Gib2Jgf :: This is a parser wrapped by the KifuParser which is used to convert fom GIB to JGF
+ * Gib2Jgf :: This is a parser wrapped by the KifuParser which is used to convert fom GIB to JGF.
+ * Since the Gib format is not public, the accuracy of this parser is not guaranteed.
  */
 
 /**
@@ -22,6 +23,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 	var regMove = /STO\s0\s([0-9]+)\s(1|2)\s([0-9]+)\s([0-9]+)/gi,
 		regPlayer = /GAME(BLACK|WHITE)NAME=([A-Za-z0-9]+)\s\(([0-9]+D|K)\)/gi,
 		regKomi = /GAMEGONGJE=([0-9]+)/gi,
+		regDate = /GAMEDATE=([0-9]+)-\s?([0-9]+)-\s?([0-9]+)/g,
 		regResultMargin = /GAMERESULT=(white|black)\s([0-9]+\.?[0-9]?)/gi,
 		regResultOther = /GAMERESULT=(white|black)\s[a-z\s]+(resignation|time)/gi;
 
@@ -62,6 +64,20 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 	 */
 	var parseKomi = function(jgf, match) {
 		jgf.game.komi = parseFloat(match[1]/10);
+	};
+
+	/**
+	 * Date parser function
+	 */
+	var parseDate = function(jgf, match) {
+
+		//Initialize dates container
+		if (typeof jgf.game.dates == 'undefined') {
+			jgf.game.dates = [];
+		}
+
+		//Push date
+		jgf.game.dates.push(match[1]+'-'+match[2]+'-'+match[3]);
 	};
 
 	/**
@@ -149,6 +165,11 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 			//Find komi
 			if (match = regKomi.exec(gib)) {
 				parseKomi(jgf, match);
+			}
+
+			//Find game date
+			if (match = regDate.exec(gib)) {
+				parseDate(jgf, match);
 			}
 
 			//Find game result
