@@ -1,8 +1,8 @@
 /**
- * ngGo v1.0.8
+ * ngGo v1.0.9
  * https://github.com/AdamBuczynski/ngGo
  *
- * Copyright (c) 2014 Adam Buczynski
+ * Copyright (c) 2015 Adam Buczynski
  */
 (function (window, angular, undefined) {
 	'use strict';
@@ -2367,7 +2367,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
 	StonesLayer.prototype.redraw = function() {
 
 		//Clear shadows layer
-		this.board.clear('shadow');
+		this.board.removeAll('shadow');
 
 		//Redraw ourselves
 		this.clear();
@@ -8488,7 +8488,7 @@ angular.module('ngGo', [])
  */
 .constant('ngGo', {
 	name:		'ngGo',
-	version:	'1.0.8',
+	version:	'1.0.9',
 	error:		{
 
 		//Move errors
@@ -9633,7 +9633,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			//Next move
 			if (delta < 0) {
 				if (this.board) {
-					this.board.layers.hover.remove();
+					this.board.removeAll('hover');
 				}
 				this.next();
 			}
@@ -9641,7 +9641,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			//Previous move
 			else if (delta > 0) {
 				if (this.board) {
-					this.board.layers.hover.remove();
+					this.board.removeAll('hover');
 				}
 				this.previous();
 			}
@@ -9657,7 +9657,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		 */
 		mouseOut: function(event, mouseEvent) {
 			if (this.board) {
-				this.board.layers.hover.remove();
+				this.board.removeAll('hover');
 			}
 		},
 

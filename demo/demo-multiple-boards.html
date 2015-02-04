@@ -70,7 +70,8 @@
 	 * Demo
 	 */
 	angular.module('ngGoDemo', [
-		'ngGo.Player.Service'
+		'ngGo.Board.Service',
+		'ngGo.Game.Service'
 	]).controller('ngGoDemoController', function($timeout, $scope, Board, Game, StoneColor) {
 
 		//Init vars

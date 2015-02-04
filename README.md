@@ -1,7 +1,7 @@
 # ngGo
 
 ## Version
-Current version is 1.0.8
+Current version is 1.0.9
 
 ## About
 ngGo is an Angular.JS library for reading, parsing, displaying, editing and replaying Go game records.
