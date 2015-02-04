@@ -16,7 +16,77 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
  */
 .factory('Gib2Jgf', function(ngGo, gibAliases, KifuBlank) {
 
-	var regMove = /STO\s0\s([0-9]+)\s(1|2)\s([0-9]+)\s([0-9]+)/g;
+	/**
+	 * Regular expressions
+	 */
+	var regMove = /STO\s0\s([0-9]+)\s(1|2)\s([0-9]+)\s([0-9]+)/gi,
+		regPlayer = /GAME(BLACK|WHITE)NAME=([A-Za-z0-9]+)\s\(([0-9]+D|K)\)/gi,
+		regKomi = /GAMEGONGJE=([0-9]+)/gi,
+		regResultMargin = /GAMERESULT=(white|black)\s([0-9]+\.?[0-9]?)/gi,
+		regResultOther = /GAMERESULT=(white|black)\s[a-z\s]+(resignation|time)/gi;
+
+	/**
+	 * Player parser function
+	 */
+	var parsePlayer = function(jgf, match) {
+
+		//Initialize players container
+		if (typeof jgf.game.players == 'undefined') {
+			jgf.game.players = [];
+		}
+
+		//Determine player color
+		var color = (match[1].toUpperCase() == 'BLACK') ? 'black' : 'white';
+
+		//Create player object
+		var player = {
+			color: color,
+			name: match[2],
+			rank: match[3].toLowerCase()
+		};
+
+		//Check if player of this color already exists, if so, overwrite
+		for (var p = 0; p < jgf.game.players.length; p++) {
+			if (jgf.game.players[p].color == color) {
+				jgf.game.players[p] = player;
+				return;
+			}
+		}
+
+		//Player of this color not found, push
+		jgf.game.players.push(player);
+	};
+
+	/**
+	 * Komi parser function
+	 */
+	var parseKomi = function(jgf, match) {
+		jgf.game.komi = parseFloat(match[1]/10);
+	};
+
+	/**
+	 * Result parser function
+	 */
+	var parseResult = function(jgf, match) {
+
+		//Winner color
+		var result = (match[1].toLowerCase() == 'black') ? 'B' : 'W';
+		result += '+';
+
+		//Win condition
+		if (match[2].match(/res/i)) {
+			result += 'R';
+		}
+		else if (match[2].match(/time/i)) {
+			result += 'T';
+		}
+		else {
+			result += match[2];
+		}
+
+		//Set in JGF
+		jgf.game.result = result;
+	};
 
 	/**
 	 * Move parser function
@@ -70,6 +140,21 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 			//later if needed.
 			var node = {root: true};
 			container.push(node);
+
+			//Find player information
+			while (match = regPlayer.exec(gib)) {
+				parsePlayer(jgf, match);
+			}
+
+			//Find komi
+			if (match = regKomi.exec(gib)) {
+				parseKomi(jgf, match);
+			}
+
+			//Find game result
+			if ((match = regResultMargin.exec(gib)) || (match = regResultOther.exec(gib))) {
+				parseResult(jgf, match);
+			}
 
 			//Find moves
 			while (match = regMove.exec(gib)) {
