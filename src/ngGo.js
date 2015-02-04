@@ -45,9 +45,11 @@ angular.module('ngGo', [])
 
 		//Data loading errors
 		NO_DATA:					5,
-		INVALID_SGF:				6,
-		INVALID_JGF_JSON:			7,
-		INVALID_JGF_TREE_JSON:		8
+		UNKNOWN_DATA:				6,
+		INVALID_SGF:				7,
+		INVALID_GIB:				8,
+		INVALID_JGF_JSON:			9,
+		INVALID_JGF_TREE_JSON:		10
 	}
 })
 

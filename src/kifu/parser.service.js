@@ -1,8 +1,7 @@
 
 /**
- * KifuParser :: This is a wrapper class for all available kifu parsers. Currently, it only
- * wraps the parsers to convert SGF to JGF and vice versa. It also provides constants used
- * by the parsers to aid conversion.
+ * KifuParser :: This is a wrapper class for all available kifu parsers. It also provides
+ * constants used by the parsers to aid conversion.
  */
 
 /**
@@ -10,9 +9,17 @@
  */
 angular.module('ngGo.Kifu.Parser.Service', [
 	'ngGo',
+	'ngGo.Kifu.Parsers.Gib2Jgf.Service',
 	'ngGo.Kifu.Parsers.Sgf2Jgf.Service',
 	'ngGo.Kifu.Parsers.Jgf2Sgf.Service'
 ])
+
+/**
+ * GIB/JGF aliases constant for conversion between the two formats.
+ */
+.constant('gibAliases', {
+
+})
 
 /**
  * SGF/JGF aliases constant for conversion between the two formats
@@ -80,12 +87,19 @@ angular.module('ngGo.Kifu.Parser.Service', [
 /**
  * Factory definition
  */
-.factory('KifuParser', function(Sgf2Jgf, Jgf2Sgf) {
+.factory('KifuParser', function(Gib2Jgf, Sgf2Jgf, Jgf2Sgf) {
 
 	/**
 	 * Parser wrapper class
 	 */
 	var KifuParser = {
+
+		/**
+		 * Parse GIB string into a JGF object or string
+		 */
+		gib2jgf: function(gib, stringified) {
+			return Gib2Jgf.parse(gib, stringified);
+		},
 
 		/**
 		 * Parse SGF string into a JGF object or string
