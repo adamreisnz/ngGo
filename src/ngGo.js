@@ -6,7 +6,7 @@
  * and generally cleaned up.
  *
  * Copyright (c) 2013 Jan Prokop (WGo)
- * Copyright (c) 2014 Adam Buczynski (ngGo)
+ * Copyright (c) 2014-2015 Adam Buczynski (ngGo)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the Software
@@ -121,24 +121,3 @@ angular.module('ngGo', [])
 	PAGEUP:		33,
 	PAGEDOWN:	34
 });
-
-/**
- * Angular extension
- */
-if (typeof angular.extendDeep == 'undefined') {
-	angular.extendDeep = function(dest) {
-		for (var i = 0; i < arguments.length; i++) {
-			if (arguments[i] != dest) {
-				for (var k in arguments[i]) {
-					if (dest[k] && dest[k].constructor && dest[k].constructor === Object) {
-						angular.extendDeep(dest[k], arguments[i][k]);
-					}
-					else {
-						dest[k] = angular.copy(arguments[i][k]);
-					}
-				}
-			}
-		}
-		return dest;
-	};
-}

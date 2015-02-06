@@ -186,6 +186,7 @@ angular.module('ngGo.Player.Service', [
 				this.registerElementEvent('mousemove');
 				this.registerElementEvent('mouseout');
 				this.registerElementEvent('mousewheel');
+				this.registerElementEvent('wheel');
 			},
 
 			/***********************************************************************************************
@@ -728,6 +729,15 @@ angular.module('ngGo.Player.Service', [
 				if (mode && mode.$parent) {
 					$scope = mode;
 					mode = '';
+				}
+
+				//Multiple events?
+				if (type.indexOf(' ') !== -1) {
+					var types = type.split(' ');
+					for (var t = 0; t < types.length; t++) {
+						this.on(types[t], listener, mode, $scope);
+					}
+					return;
 				}
 
 				//Get self and determine scope to use

@@ -1,5 +1,5 @@
 /**
- * ngGo v1.0.9
+ * ngGo v1.1.0
  * https://github.com/AdamBuczynski/ngGo
  *
  * Copyright (c) 2015 Adam Buczynski
@@ -8709,7 +8709,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
  * and generally cleaned up.
  *
  * Copyright (c) 2013 Jan Prokop (WGo)
- * Copyright (c) 2014 Adam Buczynski (ngGo)
+ * Copyright (c) 2014-2015 Adam Buczynski (ngGo)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the Software
@@ -8824,27 +8824,6 @@ angular.module('ngGo', [])
 	PAGEUP:		33,
 	PAGEDOWN:	34
 });
-
-/**
- * Angular extension
- */
-if (typeof angular.extendDeep == 'undefined') {
-	angular.extendDeep = function(dest) {
-		for (var i = 0; i < arguments.length; i++) {
-			if (arguments[i] != dest) {
-				for (var k in arguments[i]) {
-					if (dest[k] && dest[k].constructor && dest[k].constructor === Object) {
-						angular.extendDeep(dest[k], arguments[i][k]);
-					}
-					else {
-						dest[k] = angular.copy(arguments[i][k]);
-					}
-				}
-			}
-		}
-		return dest;
-	};
-}
 /**
  * Module definition and dependencies
  */
@@ -9087,6 +9066,7 @@ angular.module('ngGo.Player.Service', [
 				this.registerElementEvent('mousemove');
 				this.registerElementEvent('mouseout');
 				this.registerElementEvent('mousewheel');
+				this.registerElementEvent('wheel');
 			},
 
 			/***********************************************************************************************
@@ -9631,6 +9611,15 @@ angular.module('ngGo.Player.Service', [
 					mode = '';
 				}
 
+				//Multiple events?
+				if (type.indexOf(' ') !== -1) {
+					var types = type.split(' ');
+					for (var t = 0; t < types.length; t++) {
+						this.on(types[t], listener, mode, $scope);
+					}
+					return;
+				}
+
 				//Get self and determine scope to use
 				var self = this,
 					scope = $scope || $rootScope;
@@ -9724,7 +9713,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 	Player.on('keydown', PlayerModeCommon.keyDown, [
 		PlayerModes.REPLAY, PlayerModes.EDIT
 	]);
-	Player.on('mousewheel', PlayerModeCommon.mouseWheel, [
+	Player.on('mousewheel wheel', PlayerModeCommon.mouseWheel, [
 		PlayerModes.REPLAY, PlayerModes.EDIT
 	]);
 	Player.on('mousemove', PlayerModeCommon.mouseMove, [
@@ -9879,8 +9868,11 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 				return true;
 			}
 
+			//Normalize mousewheel event
+			mouseEvent = normalizeMousewheelEvent(mouseEvent);
+
 			//Find delta
-			var delta = mouseEvent.deltaY || mouseEvent.originalEvent.deltaY;
+			var delta = mouseEvent.mouseWheelY || mouseEvent.deltaY;
 
 			//Next move
 			if (delta < 0) {
@@ -11605,4 +11597,73 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 		return PlayerModeSolve;
 	}];
 }]);
+
+/**
+ * Utility functions
+ */
+
+/**
+ * Angular extend deep implementation
+ */
+if (typeof angular.extendDeep == 'undefined') {
+	angular.extendDeep = function(dest) {
+		for (var i = 0; i < arguments.length; i++) {
+			if (arguments[i] != dest) {
+				for (var k in arguments[i]) {
+					if (dest[k] && dest[k].constructor && dest[k].constructor === Object) {
+						angular.extendDeep(dest[k], arguments[i][k]);
+					}
+					else {
+						dest[k] = angular.copy(arguments[i][k]);
+					}
+				}
+			}
+		}
+		return dest;
+	};
+}
+
+/**
+ * Normalize the mousewheel event
+ */
+function normalizeMousewheelEvent(event) {
+
+	//Initialize vars
+	var deltaX = 0, deltaY = 0;
+
+	//Old school scrollwheel delta
+	if ('detail' in event) {
+		deltaY = event.detail * -1;
+	}
+	if ('wheelDelta' in event) {
+		deltaY = event.wheelDelta;
+	}
+	if ('wheelDeltaY' in event) {
+		deltaY = event.wheelDeltaY;
+	}
+	if ('wheelDeltaX' in event) {
+		deltaX = event.wheelDeltaX * -1;
+	}
+
+	// Firefox < 17 horizontal scrolling related to DOMMouseScroll event
+	if ('axis' in event && event.axis === event.HORIZONTAL_AXIS) {
+		deltaX = deltaY * -1;
+		deltaY = 0;
+	}
+
+	//New type wheel delta (wheel event)
+	if ('deltaY' in event) {
+		deltaY = event.deltaY * -1;
+	}
+	if ('deltaX' in event) {
+		deltaX = event.deltaX;
+	}
+
+	//Set in event (have to use different property name because of strict mode)
+	event.mouseWheelX = deltaX;
+	event.mouseWheelY = deltaY;
+
+	//Return
+	return event;
+}
 })(window, window.angular);
