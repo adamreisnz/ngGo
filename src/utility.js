@@ -52,7 +52,7 @@ function normalizeMousewheelEvent(event) {
 		deltaY = 0;
 	}
 
-	//New type wheel delta (wheel event)
+	//New type wheel delta (WheelEvent)
 	if ('deltaY' in event) {
 		deltaY = event.deltaY * -1;
 	}
