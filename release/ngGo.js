@@ -4287,48 +4287,48 @@ angular.module('ngGo.Errors.InvalidDataError.Service', [
 }]);
 
 /**
- * InvalidMoveError :: Error class to handle invalid moves.
+ * InvalidPositionError :: Error class to handle invalid moves.
  */
 
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Errors.InvalidMoveError.Service', [
+angular.module('ngGo.Errors.InvalidPositionError.Service', [
 	'ngGo'
 ])
 
 /**
  * Factory definition
  */
-.factory('InvalidMoveError', ["ngGo", "StoneColor", function(ngGo, StoneColor) {
+.factory('InvalidPositionError', ["ngGo", "StoneColor", function(ngGo, StoneColor) {
 
 	/**
 	 * Define error
 	 */
-	var InvalidMoveError = function(code, node) {
+	var InvalidPositionError = function(code, x, y, color) {
 
 		//Set name and message
 		this.code = code;
-		this.name = 'InvalidMoveError';
-	    this.message = 'Invalid move detected.';
+		this.name = 'InvalidPositionError';
+	    this.message = 'Invalid position detected.';
 
-		//Check if we can add move data
-		if (node.move && node.move.color !== undefined && node.move.x !== undefined && node.move.y !== undefined) {
-			this.message += " Trying to play a " + (node.move.color == StoneColor.W ? "white" : "black") + " move on (" + node.move.x + ", " + node.move.y + ")";
+	    //Add position data
+	    if (typeof x != 'undefined' && typeof y != 'undefined' && typeof color != 'undefined') {
+	    	this.message += " Trying to place a " + (color == StoneColor.W ? "white" : "black") + " stone on (" + x + ", " + y + ")";
 		}
 
 		//Append code message
 		switch (code) {
-			case ngGo.error.MOVE_OUT_OF_BOUNDS:
+			case ngGo.error.POSTITION_OUT_OF_BOUNDS:
 				this.message += ", but these coordinates are not on the board.";
 				break;
-			case ngGo.error.MOVE_ALREADY_HAS_STONE:
+			case ngGo.error.POSTITION_ALREADY_HAS_STONE:
 				this.message += ", but there is already a stone on those coordinates.";
 				break;
-			case ngGo.error.MOVE_IS_SUICIDE:
-				this.message += ", but this move is suicide.";
+			case ngGo.error.POSTITION_IS_SUICIDE:
+				this.message += ", but that would be suicide.";
 				break;
-			case ngGo.error.MOVE_IS_REPEATING:
+			case ngGo.error.POSTITION_IS_REPEATING:
 				this.message += ", but this position already occured.";
 				break;
 			default:
@@ -4339,11 +4339,11 @@ angular.module('ngGo.Errors.InvalidMoveError.Service', [
 	/**
 	 * Extend from error class
 	 */
-	InvalidMoveError.prototype = new Error();
-	InvalidMoveError.prototype.constructor = InvalidMoveError;
+	InvalidPositionError.prototype = new Error();
+	InvalidPositionError.prototype.constructor = InvalidPositionError;
 
 	//Return object
-	return InvalidMoveError;
+	return InvalidPositionError;
 }]);
 
 /**
@@ -4365,7 +4365,7 @@ angular.module('ngGo.Game.Service', [
 	'ngGo.Kifu.Blank.Service',
 	'ngGo.Kifu.Parser.Service',
 	'ngGo.Errors.InvalidDataError.Service',
-	'ngGo.Errors.InvalidMoveError.Service'
+	'ngGo.Errors.InvalidPositionError.Service'
 ])
 
 /**
@@ -4391,9 +4391,6 @@ angular.module('ngGo.Game.Service', [
 		//Check for repeating positions? (KO / ALL / empty)
 		checkRepeat: 'KO',
 
-		//Allow stones on top of each other?
-		allowRewrite: false,
-
 		//Allow suicide?
 		allowSuicide: false
 	};
@@ -4408,7 +4405,7 @@ angular.module('ngGo.Game.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = ["ngGo", "StoneColor", "GamePath", "GameNode", "GamePosition", "KifuParser", "KifuBlank", "InvalidDataError", "InvalidMoveError", function(ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser, KifuBlank, InvalidDataError, InvalidMoveError) {
+	this.$get = ["ngGo", "StoneColor", "GamePath", "GameNode", "GamePosition", "KifuParser", "KifuBlank", "InvalidDataError", "InvalidPositionError", function(ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser, KifuBlank, InvalidDataError, InvalidPositionError) {
 
 		/***********************************************************************************************
 		 * General helpers
@@ -4552,6 +4549,7 @@ angular.module('ngGo.Game.Service', [
 
 			//Push
 			this.history.push(newPosition);
+			return newPosition;
 		};
 
 		/**
@@ -4566,6 +4564,16 @@ angular.module('ngGo.Game.Service', [
 
 			//Get old position
 			return this.history.pop();
+		};
+
+		/**
+		 * Replace the current position in the stack
+		 */
+		var replacePosition = function(newPosition) {
+			if (newPosition) {
+				this.history.pop();
+				this.history.push(newPosition);
+			}
 		};
 
 		/***********************************************************************************************
@@ -4594,10 +4602,13 @@ angular.module('ngGo.Game.Service', [
 					try {
 						this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition);
 					}
-					catch (errorCode) {
-
-						//Wrap error code in error object
-						throw new InvalidMoveError(errorCode, this.node);
+					catch (error) {
+						if (typeof error == 'number') {
+							throw new InvalidPositionError(error, this.node.move.x, this.node.move.y, this.node.move.color);
+						}
+						else {
+							throw error;
+						}
 					}
 				}
 			}
@@ -4926,25 +4937,6 @@ angular.module('ngGo.Game.Service', [
 		};
 
 		/**
-		 * Duplicate the current game position
-		 */
-		Game.prototype.duplicatePosition = function() {
-
-			//Clone our position
-			pushPosition.call(this);
-
-			//Create new node
-			var node = new GameNode();
-
-			//Append it to the current node and change the pointer
-			var i = node.appendTo(this.node);
-			this.node = node;
-
-			//Advance path to the added node index
-			this.path.advance(i);
-		};
-
-		/**
 		 * Get the game path
 		 */
 		Game.prototype.getPath = function(clone) {
@@ -5139,20 +5131,50 @@ angular.module('ngGo.Game.Service', [
 		};
 
 		/**
+		 * Check if a stone (setup) placement is valid.
+		 */
+		Game.prototype.isValidPlacement = function(x, y, color, position) {
+
+			//Check coordinates validity
+			if (!this.isOnBoard(x, y)) {
+				throw ngGo.error.POSTITION_OUT_OF_BOUNDS;
+			}
+
+			//Place the stone
+			position.stones.set(x, y, color);
+
+			//Empty spot? Don't need to check for captures
+			if (color === StoneColor.EMPTY) {
+				return;
+			}
+
+			//Capture adjacent stones if possible
+			var captures = position.captureAdjacent(x, y);
+
+			//No captures occurred? Check if the move we're making is a suicide move
+			if (!captures) {
+
+				//No liberties for the group we've just created? Capture it
+				if (!position.hasLiberties(x, y)) {
+					position.captureGroup(x, y);
+				}
+			}
+		};
+
+		/**
 		 * Check if a move is valid. If valid, the new game position object is returned.
-		 * If false is returned, you can obtain details regarding what happend from the error.
 		 * You can supply a pre-created position to use, or the current position is cloned.
 		 */
 		Game.prototype.isValidMove = function(x, y, color, newPosition) {
 
 			//Check coordinates validity
 			if (!this.isOnBoard(x, y)) {
-				throw ngGo.error.MOVE_OUT_OF_BOUNDS;
+				throw ngGo.error.POSTITION_OUT_OF_BOUNDS;
 			}
 
 			//Something already here?
-			if (!this.allowRewrite && this.position.stones.get(x, y) != StoneColor.EMPTY) {
-				throw ngGo.error.MOVE_ALREADY_HAS_STONE;
+			if (this.position.stones.get(x, y) != StoneColor.EMPTY) {
+				throw ngGo.error.POSTITION_ALREADY_HAS_STONE;
 			}
 
 			//Set color of move to make
@@ -5180,14 +5202,14 @@ angular.module('ngGo.Game.Service', [
 
 					//Invalid move
 					else {
-						throw ngGo.error.MOVE_IS_SUICIDE;
+						throw ngGo.error.POSTITION_IS_SUICIDE;
 					}
 				}
 			}
 
 			//Check history for repeating moves
 			if (this.checkRepeat && this.isRepeatingPosition(newPosition, x, y)) {
-				throw ngGo.error.MOVE_IS_REPEATING;
+				throw ngGo.error.POSTITION_IS_REPEATING;
 			}
 
 			//Set proper turn
@@ -5211,20 +5233,48 @@ angular.module('ngGo.Game.Service', [
 				return;
 			}
 
+			//Create temporary position
+			var tempPosition = this.position.clone();
+
+			//Validate placement on temp position
+			try {
+				this.isValidPlacement(x, y, color, tempPosition);
+			}
+			catch (error) {
+				if (typeof error == 'number') {
+					throw new InvalidPositionError(error, x, y, color);
+				}
+				else {
+					throw error;
+				}
+			}
+
 			//No setup instructions container in this node?
 			if (typeof this.node.setup == 'undefined') {
 
 				//Is this a move node?
 				if (this.node.move) {
-					this.duplicatePosition();
+
+					//Clone our position
+					pushPosition.call(this);
+
+					//Create new node
+					var node = new GameNode();
+
+					//Append it to the current node and change the pointer
+					var i = node.appendTo(this.node);
+					this.node = node;
+
+					//Advance path to the added node index
+					this.path.advance(i);
 				}
 
-				//Create setup container
+				//Create setup container in this node
 				this.node.setup = [];
 			}
 
-			//Set it in the position
-			this.position.stones.set(x, y, color);
+			//Replace current position
+			replacePosition.call(this, tempPosition);
 
 			//Add setup instructions to node
 			this.node.setup.push(this.position.stones.get(x, y, 'color'));
@@ -5339,13 +5389,19 @@ angular.module('ngGo.Game.Service', [
 
 			//Color defaults to current turn
 			color = color || this.position.getTurn();
+			var newPosition;
 
 			//Validate move and get new position
-			var newPosition = this.isValidMove(x, y, color);
-
-			//No new position? Means invalid move, no changes
-			if (!newPosition) {
-				return false;
+			try {
+				newPosition = this.isValidMove(x, y, color);
+			}
+			catch (error) {
+				if (typeof error == 'number') {
+					throw new InvalidPositionError(error, x, y, color);
+				}
+				else {
+					throw error;
+				}
 			}
 
 			//Push new position
@@ -6652,6 +6708,11 @@ angular.module('ngGo.Game.Position.Service', [
 		//Use color of stone present if none given
 		friendlyColor = friendlyColor || this.stones.get(x, y);
 
+		//Can't capture empty spots
+		if (friendlyColor == StoneColor.EMPTY) {
+			return false;
+		}
+
 		//Flag to see if we captured stuff
 		var captured = false;
 
@@ -6680,6 +6741,11 @@ angular.module('ngGo.Game.Position.Service', [
 
 		//Out of bounds? Nothing to capture
 		if (!this.stones.isOnGrid(x, y)) {
+			return false;
+		}
+
+		//Empty spot? Can't capture
+		if (this.stones.get(x, y) == StoneColor.EMPTY) {
 			return false;
 		}
 
