@@ -1,6 +1,6 @@
 
 /**
- * InvalidMoveError :: This is an error class to handle invalid moves.
+ * InvalidMoveError :: Error class to handle invalid moves.
  */
 
 /**

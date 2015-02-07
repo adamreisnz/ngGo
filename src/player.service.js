@@ -11,7 +11,6 @@
  */
 angular.module('ngGo.Player.Service', [
 	'ngGo',
-	'ngGo.Errors.ngGoError.Service',
 	'ngGo.Player.Directive',
 	'ngGo.Player.Mode.Common.Service',
 	'ngGo.Board.Service',

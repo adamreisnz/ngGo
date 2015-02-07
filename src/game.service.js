@@ -17,7 +17,7 @@ angular.module('ngGo.Game.Service', [
 	'ngGo.Game.Position.Service',
 	'ngGo.Kifu.Blank.Service',
 	'ngGo.Kifu.Parser.Service',
-	'ngGo.Errors.ngGoError.Service',
+	'ngGo.Errors.InvalidDataError.Service',
 	'ngGo.Errors.InvalidMoveError.Service'
 ])
 
@@ -61,7 +61,7 @@ angular.module('ngGo.Game.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function(ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser, KifuBlank, InvalidMoveError) {
+	this.$get = function(ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser, KifuBlank, InvalidDataError, InvalidMoveError) {
 
 		/***********************************************************************************************
 		 * General helpers
@@ -247,8 +247,10 @@ angular.module('ngGo.Game.Service', [
 					try {
 						this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition);
 					}
-					catch (error) {
-						throw new InvalidMoveError(error, this.node);
+					catch (errorCode) {
+
+						//Wrap error code in error object
+						throw new InvalidMoveError(errorCode, this.node);
 					}
 				}
 			}
@@ -342,16 +344,20 @@ angular.module('ngGo.Game.Service', [
 			this.init();
 
 			//Try to load game record data
-			if (!this.fromData(data)) {
+			try {
+				this.fromData(data);
+			}
+			catch (errorCode) {
 
 				//Just initialize our history with a blank position
 				initializeHistory.call(this);
-				return false;
+
+				//Wrap error code in error object
+				throw new InvalidDataError(errorCode);
 			}
 
 			//Go to the first move
 			this.first();
-			return true;
 		};
 
 		/**
@@ -399,7 +405,7 @@ angular.module('ngGo.Game.Service', [
 
 			//No data, can't do much
 			if (!data) {
-				throw new ngGoError(ngGo.error.NO_DATA, 'No data to parse.');
+				throw ngGo.error.NO_DATA;
 			}
 
 			//String given, could be stringified JGF, an SGF or GIB file
@@ -415,13 +421,18 @@ angular.module('ngGo.Game.Service', [
 					return this.fromGib(data);
 				}
 				else {
-					throw new ngGoError(ngGo.error.UNKNOWN_DATA, 'Unknown data format.');
+					throw ngGo.error.UNKNOWN_DATA;
 				}
 			}
 
 			//Object given? Probably a JGF object
 			else if (typeof data == 'object') {
-				return this.fromJgf(data);
+				this.fromJgf(data);
+			}
+
+			//Something else?
+			else {
+				throw ngGo.error.UNKNOWN_DATA;
 			}
 		};
 
@@ -433,11 +444,11 @@ angular.module('ngGo.Game.Service', [
 			//Use the kifu parser
 			var jgf = KifuParser.gib2jgf(gib);
 			if (!jgf) {
-				throw new ngGoError(ngGo.error.INVALID_GIB, 'Could not parse GIB data.');
+				throw ngGo.error.INVALID_GIB;
 			}
 
 			//Now load from JGF
-			return this.fromJgf(jgf);
+			this.fromJgf(jgf);
 		};
 
 		/**
@@ -448,11 +459,11 @@ angular.module('ngGo.Game.Service', [
 			//Use the kifu parser
 			var jgf = KifuParser.sgf2jgf(sgf);
 			if (!jgf) {
-				throw new ngGoError(ngGo.error.INVALID_SGF, 'Could not parse SGF data.');
+				throw ngGo.error.INVALID_SGF;
 			}
 
 			//Now load from JGF
-			return this.fromJgf(jgf);
+			this.fromJgf(jgf);
 		};
 
 		/**
@@ -466,7 +477,7 @@ angular.module('ngGo.Game.Service', [
 					jgf = angular.fromJson(jgf);
 				}
 				catch (error) {
-					throw new ngGoError(ngGo.error.INVALID_JGF_JSON, 'Could not parse JGF data.');
+					throw ngGo.error.INVALID_JGF_JSON;
 				}
 			}
 
@@ -477,7 +488,7 @@ angular.module('ngGo.Game.Service', [
 						jgf.tree = angular.fromJson(jgf.tree);
 					}
 					catch (error) {
-						throw new ngGoError(ngGo.error.INVALID_JGF_TREE_JSON, 'Could not parse JGF tree.');
+						throw ngGo.error.INVALID_JGF_TREE_JSON;
 					}
 				}
 				else {
@@ -505,9 +516,6 @@ angular.module('ngGo.Game.Service', [
 
 			//Remember JGF
 			this.jgf = jgf;
-
-			//Load ok
-			return true;
 		};
 
 		/**
