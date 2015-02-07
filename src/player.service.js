@@ -11,6 +11,7 @@
  */
 angular.module('ngGo.Player.Service', [
 	'ngGo',
+	'ngGo.Errors.ngGoError.Service',
 	'ngGo.Player.Directive',
 	'ngGo.Player.Mode.Common.Service',
 	'ngGo.Board.Service',
@@ -421,8 +422,11 @@ angular.module('ngGo.Player.Service', [
 			load: function(data, allowPlayerConfig) {
 
 				//Try to load the game record data
-				if (!this.game.load(data)) {
-					return false;
+				try {
+					this.game.load(data);
+				}
+				catch (error) {
+					throw error;
 				}
 
 				//Reset path
@@ -709,7 +713,7 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Remove any existing event listener and apply new one
-				//TODO: namespacing doesn't work with Angular's jqLite
+				//TODO: Namespacing events doesn't work with Angular's jqLite
 				element.off(event/* + '.ngGo.player'*/);
 				element.on(event/* + '.ngGo.player'*/, this.broadcast.bind(this, event));
 			},

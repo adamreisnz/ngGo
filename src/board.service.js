@@ -11,6 +11,7 @@
  */
 angular.module('ngGo.Board.Service', [
 	'ngGo',
+	'ngGo.Errors.ngGoError.Service',
 	'ngGo.Board.Directive',
 	'ngGo.Board.Theme.Service',
 	'ngGo.Board.Layer.GridLayer.Service',

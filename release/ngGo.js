@@ -261,6 +261,7 @@ angular.module('ngGo.Board.Directive', [
  */
 angular.module('ngGo.Board.Service', [
 	'ngGo',
+	'ngGo.Errors.ngGoError.Service',
 	'ngGo.Board.Directive',
 	'ngGo.Board.Theme.Service',
 	'ngGo.Board.Layer.GridLayer.Service',
@@ -4286,6 +4287,43 @@ angular.module('ngGo.Errors.InvalidMoveError.Service', [
 }]);
 
 /**
+ * ngGoError :: Generic error class to handle ngGo errors
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Errors.ngGoError.Service', [
+	'ngGo'
+])
+
+/**
+ * Factory definition
+ */
+.factory('ngGoError', ["ngGo", function(ngGo) {
+
+	/**
+	 * Define error
+	 */
+	var ngGoError = function(code, message) {
+
+		//Set name, code and message
+		this.code = code;
+		this.name = 'ngGoError';
+	    this.message = message;
+	};
+
+	/**
+	 * Extend from error class
+	 */
+	ngGoError.prototype = new Error();
+	ngGoError.prototype.constructor = ngGoError;
+
+	//Return object
+	return ngGoError;
+}]);
+
+/**
  * Game :: This class represents a game record or a game that is being played/edited. The class
  * traverses the move tree nodes and keeps track of the changes between the previous and new game
  * positions. These changes can then be fed to the board, to add or remove stones and markup.
@@ -4302,7 +4340,9 @@ angular.module('ngGo.Game.Service', [
 	'ngGo.Game.Node.Service',
 	'ngGo.Game.Position.Service',
 	'ngGo.Kifu.Blank.Service',
-	'ngGo.Kifu.Parser.Service'
+	'ngGo.Kifu.Parser.Service',
+	'ngGo.Errors.ngGoError.Service',
+	'ngGo.Errors.InvalidMoveError.Service'
 ])
 
 /**
@@ -4345,7 +4385,7 @@ angular.module('ngGo.Game.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = ["ngGo", "StoneColor", "GamePath", "GameNode", "GamePosition", "KifuParser", "KifuBlank", function(ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser, KifuBlank) {
+	this.$get = ["ngGo", "StoneColor", "GamePath", "GameNode", "GamePosition", "KifuParser", "KifuBlank", "InvalidMoveError", function(ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser, KifuBlank, InvalidMoveError) {
 
 		/***********************************************************************************************
 		 * General helpers
@@ -4528,10 +4568,11 @@ angular.module('ngGo.Game.Service', [
 					newPosition.setTurn(-this.node.move.color);
 				}
 				else {
-					if (!this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition)) {
-						//TODO better error handling
-						console.warn('Invalid move detected in game record:', this.node.move, this.error);
-						return false;
+					try {
+						this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition);
+					}
+					catch (error) {
+						throw new InvalidMoveError(error, this.node);
 					}
 				}
 			}
@@ -4557,7 +4598,6 @@ angular.module('ngGo.Game.Service', [
 
 			//Push the new position into the history now
 			pushPosition.call(this, newPosition);
-			return true;
 		};
 
 		/***********************************************************************************************
@@ -4599,9 +4639,6 @@ angular.module('ngGo.Game.Service', [
 		 * Initialize
 		 */
 		Game.prototype.init = function() {
-
-			//Last error
-			this.error = 0;
 
 			//Info properties
 			this.info = {};
@@ -4686,8 +4723,7 @@ angular.module('ngGo.Game.Service', [
 
 			//No data, can't do much
 			if (!data) {
-				this.error = ngGo.error.NO_DATA;
-				return false;
+				throw new ngGoError(ngGo.error.NO_DATA, 'No data to parse.');
 			}
 
 			//String given, could be stringified JGF, an SGF or GIB file
@@ -4703,8 +4739,7 @@ angular.module('ngGo.Game.Service', [
 					return this.fromGib(data);
 				}
 				else {
-					this.error = ngGo.error.UNKNOWN_DATA;
-					return false;
+					throw new ngGoError(ngGo.error.UNKNOWN_DATA, 'Unknown data format.');
 				}
 			}
 
@@ -4722,8 +4757,7 @@ angular.module('ngGo.Game.Service', [
 			//Use the kifu parser
 			var jgf = KifuParser.gib2jgf(gib);
 			if (!jgf) {
-				this.error = ngGo.error.INVALID_GIB;
-				return false;
+				throw new ngGoError(ngGo.error.INVALID_GIB, 'Could not parse GIB data.');
 			}
 
 			//Now load from JGF
@@ -4738,8 +4772,7 @@ angular.module('ngGo.Game.Service', [
 			//Use the kifu parser
 			var jgf = KifuParser.sgf2jgf(sgf);
 			if (!jgf) {
-				this.error = ngGo.error.INVALID_SGF;
-				return false;
+				throw new ngGoError(ngGo.error.INVALID_SGF, 'Could not parse SGF data.');
 			}
 
 			//Now load from JGF
@@ -4757,9 +4790,7 @@ angular.module('ngGo.Game.Service', [
 					jgf = angular.fromJson(jgf);
 				}
 				catch (error) {
-					console.warn('Could not parse JGF data');
-					this.error = ngGo.error.INVALID_JGF_JSON;
-					return false;
+					throw new ngGoError(ngGo.error.INVALID_JGF_JSON, 'Could not parse JGF data.');
 				}
 			}
 
@@ -4770,9 +4801,7 @@ angular.module('ngGo.Game.Service', [
 						jgf.tree = angular.fromJson(jgf.tree);
 					}
 					catch (error) {
-						console.warn('Could not parse JGF tree');
-						this.error = ngGo.error.INVALID_JGF_TREE_JSON;
-						return false;
+						throw new ngGoError(ngGo.error.INVALID_JGF_TREE_JSON, 'Could not parse JGF tree.');
 					}
 				}
 				else {
@@ -4850,13 +4879,6 @@ angular.module('ngGo.Game.Service', [
 		/***********************************************************************************************
 		 * Getters
 		 ***/
-
-		/**
-		 * Get the last error that occurred
-		 */
-		Game.prototype.getError = function() {
-			return this.error;
-		};
 
 		/**
 		 * Get current node
@@ -5094,14 +5116,12 @@ angular.module('ngGo.Game.Service', [
 
 			//Check coordinates validity
 			if (!this.isOnBoard(x, y)) {
-				this.error = ngGo.error.MOVE_OUT_OF_BOUNDS;
-				return false;
+				throw ngGo.error.MOVE_OUT_OF_BOUNDS;
 			}
 
 			//Something already here?
 			if (!this.allowRewrite && this.position.stones.get(x, y) != StoneColor.EMPTY) {
-				this.error = ngGo.error.MOVE_ALREADY_HAS_STONE;
-				return false;
+				throw ngGo.error.MOVE_ALREADY_HAS_STONE;
 			}
 
 			//Set color of move to make
@@ -5129,16 +5149,14 @@ angular.module('ngGo.Game.Service', [
 
 					//Invalid move
 					else {
-						this.error = ngGo.error.MOVE_IS_SUICIDE;
-						return false;
+						throw ngGo.error.MOVE_IS_SUICIDE;
 					}
 				}
 			}
 
 			//Check history for repeating moves
 			if (this.checkRepeat && this.isRepeatingPosition(newPosition, x, y)) {
-				this.error = ngGo.error.MOVE_IS_REPEATING;
-				return false;
+				throw ngGo.error.MOVE_IS_REPEATING;
 			}
 
 			//Set proper turn
@@ -5373,8 +5391,12 @@ angular.module('ngGo.Game.Service', [
 			if (nextNode.call(this, i)) {
 
 				//If an invalid move is detected, we can't go on
-				if (!executeNode.call(this)) {
+				try {
+					executeNode.call(this);
+				}
+				catch (error) {
 					previousNode.call(this);
+					throw error;
 				}
 			}
 		};
@@ -5399,9 +5421,12 @@ angular.module('ngGo.Game.Service', [
 			while (nextNode.call(this)) {
 
 				//If an invalid move is detected, we can't go on
-				if (!executeNode.call(this)) {
+				try {
+					executeNode.call(this);
+				}
+				catch (error) {
 					previousNode.call(this);
-					break;
+					throw error;
 				}
 			}
 		};
@@ -5491,9 +5516,12 @@ angular.module('ngGo.Game.Service', [
 				}
 
 				//If an invalid move is detected, we can't go on
-				if (!executeNode.call(this)) {
+				try {
+					executeNode.call(this);
+				}
+				catch (error) {
 					previousNode.call(this);
-					break;
+					throw error;
 				}
 			}
 		};
@@ -8824,6 +8852,7 @@ angular.module('ngGo', [])
 	PAGEUP:		33,
 	PAGEDOWN:	34
 });
+
 /**
  * Module definition and dependencies
  */
@@ -8891,6 +8920,7 @@ angular.module('ngGo.Player.Directive', [
  */
 angular.module('ngGo.Player.Service', [
 	'ngGo',
+	'ngGo.Errors.ngGoError.Service',
 	'ngGo.Player.Directive',
 	'ngGo.Player.Mode.Common.Service',
 	'ngGo.Board.Service',
@@ -9301,8 +9331,11 @@ angular.module('ngGo.Player.Service', [
 			load: function(data, allowPlayerConfig) {
 
 				//Try to load the game record data
-				if (!this.game.load(data)) {
-					return false;
+				try {
+					this.game.load(data);
+				}
+				catch (error) {
+					throw error;
 				}
 
 				//Reset path
@@ -9589,7 +9622,7 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Remove any existing event listener and apply new one
-				//TODO: namespacing doesn't work with Angular's jqLite
+				//TODO: Namespacing events doesn't work with Angular's jqLite
 				element.off(event/* + '.ngGo.player'*/);
 				element.on(event/* + '.ngGo.player'*/, this.broadcast.bind(this, event));
 			},
