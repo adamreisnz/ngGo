@@ -37,11 +37,11 @@ angular.module('ngGo', [])
 	version:	'1.0.9',
 	error:		{
 
-		//Move errors
-		MOVE_OUT_OF_BOUNDS:			1,
-		MOVE_ALREADY_HAS_STONE:		2,
-		MOVE_IS_SUICIDE:			3,
-		MOVE_IS_REPEATING:			4,
+		//Position errors
+		POSITION_OUT_OF_BOUNDS:		1,
+		POSITION_ALREADY_HAS_STONE:	2,
+		POSITION_IS_SUICIDE:		3,
+		POSITION_IS_REPEATING:		4,
 
 		//Data loading errors
 		NO_DATA:					5,

@@ -252,17 +252,7 @@ angular.module('ngGo.Game.Service', [
 					newPosition.setTurn(-this.node.move.color);
 				}
 				else {
-					try {
-						this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition);
-					}
-					catch (error) {
-						if (typeof error == 'number') {
-							throw new InvalidPositionError(error, this.node.move.x, this.node.move.y, this.node.move.color);
-						}
-						else {
-							throw error;
-						}
-					}
+					this.validateMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition);
 				}
 			}
 
@@ -784,50 +774,36 @@ angular.module('ngGo.Game.Service', [
 		};
 
 		/**
-		 * Check if a stone (setup) placement is valid.
+		 * Wrapper for validateMove() returning a boolean and catching any errors
 		 */
-		Game.prototype.isValidPlacement = function(x, y, color, position) {
+		Game.prototype.isValidMove = function(x, y, color) {
 
-			//Check coordinates validity
-			if (!this.isOnBoard(x, y)) {
-				throw ngGo.error.POSTITION_OUT_OF_BOUNDS;
+			//Validate move
+			try {
+				this.validateMove(x, y, color);
+			}
+			catch (error) {
+				return false;
 			}
 
-			//Place the stone
-			position.stones.set(x, y, color);
-
-			//Empty spot? Don't need to check for captures
-			if (color === StoneColor.EMPTY) {
-				return;
-			}
-
-			//Capture adjacent stones if possible
-			var captures = position.captureAdjacent(x, y);
-
-			//No captures occurred? Check if the move we're making is a suicide move
-			if (!captures) {
-
-				//No liberties for the group we've just created? Capture it
-				if (!position.hasLiberties(x, y)) {
-					position.captureGroup(x, y);
-				}
-			}
+			//Valid
+			return true;
 		};
 
 		/**
 		 * Check if a move is valid. If valid, the new game position object is returned.
 		 * You can supply a pre-created position to use, or the current position is cloned.
 		 */
-		Game.prototype.isValidMove = function(x, y, color, newPosition) {
+		Game.prototype.validateMove = function(x, y, color, newPosition) {
 
 			//Check coordinates validity
 			if (!this.isOnBoard(x, y)) {
-				throw ngGo.error.POSTITION_OUT_OF_BOUNDS;
+				throw new InvalidPositionError(ngGo.error.POSTITION_OUT_OF_BOUNDS, x, y, color);
 			}
 
 			//Something already here?
 			if (this.position.stones.get(x, y) != StoneColor.EMPTY) {
-				throw ngGo.error.POSTITION_ALREADY_HAS_STONE;
+				throw new InvalidPositionError(ngGo.error.POSTITION_ALREADY_HAS_STONE, x, y, color);
 			}
 
 			//Set color of move to make
@@ -855,14 +831,14 @@ angular.module('ngGo.Game.Service', [
 
 					//Invalid move
 					else {
-						throw ngGo.error.POSTITION_IS_SUICIDE;
+						throw new InvalidPositionError(ngGo.error.POSTITION_IS_SUICIDE, x, y, color);
 					}
 				}
 			}
 
 			//Check history for repeating moves
 			if (this.checkRepeat && this.isRepeatingPosition(newPosition, x, y)) {
-				throw ngGo.error.POSTITION_IS_REPEATING;
+				throw new InvalidPositionError(ngGo.error.POSTITION_IS_REPEATING, x, y, color);
 			}
 
 			//Set proper turn
@@ -870,6 +846,37 @@ angular.module('ngGo.Game.Service', [
 
 			//Move is valid
 			return newPosition;
+		};
+
+		/**
+		 * Check if a stone (setup) placement is valid.
+		 */
+		Game.prototype.validatePlacement = function(x, y, color, position) {
+
+			//Check coordinates validity
+			if (!this.isOnBoard(x, y)) {
+				throw new InvalidPositionError(ngGo.error.POSTITION_OUT_OF_BOUNDS, x, y, color);
+			}
+
+			//Place the stone
+			position.stones.set(x, y, color);
+
+			//Empty spot? Don't need to check for captures
+			if (color === StoneColor.EMPTY) {
+				return;
+			}
+
+			//Capture adjacent stones if possible
+			var captures = position.captureAdjacent(x, y);
+
+			//No captures occurred? Check if the move we're making is a suicide move
+			if (!captures) {
+
+				//No liberties for the group we've just created? Capture it
+				if (!position.hasLiberties(x, y)) {
+					position.captureGroup(x, y);
+				}
+			}
 		};
 
 		/***********************************************************************************************
@@ -890,17 +897,7 @@ angular.module('ngGo.Game.Service', [
 			var tempPosition = this.position.clone();
 
 			//Validate placement on temp position
-			try {
-				this.isValidPlacement(x, y, color, tempPosition);
-			}
-			catch (error) {
-				if (typeof error == 'number') {
-					throw new InvalidPositionError(error, x, y, color);
-				}
-				else {
-					throw error;
-				}
-			}
+			this.validatePlacement(x, y, color, tempPosition);
 
 			//No setup instructions container in this node?
 			if (typeof this.node.setup == 'undefined') {
@@ -1042,20 +1039,9 @@ angular.module('ngGo.Game.Service', [
 
 			//Color defaults to current turn
 			color = color || this.position.getTurn();
-			var newPosition;
 
 			//Validate move and get new position
-			try {
-				newPosition = this.isValidMove(x, y, color);
-			}
-			catch (error) {
-				if (typeof error == 'number') {
-					throw new InvalidPositionError(error, x, y, color);
-				}
-				else {
-					throw error;
-				}
-			}
+			var newPosition = this.validateMove(x, y, color);
 
 			//Push new position
 			pushPosition.call(this, newPosition);
