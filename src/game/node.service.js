@@ -47,8 +47,8 @@ angular.module('ngGo.Game.Node.Service', [
 			}
 
 			//Append coordinates
-			baseObject.x = coords[0];
-			baseObject.y = coords[1];
+			baseObject.x = coords[0] * 1;
+			baseObject.y = coords[1] * 1;
 		}
 		return baseObject;
 	};

@@ -146,6 +146,11 @@ angular.module('ngGo.Game.Position.Service', [
 		//Use color of stone present if none given
 		friendlyColor = friendlyColor || this.stones.get(x, y);
 
+		//Can't capture empty spots
+		if (friendlyColor == StoneColor.EMPTY) {
+			return false;
+		}
+
 		//Flag to see if we captured stuff
 		var captured = false;
 
@@ -174,6 +179,11 @@ angular.module('ngGo.Game.Position.Service', [
 
 		//Out of bounds? Nothing to capture
 		if (!this.stones.isOnGrid(x, y)) {
+			return false;
+		}
+
+		//Empty spot? Can't capture
+		if (this.stones.get(x, y) == StoneColor.EMPTY) {
 			return false;
 		}
 

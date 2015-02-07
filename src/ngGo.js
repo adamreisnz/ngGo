@@ -6,7 +6,7 @@
  * and generally cleaned up.
  *
  * Copyright (c) 2013 Jan Prokop (WGo)
- * Copyright (c) 2014 Adam Buczynski (ngGo)
+ * Copyright (c) 2014-2015 Adam Buczynski (ngGo)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the Software
@@ -34,20 +34,22 @@ angular.module('ngGo', [])
  */
 .constant('ngGo', {
 	name:		'ngGo',
-	version:	'1.0.9',
+	version:	'1.1.0',
 	error:		{
 
-		//Move errors
-		MOVE_OUT_OF_BOUNDS:			1,
-		MOVE_ALREADY_HAS_STONE:		2,
-		MOVE_IS_SUICIDE:			3,
-		MOVE_IS_REPEATING:			4,
+		//Position errors
+		POSITION_OUT_OF_BOUNDS:		1,
+		POSITION_ALREADY_HAS_STONE:	2,
+		POSITION_IS_SUICIDE:		3,
+		POSITION_IS_REPEATING:		4,
 
 		//Data loading errors
 		NO_DATA:					5,
-		INVALID_SGF:				6,
-		INVALID_JGF_JSON:			7,
-		INVALID_JGF_TREE_JSON:		8
+		UNKNOWN_DATA:				6,
+		INVALID_SGF:				7,
+		INVALID_GIB:				8,
+		INVALID_JGF_JSON:			9,
+		INVALID_JGF_TREE_JSON:		10
 	}
 })
 
@@ -119,24 +121,3 @@ angular.module('ngGo', [])
 	PAGEUP:		33,
 	PAGEDOWN:	34
 });
-
-/**
- * Angular extension
- */
-if (typeof angular.extendDeep == 'undefined') {
-	angular.extendDeep = function(dest) {
-		for (var i = 0; i < arguments.length; i++) {
-			if (arguments[i] != dest) {
-				for (var k in arguments[i]) {
-					if (dest[k] && dest[k].constructor && dest[k].constructor === Object) {
-						angular.extendDeep(dest[k], arguments[i][k]);
-					}
-					else {
-						dest[k] = angular.copy(arguments[i][k]);
-					}
-				}
-			}
-		}
-		return dest;
-	};
-}

@@ -186,6 +186,7 @@ angular.module('ngGo.Player.Service', [
 				this.registerElementEvent('mousemove');
 				this.registerElementEvent('mouseout');
 				this.registerElementEvent('mousewheel');
+				this.registerElementEvent('wheel');
 			},
 
 			/***********************************************************************************************
@@ -420,8 +421,11 @@ angular.module('ngGo.Player.Service', [
 			load: function(data, allowPlayerConfig) {
 
 				//Try to load the game record data
-				if (!this.game.load(data)) {
-					return false;
+				try {
+					this.game.load(data);
+				}
+				catch (error) {
+					throw error;
 				}
 
 				//Reset path
@@ -708,7 +712,7 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Remove any existing event listener and apply new one
-				//TODO: namespacing doesn't work with Angular's jqLite
+				//TODO: Namespacing events doesn't work with Angular's jqLite
 				element.off(event/* + '.ngGo.player'*/);
 				element.on(event/* + '.ngGo.player'*/, this.broadcast.bind(this, event));
 			},
@@ -728,6 +732,15 @@ angular.module('ngGo.Player.Service', [
 				if (mode && mode.$parent) {
 					$scope = mode;
 					mode = '';
+				}
+
+				//Multiple events?
+				if (type.indexOf(' ') !== -1) {
+					var types = type.split(' ');
+					for (var t = 0; t < types.length; t++) {
+						this.on(types[t], listener, mode, $scope);
+					}
+					return;
 				}
 
 				//Get self and determine scope to use

@@ -23,7 +23,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 	Player.on('keydown', PlayerModeCommon.keyDown, [
 		PlayerModes.REPLAY, PlayerModes.EDIT
 	]);
-	Player.on('mousewheel', PlayerModeCommon.mouseWheel, [
+	Player.on('mousewheel wheel', PlayerModeCommon.mouseWheel, [
 		PlayerModes.REPLAY, PlayerModes.EDIT
 	]);
 	Player.on('mousemove', PlayerModeCommon.mouseMove, [
@@ -178,8 +178,11 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 				return true;
 			}
 
+			//Normalize mousewheel event
+			mouseEvent = normalizeMousewheelEvent(mouseEvent);
+
 			//Find delta
-			var delta = mouseEvent.deltaY || mouseEvent.originalEvent.deltaY;
+			var delta = mouseEvent.mouseWheelY || mouseEvent.deltaY;
 
 			//Next move
 			if (delta < 0) {

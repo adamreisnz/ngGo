@@ -16,7 +16,9 @@ angular.module('ngGo.Game.Service', [
 	'ngGo.Game.Node.Service',
 	'ngGo.Game.Position.Service',
 	'ngGo.Kifu.Blank.Service',
-	'ngGo.Kifu.Parser.Service'
+	'ngGo.Kifu.Parser.Service',
+	'ngGo.Errors.InvalidDataError.Service',
+	'ngGo.Errors.InvalidPositionError.Service'
 ])
 
 /**
@@ -42,9 +44,6 @@ angular.module('ngGo.Game.Service', [
 		//Check for repeating positions? (KO / ALL / empty)
 		checkRepeat: 'KO',
 
-		//Allow stones on top of each other?
-		allowRewrite: false,
-
 		//Allow suicide?
 		allowSuicide: false
 	};
@@ -59,7 +58,7 @@ angular.module('ngGo.Game.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function(ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser, KifuBlank) {
+	this.$get = function(ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser, KifuBlank, InvalidDataError, InvalidPositionError) {
 
 		/***********************************************************************************************
 		 * General helpers
@@ -203,6 +202,7 @@ angular.module('ngGo.Game.Service', [
 
 			//Push
 			this.history.push(newPosition);
+			return newPosition;
 		};
 
 		/**
@@ -217,6 +217,16 @@ angular.module('ngGo.Game.Service', [
 
 			//Get old position
 			return this.history.pop();
+		};
+
+		/**
+		 * Replace the current position in the stack
+		 */
+		var replacePosition = function(newPosition) {
+			if (newPosition) {
+				this.history.pop();
+				this.history.push(newPosition);
+			}
 		};
 
 		/***********************************************************************************************
@@ -242,10 +252,7 @@ angular.module('ngGo.Game.Service', [
 					newPosition.setTurn(-this.node.move.color);
 				}
 				else {
-					if (!this.isValidMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition)) {
-						console.warn('Invalid move detected in game record');
-						return false;
-					}
+					this.validateMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition);
 				}
 			}
 
@@ -270,7 +277,6 @@ angular.module('ngGo.Game.Service', [
 
 			//Push the new position into the history now
 			pushPosition.call(this, newPosition);
-			return true;
 		};
 
 		/***********************************************************************************************
@@ -313,9 +319,6 @@ angular.module('ngGo.Game.Service', [
 		 */
 		Game.prototype.init = function() {
 
-			//Last error
-			this.error = 0;
-
 			//Info properties
 			this.info = {};
 
@@ -342,16 +345,20 @@ angular.module('ngGo.Game.Service', [
 			this.init();
 
 			//Try to load game record data
-			if (!this.fromData(data)) {
+			try {
+				this.fromData(data);
+			}
+			catch (errorCode) {
 
 				//Just initialize our history with a blank position
 				initializeHistory.call(this);
-				return false;
+
+				//Wrap error code in error object
+				throw new InvalidDataError(errorCode);
 			}
 
 			//Go to the first move
 			this.first();
-			return true;
 		};
 
 		/**
@@ -399,11 +406,10 @@ angular.module('ngGo.Game.Service', [
 
 			//No data, can't do much
 			if (!data) {
-				this.error = ngGo.error.NO_DATA;
-				return false;
+				throw ngGo.error.NO_DATA;
 			}
 
-			//String given, could be stringified JGF or an SGF file
+			//String given, could be stringified JGF, an SGF or GIB file
 			if (typeof data == 'string') {
 				var c = data.charAt(0);
 				if (c == '(') {
@@ -412,12 +418,38 @@ angular.module('ngGo.Game.Service', [
 				else if (c == '{') {
 					return this.fromJgf(data);
 				}
+				else if (c == '\\') {
+					return this.fromGib(data);
+				}
+				else {
+					throw ngGo.error.UNKNOWN_DATA;
+				}
 			}
 
 			//Object given? Probably a JGF object
 			else if (typeof data == 'object') {
-				return this.fromJgf(data);
+				this.fromJgf(data);
 			}
+
+			//Something else?
+			else {
+				throw ngGo.error.UNKNOWN_DATA;
+			}
+		};
+
+		/**
+		 * Load from GIB data
+		 */
+		Game.prototype.fromGib = function(gib) {
+
+			//Use the kifu parser
+			var jgf = KifuParser.gib2jgf(gib);
+			if (!jgf) {
+				throw ngGo.error.INVALID_GIB;
+			}
+
+			//Now load from JGF
+			this.fromJgf(jgf);
 		};
 
 		/**
@@ -428,12 +460,11 @@ angular.module('ngGo.Game.Service', [
 			//Use the kifu parser
 			var jgf = KifuParser.sgf2jgf(sgf);
 			if (!jgf) {
-				this.error = ngGo.error.INVALID_SGF;
-				return false;
+				throw ngGo.error.INVALID_SGF;
 			}
 
 			//Now load from JGF
-			return this.fromJgf(jgf);
+			this.fromJgf(jgf);
 		};
 
 		/**
@@ -447,9 +478,7 @@ angular.module('ngGo.Game.Service', [
 					jgf = angular.fromJson(jgf);
 				}
 				catch (error) {
-					console.warn('Could not parse JGF data');
-					this.error = ngGo.error.INVALID_JGF_JSON;
-					return false;
+					throw ngGo.error.INVALID_JGF_JSON;
 				}
 			}
 
@@ -460,9 +489,7 @@ angular.module('ngGo.Game.Service', [
 						jgf.tree = angular.fromJson(jgf.tree);
 					}
 					catch (error) {
-						console.warn('Could not parse JGF tree');
-						this.error = ngGo.error.INVALID_JGF_TREE_JSON;
-						return false;
+						throw ngGo.error.INVALID_JGF_TREE_JSON;
 					}
 				}
 				else {
@@ -490,9 +517,6 @@ angular.module('ngGo.Game.Service', [
 
 			//Remember JGF
 			this.jgf = jgf;
-
-			//Load ok
-			return true;
 		};
 
 		/**
@@ -542,13 +566,6 @@ angular.module('ngGo.Game.Service', [
 		 ***/
 
 		/**
-		 * Get the last error that occurred
-		 */
-		Game.prototype.getError = function() {
-			return this.error;
-		};
-
-		/**
 		 * Get current node
 		 */
 		Game.prototype.getNode = function() {
@@ -560,25 +577,6 @@ angular.module('ngGo.Game.Service', [
 		 */
 		Game.prototype.getPosition = function() {
 			return this.position;
-		};
-
-		/**
-		 * Duplicate the current game position
-		 */
-		Game.prototype.duplicatePosition = function() {
-
-			//Clone our position
-			pushPosition.call(this);
-
-			//Create new node
-			var node = new GameNode();
-
-			//Append it to the current node and change the pointer
-			var i = node.appendTo(this.node);
-			this.node = node;
-
-			//Advance path to the added node index
-			this.path.advance(i);
 		};
 
 		/**
@@ -776,22 +774,36 @@ angular.module('ngGo.Game.Service', [
 		};
 
 		/**
-		 * Check if a move is valid. If valid, the new game position object is returned.
-		 * If false is returned, you can obtain details regarding what happend from the error.
-		 * You can supply a pre-created position to use, or the current position is cloned.
+		 * Wrapper for validateMove() returning a boolean and catching any errors
 		 */
-		Game.prototype.isValidMove = function(x, y, color, newPosition) {
+		Game.prototype.isValidMove = function(x, y, color) {
 
-			//Check coordinates validity
-			if (!this.isOnBoard(x, y)) {
-				this.error = ngGo.error.MOVE_OUT_OF_BOUNDS;
+			//Validate move
+			try {
+				this.validateMove(x, y, color);
+			}
+			catch (error) {
 				return false;
 			}
 
+			//Valid
+			return true;
+		};
+
+		/**
+		 * Check if a move is valid. If valid, the new game position object is returned.
+		 * You can supply a pre-created position to use, or the current position is cloned.
+		 */
+		Game.prototype.validateMove = function(x, y, color, newPosition) {
+
+			//Check coordinates validity
+			if (!this.isOnBoard(x, y)) {
+				throw new InvalidPositionError(ngGo.error.POSTITION_OUT_OF_BOUNDS, x, y, color);
+			}
+
 			//Something already here?
-			if (!this.allowRewrite && this.position.stones.get(x, y) != StoneColor.EMPTY) {
-				this.error = ngGo.error.MOVE_ALREADY_HAS_STONE;
-				return false;
+			if (this.position.stones.get(x, y) != StoneColor.EMPTY) {
+				throw new InvalidPositionError(ngGo.error.POSTITION_ALREADY_HAS_STONE, x, y, color);
 			}
 
 			//Set color of move to make
@@ -819,16 +831,14 @@ angular.module('ngGo.Game.Service', [
 
 					//Invalid move
 					else {
-						this.error = ngGo.error.MOVE_IS_SUICIDE;
-						return false;
+						throw new InvalidPositionError(ngGo.error.POSTITION_IS_SUICIDE, x, y, color);
 					}
 				}
 			}
 
 			//Check history for repeating moves
 			if (this.checkRepeat && this.isRepeatingPosition(newPosition, x, y)) {
-				this.error = ngGo.error.MOVE_IS_REPEATING;
-				return false;
+				throw new InvalidPositionError(ngGo.error.POSTITION_IS_REPEATING, x, y, color);
 			}
 
 			//Set proper turn
@@ -836,6 +846,37 @@ angular.module('ngGo.Game.Service', [
 
 			//Move is valid
 			return newPosition;
+		};
+
+		/**
+		 * Check if a stone (setup) placement is valid.
+		 */
+		Game.prototype.validatePlacement = function(x, y, color, position) {
+
+			//Check coordinates validity
+			if (!this.isOnBoard(x, y)) {
+				throw new InvalidPositionError(ngGo.error.POSTITION_OUT_OF_BOUNDS, x, y, color);
+			}
+
+			//Place the stone
+			position.stones.set(x, y, color);
+
+			//Empty spot? Don't need to check for captures
+			if (color === StoneColor.EMPTY) {
+				return;
+			}
+
+			//Capture adjacent stones if possible
+			var captures = position.captureAdjacent(x, y);
+
+			//No captures occurred? Check if the move we're making is a suicide move
+			if (!captures) {
+
+				//No liberties for the group we've just created? Capture it
+				if (!position.hasLiberties(x, y)) {
+					position.captureGroup(x, y);
+				}
+			}
 		};
 
 		/***********************************************************************************************
@@ -852,20 +893,38 @@ angular.module('ngGo.Game.Service', [
 				return;
 			}
 
+			//Create temporary position
+			var tempPosition = this.position.clone();
+
+			//Validate placement on temp position
+			this.validatePlacement(x, y, color, tempPosition);
+
 			//No setup instructions container in this node?
 			if (typeof this.node.setup == 'undefined') {
 
 				//Is this a move node?
 				if (this.node.move) {
-					this.duplicatePosition();
+
+					//Clone our position
+					pushPosition.call(this);
+
+					//Create new node
+					var node = new GameNode();
+
+					//Append it to the current node and change the pointer
+					var i = node.appendTo(this.node);
+					this.node = node;
+
+					//Advance path to the added node index
+					this.path.advance(i);
 				}
 
-				//Create setup container
+				//Create setup container in this node
 				this.node.setup = [];
 			}
 
-			//Set it in the position
-			this.position.stones.set(x, y, color);
+			//Replace current position
+			replacePosition.call(this, tempPosition);
 
 			//Add setup instructions to node
 			this.node.setup.push(this.position.stones.get(x, y, 'color'));
@@ -982,12 +1041,7 @@ angular.module('ngGo.Game.Service', [
 			color = color || this.position.getTurn();
 
 			//Validate move and get new position
-			var newPosition = this.isValidMove(x, y, color);
-
-			//No new position? Means invalid move, no changes
-			if (!newPosition) {
-				return false;
-			}
+			var newPosition = this.validateMove(x, y, color);
 
 			//Push new position
 			pushPosition.call(this, newPosition);
@@ -1063,8 +1117,12 @@ angular.module('ngGo.Game.Service', [
 			if (nextNode.call(this, i)) {
 
 				//If an invalid move is detected, we can't go on
-				if (!executeNode.call(this)) {
+				try {
+					executeNode.call(this);
+				}
+				catch (error) {
 					previousNode.call(this);
+					throw error;
 				}
 			}
 		};
@@ -1089,9 +1147,12 @@ angular.module('ngGo.Game.Service', [
 			while (nextNode.call(this)) {
 
 				//If an invalid move is detected, we can't go on
-				if (!executeNode.call(this)) {
+				try {
+					executeNode.call(this);
+				}
+				catch (error) {
 					previousNode.call(this);
-					break;
+					throw error;
 				}
 			}
 		};
@@ -1181,9 +1242,12 @@ angular.module('ngGo.Game.Service', [
 				}
 
 				//If an invalid move is detected, we can't go on
-				if (!executeNode.call(this)) {
+				try {
+					executeNode.call(this);
+				}
+				catch (error) {
 					previousNode.call(this);
-					break;
+					throw error;
 				}
 			}
 		};
