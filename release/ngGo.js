@@ -8848,7 +8848,7 @@ angular.module('ngGo', [])
  */
 .constant('ngGo', {
 	name:		'ngGo',
-	version:	'1.0.9',
+	version:	'1.1.0',
 	error:		{
 
 		//Position errors
