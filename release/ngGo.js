@@ -1,5 +1,5 @@
 /**
- * ngGo v1.1.0
+ * ngGo v1.1.1
  * https://github.com/AdamBuczynski/ngGo
  *
  * Copyright (c) 2015 Adam Buczynski
@@ -228,12 +228,16 @@ angular.module('ngGo.Board.Directive', [
 
 			//Observe the cutoff attribute
 			attrs.$observe('cutoff', function(attr) {
-				scope.Board.setCutoff(attr.split(','));
+				if (angular.isDefined(attr)) {
+					scope.Board.setCutoff(attr.split(','));
+				}
 			});
 
 			//Observe color multiplier
 			attrs.$observe('colorMultiplier', function(attr) {
-				scope.Board.swapColors(attr);
+				if (angular.isDefined(attr)) {
+					scope.Board.swapColors(attr);
+				}
 			});
 
 			//Link board to player if present in parent scope
@@ -8848,7 +8852,7 @@ angular.module('ngGo', [])
  */
 .constant('ngGo', {
 	name:		'ngGo',
-	version:	'1.1.0',
+	version:	'1.1.1',
 	error:		{
 
 		//Position errors
