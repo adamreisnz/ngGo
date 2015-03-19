@@ -1,6 +1,6 @@
 {
   "name": "ngGo",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "Adam Buczynski",
   "description": "An Angular.js library for reading, parsing, displaying, editing and replaying Go game records",
   "homepage": "https://github.com/AdamBuczynski/ngGo",

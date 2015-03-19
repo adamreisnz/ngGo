@@ -4,3 +4,4 @@ npm-debug.log
 karma.log
 .DS_Store
 Thumbs.db
+*.sublime-*

@@ -220,12 +220,16 @@ angular.module('ngGo.Board.Directive', [
 
 			//Observe the cutoff attribute
 			attrs.$observe('cutoff', function(attr) {
-				scope.Board.setCutoff(attr.split(','));
+				if (angular.isDefined(attr)) {
+					scope.Board.setCutoff(attr.split(','));
+				}
 			});
 
 			//Observe color multiplier
 			attrs.$observe('colorMultiplier', function(attr) {
-				scope.Board.swapColors(attr);
+				if (angular.isDefined(attr)) {
+					scope.Board.swapColors(attr);
+				}
 			});
 
 			//Link board to player if present in parent scope
