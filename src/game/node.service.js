@@ -213,7 +213,7 @@ angular.module('ngGo.Game.Node.Service', [
 			}
 
 			//Label?
-			if (type == 'LB') {
+			if (type == 'label') {
 				jgfMarkup[type].push([markup[i].x, markup[i].y, markup[i].text]);
 			}
 			else {
