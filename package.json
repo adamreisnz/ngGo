@@ -1,10 +1,19 @@
 {
   "name": "ngGo",
   "version": "1.1.1",
-  "author": "Adam Buczynski",
   "description": "An Angular.js library for reading, parsing, displaying, editing and replaying Go game records",
-  "homepage": "https://github.com/AdamBuczynski/ngGo",
-  "repository": "https://github.com/AdamBuczynski/ngGo",
+  "private": false,
+  "license": "LicenseRef-LICENSE.md",
+  "homepage": "https://github.com/adambuczynski/ngGo",
+  "author": {
+    "name": "Adam Buczynski",
+    "email": "me@adambuczynski.com",
+    "url": "http://adambuczynski.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adambuczynski/ngGo.git"
+  },
   "dependencies": {},
   "optionalDependencies": {},
   "devDependencies": {
