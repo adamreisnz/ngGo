@@ -745,7 +745,7 @@ angular.module('ngGo.Game.Service', [
 		Game.prototype.isRepeatingPosition = function(checkPosition) {
 
 			//Init
-			var flag, stop;
+			var stop;
 
 			//Check for ko only? (Last two positions)
 			if (this.checkRepeat === 'KO' && (this.history.length - 2) >= 0) {

@@ -77,7 +77,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function(Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor, KeyCodes) {
+	this.$get = function(Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor) {
 
 		//Character codes
 		var aChar = 'A'.charCodeAt(0),
@@ -470,7 +470,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			/**
 			 * Click handler
 			 */
-			click: function(event, mouseEvent) {
+			click: function(event) {
 
 				//Falling outside of grid?
 				if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
@@ -526,7 +526,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			/**
 			 * Mouse drag handler
 			 */
-			mouseDrag: function(event, mouseEvent) {
+			mouseDrag: function(event) {
 
 				//Initialize vars
 				var x, y;
@@ -581,14 +581,14 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			/**
 			 * Path change
 			 */
-			pathChange: function(event, node) {
+			pathChange: function() {
 				findAllMarkupLabels.call(this);
 			},
 
 			/**
 			 * Handler for mode entry
 			 */
-			modeEnter: function(event) {
+			modeEnter: function() {
 
 				//Set available tools for this mode
 				this.setTools([
@@ -608,7 +608,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			/**
 			 * Handler for tool switches
 			 */
-			toolSwitch: function(event) {
+			toolSwitch: function() {
 
 				//Switched to scoring?
 				if (this.tool == PlayerTools.SCORE) {

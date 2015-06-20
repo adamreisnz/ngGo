@@ -81,6 +81,50 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 	};
 
 	/**
+	 * Normalize the mousewheel event helper
+	 */
+	function normalizeMousewheelEvent(event) {
+
+		//Initialize vars
+		var deltaX = 0, deltaY = 0;
+
+		//Old school scrollwheel delta
+		if ('detail' in event) {
+			deltaY = event.detail * -1;
+		}
+		if ('wheelDelta' in event) {
+			deltaY = event.wheelDelta;
+		}
+		if ('wheelDeltaY' in event) {
+			deltaY = event.wheelDeltaY;
+		}
+		if ('wheelDeltaX' in event) {
+			deltaX = event.wheelDeltaX * -1;
+		}
+
+		// Firefox < 17 horizontal scrolling related to DOMMouseScroll event
+		if ('axis' in event && event.axis === event.HORIZONTAL_AXIS) {
+			deltaX = deltaY * -1;
+			deltaY = 0;
+		}
+
+		//New type wheel delta (WheelEvent)
+		if ('deltaY' in event) {
+			deltaY = event.deltaY * -1;
+		}
+		if ('deltaX' in event) {
+			deltaX = event.deltaX;
+		}
+
+		//Set in event (have to use different property name because of strict mode)
+		event.mouseWheelX = deltaX;
+		event.mouseWheelY = deltaY;
+
+		//Return
+		return event;
+	}
+
+	/**
 	 * Player extension
 	 */
 	angular.extend(Player, {
@@ -209,7 +253,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		/**
 		 * Mouse out handler
 		 */
-		mouseOut: function(event, mouseEvent) {
+		mouseOut: function() {
 			if (this.board) {
 				this.board.removeAll('hover');
 			}
@@ -246,7 +290,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		/**
 		 * Mouse down handler
 		 */
-		mouseDown: function(event, mouseEvent) {
+		mouseDown: function(event) {
 			this.mouse.dragStart = {
 				x: event.x,
 				y: event.y

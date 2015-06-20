@@ -286,7 +286,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			/**
 			 * Hover handler
 			 */
-			hover: function(event) {
+			hover: function() {
 
 				//Update hover mark
 				if (this.board) {
@@ -298,7 +298,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			/**
 			 * Board update event handler
 			 */
-			boardUpdate: function(event, node) {
+			boardUpdate: function() {
 
 				//Show move variations
 				if (this.variationMarkup) {
@@ -309,7 +309,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			/**
 			 * Handler for mouse click events
 			 */
-			click: function(event, mouseEvent) {
+			click: function(event) {
 
 				//Falling outside of grid?
 				if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
@@ -344,7 +344,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			/**
 			 * Path change event
 			 */
-			pathChange: function(event, node) {
+			pathChange: function() {
 
 				//Update hover mark
 				if (this.board) {
@@ -356,7 +356,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			/**
 			 * Handler for mode entry
 			 */
-			modeEnter: function(event) {
+			modeEnter: function() {
 
 				//Set available tools for this mode
 				this.setTools([
@@ -377,7 +377,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			/**
 			 * Handler for mode exit
 			 */
-			modeExit: function(event) {
+			modeExit: function() {
 
 				//Stop auto playing
 				if (this.autoPlaying) {
@@ -393,7 +393,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			/**
 			 * Handler for tool switches
 			 */
-			toolSwitch: function(event) {
+			toolSwitch: function() {
 
 				//Switched to scoring?
 				if (this.tool == PlayerTools.SCORE) {

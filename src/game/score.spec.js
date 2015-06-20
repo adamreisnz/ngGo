@@ -94,25 +94,28 @@ describe('GameScore', function() {
 		 * Total
 		 */
 		it('should have matching score totals', function() {
-			var total = {};
 			for (var c in score.colors) {
+				if (score.colors.hasOwnProperty(c)) {
 
-				//Init
-				var color = score.colors[c],
-					totalFromRand = 0,
-					totalFromGet = 0;
+					//Init
+					var color = score.colors[c],
+						totalFromRand = 0,
+						totalFromGet = 0;
 
-				//Loop items
-				for (var i in score.items) {
-					var item = score.items[i];
-					totalFromRand += rand[color][item];
-					totalFromGet += score.get(color, item);
+					//Loop items
+					for (var i in score.items) {
+						if (score.items.hasOwnProperty(i)) {
+							var item = score.items[i];
+							totalFromRand += rand[color][item];
+							totalFromGet += score.get(color, item);
+						}
+					}
+
+					//Validate totals
+					expect(totalFromGet).toEqual(totalFromRand);
+					expect(score.total(color)).toEqual(totalFromRand);
+					expect(score.total(color)).toEqual(totalFromGet);
 				}
-
-				//Validate totals
-				expect(totalFromGet).toEqual(totalFromRand);
-				expect(score.total(color)).toEqual(totalFromRand);
-				expect(score.total(color)).toEqual(totalFromGet);
 			}
 		});
 

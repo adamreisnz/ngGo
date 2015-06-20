@@ -14,7 +14,7 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
 /**
  * Factory definition
  */
-.factory('StoneShadow', function(BoardObject) {
+.factory('StoneShadow', function() {
 
 	/**
 	 * Constructor
@@ -69,7 +69,7 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
 		 */
 		clear: function(stone) {
 
-			//Note: this method is currently not in use due to the overlappign shadows
+			//Note: this method is currently not in use due to the overlapping shadows
 			//problem. Instead, the entire shadow layer is simply cleared and redrawn
 			//when removing stones. The multiple canvasses solution from WGo didn't seem
 			//appropriate either, so for now we will leave it at this.

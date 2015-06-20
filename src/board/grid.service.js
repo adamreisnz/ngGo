@@ -230,7 +230,7 @@ angular.module('ngGo.Board.Grid.Service', [
 	BoardGrid.prototype.compare = function(newGrid, valueKey) {
 
 		//Initialize board grid changes object
-		var change, changes = new BoardGridChanges();
+		var changes = new BoardGridChanges();
 
 		//Must have the same size
 		if (this.width != newGrid.width || this.height != newGrid.height) {

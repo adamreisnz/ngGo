@@ -489,7 +489,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			/**
 			 * Handler for mouse click events
 			 */
-			click: function(event, mouseEvent) {
+			click: function(event) {
 
 				//Falling outside of grid?
 				if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
@@ -534,7 +534,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			/**
 			 * Path change event
 			 */
-			pathChange: function(event, node) {
+			pathChange: function() {
 
 				//Update hover mark
 				if (this.board) {
@@ -546,7 +546,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			/**
 			 * Handler for mode entry
 			 */
-			modeEnter: function(event) {
+			modeEnter: function() {
 
 				//Set available tools for this mode
 				this.setTools([
@@ -565,7 +565,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 			/**
 			 * Handler for mode exit
 			 */
-			modeExit: function(event) {
+			modeExit: function() {
 
 				//Hide any solution variations
 				if (this.solutionPaths) {

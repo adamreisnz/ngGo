@@ -62,7 +62,7 @@ angular.module('ngGo.Board.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function($rootScope, BoardTheme, GridLayer, ShadowLayer, StonesLayer, MarkupLayer, ScoreLayer, HoverLayer) {
+	this.$get = function($rootScope, $injector, BoardTheme) {
 
 		/**
 		 * Board constructor
@@ -96,16 +96,17 @@ angular.module('ngGo.Board.Service', [
 			this.gridDrawWidth = 0;
 			this.gridDrawHeight = 0;
 
-			//Initialize layers
+			//Set layer order
 			this.layerOrder = ['grid', 'shadow', 'stones', 'score', 'markup', 'hover'];
-			this.layers = {
-				grid: new GridLayer(this),
-				shadow: new ShadowLayer(this),
-				stones: new StonesLayer(this),
-				markup: new MarkupLayer(this),
-				score: new ScoreLayer(this),
-				hover: new HoverLayer(this)
-			};
+
+			//Initialize layers
+			this.layers = {};
+			for (var l = 0; l < this.layerOrder.length; l++) {
+				var layer = this.layerOrder[l],
+						layerClass = layer[0].toUpperCase() + layer.substr(1) + 'Layer',
+						LayerClass = $injector.get(layerClass);
+				this.layers[layer] = new LayerClass(this);
+			}
 
 			//Static board flag
 			this.static = false;

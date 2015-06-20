@@ -116,8 +116,7 @@ angular.module('ngGo.Game.Node.Service', [
 	var convertMoveFromJgf = function(move) {
 
 		//Prepare color, coordinates
-		var i, color, coords,
-			colors = ['W', 'B'];
+		var color, coords;
 
 		//Check whose move it was
 		if (move.W) {

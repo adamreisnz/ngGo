@@ -132,14 +132,14 @@ angular.module('ngGo.Board.Layer.Service', [
 	/**
 	 * Draw cell
 	 */
-	BoardLayer.prototype.drawCell = function(x, y) {
+	BoardLayer.prototype.drawCell = function(/*x, y*/) {
 		//Drawing method to be implemented in specific layer class
 	};
 
 	/**
 	 * Clear cell
 	 */
-	BoardLayer.prototype.clearCell = function(x, y) {
+	BoardLayer.prototype.clearCell = function(/*x, y*/) {
 		//Clearing method to be implemented in specific layer class
 	};
 

@@ -190,6 +190,11 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 				container.push(node);
 			}
 
+			//Return stringified
+			if (stringified) {
+				return angular.toJson(jgf);
+			}
+
 			//Return jgf
 			return jgf;
 		}

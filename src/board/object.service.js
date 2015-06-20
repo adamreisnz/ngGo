@@ -24,7 +24,7 @@ angular.module('ngGo.Board.Object.Service', [
 		/**
 		 * Draw method
 		 */
-		draw: function(obj) {
+		draw: function(/*obj*/) {
 			if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
 				return;
 			}

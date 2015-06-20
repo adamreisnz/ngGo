@@ -482,7 +482,7 @@ angular.module('ngGo.Player.Service', [
 			/**
 			 * Restore to the saved state
 			 */
-			restoreGameState: function(mode) {
+			restoreGameState: function() {
 
 				//Must have game and saved state
 				if (!this.game || !this.gameState) {

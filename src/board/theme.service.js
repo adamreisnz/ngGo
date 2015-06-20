@@ -76,7 +76,7 @@ angular.module('ngGo.Board.Theme.Service', [
 			//Mono stones
 			mono: {
 				lineWidth: 1,
-				lineColor: function(stoneColor) {
+				lineColor: function() {
 					return '#000';
 				},
 				color: function(stoneColor) {
@@ -328,7 +328,7 @@ angular.module('ngGo.Board.Theme.Service', [
 	/**
 	 * Service getter
 	 */
-	this.$get = function(StoneColor) {
+	this.$get = function() {
 
 		/**
 		 * Board theme constructor

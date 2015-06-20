@@ -160,7 +160,7 @@ angular.module('ngGo.Board.Directive', [
 			});
 
 			//On board grid resize, determine the draw size again
-			scope.$on('ngGo.board.resize', function(event, board, width, height) {
+			scope.$on('ngGo.board.resize', function(event, board) {
 
 				//Only relevent if this was our own board
 				if (board != scope.Board) {

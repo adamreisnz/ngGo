@@ -23,10 +23,9 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 		'三十一', '三十二', '三十三', '三十四', '三十五', '三十六', '三十七', '三十八', '三十九', '四十'
 	];
 
-	//Some character codes
+	//Character codes
 	var aChar = 'A'.charCodeAt(0),
-		iChar = 'I'.charCodeAt(0),
-		aCharLc = 'a'.charCodeAt(0);
+			aCharLc = 'a'.charCodeAt(0);
 
 	/**
 	 * Coordinate generators
@@ -107,8 +106,7 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 				yb = this.board.drawHeight - yt;
 
 			//Get theme properties
-			var stoneRadius = this.board.theme.get('stone.radius', cellSize),
-				fillStyle = this.board.theme.get('coordinates.color'),
+			var fillStyle = this.board.theme.get('coordinates.color'),
 				vertical = {
 					font: this.board.theme.get('coordinates.vertical.font'),
 					size: this.board.theme.get('coordinates.vertical.size'),

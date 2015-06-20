@@ -80,7 +80,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 	/**
 	 * Set all has nothing to set
 	 */
-	GridLayer.prototype.setAll = function(grid) {
+	GridLayer.prototype.setAll = function(/*grid*/) {
 		return;
 	};
 

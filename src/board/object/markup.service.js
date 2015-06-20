@@ -443,7 +443,6 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 
 		//No stone on location? Redraw the grid square, if we cleared it
 		if (!this.board.has('stones', markup.x, markup.y)) {
-			var r = this.board.theme.get('stone.radius', this.board.getCellSize());
 			this.board.layers.grid.redrawCell(markup.x, markup.y);
 		}
 	};

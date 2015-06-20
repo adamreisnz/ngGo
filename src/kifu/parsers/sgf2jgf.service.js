@@ -58,7 +58,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	/**
 	 * SGF format parser
 	 */
-	var parseSgfFormat = function(jgf, node, key, value) {
+	var parseSgfFormat = function() {
 		return;
 	};
 
@@ -572,6 +572,11 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 				if (node && !node.root) {
 					node = null;
 				}
+			}
+
+			//Return stringified
+			if (stringified) {
+				return angular.toJson(jgf);
 			}
 
 			//Return jgf
