@@ -158,17 +158,17 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 			container.push(node);
 
 			//Find player information
-			while (match = regPlayer.exec(gib)) {
+			while ((match = regPlayer.exec(gib))) {
 				parsePlayer(jgf, match);
 			}
 
 			//Find komi
-			if (match = regKomi.exec(gib)) {
+			if ((match = regKomi.exec(gib))) {
 				parseKomi(jgf, match);
 			}
 
 			//Find game date
-			if (match = regDate.exec(gib)) {
+			if ((match = regDate.exec(gib))) {
 				parseDate(jgf, match);
 			}
 
@@ -178,7 +178,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 			}
 
 			//Find moves
-			while (match = regMove.exec(gib)) {
+			while ((match = regMove.exec(gib))) {
 
 				//Create new node
 				node = {};
