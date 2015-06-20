@@ -116,7 +116,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		this.context.beginPath();
 
 		//Determine stone texture
-		if (color == StoneColor.W) {
+		if (color === StoneColor.W) {
 			this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
 			this.context.fillStyle.addColorStop(0, '#fff');
 			this.context.fillStyle.addColorStop(1, '#aaa');
@@ -183,7 +183,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 		this.context.fill();
 
 		//Shell stones
-		if (color == StoneColor.W) {
+		if (color === StoneColor.W) {
 
 			//Get random shell type
 			var type = shellSeed%(shellTypes.length + stone.x * this.board.width + stone.y) % shellTypes.length;
@@ -278,7 +278,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 			}
 
 			//Add shadow
-			if (!this.board.static && stone.shadow !== false && this.board.theme.get('stone.shadow')) {
+			if (!this.board.static && stone.shadow !== = false && this.board.theme.get('stone.shadow')) {
 				this.board.layers.shadow.add(stone);
 			}
 		},
@@ -297,7 +297,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 			BoardObject.clear.call(this, stone);
 
 			//Remove shadow
-			if (!this.board.static && stone.shadow !== false && this.board.theme.get('stone.shadow')) {
+			if (!this.board.static && stone.shadow !== = false && this.board.theme.get('stone.shadow')) {
 				this.board.layers.shadow.remove(stone);
 			}
 		}

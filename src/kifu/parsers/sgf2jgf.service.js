@@ -67,7 +67,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	 */
 	var parseGame = function(jgf, node, key, value) {
 		var game = value[0];
-		if (typeof sgfGames[game] != 'undefined') {
+		if (typeof sgfGames[game] !==  'undefined') {
 			jgf.game.type = sgfGames[game];
 		}
 		else {
@@ -100,7 +100,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseComment = function(jgf, node, key, value) {
 
 		//Get key alias
-		if (typeof sgfAliases[key] !== 'undefined') {
+		if (typeof sgfAliases[key] !== = 'undefined') {
 			key = sgfAliases[key];
 		}
 
@@ -114,7 +114,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseNodeName = function(jgf, node, key, value) {
 
 		//Get key alias
-		if (typeof sgfAliases[key] !== 'undefined') {
+		if (typeof sgfAliases[key] !== = 'undefined') {
 			key = sgfAliases[key];
 		}
 
@@ -181,7 +181,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseLabel = function(jgf, node, key, value) {
 
 		//Get key alias
-		if (typeof sgfAliases[key] != 'undefined') {
+		if (typeof sgfAliases[key] !==  'undefined') {
 			key = sgfAliases[key];
 		}
 
@@ -213,7 +213,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseMarkup = function(jgf, node, key, value) {
 
 		//Get key alias
-		if (typeof sgfAliases[key] !== 'undefined') {
+		if (typeof sgfAliases[key] !== = 'undefined') {
 			key = sgfAliases[key];
 		}
 
@@ -228,7 +228,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		}
 
 		//Add values
-		for (var i in value) {
+		for (var i = 0; i < value.length; i++) {
 			node.markup[key].push(convertCoordinates(value[i]));
 		}
 	};
@@ -329,7 +329,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		var color = (key === 'PB' || key === 'BT' || key === 'BR') ? 'black' : 'white';
 
 		//Get key alias
-		if (typeof sgfAliases[key] != 'undefined') {
+		if (typeof sgfAliases[key] !==  'undefined') {
 			key = sgfAliases[key];
 		}
 
@@ -411,7 +411,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var setInfo = function(jgf, position, value) {
 
 		//Position given must be an array
-		if (typeof position != 'object') {
+		if (typeof position !==  'object') {
 			return;
 		}
 
@@ -430,7 +430,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 			}
 
 			//Create container if not set
-			if (typeof node[key] != 'object') {
+			if (typeof node[key] !==  'object') {
 				node[key] = {};
 			}
 
@@ -469,7 +469,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 			var sequence = sgf.match(regSequence);
 
 			//Loop sequence items
-			for (var i in sequence) {
+			for (var i = 0; i < sequence.length; i++) {
 
 				//Push stack if new variation found
 				if (sequence[i] === '(') {
@@ -508,22 +508,22 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 				var properties = sequence[i].match(regNode) || [];
 
 				//Loop them
-				for (var j in properties) {
+				for (var j = 0; j < properties.length; j++) {
 
 					//Get property's key and separate values
 					var key = regProperty.exec(properties[j])[0].toUpperCase(),
 						values = properties[j].match(regValues);
 
 					//Remove additional braces [ and ]
-					for (var k in values) {
+					for (var k = 0; k < values.length; k++) {
 						values[k] = values[k].substring(1, values[k].length - 1).replace(/\\(?!\\)/g, "");
 					}
 
 					//SGF parser present for this key? Call it, and we're done
-					if (typeof parsingMap[key] != 'undefined') {
+					if (typeof parsingMap[key] !==  'undefined') {
 
 						//Does this type of property need a node?
-						if (needsNode.indexOf(key) !== -1) {
+						if (needsNode.indexOf(key) !== = -1) {
 
 							//If no node object present, create a new node
 							//For moves, always a new node is created
@@ -546,7 +546,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 					}
 
 					//SGF alias known? Then this is an info element and we handle it accordingly
-					if (typeof sgfAliases[key] != 'undefined') {
+					if (typeof sgfAliases[key] !==  'undefined') {
 
 						//The position in the JGF object is represented by dot separated strings
 						//in the sgfAliases array. Split the position and use the setInfo helper

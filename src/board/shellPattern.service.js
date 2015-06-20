@@ -41,7 +41,7 @@ angular.module('ngGo.Board.ShellPattern.Service', [
 			m = (y2-y1) / (x2-x1);
 			angle = Math.atan(m);
 		}
-		else if (x2 == x1) {
+		else if (x2 === x1) {
 			angle = Math.PI/2;
 		}
 		else {

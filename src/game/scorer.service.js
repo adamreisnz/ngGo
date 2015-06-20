@@ -40,13 +40,13 @@ angular.module('ngGo.Game.Scorer.Service', [
 			origColor = this.game.position.stones.get(x, y);
 
 		//If border reached, or a position which is already this color, or boundary color, can't set
-		if (!this.stones.isOnGrid(x, y) || posColor == candidateColor || posColor == boundaryColor) {
+		if (!this.stones.isOnGrid(x, y) || posColor === candidateColor || posColor === boundaryColor) {
 			return;
 		}
 
 		//Don't turn stones which are already this color into candidates, instead
 		//reset their color to what they were
-		if (origColor * 2 == candidateColor) {
+		if (origColor * 2 === candidateColor) {
 			this.stones.set(x, y, origColor);
 		}
 
@@ -71,7 +71,7 @@ angular.module('ngGo.Game.Scorer.Service', [
 		var origColor = this.game.position.stones.get(x, y);
 
 		//Not on grid, or already this color?
-		if (!this.stones.isOnGrid(x, y) || this.stones.get(x, y) == origColor) {
+		if (!this.stones.isOnGrid(x, y) || this.stones.get(x, y) === origColor) {
 			return;
 		}
 
@@ -107,7 +107,7 @@ angular.module('ngGo.Game.Scorer.Service', [
 					curState = this.stones.get(x, y);
 
 					//Unknown or candiates?
-					if (curState == scoreState.UNKNOWN || curState == scoreState.BLACK_CANDIDATE || curState == scoreState.WHITE_CANDIDATE) {
+					if (curState === scoreState.UNKNOWN || curState === scoreState.BLACK_CANDIDATE || curState === scoreState.WHITE_CANDIDATE) {
 
 						//Get state in adjacent positions
 						adjacent = [
@@ -122,13 +122,13 @@ angular.module('ngGo.Game.Scorer.Service', [
 
 						//Loop adjacent squares
 						for (a = 0; a < 4; a++) {
-							if (adjacent[a] == scoreState.BLACK_STONE || adjacent[a] == scoreState.BLACK_CANDIDATE) {
+							if (adjacent[a] === scoreState.BLACK_STONE || adjacent[a] === scoreState.BLACK_CANDIDATE) {
 								b = true;
 							}
-							else if (adjacent[a] == scoreState.WHITE_STONE || adjacent[a] == scoreState.WHITE_CANDIDATE) {
+							else if (adjacent[a] === scoreState.WHITE_STONE || adjacent[a] === scoreState.WHITE_CANDIDATE) {
 								w = true;
 							}
-							else if (adjacent[a] == scoreState.NEUTRAL) {
+							else if (adjacent[a] === scoreState.NEUTRAL) {
 								b = w = true;
 							}
 						}
@@ -148,7 +148,7 @@ angular.module('ngGo.Game.Scorer.Service', [
 						}
 
 						//Change?
-						if (newState !== false && newState != curState) {
+						if (newState !== = false && newState !==  curState) {
 							change = true;
 							this.stones.set(x, y, newState);
 						}
@@ -257,24 +257,24 @@ angular.module('ngGo.Game.Scorer.Service', [
 					color = this.game.position.stones.get(x, y);
 
 					//Black stone
-					if (state == scoreState.BLACK_STONE && color == StoneColor.B) {
+					if (state === scoreState.BLACK_STONE && color === StoneColor.B) {
 						this.score.black.stones++;
 						continue;
 					}
 
 					//White stone
-					if (state == scoreState.WHITE_STONE && color == StoneColor.W) {
+					if (state === scoreState.WHITE_STONE && color === StoneColor.W) {
 						this.score.white.stones++;
 						continue;
 					}
 
 					//Black candidate
-					if (state == scoreState.BLACK_CANDIDATE) {
+					if (state === scoreState.BLACK_CANDIDATE) {
 						this.score.black.territory++;
 						this.points.set(x, y, StoneColor.B);
 
 						//White stone underneath?
-						if (color == StoneColor.W) {
+						if (color === StoneColor.W) {
 							this.score.black.captures++;
 							this.captures.set(x, y, StoneColor.W);
 						}
@@ -282,12 +282,12 @@ angular.module('ngGo.Game.Scorer.Service', [
 					}
 
 					//White candidate
-					if (state == scoreState.WHITE_CANDIDATE) {
+					if (state === scoreState.WHITE_CANDIDATE) {
 						this.score.white.territory++;
 						this.points.set(x, y, StoneColor.W);
 
 						//Black stone underneath?
-						if (color == StoneColor.B) {
+						if (color === StoneColor.B) {
 							this.score.white.captures++;
 							this.captures.set(x, y, StoneColor.B);
 						}
@@ -307,10 +307,10 @@ angular.module('ngGo.Game.Scorer.Service', [
 				state = this.stones.get(x, y);
 
 			//White stone
-			if (color == StoneColor.W) {
+			if (color === StoneColor.W) {
 
 				//Was white, mark it and any territory it's in as black's
-				if (state == scoreState.WHITE_STONE) {
+				if (state === scoreState.WHITE_STONE) {
 					territorySet.call(this, x, y, scoreState.BLACK_CANDIDATE, scoreState.BLACK_STONE);
 				}
 
@@ -321,10 +321,10 @@ angular.module('ngGo.Game.Scorer.Service', [
 			}
 
 			//Black stone
-			else if (color == StoneColor.B) {
+			else if (color === StoneColor.B) {
 
 				//Was black, mark it and any territory it's in as white's
-				if (state == scoreState.BLACK_STONE) {
+				if (state === scoreState.BLACK_STONE) {
 					territorySet.call(this, x, y, scoreState.WHITE_CANDIDATE, scoreState.WHITE_STONE);
 				}
 

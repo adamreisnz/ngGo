@@ -74,24 +74,24 @@ angular.module('ngGo.Player.Service', [
 			var x = 0, y = 0;
 
 			//Set x
-			if (typeof mouseEvent.offsetX != 'undefined') {
+			if (typeof mouseEvent.offsetX !==  'undefined') {
 				x = mouseEvent.offsetX;
 			}
-			else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetX != 'undefined') {
+			else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetX !==  'undefined') {
 				x = mouseEvent.originalEvent.offsetX;
 			}
-			else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerX != 'undefined') {
+			else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerX !==  'undefined') {
 				x = mouseEvent.originalEvent.layerX;
 			}
 
 			//Set y
-			if (typeof mouseEvent.offsetY != 'undefined') {
+			if (typeof mouseEvent.offsetY !==  'undefined') {
 				y = mouseEvent.offsetY;
 			}
-			else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetY != 'undefined') {
+			else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetY !==  'undefined') {
 				y = mouseEvent.originalEvent.offsetY;
 			}
-			else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerY != 'undefined') {
+			else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerY !==  'undefined') {
 				y = mouseEvent.originalEvent.layerY;
 			}
 
@@ -225,7 +225,7 @@ angular.module('ngGo.Player.Service', [
 			 * Set arrow keys navigation
 			 */
 			setArrowKeysNavigation: function(arrowKeys) {
-				if (arrowKeys != this.arrowKeysNavigation) {
+				if (arrowKeys !==  this.arrowKeysNavigation) {
 					this.arrowKeysNavigation = arrowKeys;
 					this.broadcast('settingChange', 'arrowKeysNavigation');
 				}
@@ -235,7 +235,7 @@ angular.module('ngGo.Player.Service', [
 			 * Set scroll wheel navigation
 			 */
 			setScrollWheelNavigation: function(scrollWheel) {
-				if (scrollWheel != this.scrollWheelNavigation) {
+				if (scrollWheel !==  this.scrollWheelNavigation) {
 					this.scrollWheelNavigation = scrollWheel;
 					this.broadcast('settingChange', 'scrollWheelNavigation');
 				}
@@ -245,7 +245,7 @@ angular.module('ngGo.Player.Service', [
 			 * Set the last move marker
 			 */
 			setLastMoveMarker: function(lastMoveMarker) {
-				if (lastMoveMarker != this.lastMoveMarker) {
+				if (lastMoveMarker !==  this.lastMoveMarker) {
 					this.lastMoveMarker = lastMoveMarker;
 					this.broadcast('settingChange', 'lastMoveMarker');
 				}
@@ -260,19 +260,19 @@ angular.module('ngGo.Player.Service', [
 				var change = false;
 
 				//Markup setting change?
-				if (variationMarkup != this.variationMarkup) {
+				if (variationMarkup !==  this.variationMarkup) {
 					this.variationMarkup = variationMarkup;
 					change = true;
 				}
 
 				//Children setting change?
-				if (typeof variationChildren != 'undefined' && variationChildren != this.variationChildren) {
+				if (typeof variationChildren !==  'undefined' && variationChildren !==  this.variationChildren) {
 					this.variationChildren = variationChildren;
 					change = true;
 				}
 
 				//Siblings setting change?
-				if (typeof variationSiblings != 'undefined' && variationSiblings != this.variationSiblings) {
+				if (typeof variationSiblings !==  'undefined' && variationSiblings !==  this.variationSiblings) {
 					this.variationSiblings = variationSiblings;
 					change = true;
 				}
@@ -301,7 +301,7 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Force switch the mode now, if it matches the initial mode
-				if (this.mode == mode) {
+				if (this.mode === mode) {
 					this.switchMode(this.mode, true);
 					this.switchTool(this.tool, true);
 				}
@@ -325,7 +325,7 @@ angular.module('ngGo.Player.Service', [
 			 * Check if we have a player tool
 			 */
 			hasTool: function(tool) {
-				return (this.tools.indexOf(tool) != -1);
+				return (this.tools.indexOf(tool) !==  -1);
 			},
 
 			/**
@@ -334,7 +334,7 @@ angular.module('ngGo.Player.Service', [
 			switchMode: function(mode, force) {
 
 				//No change?
-				if (!force && (!mode || this.mode == mode)) {
+				if (!force && (!mode || this.mode === mode)) {
 					return false;
 				}
 
@@ -359,7 +359,7 @@ angular.module('ngGo.Player.Service', [
 			switchTool: function(tool, force) {
 
 				//No change?
-				if (!force && (!tool || this.tool == tool)) {
+				if (!force && (!tool || this.tool === tool)) {
 					return false;
 				}
 
@@ -432,7 +432,7 @@ angular.module('ngGo.Player.Service', [
 				this.path = null;
 
 				//Parse configuration from JGF if allowed
-				if (allowPlayerConfig || typeof allowPlayerConfig == 'undefined') {
+				if (allowPlayerConfig || typeof allowPlayerConfig === 'undefined') {
 					this.parseConfig(this.game.get('settings'));
 				}
 
@@ -507,7 +507,7 @@ angular.module('ngGo.Player.Service', [
 			 * Go to the next position
 			 */
 			next: function(i) {
-				if (this.game && this.game.node != this.restrictNodeEnd) {
+				if (this.game && this.game.node !==  this.restrictNodeEnd) {
 					this.game.next(i);
 					this.processPosition();
 				}
@@ -517,7 +517,7 @@ angular.module('ngGo.Player.Service', [
 			 * Go back to the previous position
 			 */
 			previous: function() {
-				if (this.game && this.game.node != this.restrictNodeStart) {
+				if (this.game && this.game.node !==  this.restrictNodeStart) {
 					this.game.previous();
 					this.processPosition();
 				}
@@ -707,7 +707,7 @@ angular.module('ngGo.Player.Service', [
 			registerElementEvent: function(event, element) {
 
 				//Which element to use
-				if (typeof element == 'undefined' || !element.on) {
+				if (typeof element === 'undefined' || !element.on) {
 					element = this.element;
 				}
 
@@ -723,7 +723,7 @@ angular.module('ngGo.Player.Service', [
 			on: function(type, listener, mode, $scope) {
 
 				//Must have valid listener
-				if (typeof listener != 'function') {
+				if (typeof listener !==  'function') {
 					console.warn('Listener is not a function:', listener);
 					return;
 				}
@@ -735,7 +735,7 @@ angular.module('ngGo.Player.Service', [
 				}
 
 				//Multiple events?
-				if (type.indexOf(' ') !== -1) {
+				if (type.indexOf(' ') !== = -1) {
 					var types = type.split(' ');
 					for (var t = 0; t < types.length; t++) {
 						this.on(types[t], listener, mode, $scope);
@@ -752,27 +752,27 @@ angular.module('ngGo.Player.Service', [
 
 					//Filter on mode
 					if (mode) {
-						if ((typeof mode == 'string' && mode != self.mode) || mode.indexOf(self.mode) === -1) {
+						if ((typeof mode === 'string' && mode !==  self.mode) || mode.indexOf(self.mode) === -1) {
 							return;
 						}
 					}
 
 					//Inside a text field?
-					if (type == 'keydown' && $document[0].querySelector(':focus')) {
+					if (type === 'keydown' && $document[0].querySelector(':focus')) {
 						return;
 					}
 
 					//Append grid coordinates for mouse events
-					if (type == 'click' || type == 'hover' || type.substr(0, 5) == 'mouse') {
+					if (type === 'click' || type === 'hover' || type.substr(0, 5) === 'mouse') {
 						processMouseEvent.call(self, arguments[0], arguments[1]);
 					}
 
 					//Dragging? Prevent click events from firing
-					if (self.preventClickEvent && type == 'click') {
+					if (self.preventClickEvent && type === 'click') {
 						delete self.preventClickEvent;
 						return;
 					}
-					else if (type == 'mousedrag') {
+					else if (type === 'mousedrag') {
 						self.preventClickEvent = true;
 					}
 

@@ -147,7 +147,7 @@ angular.module('ngGo.Game.Position.Service', [
 		friendlyColor = friendlyColor || this.stones.get(x, y);
 
 		//Can't capture empty spots
-		if (friendlyColor == StoneColor.EMPTY) {
+		if (friendlyColor === StoneColor.EMPTY) {
 			return false;
 		}
 
@@ -183,7 +183,7 @@ angular.module('ngGo.Game.Position.Service', [
 		}
 
 		//Empty spot? Can't capture
-		if (this.stones.get(x, y) == StoneColor.EMPTY) {
+		if (this.stones.get(x, y) === StoneColor.EMPTY) {
 			return false;
 		}
 
@@ -191,7 +191,7 @@ angular.module('ngGo.Game.Position.Service', [
 		enemyColor = enemyColor || this.stones.get(x, y);
 
 		//We need to have a stone of matching group color in order to be able to capture it
-		if (this.stones.get(x, y) !== enemyColor) {
+		if (this.stones.get(x, y) !== = enemyColor) {
 			return false;
 		}
 
@@ -223,7 +223,7 @@ angular.module('ngGo.Game.Position.Service', [
 		enemyColor = enemyColor || this.stones.get(x, y);
 
 		//Stone at position does not match the given group color? Can't capture it
-		if (this.stones.get(x, y) !== enemyColor) {
+		if (this.stones.get(x, y) !== = enemyColor) {
 			return false;
 		}
 
@@ -340,7 +340,7 @@ angular.module('ngGo.Game.Position.Service', [
 	GamePosition.prototype.isSameAs = function(newPosition) {
 
 		//Must have the same size
-		if (this.width != newPosition.width || this.height != newPosition.height) {
+		if (this.width !==  newPosition.width || this.height !==  newPosition.height) {
 			return false;
 		}
 

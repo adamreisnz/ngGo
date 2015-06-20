@@ -73,7 +73,9 @@ angular.module('ngGo.Kifu.Blank.Service', [
 			//Base given?
 			if (base) {
 				for (var p in base) {
-					blank[p] = angular.extend(blank[p] || {}, base[p]);
+					if (base.hasOwnProperty(p)) {
+						blank[p] = angular.extend(blank[p] || {}, base[p]);
+					}
 				}
 			}
 
@@ -92,7 +94,9 @@ angular.module('ngGo.Kifu.Blank.Service', [
 			//Base given?
 			if (base) {
 				for (var p in base) {
-					blank[p] = base[p];
+					if (base.hasOwnProperty(p)) {
+						blank[p] = base[p];
+					}
 				}
 			}
 

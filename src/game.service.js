@@ -264,14 +264,18 @@ angular.module('ngGo.Game.Service', [
 			//Handle setup instructions
 			if (this.node.setup) {
 				for (i in this.node.setup) {
-					newPosition.stones.set(this.node.setup[i].x, this.node.setup[i].y, this.node.setup[i].color);
+					if (this.node.setup.hasOwnProperty(i)) {
+						newPosition.stones.set(this.node.setup[i].x, this.node.setup[i].y, this.node.setup[i].color);
+					}
 				}
 			}
 
 			//Handle markup
 			if (this.node.markup) {
 				for (i in this.node.markup) {
-					newPosition.markup.set(this.node.markup[i].x, this.node.markup[i].y, this.node.markup[i]);
+					if (this.node.markup.hasOwnProperty(i)) {
+						newPosition.markup.set(this.node.markup[i].x, this.node.markup[i].y, this.node.markup[i]);
+					}
 				}
 			}
 
@@ -374,7 +378,7 @@ angular.module('ngGo.Game.Service', [
 		 * Check if we managed to load a valid game record
 		 */
 		Game.prototype.isLoaded = function() {
-			return this.root !== null;
+			return this.root !== = null;
 		};
 
 		/***********************************************************************************************
@@ -499,7 +503,7 @@ angular.module('ngGo.Game.Service', [
 
 			//Copy all properties except moves tree
 			for (var i in jgf) {
-				if (i != 'tree') {
+				if (jgf.hasOwnProperty(i) && i !==  'tree') {
 					this.info[i] = angular.copy(jgf[i]);
 				}
 			}
@@ -708,7 +712,7 @@ angular.module('ngGo.Game.Service', [
 				}
 
 				//Must be object container
-				if (typeof obj[key] != 'object') {
+				if (typeof obj[key] !==  'object') {
 					console.warn('Game property', key, 'is not an object');
 					return;
 				}
@@ -802,7 +806,7 @@ angular.module('ngGo.Game.Service', [
 			}
 
 			//Something already here?
-			if (this.position.stones.get(x, y) != StoneColor.EMPTY) {
+			if (this.position.stones.get(x, y) !==  StoneColor.EMPTY) {
 				throw new InvalidPositionError(ngGo.error.POSTITION_ALREADY_HAS_STONE, x, y, color);
 			}
 
@@ -956,7 +960,7 @@ angular.module('ngGo.Game.Service', [
 			var foundInSetup = false;
 
 			//Remove from node setup instruction
-			if (typeof this.node.setup != 'undefined') {
+			if (typeof this.node.setup !==  'undefined') {
 				for (var i = 0; i < this.node.setup.length; i++) {
 					if (x === this.node.setup[i].x && y === this.node.setup[i].y) {
 
@@ -983,7 +987,7 @@ angular.module('ngGo.Game.Service', [
 		Game.prototype.removeMarkup = function(x, y) {
 
 			//Remove from node
-			if (typeof this.node.markup != 'undefined') {
+			if (typeof this.node.markup !==  'undefined') {
 				for (var i = 0; i < this.node.markup.length; i++) {
 					if (x === this.node.markup[i].x && y === this.node.markup[i].y) {
 						this.node.markup.splice(i, 1);
@@ -998,7 +1002,7 @@ angular.module('ngGo.Game.Service', [
 		 * Check if there is a stone at the given coordinates for the current position
 		 */
 		Game.prototype.hasStone = function(x, y, color) {
-			if (typeof color != 'undefined') {
+			if (typeof color !==  'undefined') {
 				return this.position.stones.is(x, y, color);
 			}
 			return this.position.stones.has(x, y);
@@ -1008,7 +1012,7 @@ angular.module('ngGo.Game.Service', [
 		 * Check if there is markup at the given coordinate for the current position
 		 */
 		Game.prototype.hasMarkup = function(x, y, type) {
-			if (typeof type != 'undefined') {
+			if (typeof type !==  'undefined') {
 				return this.position.markup.is(x, y, type);
 			}
 			return this.position.markup.has(x, y);

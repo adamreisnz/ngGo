@@ -167,7 +167,7 @@ angular.module('ngGo.Board.Service', [
 		Board.prototype.parseConfig = function(config) {
 
 			//Validate
-			if (typeof config != 'object') {
+			if (typeof config !==  'object') {
 				return;
 			}
 
@@ -188,12 +188,12 @@ angular.module('ngGo.Board.Service', [
 		Board.prototype.setMargin = function(margin) {
 
 			//Reset when not defined
-			if (typeof margin == 'undefined') {
+			if (typeof margin === 'undefined') {
 				margin = this.theme.get('board.margin');
 			}
 
 			//Set margin if changed
-			if (this.margin != margin) {
+			if (this.margin !==  margin) {
 				this.margin = margin;
 				this.resized();
 			}
@@ -217,16 +217,18 @@ angular.module('ngGo.Board.Service', [
 
 			//Check if there's a change
 			for (var side in this.cutoff) {
-				if (cutoff.indexOf(side) != -1) {
-					if (!this.cutoff[side]) {
-						this.cutoff[side] = true;
-						changes = true;
+				if (this.cutoff.hasOwnProperty(side)) {
+					if (cutoff.indexOf(side) !==  -1) {
+						if (!this.cutoff[side]) {
+							this.cutoff[side] = true;
+							changes = true;
+						}
 					}
-				}
-				else {
-					if (this.cutoff[side]) {
-						this.cutoff[side] = false;
-						changes = true;
+					else {
+						if (this.cutoff[side]) {
+							this.cutoff[side] = false;
+							changes = true;
+						}
 					}
 				}
 			}
@@ -246,7 +248,7 @@ angular.module('ngGo.Board.Service', [
 		Board.prototype.setSection = function(section) {
 
 			//Nothing given?
-			if (!section || typeof section != 'object') {
+			if (!section || typeof section !==  'object') {
 				return this;
 			}
 
@@ -259,7 +261,7 @@ angular.module('ngGo.Board.Service', [
 			}, section);
 
 			//No changes?
-			if (this.section.top == section.top && this.section.bottom == section.bottom && this.section.left == section.left && this.section.right == section.right) {
+			if (this.section.top === section.top && this.section.bottom === section.bottom && this.section.left === section.left && this.section.right === section.right) {
 				return this;
 			}
 
@@ -286,7 +288,7 @@ angular.module('ngGo.Board.Service', [
 			}
 
 			//Changing?
-			if (width != this.width || height != this.height) {
+			if (width !==  this.width || height !==  this.height) {
 
 				//Remember size
 				this.width = width;
@@ -294,7 +296,9 @@ angular.module('ngGo.Board.Service', [
 
 				//Set size in layers
 				for (var layer in this.layers) {
-					this.layers[layer].setSize(width, height);
+					if (this.layers.hasOwnProperty(layer)) {
+						this.layers[layer].setSize(width, height);
+					}
 				}
 
 				//Broadcast event (no call to resized, as that is handled in the directive)
@@ -309,7 +313,7 @@ angular.module('ngGo.Board.Service', [
 		 * Set new draw size
 		 */
 		Board.prototype.setDrawSize = function(width, height) {
-			if (width != this.drawWidth || height != this.drawHeight) {
+			if (width !==  this.drawWidth || height !==  this.drawHeight) {
 				this.drawWidth = width;
 				this.drawHeight = height;
 				this.resized();
@@ -322,7 +326,7 @@ angular.module('ngGo.Board.Service', [
 		Board.prototype.toggleCoordinates = function(show) {
 
 			//Set or toggle
-			if (typeof show != 'undefined') {
+			if (typeof show !==  'undefined') {
 				this.coordinates = show;
 			}
 			else {
@@ -347,7 +351,7 @@ angular.module('ngGo.Board.Service', [
 		Board.prototype.swapColors = function(multiplier) {
 
 			//Multiplier not given? Set to inverse of current value
-			if (typeof multiplier == 'undefined') {
+			if (typeof multiplier === 'undefined') {
 				multiplier = -this.colorMultiplier;
 			}
 			else {
@@ -358,7 +362,7 @@ angular.module('ngGo.Board.Service', [
 			}
 
 			//No change?
-			if (multiplier == this.colorMultiplier) {
+			if (multiplier === this.colorMultiplier) {
 				return;
 			}
 
@@ -404,7 +408,7 @@ angular.module('ngGo.Board.Service', [
 		 * Add an object to a board layer
 		 */
 		Board.prototype.add = function(layer, x, y, value) {
-			if (typeof this.layers[layer] != 'undefined') {
+			if (typeof this.layers[layer] !==  'undefined') {
 				this.layers[layer].add(x, y, value);
 			}
 		};
@@ -413,7 +417,7 @@ angular.module('ngGo.Board.Service', [
 		 * Remove an object from a board layer
 		 */
 		Board.prototype.remove = function(layer, x, y) {
-			if (typeof this.layers[layer] != 'undefined') {
+			if (typeof this.layers[layer] !==  'undefined') {
 				this.layers[layer].remove(x, y);
 			}
 		};
@@ -436,7 +440,7 @@ angular.module('ngGo.Board.Service', [
 		 * Set all objects (grid) for a given layer
 		 */
 		Board.prototype.setAll = function(layer, grid) {
-			if (typeof this.layers[layer] != 'undefined') {
+			if (typeof this.layers[layer] !==  'undefined') {
 				this.layers[layer].setAll(grid);
 			}
 		};
@@ -446,13 +450,15 @@ angular.module('ngGo.Board.Service', [
 		 */
 		Board.prototype.removeAll = function(layer) {
 			if (layer) {
-				if (typeof this.layers[layer] != 'undefined') {
+				if (typeof this.layers[layer] !==  'undefined') {
 					this.layers[layer].removeAll();
 				}
 			}
 			else {
 				for (layer in this.layers) {
-					this.layers[layer].removeAll();
+					if (this.layers.hasOwnProperty(layer)) {
+						this.layers[layer].removeAll();
+					}
 				}
 			}
 		};
@@ -501,9 +507,11 @@ angular.module('ngGo.Board.Service', [
 			//All layers
 			var state = {};
 			for (layer in this.layers) {
-				var grid = this.layers[layer].getAll();
-				if (grid && !grid.isEmpty()) {
-					state[layer] = grid;
+				if (this.layers.hasOwnProperty(layer)) {
+					var grid = this.layers[layer].getAll();
+					if (grid && !grid.isEmpty()) {
+						state[layer] = grid;
+					}
 				}
 			}
 			return state;
@@ -524,9 +532,11 @@ angular.module('ngGo.Board.Service', [
 
 			//All layers
 			for (layer in this.layers) {
-				this.layers[layer].removeAll();
-				if (state[layer]) {
-					this.layers[layer].setAll(state[layer]);
+				if (this.layers.hasOwnProperty(layer)) {
+					this.layers[layer].removeAll();
+					if (state[layer]) {
+						this.layers[layer].setAll(state[layer]);
+					}
 				}
 			}
 		};
@@ -561,7 +571,9 @@ angular.module('ngGo.Board.Service', [
 
 			//Clear all layers
 			for (layer in this.layers) {
-				this.layers[layer].clear();
+				if (this.layers.hasOwnProperty(layer)) {
+					this.layers[layer].clear();
+				}
 			}
 		};
 
@@ -628,7 +640,7 @@ angular.module('ngGo.Board.Service', [
 			//Are we cutting off parts of the grid? Add half a cell of draw size
 			for (var side in this.cutoff) {
 				if (this.cutoff[side]) {
-					if (side == 'top' || side == 'bottom') {
+					if (side === 'top' || side === 'bottom') {
 						noCellsVer += 0.5;
 					}
 					else {

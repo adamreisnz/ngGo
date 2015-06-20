@@ -21,10 +21,10 @@ angular.module('ngGo.Board.GridChanges.Service', [
 	 */
 	var setSubtract = function(a, b) {
 		var n = [], q;
-		for (var i in a) {
+		for (var i = 0; i < a.length; i++) {
 			q = true;
 			for (var j in b) {
-				if (a[i].x == b[j].x && a[i].y == b[j].y) {
+				if (a[i].x === b[j].x && a[i].y === b[j].y) {
 					q = false;
 					break;
 				}

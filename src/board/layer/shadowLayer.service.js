@@ -33,7 +33,7 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
 	ShadowLayer.prototype.add = function(stone) {
 
 		//Don't add if no shadow
-		if (stone.shadow === false || (typeof stone.alpha != 'undefined' && stone.alpha < 1)) {
+		if (stone.shadow === false || (typeof stone.alpha !==  'undefined' && stone.alpha < 1)) {
 			return;
 		}
 
@@ -46,7 +46,7 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
 		this.grid.set(stone.x, stone.y, stone.color);
 
 		//Draw it if there is a context
-		if (this.context && this.board.drawWidth !== 0 && this.board.drawheight !== 0) {
+		if (this.context && this.board.drawWidth !== = 0 && this.board.drawheight !== = 0) {
 			StoneShadow.draw.call(this, stone);
 		}
 	};

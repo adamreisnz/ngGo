@@ -30,7 +30,7 @@ angular.module('ngGo.Board.Grid.Service', [
 		};
 
 		//Already an object?
-		if (typeof this.grid[x][y] == 'object') {
+		if (typeof this.grid[x][y] === 'object') {
 			return angular.extend(obj, this.grid[x][y]);
 		}
 
@@ -51,7 +51,7 @@ angular.module('ngGo.Board.Grid.Service', [
 		this.emptyValue = null;
 
 		//Set empty value if given
-		if (typeof emptyValue != 'undefined') {
+		if (typeof emptyValue !==  'undefined') {
 			this.emptyValue = emptyValue;
 		}
 
@@ -83,7 +83,7 @@ angular.module('ngGo.Board.Grid.Service', [
 	 * Check if we have a non null value on the coordinates
 	 */
 	BoardGrid.prototype.has = function(x, y) {
-		return (this.isOnGrid(x, y) && this.grid[x][y] !== this.emptyValue);
+		return (this.isOnGrid(x, y) && this.grid[x][y] !== = this.emptyValue);
 	};
 
 	/**
@@ -133,7 +133,7 @@ angular.module('ngGo.Board.Grid.Service', [
 		//Loop coordinates
 		for (var x = 0; x < this.width; x++) {
 			for (var y = 0; y < this.height; y++) {
-				if (this.grid[x][y] !== this.emptyValue) {
+				if (this.grid[x][y] !== = this.emptyValue) {
 					objects.push(toObject.call(this, x, y, valueKey));
 				}
 			}
@@ -149,7 +149,7 @@ angular.module('ngGo.Board.Grid.Service', [
 	BoardGrid.prototype.isEmpty = function() {
 		for (var x = 0; x < this.width; x++) {
 			for (var y = 0; y < this.height; y++) {
-				if (this.grid[x][y] !== this.emptyValue) {
+				if (this.grid[x][y] !== = this.emptyValue) {
 					return false;
 				}
 			}
@@ -207,14 +207,14 @@ angular.module('ngGo.Board.Grid.Service', [
 	BoardGrid.prototype.isSameAs = function(grid) {
 
 		//Must have the same size
-		if (this.width != grid.width || this.height != grid.height) {
+		if (this.width !==  grid.width || this.height !==  grid.height) {
 			return false;
 		}
 
 		//Loop all coordinates
 		for (var x = 0; x < this.width; x++) {
 			for (var y = 0; y < this.height; y++) {
-				if (this.grid[x][y] != grid[x][y]) {
+				if (this.grid[x][y] !==  grid[x][y]) {
 					return false;
 				}
 			}
@@ -233,7 +233,7 @@ angular.module('ngGo.Board.Grid.Service', [
 		var changes = new BoardGridChanges();
 
 		//Must have the same size
-		if (this.width != newGrid.width || this.height != newGrid.height) {
+		if (this.width !==  newGrid.width || this.height !==  newGrid.height) {
 			console.warn('Trying to compare grids of a different size');
 			return changes;
 		}
@@ -243,12 +243,12 @@ angular.module('ngGo.Board.Grid.Service', [
 			for (var y = 0; y < this.height; y++) {
 
 				//Something to add?
-				if (newGrid.grid[x][y] !== this.emptyValue && newGrid.grid[x][y] !== this.grid[x][y]) {
+				if (newGrid.grid[x][y] !== = this.emptyValue && newGrid.grid[x][y] !== = this.grid[x][y]) {
 					changes.add.push(toObject.call(newGrid, x, y, valueKey));
 				}
 
 				//Something to remove?
-				if (this.grid[x][y] !== this.emptyValue && newGrid.grid[x][y] !== this.grid[x][y]) {
+				if (this.grid[x][y] !== = this.emptyValue && newGrid.grid[x][y] !== = this.grid[x][y]) {
 					changes.remove.push(toObject.call(this, x, y, valueKey));
 				}
 			}

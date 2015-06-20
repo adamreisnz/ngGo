@@ -36,13 +36,13 @@ angular.module('ngGo.Game.Node.Service', [
 	 */
 	var coordinatesObject = function(coords, baseObject) {
 		baseObject = baseObject || {};
-		if (coords === '' || coords == 'pass') {
+		if (coords === '' || coords === 'pass') {
 			baseObject.pass = true;
 		}
 		else {
 
 			//Backwards compatibility with SGF string coordinates in JGF
-			if (typeof coords == 'string') {
+			if (typeof coords === 'string') {
 				coords = convertCoordinates(coords);
 			}
 
@@ -57,17 +57,17 @@ angular.module('ngGo.Game.Node.Service', [
 	 * Convert a numeric color value (color constant) to a string
 	 */
 	var toStringColor = function(color) {
-		return (color == StoneColor.B) ? 'B' : (((color == StoneColor.W) ? 'W' : ''));
+		return (color === StoneColor.B) ? 'B' : (((color === StoneColor.W) ? 'W' : ''));
 	};
 
 	/**
 	 * Convert a string color value to a numeric color constant
 	 */
 	var toColorConstant = function(color) {
-		if (color == 'B') {
+		if (color === 'B') {
 			return StoneColor.B;
 		}
-		else if (color == 'W') {
+		else if (color === 'W') {
 			return StoneColor.W;
 		}
 		return StoneColor.E;
@@ -149,17 +149,19 @@ angular.module('ngGo.Game.Node.Service', [
 
 		//Loop setup objects
 		for (i in setup) {
+			if (setup.hasOwnProperty(i)) {
 
-			//Get color
-			color = toStringColor(setup[i].color) || 'E';
+				//Get color
+				color = toStringColor(setup[i].color) || 'E';
 
-			//Initialize array
-			if (typeof jgfSetup[color] == 'undefined') {
-				jgfSetup[color] = [];
+				//Initialize array
+				if (typeof jgfSetup[color] === 'undefined') {
+					jgfSetup[color] = [];
+				}
+
+				//Add coordinates
+				jgfSetup[color].push([setup[i].x, setup[i].y]);
 			}
-
-			//Add coordinates
-			jgfSetup[color].push([setup[i].x, setup[i].y]);
 		}
 
 		//Return
@@ -176,15 +178,19 @@ angular.module('ngGo.Game.Node.Service', [
 
 		//Loop setup
 		for (key in setup) {
+			if (setup.hasOwnProperty(key)) {
 
-			//Get color constant
-			color = toColorConstant(key);
+				//Get color constant
+				color = toColorConstant(key);
 
-			//Loop coordinates
-			for (c in setup[key]) {
-				gameSetup.push(coordinatesObject(setup[key][c], {
-					color: color
-				}));
+				//Loop coordinates
+				for (c in setup[key]) {
+					if (setup[key].hasOwnProperty(c)) {
+						gameSetup.push(coordinatesObject(setup[key][c], {
+							color: color
+						}));
+					}
+				}
 			}
 		}
 
@@ -208,12 +214,12 @@ angular.module('ngGo.Game.Node.Service', [
 				type = markup[i].type;
 
 				//Initialize array
-				if (typeof jgfMarkup[type] == 'undefined') {
+				if (typeof jgfMarkup[type] === 'undefined') {
 					jgfMarkup[type] = [];
 				}
 
 				//Label?
-				if (type == 'label') {
+				if (type === 'label') {
 					jgfMarkup[type].push([markup[i].x, markup[i].y, markup[i].text]);
 				}
 				else {
@@ -236,42 +242,44 @@ angular.module('ngGo.Game.Node.Service', [
 
 		//Loop markup types
 		for (type in markup) {
+			if (markup.hasOwnProperty(type)) {
 
-			//Label?
-			if (type == 'label') {
-				for (l = 0; l < markup[type].length; l++) {
+				//Label?
+				if (type === 'label') {
+					for (l = 0; l < markup[type].length; l++) {
 
-					//Validate
-					if (!angular.isArray(markup[type][l])) {
-						continue;
+						//Validate
+						if (!angular.isArray(markup[type][l])) {
+							continue;
+						}
+
+						//SGF type coordinates?
+						if (markup[type][l].length === 2 && typeof markup[type][l][0] === 'string') {
+							var text = markup[type][l][1];
+							markup[type][l] = convertCoordinates(markup[type][l][0]);
+							markup[type][l].push(text);
+						}
+
+						//Validate length
+						if (markup[type][l].length < 3) {
+							continue;
+						}
+
+						//Add to stack
+						gameMarkup.push(coordinatesObject(markup[type][l], {
+							type: type,
+							text: markup[type][l][2]
+						}));
 					}
-
-					//SGF type coordinates?
-					if (markup[type][l].length == 2 && typeof markup[type][l][0] == 'string') {
-						var text = markup[type][l][1];
-						markup[type][l] = convertCoordinates(markup[type][l][0]);
-						markup[type][l].push(text);
-					}
-
-					//Validate length
-					if (markup[type][l].length < 3) {
-						continue;
-					}
-
-					//Add to stack
-					gameMarkup.push(coordinatesObject(markup[type][l], {
-						type: type,
-						text: markup[type][l][2]
-					}));
 				}
-			}
-			else {
+				else {
 
-				//Loop coordinates
-				for (l in markup[type]) {
-					gameMarkup.push(coordinatesObject(markup[type][l], {
-						type: type
-					}));
+					//Loop coordinates
+					for (l in markup[type]) {
+						gameMarkup.push(coordinatesObject(markup[type][l], {
+							type: type
+						}));
+					}
 				}
 			}
 		}
@@ -338,7 +346,9 @@ angular.module('ngGo.Game.Node.Service', [
 		//Save properties
 		if (properties) {
 			for (var key in properties) {
-				this[key] = properties[key];
+				if (properties.hasOwnProperty(key)) {
+					this[key] = properties[key];
+				}
 			}
 		}
 	};
@@ -429,8 +439,8 @@ angular.module('ngGo.Game.Node.Service', [
 	GameNode.prototype.getMoveVariation = function(x, y) {
 
 		//Loop the child nodes
-		for (var i in this.children) {
-			if (this.children[i].move && this.children[i].move.x == x && this.children[i].move.y == y) {
+		for (var i = 0; i < this.children.length; i++) {
+			if (this.children[i].move && this.children[i].move.x === x && this.children[i].move.y === y) {
 				return i;
 			}
 		}
@@ -445,8 +455,8 @@ angular.module('ngGo.Game.Node.Service', [
 	GameNode.prototype.isMoveVariation = function(x, y) {
 
 		//Loop the child nodes
-		for (var i in this.children) {
-			if (this.children[i].move && this.children[i].move.x == x && this.children[i].move.y == y) {
+		for (var i = 0; i < this.children.length; i++) {
+			if (this.children[i].move && this.children[i].move.x === x && this.children[i].move.y === y) {
 				return true;
 			}
 		}
@@ -471,7 +481,7 @@ angular.module('ngGo.Game.Node.Service', [
 
 		//Find the index of this node, and if found remove it
 		var i = this.parent.children.indexOf(this);
-		if (i !== -1) {
+		if (i !== = -1) {
 			this.parent.children.splice(i, 1);
 		}
 
@@ -510,7 +520,7 @@ angular.module('ngGo.Game.Node.Service', [
 
 		//Find the index of this node, and if found swap the nodes from position
 		var i = this.parent.children.indexOf(this);
-		if (i !== -1 && i < (this.parent.children.length - 1)) {
+		if (i !== = -1 && i < (this.parent.children.length - 1)) {
 			var temp = this.parent.children[i + 1];
 			this.parent.children[i + 1] = this;
 			this.parent.children[i] = temp;
@@ -546,7 +556,7 @@ angular.module('ngGo.Game.Node.Service', [
 	GameNode.prototype.insertNode = function(node) {
 
 		//Loop our children and change parent node
-		for (var i in this.children) {
+		for (var i = 0; i < this.children.length; i++) {
 			this.children[i].parent = node;
 		}
 
@@ -568,7 +578,7 @@ angular.module('ngGo.Game.Node.Service', [
 	GameNode.prototype.fromJgf = function(jgf, gameNode) {
 
 		//Root JGF file given?
-		if (typeof jgf.tree !== 'undefined') {
+		if (typeof jgf.tree !== = 'undefined') {
 			return GameNode.fromJgf(jgf.tree, gameNode);
 		}
 
@@ -608,10 +618,10 @@ angular.module('ngGo.Game.Node.Service', [
 						var prop = properties[key];
 
 						//Conversion function present?
-						if (typeof conversionMap.fromJgf[prop] != 'undefined') {
+						if (typeof conversionMap.fromJgf[prop] !==  'undefined') {
 							gameNode[prop] = conversionMap.fromJgf[prop](jgf[i][prop]);
 						}
-						else if (typeof jgf[i][prop] == 'object') {
+						else if (typeof jgf[i][prop] === 'object') {
 							gameNode[prop] = angular.copy(jgf[i][prop]);
 						}
 						else {
@@ -646,22 +656,24 @@ angular.module('ngGo.Game.Node.Service', [
 
 		//Copy node properties
 		for (var key in properties) {
-			var prop = properties[key];
+			if (properties.hasOwnProperty(key)) {
+				var prop = properties[key];
 
-			//Skip some properties
-			if (prop == 'parent' || prop == 'children') {
-				continue;
-			}
+				//Skip some properties
+				if (prop === 'parent' || prop === 'children') {
+					continue;
+				}
 
-			//Conversion function present?
-			if (typeof conversionMap.toJgf[prop] != 'undefined') {
-				node[prop] = conversionMap.toJgf[prop](this[prop]);
-			}
-			else if (typeof this[prop] == 'object') {
-				node[prop] = angular.copy(this[prop]);
-			}
-			else {
-				node[prop] = this[prop];
+				//Conversion function present?
+				if (typeof conversionMap.toJgf[prop] !==  'undefined') {
+					node[prop] = conversionMap.toJgf[prop](this[prop]);
+				}
+				else if (typeof this[prop] === 'object') {
+					node[prop] = angular.copy(this[prop]);
+				}
+				else {
+					node[prop] = this[prop];
+				}
 			}
 		}
 
@@ -676,7 +688,7 @@ angular.module('ngGo.Game.Node.Service', [
 			container.push(variationsContainer);
 
 			//Loop child (variation) nodes
-			for (var i in this.children) {
+			for (var i = 0; i < this.children.length; i++) {
 
 				//Create container for this variation
 				var variationContainer = [];
@@ -688,7 +700,7 @@ angular.module('ngGo.Game.Node.Service', [
 		}
 
 		//Just one child?
-		else if (this.children.length == 1) {
+		else if (this.children.length === 1) {
 			this.children[0].toJgf(container);
 		}
 

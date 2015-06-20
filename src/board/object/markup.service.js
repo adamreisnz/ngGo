@@ -413,15 +413,15 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 		this.context.textAlign = 'center';
 
 		//Convert to text
-		if (typeof markup.text == 'number') {
+		if (typeof markup.text === 'number') {
 			markup.text = markup.text.toString();
 		}
 
 		//Determine font size
-		if (markup.text.length == 1) {
+		if (markup.text.length === 1) {
 			this.context.font = Math.round(r * 1.5) + 'px ' + font;
 		}
-		else if (markup.text.length == 2) {
+		else if (markup.text.length === 2) {
 			this.context.font = Math.round(r * 1.2) + 'px ' + font;
 		}
 		else {
@@ -527,7 +527,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 			BoardObject.clear.call(this, markup);
 
 			//Special handling for label
-			if (markup.type == MarkupTypes.LABEL) {
+			if (markup.type === MarkupTypes.LABEL) {
 				clearLabel.call(this, markup);
 			}
 		}

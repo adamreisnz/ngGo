@@ -51,15 +51,15 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 		};
 
 		//Stones
-		if (hover.type == 'stones') {
+		if (hover.type === 'stones') {
 			hover.objectClass = StoneFaded;
 			hover.object.color = hover.value;
 		}
 
 		//Markup
-		else if (hover.type == 'markup') {
+		else if (hover.type === 'markup') {
 			hover.objectClass = Markup;
-			if (typeof hover.value == 'object') {
+			if (typeof hover.value === 'object') {
 				hover.object = angular.extend(hover.object, hover.value);
 			}
 			else {
@@ -111,7 +111,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 
 		//Other objects to restore?
 		for (var i = 0; i < this.restore.length; i++) {
-			if (this.restore[i].x == x && this.restore[i].y == y) {
+			if (this.restore[i].x === x && this.restore[i].y === y) {
 				this.board.add(this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value);
 				this.restore.splice(i, 1);
 			}

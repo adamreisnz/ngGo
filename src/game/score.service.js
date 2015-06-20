@@ -55,7 +55,7 @@ angular.module('ngGo.Game.Score.Service', [
 		var props = ['stones', 'territory', 'captures', 'komi'];
 
 		//Score for black player
-		for (var i in props) {
+		for (var i = 0; i < props.length; i++) {
 			this.black[props[i]] = 0;
 			this.white[props[i]] = 0;
 		}

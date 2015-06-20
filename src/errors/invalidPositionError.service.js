@@ -26,8 +26,8 @@ angular.module('ngGo.Errors.InvalidPositionError.Service', [
 	    this.message = 'Invalid position detected.';
 
 	    //Add position data
-	    if (typeof x != 'undefined' && typeof y != 'undefined' && typeof color != 'undefined') {
-	    	this.message += " Trying to place a " + (color == StoneColor.W ? "white" : "black") + " stone on (" + x + ", " + y + ")";
+	    if (typeof x !==  'undefined' && typeof y !==  'undefined' && typeof color !==  'undefined') {
+	    	this.message += " Trying to place a " + (color === StoneColor.W ? "white" : "black") + " stone on (" + x + ", " + y + ")";
 		}
 
 		//Append code message

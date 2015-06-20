@@ -20,8 +20,10 @@ describe('GameScore', function() {
 	it('should have score objects for all colors', function() {
 		score = new GameScore();
 		for (var c in score.colors) {
-			var color = score.colors[c];
-			expect(typeof score.get(color)).toBe('object');
+			if (score.colors.hasOwnProperty(c)) {
+				var color = score.colors[c];
+				expect(typeof score.get(color)).toBe('object');
+			}
 		}
 	});
 
@@ -63,11 +65,15 @@ describe('GameScore', function() {
 			rand = {};
 			score = new GameScore();
 			for (var c in score.colors) {
-				var color = score.colors[c];
-				rand[color] = {};
-				for (var i in score.items) {
-					var item = score.items[i];
-					rand[color][item] = Math.floor(Math.random() * 100);
+				if (score.colors.hasOwnProperty(c)) {
+					var color = score.colors[c];
+					rand[color] = {};
+					for (var i in score.items) {
+						if (score.items.hasOwnProperty(i)) {
+							var item = score.items[i];
+							rand[color][item] = Math.floor(Math.random() * 100);
+						}
+					}
 				}
 			}
 		});
@@ -77,15 +83,19 @@ describe('GameScore', function() {
 		 */
 		it('should remember the set score values', function() {
 			for (var c in score.colors) {
-				var color = score.colors[c];
-				for (var i in score.items) {
-					var item = score.items[i];
+				if (score.colors.hasOwnProperty(c)) {
+					var color = score.colors[c];
+					for (var i in score.items) {
+						if (score.items.hasOwnProperty(i)) {
+							var item = score.items[i];
 
-					//Set property in score
-					score.set(color, item, rand[color][item]);
+							//Set property in score
+							score.set(color, item, rand[color][item]);
 
-					//Compare
-					expect(score.get(color, item)).toEqual(rand[color][item]);
+							//Compare
+							expect(score.get(color, item)).toEqual(rand[color][item]);
+						}
+					}
 				}
 			}
 		});
@@ -125,24 +135,28 @@ describe('GameScore', function() {
 		it('should declare the correct winner', function() {
 			var winner = StoneColor.EMPTY, highestScore = 0;
 			for (var c in score.colors) {
+				if (score.colors.hasOwnProperty(c)) {
 
-				//Init
-				var color = score.colors[c],
-					totalFromRand = 0;
+					//Init
+					var color = score.colors[c],
+						totalFromRand = 0;
 
-				//Get total in rand
-				for (var i in score.items) {
-					var item = score.items[i];
-					totalFromRand += rand[color][item];
-				}
+					//Get total in rand
+					for (var i in score.items) {
+						if (score.items.hasOwnProperty(i)) {
+							var item = score.items[i];
+							totalFromRand += rand[color][item];
+						}
+					}
 
-				//Determine highest score
-				if (totalFromRand > highestScore) {
-					highestScore = totalFromRand;
-					winner = color;
-				}
-				else if (totalFromRand == highestScore) {
-					winner = StoneColor.EMPTY;
+					//Determine highest score
+					if (totalFromRand > highestScore) {
+						highestScore = totalFromRand;
+						winner = color;
+					}
+					else if (totalFromRand === highestScore) {
+						winner = StoneColor.EMPTY;
+					}
 				}
 			}
 
@@ -165,10 +179,14 @@ describe('GameScore', function() {
 			 */
 			it('should have no scores', function() {
 				for (var c in score.colors) {
-					var color = score.colors[c];
-					for (var i in score.items) {
-						var item = score.items[i];
-						expect(score.get(color, item)).toBe(0);
+					if (score.colors.hasOwnProperty(c)) {
+						var color = score.colors[c];
+						for (var i in score.items) {
+							if (score.items.hasOwnProperty(i)) {
+								var item = score.items[i];
+								expect(score.get(color, item)).toBe(0);
+							}
+						}
 					}
 				}
 			});
@@ -190,10 +208,14 @@ describe('GameScore', function() {
 			beforeAll(function() {
 				score.reset();
 				for (var c in score.colors) {
-					var color = score.colors[c];
-					for (var i in score.items) {
-						var item = score.items[i];
-						score.set(color, item, 1);
+					if (score.colors.hasOwnProperty(c)) {
+						var color = score.colors[c];
+						for (var i in score.items) {
+							if (score.items.hasOwnProperty(i)) {
+								var item = score.items[i];
+								score.set(color, item, 1);
+							}
+						}
 					}
 				}
 			});
@@ -204,12 +226,14 @@ describe('GameScore', function() {
 			it('should have matching totals', function() {
 				var prevTotal;
 				for (var c in score.colors) {
-					var color = score.colors[c],
-						total = score.total(color);
-					if (typeof prevTotal != 'undefined') {
-						expect(prevTotal).toEqual(total);
+					if (score.colors.hasOwnProperty(c)) {
+						var color = score.colors[c],
+							total = score.total(color);
+						if (typeof prevTotal !==  'undefined') {
+							expect(prevTotal).toEqual(total);
+						}
+						prevTotal = total;
 					}
-					prevTotal = total;
 				}
 			});
 

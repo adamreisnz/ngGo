@@ -33,12 +33,12 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 	var parsePlayer = function(jgf, match) {
 
 		//Initialize players container
-		if (typeof jgf.game.players == 'undefined') {
+		if (typeof jgf.game.players === 'undefined') {
 			jgf.game.players = [];
 		}
 
 		//Determine player color
-		var color = (match[1].toUpperCase() == 'BLACK') ? 'black' : 'white';
+		var color = (match[1].toUpperCase() === 'BLACK') ? 'black' : 'white';
 
 		//Create player object
 		var player = {
@@ -49,7 +49,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 
 		//Check if player of this color already exists, if so, overwrite
 		for (var p = 0; p < jgf.game.players.length; p++) {
-			if (jgf.game.players[p].color == color) {
+			if (jgf.game.players[p].color === color) {
 				jgf.game.players[p] = player;
 				return;
 			}
@@ -72,7 +72,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 	var parseDate = function(jgf, match) {
 
 		//Initialize dates container
-		if (typeof jgf.game.dates == 'undefined') {
+		if (typeof jgf.game.dates === 'undefined') {
 			jgf.game.dates = [];
 		}
 
@@ -86,7 +86,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 	var parseResult = function(jgf, match) {
 
 		//Winner color
-		var result = (match[1].toLowerCase() == 'black') ? 'B' : 'W';
+		var result = (match[1].toLowerCase() === 'black') ? 'B' : 'W';
 		result += '+';
 
 		//Win condition
@@ -111,10 +111,10 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 
 		//Determine player color
 		var color = match[2];
-		if (color == 1) {
+		if (color === 1) {
 			color = 'B';
 		}
-		else if (color == 2) {
+		else if (color === 2) {
 			color = 'W';
 		}
 		else {

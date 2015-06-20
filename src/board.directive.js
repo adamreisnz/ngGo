@@ -69,7 +69,7 @@ angular.module('ngGo.Board.Directive', [
 		}
 
 		//Broadcast new size if changed
-		if (scope.lastDrawWidth != drawWidth || scope.lastDrawHeight != drawHeight) {
+		if (scope.lastDrawWidth !==  drawWidth || scope.lastDrawHeight !==  drawHeight) {
 			scope.lastDrawWidth = drawWidth;
 			scope.lastDrawHeight = drawHeight;
 			scope.$broadcast('ngGo.board.drawSizeChanged', drawWidth, drawHeight);
@@ -108,7 +108,7 @@ angular.module('ngGo.Board.Directive', [
 			scope.Board = scope.instance();
 
 			//Function given?
-			if (typeof scope.Board == 'function') {
+			if (typeof scope.Board === 'function') {
 				scope.Board = scope.Board();
 			}
 
@@ -122,7 +122,7 @@ angular.module('ngGo.Board.Directive', [
 			scope.Board.linkElement(element);
 
 			//Find player element
-			if (parent[0].tagName == 'PLAYER') {
+			if (parent[0].tagName === 'PLAYER') {
 				playerElement = parent;
 				sizingElement = parent.parent()[0];
 			}
@@ -163,7 +163,7 @@ angular.module('ngGo.Board.Directive', [
 			scope.$on('ngGo.board.resize', function(event, board) {
 
 				//Only relevent if this was our own board
-				if (board != scope.Board) {
+				if (board !==  scope.Board) {
 					return;
 				}
 
@@ -204,7 +204,7 @@ angular.module('ngGo.Board.Directive', [
 
 			//Observe the board size attribute
 			attrs.$observe('size', function(size) {
-				if (typeof size == 'string' && size.toLowerCase().indexOf('x') !== -1) {
+				if (typeof size === 'string' && size.toLowerCase().indexOf('x') !== = -1) {
 					size = size.split('x');
 					scope.Board.setSize(size[0], size[1]);
 				}

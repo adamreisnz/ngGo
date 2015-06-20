@@ -43,7 +43,7 @@ angular.module('ngGo.Board.Theme.Service', [
 			//Shell stones
 			shell: {
 				color: function(stoneColor) {
-					if (stoneColor == StoneColor.B) {
+					if (stoneColor === StoneColor.B) {
 						return '#111';
 					}
 					return '#BFBFBA';
@@ -80,7 +80,7 @@ angular.module('ngGo.Board.Theme.Service', [
 					return '#000';
 				},
 				color: function(stoneColor) {
-					if (stoneColor == StoneColor.B) {
+					if (stoneColor === StoneColor.B) {
 						return '#000';
 					}
 					return '#fff';
@@ -97,7 +97,7 @@ angular.module('ngGo.Board.Theme.Service', [
 			faded: {
 				scale: 1,
 				alpha: function(stoneColor) {
-					if (stoneColor == StoneColor.B) {
+					if (stoneColor === StoneColor.B) {
 						return 0.3;
 					}
 					return 0.4;
@@ -135,7 +135,7 @@ angular.module('ngGo.Board.Theme.Service', [
 
 			//Standard color
 			color: function(stoneColor) {
-				if (stoneColor == StoneColor.B) {
+				if (stoneColor === StoneColor.B) {
 					return 'rgba(255,255,255,0.9)';
 				}
 				return 'rgba(0,0,0,0.9)';
@@ -250,7 +250,7 @@ angular.module('ngGo.Board.Theme.Service', [
 				points: function(width, height) {
 
 					//19x19
-					if (width == height && width == 19) {
+					if (width === height && width === 19) {
 						return [
 							{x:3, y:3}, {x:9, y:3}, {x:15,y:3},
 							{x:3, y:9}, {x:9, y:9}, {x:15,y:9},
@@ -259,7 +259,7 @@ angular.module('ngGo.Board.Theme.Service', [
 					}
 
 					//13x13
-					if (width == height && width == 13) {
+					if (width === height && width === 13) {
 						return [
 							{x:3, y:3}, {x:9, y:3},
 							{x:3, y:9}, {x:9, y:9}
@@ -267,7 +267,7 @@ angular.module('ngGo.Board.Theme.Service', [
 					}
 
 					//9x9
-					if (width == height && width == 9) {
+					if (width === height && width === 9) {
 						return [
 							{x:4, y:4}, {x:2, y:2},
 							{x:2, y:6}, {x:6, y:2},
@@ -367,7 +367,7 @@ angular.module('ngGo.Board.Theme.Service', [
 			for (var i = 0; i < path.length; i++) {
 
 				//Can't find the property?
-				if (typeof prop[path[i]] == 'undefined') {
+				if (typeof prop[path[i]] === 'undefined') {
 					console.warn('Could not find theme property', property);
 					return null;
 				}
@@ -377,7 +377,7 @@ angular.module('ngGo.Board.Theme.Service', [
 			}
 
 			//Found what we're looking for
-			if (typeof prop != 'function') {
+			if (typeof prop !==  'function') {
 				return prop;
 			}
 
@@ -406,13 +406,13 @@ angular.module('ngGo.Board.Theme.Service', [
 			for (var i = 0; i < path.length; i++) {
 
 				//Time to set?
-				if ((i + 1) == path.length) {
+				if ((i + 1) === path.length) {
 					prop[path[i]] = value;
 					break;
 				}
 
 				//Not set?
-				if (typeof prop[path[i]] == 'undefined') {
+				if (typeof prop[path[i]] === 'undefined') {
 					prop[path[i]] = {};
 				}
 
@@ -432,7 +432,7 @@ angular.module('ngGo.Board.Theme.Service', [
 
 			//If no linewidth specified, use the grid line width as a reference
 			//to make sure stuff is aligned to the grid
-			if (typeof lineWidth == 'undefined') {
+			if (typeof lineWidth === 'undefined') {
 				lineWidth = this.get('grid.lineWidth');
 			}
 

@@ -149,7 +149,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 		this.context.stroke();
 
 		//Star points defined?
-		for (i in starPoints) {
+		for (i = 0; i < starPoints.length; i++) {
 			drawStarPoint.call(this, starPoints[i].x, starPoints[i].y, starRadius, starColor);
 		}
 
@@ -229,7 +229,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
 
 		//Check if we need to draw a star point here
 		for (var i in starPoints) {
-			if (starPoints[i].x == gridX && starPoints[i].y == gridY) {
+			if (starPoints[i].x === gridX && starPoints[i].y === gridY) {
 				drawStarPoint.call(this, gridX, gridY, starRadius, starColor);
 			}
 		}

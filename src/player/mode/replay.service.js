@@ -63,7 +63,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 		var updateHoverMark = function(x, y) {
 
 			//If no coordinates specified, use last mouse coordinates
-			if (typeof x == 'undefined' || typeof y == 'undefined') {
+			if (typeof x === 'undefined' || typeof y === 'undefined') {
 				x = this.mouse.lastX;
 				y = this.mouse.lastY;
 			}
@@ -184,7 +184,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			 * Set auto play delay
 			 */
 			setAutoPlayDelay: function(delay) {
-				if (this.autoPlayDelay != delay) {
+				if (this.autoPlayDelay !==  delay) {
 					this.autoPlayDelay = delay;
 					this.broadcast('settingChange', 'autoPlayDelay');
 				}
@@ -196,7 +196,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			start: function(delay) {
 
 				//Not in replay mode or already auto playing?
-				if (this.mode != PlayerModes.REPLAY || this.autoPlaying) {
+				if (this.mode !==  PlayerModes.REPLAY || this.autoPlaying) {
 					return;
 				}
 
@@ -209,7 +209,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 				var self = this;
 
 				//Determine delay
-				delay = (typeof delay == 'number') ? delay : this.autoPlayDelay;
+				delay = (typeof delay === 'number') ? delay : this.autoPlayDelay;
 
 				//Switch tool
 				this.switchTool(PlayerTools.NONE);
@@ -237,7 +237,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			stop: function() {
 
 				//Not in replay mode or not auto playing?
-				if (this.mode != PlayerModes.REPLAY || !this.autoPlaying) {
+				if (this.mode !==  PlayerModes.REPLAY || !this.autoPlaying) {
 					return;
 				}
 
@@ -278,7 +278,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			settingChange: function(event, setting) {
 
 				//Solution paths setting changes?
-				if (setting == 'variationMarkup') {
+				if (setting === 'variationMarkup') {
 					drawMoveVariations.call(this, this.variationMarkup);
 				}
 			},
@@ -396,7 +396,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 			toolSwitch: function() {
 
 				//Switched to scoring?
-				if (this.tool == PlayerTools.SCORE) {
+				if (this.tool === PlayerTools.SCORE) {
 
 					//Remember the current board state
 					this.statePreScoring = this.board.getState();

@@ -89,7 +89,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 		var updateHoverMark = function(x, y, isDrag) {
 
 			//If no coordinates specified, use last mouse coordinates
-			if (typeof x == 'undefined' || typeof y == 'undefined') {
+			if (typeof x === 'undefined' || typeof y === 'undefined') {
 				x = this.mouse.lastX;
 				y = this.mouse.lastY;
 			}
@@ -106,7 +106,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				case PlayerTools.SETUP:
 
 					//Clear tool
-					if (this.setupTool == SetupTools.CLEAR) {
+					if (this.setupTool === SetupTools.CLEAR) {
 
 						//Stone present? Can remove it
 						if (this.game.hasStone(x, y)) {
@@ -142,7 +142,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				case PlayerTools.MARKUP:
 
 					//Clear tool, or already markup in place?
-					if (this.markupTool == MarkupTools.CLEAR || this.game.hasMarkup(x, y)) {
+					if (this.markupTool === MarkupTools.CLEAR || this.game.hasMarkup(x, y)) {
 						if (this.game.hasMarkup(x, y)) {
 							this.board.add('hover', x, y, {
 								type: 'markup',
@@ -152,7 +152,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 					}
 
 					//Text or number
-					else if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+					else if (this.markupTool === MarkupTools.TEXT || this.markupTool === MarkupTools.NUMBER) {
 						this.board.add('hover', x, y, {
 							type: 'markup',
 							value: {
@@ -209,9 +209,9 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				var markup = this.game.getMarkup(x, y);
 
 				//Label? Also remove from our labels list
-				if (markup.type == MarkupTypes.LABEL && markup.text) {
+				if (markup.type === MarkupTypes.LABEL && markup.text) {
 					var i = this.markupLabels.indexOf(markup.text);
-					if (i != -1) {
+					if (i !==  -1) {
 						this.markupLabels.splice(i, 1);
 					}
 				}
@@ -222,12 +222,12 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			}
 
 			//Clear tool used? Done
-			if (this.markupTool == MarkupTools.CLEAR) {
+			if (this.markupTool === MarkupTools.CLEAR) {
 				return;
 			}
 
 			//Text
-			else if (this.markupTool == MarkupTools.TEXT) {
+			else if (this.markupTool === MarkupTools.TEXT) {
 				this.game.addMarkup(x, y, {
 					type: MarkupTypes.LABEL,
 					text: this.markupLabel
@@ -239,7 +239,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			}
 
 			//Number
-			else if (this.markupTool == MarkupTools.NUMBER) {
+			else if (this.markupTool === MarkupTools.NUMBER) {
 				this.game.addMarkup(x, y, {
 					type: MarkupTypes.LABEL,
 					text: this.markupLabel
@@ -307,7 +307,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			//Get all markup from position
 			var markup = this.game.position.markup.all('type');
 			for (var i = 0; i < markup.length; i++) {
-				if (markup[i].type == MarkupTypes.LABEL && markup[i].text !== '') {
+				if (markup[i].type === MarkupTypes.LABEL && markup[i].text !== = '') {
 					this.markupLabels.push(markup[i].text);
 				}
 			}
@@ -338,7 +338,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			 */
 			switchMarkupTool: function(tool) {
 				this.markupTool = tool;
-				if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+				if (this.markupTool === MarkupTools.TEXT || this.markupTool === MarkupTools.NUMBER) {
 					this.determineMarkupLabel();
 				}
 			},
@@ -382,7 +382,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 						var i = 0;
 
 						//Loop while the label is present
-						while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) != -1) {
+						while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) !==  -1) {
 
 							//A-Z
 							if (i < 26) {
@@ -409,7 +409,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 						this.markupLabel = 0;
 
 						//Loop while the label is present
-						while (this.markupLabel === 0 || this.markupLabels.indexOf(this.markupLabel) != -1) {
+						while (this.markupLabel === 0 || this.markupLabels.indexOf(this.markupLabel) !==  -1) {
 							this.markupLabel++;
 						}
 						break;
@@ -436,13 +436,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 				this.board.removeAll('hover');
 
 				//Single coordinate?
-				if (!event.drag || (this.tool != PlayerTools.SETUP && this.tool != PlayerTools.MARKUP)) {
+				if (!event.drag || (this.tool !==  PlayerTools.SETUP && this.tool !==  PlayerTools.MARKUP)) {
 					updateHoverMark.call(this);
 					return;
 				}
 
 				//No dragging for labels
-				if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+				if (this.markupTool === MarkupTools.TEXT || this.markupTool === MarkupTools.NUMBER) {
 					updateHoverMark.call(this);
 					return;
 				}
@@ -558,7 +558,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 					case PlayerTools.MARKUP:
 
 						//Don't do this for labels
-						if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+						if (this.markupTool === MarkupTools.TEXT || this.markupTool === MarkupTools.NUMBER) {
 							break;
 						}
 
@@ -611,7 +611,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 			toolSwitch: function() {
 
 				//Switched to scoring?
-				if (this.tool == PlayerTools.SCORE) {
+				if (this.tool === PlayerTools.SCORE) {
 
 					//Remember the current board state
 					this.statePreScoring = this.board.getState();

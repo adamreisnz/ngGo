@@ -177,7 +177,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 						keyboardEvent.preventDefault();
 
 						//Advance to the next move
-						if (this.tool === PlayerTools.MOVE && this.game.node !== this.restrictNodeEnd) {
+						if (this.tool === PlayerTools.MOVE && this.game.node !== = this.restrictNodeEnd) {
 							this.next();
 						}
 					}
@@ -191,7 +191,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 						keyboardEvent.preventDefault();
 
 						//Go to the previous move
-						if (this.tool === PlayerTools.MOVE && this.game.node !== this.restrictNodeStart) {
+						if (this.tool === PlayerTools.MOVE && this.game.node !== = this.restrictNodeStart) {
 							this.previous();
 						}
 					}
@@ -213,7 +213,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		mouseWheel: function(event, mouseEvent) {
 
 			//Disabled or not using move tool?
-			if (!this.scrollWheelNavigation || this.tool != PlayerTools.MOVE) {
+			if (!this.scrollWheelNavigation || this.tool !==  PlayerTools.MOVE) {
 				return true;
 			}
 
@@ -245,7 +245,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			}
 
 			//Don't scroll the window
-			if (delta !== 0) {
+			if (delta !== = 0) {
 				mouseEvent.preventDefault();
 			}
 		},
@@ -265,7 +265,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		mouseMove: function(event, mouseEvent) {
 
 			//Attach drag object to events
-			if (this.mouse.dragStart && (this.mouse.dragStart.x != event.x || this.mouse.dragStart.y != event.y)) {
+			if (this.mouse.dragStart && (this.mouse.dragStart.x !==  event.x || this.mouse.dragStart.y !==  event.y)) {
 				mouseEvent.drag = dragObject.call(this, event);
 			}
 
@@ -301,7 +301,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 		 * Mouse up handler
 		 */
 		mouseUp: function(event, mouseEvent) {
-			if (this.mouse.dragStart && (this.mouse.dragStart.x != event.x || this.mouse.dragStart.y != event.y)) {
+			if (this.mouse.dragStart && (this.mouse.dragStart.x !==  event.x || this.mouse.dragStart.y !==  event.y)) {
 				mouseEvent.drag = dragObject.call(this, event);
 				this.broadcast('mousedrag', mouseEvent);
 			}
