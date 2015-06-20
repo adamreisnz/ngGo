@@ -100,7 +100,7 @@ angular.module('ngGo.Game.Path.Service', [
 	 * Get the node choice at a specific move number
 	 */
 	GamePath.prototype.nodeAt = function(no) {
-		return (typeof this.path[no] == 'undefined') ? 0 : this.path[no];
+		return (typeof this.path[no] === 'undefined') ? 0 : this.path[no];
 	};
 
 	/**
@@ -109,7 +109,7 @@ angular.module('ngGo.Game.Path.Service', [
 	GamePath.prototype.compare = function(otherPath) {
 
 		//Invalid object?
-		if (!otherPath || typeof otherPath != 'object' || typeof otherPath.move == 'undefined') {
+		if (!otherPath || typeof otherPath != 'object' || typeof otherPath.move === 'undefined') {
 			return;
 		}
 
@@ -120,7 +120,7 @@ angular.module('ngGo.Game.Path.Service', [
 
 		//Check path
 		for (var i in this.path) {
-			if (typeof otherPath.path[i] == 'undefined' || this.path[i] != otherPath.path[i]) {
+			if (typeof otherPath.path[i] === 'undefined' || this.path[i] != otherPath.path[i]) {
 				return false;
 			}
 		}
@@ -152,7 +152,7 @@ angular.module('ngGo.Game.Path.Service', [
 	var findNodeName = function(node, nodeName, path) {
 
 		//Found in this node?
-		if (node.name && node.name == nodeName) {
+		if (node.name && node.name === nodeName) {
 			return true;
 		}
 

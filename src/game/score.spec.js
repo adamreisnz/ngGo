@@ -31,10 +31,14 @@ describe('GameScore', function() {
 	it('should have all scoring properties at 0 initially', function() {
 		score = new GameScore();
 		for (var c in score.colors) {
-			var color = score.colors[c];
-			for (var i in score.items) {
-				var item = score.items[i];
-				expect(score.get(color, item)).toBe(0);
+			if (score.colors.hasOwnProperty(c)) {
+					var color = score.colors[c];
+					for (var i in score.items) {
+						if (score.items.hasOwnProperty(i)) {
+							var item = score.items[i];
+							expect(score.get(color, item)).toBe(0);
+						}
+					}
 			}
 		}
 	});

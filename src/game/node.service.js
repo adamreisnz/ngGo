@@ -203,21 +203,23 @@ angular.module('ngGo.Game.Node.Service', [
 
 		//Loop setup objects
 		for (i in markup) {
+			if (markup.hasOwnProperty(i)) {
 
-			//Get type
-			type = markup[i].type;
+				//Get type
+				type = markup[i].type;
 
-			//Initialize array
-			if (typeof jgfMarkup[type] == 'undefined') {
-				jgfMarkup[type] = [];
-			}
+				//Initialize array
+				if (typeof jgfMarkup[type] == 'undefined') {
+					jgfMarkup[type] = [];
+				}
 
-			//Label?
-			if (type == 'label') {
-				jgfMarkup[type].push([markup[i].x, markup[i].y, markup[i].text]);
-			}
-			else {
-				jgfMarkup[type].push([markup[i].x, markup[i].y]);
+				//Label?
+				if (type == 'label') {
+					jgfMarkup[type].push([markup[i].x, markup[i].y, markup[i].text]);
+				}
+				else {
+					jgfMarkup[type].push([markup[i].x, markup[i].y]);
+				}
 			}
 		}
 
@@ -603,17 +605,19 @@ angular.module('ngGo.Game.Node.Service', [
 
 				//Copy node properties
 				for (var key in properties) {
-					var prop = properties[key];
+					if (properties.hasOwnProperty(key)) {
+						var prop = properties[key];
 
-					//Conversion function present?
-					if (typeof conversionMap.fromJgf[prop] != 'undefined') {
-						gameNode[prop] = conversionMap.fromJgf[prop](jgf[i][prop]);
-					}
-					else if (typeof jgf[i][prop] == 'object') {
-						gameNode[prop] = angular.copy(jgf[i][prop]);
-					}
-					else {
-						gameNode[prop] = jgf[i][prop];
+						//Conversion function present?
+						if (typeof conversionMap.fromJgf[prop] != 'undefined') {
+							gameNode[prop] = conversionMap.fromJgf[prop](jgf[i][prop]);
+						}
+						else if (typeof jgf[i][prop] == 'object') {
+							gameNode[prop] = angular.copy(jgf[i][prop]);
+						}
+						else {
+							gameNode[prop] = jgf[i][prop];
+						}
 					}
 				}
 			}

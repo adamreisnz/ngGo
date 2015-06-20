@@ -140,7 +140,7 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 				}
 
 				//Get character
-				if (typeof vertical.style == 'function') {
+				if (typeof vertical.style === 'function') {
 					ch = vertical.style.call(this, j);
 				}
 				else if (coordinates[vertical.style]) {
@@ -167,7 +167,7 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 				}
 
 				//Get character
-				if (typeof horizontal.style == 'function') {
+				if (typeof horizontal.style === 'function') {
 					ch = horizontal.style.call(this, j);
 				}
 				else if (coordinates[horizontal.style]) {

@@ -80,16 +80,16 @@ angular.module('ngGo.Game.Service', [
 			}
 
 			//Set defaults
-			if (typeof this.info.board.width == 'undefined') {
+			if (typeof this.info.board.width === 'undefined') {
 				this.info.board.width = this.config.defaultSize;
 			}
-			if (typeof this.info.board.height == 'undefined') {
+			if (typeof this.info.board.height === 'undefined') {
 				this.info.board.height = this.config.defaultSize;
 			}
-			if (typeof this.info.game.komi == 'undefined') {
+			if (typeof this.info.game.komi === 'undefined') {
 				this.info.game.komi = this.config.defaultKomi;
 			}
-			if (typeof this.info.game.handicap == 'undefined') {
+			if (typeof this.info.game.handicap === 'undefined') {
 				this.info.game.handicap = this.config.defaultHandicap;
 			}
 		};
@@ -115,7 +115,7 @@ angular.module('ngGo.Game.Service', [
 
 			//Determine which child node to process
 			i = i || 0;
-			if (i == -1) {
+			if (i === -1) {
 				i = 0;
 			}
 
@@ -175,7 +175,7 @@ angular.module('ngGo.Game.Service', [
 		var initializeHistory = function() {
 
 			//Already at beginning?
-			if (this.history.length == 1) {
+			if (this.history.length === 1) {
 				return;
 			}
 
@@ -410,15 +410,15 @@ angular.module('ngGo.Game.Service', [
 			}
 
 			//String given, could be stringified JGF, an SGF or GIB file
-			if (typeof data == 'string') {
+			if (typeof data === 'string') {
 				var c = data.charAt(0);
-				if (c == '(') {
+				if (c === '(') {
 					return this.fromSgf(data);
 				}
-				else if (c == '{') {
+				else if (c === '{') {
 					return this.fromJgf(data);
 				}
-				else if (c == '\\') {
+				else if (c === '\\') {
 					return this.fromGib(data);
 				}
 				else {
@@ -427,7 +427,7 @@ angular.module('ngGo.Game.Service', [
 			}
 
 			//Object given? Probably a JGF object
-			else if (typeof data == 'object') {
+			else if (typeof data === 'object') {
 				this.fromJgf(data);
 			}
 
@@ -473,7 +473,7 @@ angular.module('ngGo.Game.Service', [
 		Game.prototype.fromJgf = function(jgf) {
 
 			//Parse jgf string
-			if (typeof jgf == 'string') {
+			if (typeof jgf === 'string') {
 				try {
 					jgf = angular.fromJson(jgf);
 				}
@@ -483,8 +483,8 @@ angular.module('ngGo.Game.Service', [
 			}
 
 			//Parse tree string
-			if (typeof jgf.tree == 'string') {
-				if (jgf.tree.charAt(0) == '[') {
+			if (typeof jgf.tree === 'string') {
+				if (jgf.tree.charAt(0) === '[') {
 					try {
 						jgf.tree = angular.fromJson(jgf.tree);
 					}
@@ -539,7 +539,7 @@ angular.module('ngGo.Game.Service', [
 			for (var p = 0; p < props.length; p++) {
 
 				//Skip root
-				if (p == 'root') {
+				if (p === 'root') {
 					continue;
 				}
 
@@ -689,7 +689,7 @@ angular.module('ngGo.Game.Service', [
 			}
 
 			//The item's position in the object is given by dot separated strings
-			if (typeof position == 'string') {
+			if (typeof position === 'string') {
 				position = position.split('.');
 			}
 
@@ -703,7 +703,7 @@ angular.module('ngGo.Game.Service', [
 				key = position[p];
 
 				//Last key reached? Done, get value
-				if ((p + 1) == position.length) {
+				if ((p + 1) === position.length) {
 					return obj[key];
 				}
 
@@ -742,18 +742,18 @@ angular.module('ngGo.Game.Service', [
 		/**
 		 * Check if a given position is repeating within this game
 		 */
-		Game.prototype.isRepeatingPosition = function(checkPosition, x, y) {
+		Game.prototype.isRepeatingPosition = function(checkPosition) {
 
 			//Init
 			var flag, stop;
 
 			//Check for ko only? (Last two positions)
-			if (this.checkRepeat == 'KO' && (this.history.length - 2) >= 0) {
+			if (this.checkRepeat === 'KO' && (this.history.length - 2) >= 0) {
 				stop = this.history.length-2;
 			}
 
 			//Check all history?
-			else if (this.checkRepeat == 'ALL') {
+			else if (this.checkRepeat === 'ALL') {
 				stop = 0;
 			}
 
@@ -837,7 +837,7 @@ angular.module('ngGo.Game.Service', [
 			}
 
 			//Check history for repeating moves
-			if (this.checkRepeat && this.isRepeatingPosition(newPosition, x, y)) {
+			if (this.checkRepeat && this.isRepeatingPosition(newPosition)) {
 				throw new InvalidPositionError(ngGo.error.POSTITION_IS_REPEATING, x, y, color);
 			}
 
@@ -900,7 +900,7 @@ angular.module('ngGo.Game.Service', [
 			this.validatePlacement(x, y, color, tempPosition);
 
 			//No setup instructions container in this node?
-			if (typeof this.node.setup == 'undefined') {
+			if (typeof this.node.setup === 'undefined') {
 
 				//Is this a move node?
 				if (this.node.move) {
@@ -936,7 +936,7 @@ angular.module('ngGo.Game.Service', [
 		Game.prototype.addMarkup = function(x, y, markup) {
 
 			//No markup instructions container in this node?
-			if (typeof this.node.markup == 'undefined') {
+			if (typeof this.node.markup === 'undefined') {
 				this.node.markup = [];
 			}
 
@@ -958,7 +958,7 @@ angular.module('ngGo.Game.Service', [
 			//Remove from node setup instruction
 			if (typeof this.node.setup != 'undefined') {
 				for (var i = 0; i < this.node.setup.length; i++) {
-					if (x == this.node.setup[i].x && y == this.node.setup[i].y) {
+					if (x === this.node.setup[i].x && y === this.node.setup[i].y) {
 
 						//Remove from node and unset in position
 						this.node.setup.splice(i, 1);
@@ -985,7 +985,7 @@ angular.module('ngGo.Game.Service', [
 			//Remove from node
 			if (typeof this.node.markup != 'undefined') {
 				for (var i = 0; i < this.node.markup.length; i++) {
-					if (x == this.node.markup[i].x && y == this.node.markup[i].y) {
+					if (x === this.node.markup[i].x && y === this.node.markup[i].y) {
 						this.node.markup.splice(i, 1);
 						this.position.markup.unset(x, y);
 						break;
@@ -1109,7 +1109,7 @@ angular.module('ngGo.Game.Service', [
 		Game.prototype.next = function(i) {
 
 			//Object (node) given as parameter? Find index
-			if (typeof i == 'object') {
+			if (typeof i === 'object') {
 				i = this.node.children.indexOf(i);
 			}
 
@@ -1181,12 +1181,12 @@ angular.module('ngGo.Game.Service', [
 			}
 
 			//Nothing given?
-			if (typeof target == 'undefined') {
+			if (typeof target === 'undefined') {
 				return;
 			}
 
 			//Function given? Call now
-			if (typeof target == 'function') {
+			if (typeof target === 'function') {
 				target = target.call(this);
 			}
 
@@ -1194,16 +1194,16 @@ angular.module('ngGo.Game.Service', [
 			var path;
 
 			//Simple move number? Convert to path object
-			if (typeof target == 'number') {
+			if (typeof target === 'number') {
 				path = this.path.clone();
 				path.setMove(target);
 			}
 
 			//String? Named node
-			else if (typeof target == 'string') {
+			else if (typeof target === 'string') {
 
 				//Already here?
-				if (this.node.name == target) {
+				if (this.node.name === target) {
 					return;
 				}
 
@@ -1258,7 +1258,7 @@ angular.module('ngGo.Game.Service', [
 		Game.prototype.lastFork = function() {
 
 			//Loop until we find a node with more than one child
-			while (execPrevious.call(this) && this.node.children.length == 1) {}
+			while (execPrevious.call(this) && this.node.children.length === 1) {}
 		};
 
 		/***********************************************************************************************

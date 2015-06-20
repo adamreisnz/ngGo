@@ -84,7 +84,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		node.move = {};
 
 		//Pass
-		if (value[0] === '' || (jgf.width <= 19 && value[0] == 'tt')) {
+		if (value[0] === '' || (jgf.width <= 19 && value[0] === 'tt')) {
 			node.move[key] = 'pass';
 		}
 
@@ -100,7 +100,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseComment = function(jgf, node, key, value) {
 
 		//Get key alias
-		if (typeof sgfAliases[key] != 'undefined') {
+		if (typeof sgfAliases[key] !== 'undefined') {
 			key = sgfAliases[key];
 		}
 
@@ -114,7 +114,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseNodeName = function(jgf, node, key, value) {
 
 		//Get key alias
-		if (typeof sgfAliases[key] != 'undefined') {
+		if (typeof sgfAliases[key] !== 'undefined') {
 			key = sgfAliases[key];
 		}
 
@@ -128,7 +128,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseSetup = function(jgf, node, key, value) {
 
 		//Initialize setup container on node
-		if (typeof node.setup == 'undefined') {
+		if (typeof node.setup === 'undefined') {
 			node.setup = {};
 		}
 
@@ -136,7 +136,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		key = key.charAt(1);
 
 		//Initialize setup container of this type
-		if (typeof node.setup[key] == 'undefined') {
+		if (typeof node.setup[key] === 'undefined') {
 			node.setup[key] = [];
 		}
 
@@ -152,7 +152,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseScore = function(jgf, node, key, value) {
 
 		//Initialize score container on node
-		if (typeof node.score == 'undefined') {
+		if (typeof node.score === 'undefined') {
 			node.score = {
 				B: [],
 				W: []
@@ -186,12 +186,12 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 		}
 
 		//Initialize markup container on node
-		if (typeof node.markup == 'undefined') {
+		if (typeof node.markup === 'undefined') {
 			node.markup = {};
 		}
 
 		//Initialize markup container of this type
-		if (typeof node.markup[key] == 'undefined') {
+		if (typeof node.markup[key] === 'undefined') {
 			node.markup[key] = [];
 		}
 
@@ -213,17 +213,17 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseMarkup = function(jgf, node, key, value) {
 
 		//Get key alias
-		if (typeof sgfAliases[key] != 'undefined') {
+		if (typeof sgfAliases[key] !== 'undefined') {
 			key = sgfAliases[key];
 		}
 
 		//Initialize markup container on node
-		if (typeof node.markup == 'undefined') {
+		if (typeof node.markup === 'undefined') {
 			node.markup = {};
 		}
 
 		//Initialize markup container of this type
-		if (typeof node.markup[key] == 'undefined') {
+		if (typeof node.markup[key] === 'undefined') {
 			node.markup[key] = [];
 		}
 
@@ -239,7 +239,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseSize = function(jgf, node, key, value) {
 
 		//Initialize board container
-		if (typeof jgf.board == 'undefined') {
+		if (typeof jgf.board === 'undefined') {
 			jgf.board = {};
 		}
 
@@ -260,7 +260,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseDate = function(jgf, node, key, value) {
 
 		//Initialize dates container
-		if (typeof jgf.game.dates == 'undefined') {
+		if (typeof jgf.game.dates === 'undefined') {
 			jgf.game.dates = [];
 		}
 
@@ -284,7 +284,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parseVariations = function(jgf, node, key, value) {
 
 		//Initialize display property
-		if (typeof jgf.player == 'undefined') {
+		if (typeof jgf.player === 'undefined') {
 			jgf.player = {};
 		}
 
@@ -321,12 +321,12 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 	var parsePlayer = function(jgf, node, key, value) {
 
 		//Initialize players container
-		if (typeof jgf.game.players == 'undefined') {
+		if (typeof jgf.game.players === 'undefined') {
 			jgf.game.players = [];
 		}
 
 		//Determine player color
-		var color = (key == 'PB' || key == 'BT' || key == 'BR') ? 'black' : 'white';
+		var color = (key === 'PB' || key === 'BT' || key === 'BR') ? 'black' : 'white';
 
 		//Get key alias
 		if (typeof sgfAliases[key] != 'undefined') {
@@ -335,7 +335,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
 		//Check if player of this color already exists
 		for (var p = 0; p < jgf.game.players.length; p++) {
-			if (jgf.game.players[p].color == color) {
+			if (jgf.game.players[p].color === color) {
 				jgf.game.players[p][key] = value[0];
 				return;
 			}
@@ -425,7 +425,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 			key = position[p];
 
 			//Last key reached? Done
-			if ((p + 1) == position.length) {
+			if ((p + 1) === position.length) {
 				break;
 			}
 
@@ -472,7 +472,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 			for (var i in sequence) {
 
 				//Push stack if new variation found
-				if (sequence[i] == '(') {
+				if (sequence[i] === '(') {
 
 					//First encounter, this defines the main tree branch, so skip
 					if (i === 0 || i === '0') {
@@ -497,7 +497,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 				}
 
 				//Grab last container from stack if end of variation reached
-				else if (sequence[i] == ')') {
+				else if (sequence[i] === ')') {
 					if (stack.length) {
 						container = stack.pop();
 					}
@@ -527,7 +527,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
 							//If no node object present, create a new node
 							//For moves, always a new node is created
-							if (!node || key == 'B' || key == 'W') {
+							if (!node || key === 'B' || key === 'W') {
 								node = {};
 								container.push(node);
 							}
@@ -541,7 +541,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 					//No SGF parser present, we continue with regular property handling
 
 					//If there is only one value, simplify array
-					if (values.length == 1) {
+					if (values.length === 1) {
 						values = values[0];
 					}
 

@@ -133,7 +133,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 						keyboardEvent.preventDefault();
 
 						//Advance to the next move
-						if (this.tool == PlayerTools.MOVE && this.game.node != this.restrictNodeEnd) {
+						if (this.tool === PlayerTools.MOVE && this.game.node !== this.restrictNodeEnd) {
 							this.next();
 						}
 					}
@@ -147,7 +147,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 						keyboardEvent.preventDefault();
 
 						//Go to the previous move
-						if (this.tool == PlayerTools.MOVE && this.game.node != this.restrictNodeStart) {
+						if (this.tool === PlayerTools.MOVE && this.game.node !== this.restrictNodeStart) {
 							this.previous();
 						}
 					}
@@ -231,7 +231,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 			}
 
 			//Last coordinates are the same?
-			if (this.mouse.lastX == event.x && this.mouse.lastY == event.y) {
+			if (this.mouse.lastX === event.x && this.mouse.lastY === event.y) {
 				return;
 			}
 
