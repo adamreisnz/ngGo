@@ -378,7 +378,7 @@ angular.module('ngGo.Game.Service', [
 		 * Check if we managed to load a valid game record
 		 */
 		Game.prototype.isLoaded = function() {
-			return this.root !== = null;
+			return this.root !== null;
 		};
 
 		/***********************************************************************************************
@@ -419,7 +419,7 @@ angular.module('ngGo.Game.Service', [
 				if (c === '(') {
 					return this.fromSgf(data);
 				}
-				else if (c === '{') {
+				else if (c === '{' || c === '[') {
 					return this.fromJgf(data);
 				}
 				else if (c === '\\') {
@@ -484,6 +484,13 @@ angular.module('ngGo.Game.Service', [
 				catch (error) {
 					throw ngGo.error.INVALID_JGF_JSON;
 				}
+			}
+
+			//If array given, convert to object with only tree
+			if (angular.isArray(jgf)) {
+				jgf = {
+					tree: jgf
+				};
 			}
 
 			//Parse tree string
@@ -1123,12 +1130,16 @@ angular.module('ngGo.Game.Service', [
 				//If an invalid move is detected, we can't go on
 				try {
 					executeNode.call(this);
+					return true;
 				}
 				catch (error) {
 					previousNode.call(this);
 					throw error;
 				}
 			}
+
+			//Didn't go to next position
+			return false;
 		};
 
 		/**
@@ -1139,7 +1150,11 @@ angular.module('ngGo.Game.Service', [
 			//Go to the previous node
 			if (previousNode.call(this)) {
 				popPosition.call(this);
+				return true;
 			}
+
+			//Didn't go to previous position
+			return false;
 		};
 
 		/**
