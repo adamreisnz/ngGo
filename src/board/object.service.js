@@ -7,8 +7,8 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Object.Service', [
-	'ngGo',
-	'ngGo.Board.DefaultClearHandler.Service'
+  'ngGo',
+  'ngGo.Board.DefaultClearHandler.Service'
 ])
 
 /**
@@ -16,28 +16,28 @@ angular.module('ngGo.Board.Object.Service', [
  */
 .factory('BoardObject', function(DefaultClearHandler) {
 
-	/**
-	 * Constructor
-	 */
-	var BoardObject = {
+  /**
+   * Constructor
+   */
+  var BoardObject = {
 
-		/**
-		 * Draw method
-		 */
-		draw: function(/*obj*/) {
-			if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
-				return;
-			}
-		},
+    /**
+     * Draw method
+     */
+    draw: function(/*obj*/) {
+      if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+        return;
+      }
+    },
 
-		/**
-		 * Clear method
-		 */
-		clear: function(obj) {
-			DefaultClearHandler.call(this, this.context, obj);
-		}
-	};
+    /**
+     * Clear method
+     */
+    clear: function(obj) {
+      DefaultClearHandler.call(this, this.context, obj);
+    }
+  };
 
-	//Return
-	return BoardObject;
+  //Return
+  return BoardObject;
 });

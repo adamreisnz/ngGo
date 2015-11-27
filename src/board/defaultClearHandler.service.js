@@ -9,7 +9,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.DefaultClearHandler.Service', [
-	'ngGo'
+  'ngGo'
 ])
 
 /**
@@ -17,26 +17,26 @@ angular.module('ngGo.Board.DefaultClearHandler.Service', [
  */
 .factory('DefaultClearHandler', function() {
 
-	/**
-	 * Clear handler definition
-	 *
-	 * All external handlers are called from the context of the layer that contains the object.
-	 * First parameter is the canvas2d context, second parameter is the object itself.
-	 */
-	return function(context, obj) {
+  /**
+   * Clear handler definition
+   *
+   * All external handlers are called from the context of the layer that contains the object.
+   * First parameter is the canvas2d context, second parameter is the object itself.
+   */
+  return function(context, obj) {
 
-		//No context?
-		if (!context) {
-			return;
-		}
+    //No context?
+    if (!context) {
+      return;
+    }
 
-		//Get coordinates and stone radius
-		var x = this.board.getAbsX(obj.x),
-			y = this.board.getAbsY(obj.y),
-			s = this.board.getCellSize(),
-			r = this.board.theme.get('stone.radius', s);
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(obj.x),
+      y = this.board.getAbsY(obj.y),
+      s = this.board.getCellSize(),
+      r = this.board.theme.get('stone.radius', s);
 
-		//Clear rectangle the size of the stone radius
-		context.clearRect(x-r, y-r, 2*r, 2*r);
-	};
+    //Clear rectangle the size of the stone radius
+    context.clearRect(x-r, y-r, 2*r, 2*r);
+  };
 });

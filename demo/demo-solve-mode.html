@@ -1,360 +1,360 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>ngGo demo - Solve mode</title>
-	<meta charset="utf-8" />
-	<meta name="author" content="Adam Buczynski" />
-	<link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css" />
-	<link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
-	<script src="../angular/angular.js"></script>
-	<script src="../release/ngGo.js"></script>
+  <title>ngGo demo - Solve mode</title>
+  <meta charset="utf-8" />
+  <meta name="author" content="Adam Buczynski" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
+  <script src="../angular/angular.js"></script>
+  <script src="../release/ngGo.js"></script>
 </head>
 <body lang="en">
 <main ng-controller="ngGoDemoController">
-	<section class="goban">
-		<player mode="solve">
-			<board></board>
-		</player>
-	</section>
-	<aside class="goban-info">
-		<h3>{{gameInfo.name}}</h3>
-		<p>{{gameInfo.comment}}</p>
-		<p>You are playing as: {{Player.getPlayerColor(true) | stoneColor}}</p>
-		<p>{{solution}}</p>
-		<p>
-			Options:<br/>
-			<button ng-click="Player.board.swapColors()">Swap board colors</button>
-			<button ng-click="Player.setPlayerColor(-1*Player.playerColor)">Switch player color</button>
-			<button ng-click="Player.board.toggleCoordinates()">Toggle coordinates</button>
-			<button ng-click="Player.toggleSolutionPaths()">Toggle solution paths</button>
-			<button ng-click="Player.restartProblem()">Restart problem</button>
-		</p/>
-	</aside>
+  <section class="goban">
+    <player mode="solve">
+      <board></board>
+    </player>
+  </section>
+  <aside class="goban-info">
+    <h3>{{gameInfo.name}}</h3>
+    <p>{{gameInfo.comment}}</p>
+    <p>You are playing as: {{Player.getPlayerColor(true) | stoneColor}}</p>
+    <p>{{solution}}</p>
+    <p>
+      Options:<br/>
+      <button ng-click="Player.board.swapColors()">Swap board colors</button>
+      <button ng-click="Player.setPlayerColor(-1*Player.playerColor)">Switch player color</button>
+      <button ng-click="Player.board.toggleCoordinates()">Toggle coordinates</button>
+      <button ng-click="Player.toggleSolutionPaths()">Toggle solution paths</button>
+      <button ng-click="Player.restartProblem()">Restart problem</button>
+    </p/>
+  </aside>
 </main>
 <script>
 
-	/**
-	 * Some JGF data to work with, since Chrome doesnt allow loading a file due to cross domain policy
-	 */
-	var jgf = {
-		"record": {
-			"application": "ngGo v1.0.4",
-			"version": 1,
-			"charset": "UTF-8"
-		},
-		"game": {
-			"type": "go",
-			"name": "Test problem",
-			"comment": "White to play and kill black. There are several ways to do this.",
-			"players": [
-				{
-					"color": "black",
-					"name": "Black"
-				},
-				{
-					"color": "white",
-					"name": "White"
-				}
-			],
-			"rules": "Japanese",
-			"komi": 0
-		},
-		"board": {
-			"width": 8,
-			"height": 6,
-			"cutoff": ["right", "bottom"]
-		},
-		"tree": [
-			{
-				"root": true,
-				"setup": {
-					"W": [
-						"fb",
-						"dc",
-						"ec",
-						"fc",
-						"bd",
-						"cd",
-						"de"
-					],
-					"B": [
-						"db",
-						"eb",
-						"bc",
-						"cc"
-					]
-				},
-				"turn": "W"
-			},
-			[
-				[
-					{
-						"solution": true,
-						"move": {
-							"W": "bb"
-						}
-					},
-					[
-						[
-							{
-								"solution": true,
-								"move": {
-									"B": "ab"
-								}
-							},
-							{
-								"solution": true,
-								"move": {
-									"W": "cb"
-								}
-							},
-							{
-								"solution": true,
-								"move": {
-									"B": "ac"
-								}
-							},
-							[
-								[
-									{
-										"solution": true,
-										"move": {
-											"W": "ad"
-										}
-									}
-								],
-								[
-									{
-										"solution": true,
-										"move": {
-											"W": "da"
-										}
-									}
-								],
-								[
-									{
-										"solution": true,
-										"move": {
-											"W": "ea"
-										}
-									}
-								]
-							]
-						],
-						[
-							{
-								"solution": true,
-								"move": {
-									"B": "cb"
-								}
-							},
-							{
-								"solution": true,
-								"move": {
-									"W": "ac"
-								}
-							},
-							{
-								"solution": true,
-								"move": {
-									"B": "ba"
-								}
-							},
-							{
-								"solution": true,
-								"move": {
-									"W": "ab"
-								}
-							}
-						]
-					]
-				],
-				[
-					{
-						"solution": true,
-						"move": {
-							"W": "cb"
-						}
-					},
-					{
-						"solution": true,
-						"move": {
-							"B": "bb"
-						}
-					},
-					{
-						"solution": true,
-						"move": {
-							"W": "ca"
-						}
-					},
-					{
-						"solution": true,
-						"move": {
-							"B": "ba"
-						}
-					},
-					[
-						[
-							{
-								"move": {
-									"W": "ea"
-								}
-							},
-							{
-								"move": {
-									"B": "da"
-								}
-							}
-						],
-						[
-							{
-								"move": {
-									"W": "da"
-								}
-							},
-							{
-								"move": {
-									"B": "ea"
-								}
-							},
-							{
-								"move": {
-									"W": "ca"
-								}
-							},
-							{
-								"move": {
-									"B": "ac"
-								}
-							}
-						],
-						[
-							{
-								"solution": true,
-								"move": {
-									"W": "ac"
-								}
-							},
-							{
-								"solution": true,
-								"move": {
-									"B": "da"
-								}
-							},
-							{
-								"solution": true,
-								"move": {
-									"W": "ab"
-								}
-							}
-						]
-					]
-				]
-			]
-		]
-	};
+  /**
+   * Some JGF data to work with, since Chrome doesnt allow loading a file due to cross domain policy
+   */
+  var jgf = {
+    "record": {
+      "application": "ngGo v1.0.4",
+      "version": 1,
+      "charset": "UTF-8"
+    },
+    "game": {
+      "type": "go",
+      "name": "Test problem",
+      "comment": "White to play and kill black. There are several ways to do this.",
+      "players": [
+        {
+          "color": "black",
+          "name": "Black"
+        },
+        {
+          "color": "white",
+          "name": "White"
+        }
+      ],
+      "rules": "Japanese",
+      "komi": 0
+    },
+    "board": {
+      "width": 8,
+      "height": 6,
+      "cutoff": ["right", "bottom"]
+    },
+    "tree": [
+      {
+        "root": true,
+        "setup": {
+          "W": [
+            "fb",
+            "dc",
+            "ec",
+            "fc",
+            "bd",
+            "cd",
+            "de"
+          ],
+          "B": [
+            "db",
+            "eb",
+            "bc",
+            "cc"
+          ]
+        },
+        "turn": "W"
+      },
+      [
+        [
+          {
+            "solution": true,
+            "move": {
+              "W": "bb"
+            }
+          },
+          [
+            [
+              {
+                "solution": true,
+                "move": {
+                  "B": "ab"
+                }
+              },
+              {
+                "solution": true,
+                "move": {
+                  "W": "cb"
+                }
+              },
+              {
+                "solution": true,
+                "move": {
+                  "B": "ac"
+                }
+              },
+              [
+                [
+                  {
+                    "solution": true,
+                    "move": {
+                      "W": "ad"
+                    }
+                  }
+                ],
+                [
+                  {
+                    "solution": true,
+                    "move": {
+                      "W": "da"
+                    }
+                  }
+                ],
+                [
+                  {
+                    "solution": true,
+                    "move": {
+                      "W": "ea"
+                    }
+                  }
+                ]
+              ]
+            ],
+            [
+              {
+                "solution": true,
+                "move": {
+                  "B": "cb"
+                }
+              },
+              {
+                "solution": true,
+                "move": {
+                  "W": "ac"
+                }
+              },
+              {
+                "solution": true,
+                "move": {
+                  "B": "ba"
+                }
+              },
+              {
+                "solution": true,
+                "move": {
+                  "W": "ab"
+                }
+              }
+            ]
+          ]
+        ],
+        [
+          {
+            "solution": true,
+            "move": {
+              "W": "cb"
+            }
+          },
+          {
+            "solution": true,
+            "move": {
+              "B": "bb"
+            }
+          },
+          {
+            "solution": true,
+            "move": {
+              "W": "ca"
+            }
+          },
+          {
+            "solution": true,
+            "move": {
+              "B": "ba"
+            }
+          },
+          [
+            [
+              {
+                "move": {
+                  "W": "ea"
+                }
+              },
+              {
+                "move": {
+                  "B": "da"
+                }
+              }
+            ],
+            [
+              {
+                "move": {
+                  "W": "da"
+                }
+              },
+              {
+                "move": {
+                  "B": "ea"
+                }
+              },
+              {
+                "move": {
+                  "W": "ca"
+                }
+              },
+              {
+                "move": {
+                  "B": "ac"
+                }
+              }
+            ],
+            [
+              {
+                "solution": true,
+                "move": {
+                  "W": "ac"
+                }
+              },
+              {
+                "solution": true,
+                "move": {
+                  "B": "da"
+                }
+              },
+              {
+                "solution": true,
+                "move": {
+                  "W": "ab"
+                }
+              }
+            ]
+          ]
+        ]
+      ]
+    ]
+  };
 
-	/**
-	 * Module definition and dependencies
-	 */
-	angular.module('ngGoDemo', [
+  /**
+   * Module definition and dependencies
+   */
+  angular.module('ngGoDemo', [
 
-		//ngGo player and solve mode
-		'ngGo.Player.Service',
-		'ngGo.Player.Mode.Solve.Service'
-	])
+    //ngGo player and solve mode
+    'ngGo.Player.Service',
+    'ngGo.Player.Mode.Solve.Service'
+  ])
 
-	/**
-	 * Configuration
-	 */
-	.config(function(
-		PlayerProvider, BoardThemeProvider, MarkupTypes, StoneColor
-	) {
+  /**
+   * Configuration
+   */
+  .config(function(
+    PlayerProvider, BoardThemeProvider, MarkupTypes, StoneColor
+  ) {
 
-		//Player configuration
-		PlayerProvider.setConfig({
-			solution_paths: true,
-			player_color: StoneColor.WHITE,
-			solve_auto_play: true,
-			solve_auto_play_delay: 750
-		});
+    //Player configuration
+    PlayerProvider.setConfig({
+      solution_paths: true,
+      player_color: StoneColor.WHITE,
+      solve_auto_play: true,
+      solve_auto_play_delay: 750
+    });
 
-		//Board theme
-		BoardThemeProvider.setTheme({
+    //Board theme
+    BoardThemeProvider.setTheme({
 
-			//The below settings are the defaults, but they're
-			//shown here to illustrate they can be configured.
-			markup: {
-				solution: {
-					valid: {
-						type: MarkupTypes.SELECT,
-						color: 'rgba(86,114,30,0.9)',
-						scale: 0.5
-					},
-					invalid: {
-						type: MarkupTypes.MARK,
-						color: 'rgba(237,9,15,0.8)',
-						scale: 0.3
-					}
-				}
-			}
-		});
-	})
+      //The below settings are the defaults, but they're
+      //shown here to illustrate they can be configured.
+      markup: {
+        solution: {
+          valid: {
+            type: MarkupTypes.SELECT,
+            color: 'rgba(86,114,30,0.9)',
+            scale: 0.5
+          },
+          invalid: {
+            type: MarkupTypes.MARK,
+            color: 'rgba(237,9,15,0.8)',
+            scale: 0.3
+          }
+        }
+      }
+    });
+  })
 
-	/**
-	 * Controller
-	 */
-	.controller('ngGoDemoController', function($scope, Player) {
+  /**
+   * Controller
+   */
+  .controller('ngGoDemoController', function($scope, Player) {
 
-		//Load JGF and start solving
-		Player.load(jgf);
-		Player.solve();
+    //Load JGF and start solving
+    Player.load(jgf);
+    Player.solve();
 
-		//Extract game info
-		$scope.gameInfo = Player.game.get('game');
+    //Extract game info
+    $scope.gameInfo = Player.game.get('game');
 
-		//Solution message
-		$scope.solution = 'Find the solution...';
+    //Solution message
+    $scope.solution = 'Find the solution...';
 
-		//Listen for solution found events
-		Player.on('solutionFound', function(event, node) {
-			$scope.solution = "Solution found! :D";
-		});
-		Player.on('solutionWrong', function(event, node) {
-			$scope.solution = "Wrong solution :(";
-		});
-		Player.on('solutionOffPath', function(event, node) {
-			$scope.solution = "Off path :(";
-		});
-	})
+    //Listen for solution found events
+    Player.on('solutionFound', function(event, node) {
+      $scope.solution = "Solution found! :D";
+    });
+    Player.on('solutionWrong', function(event, node) {
+      $scope.solution = "Wrong solution :(";
+    });
+    Player.on('solutionOffPath', function(event, node) {
+      $scope.solution = "Off path :(";
+    });
+  })
 
-	/**
-	 * Stone color filter
-	 */
-	.filter('stoneColor', function(StoneColor) {
-		return function(color) {
-			if (color == StoneColor.B) {
-				return 'Black';
-			}
-			else if (color == StoneColor.W) {
-				return 'White';
-			}
-			else if (color == StoneColor.E) {
-				return '';
-			}
-			return input;
-		};
-	});
+  /**
+   * Stone color filter
+   */
+  .filter('stoneColor', function(StoneColor) {
+    return function(color) {
+      if (color == StoneColor.B) {
+        return 'Black';
+      }
+      else if (color == StoneColor.W) {
+        return 'White';
+      }
+      else if (color == StoneColor.E) {
+        return '';
+      }
+      return input;
+    };
+  });
 
-	/**
-	 * Bootstrap angular
-	 */
-	angular.element(document).ready(function() {
-		setTimeout(function() {
-			angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
-		}, 10);
-	});
+  /**
+   * Bootstrap angular
+   */
+  angular.element(document).ready(function() {
+    setTimeout(function() {
+      angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
+    }, 10);
+  });
 </script>
 </body>
 </html>
