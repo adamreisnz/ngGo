@@ -18,6 +18,7 @@ var rename = require('gulp-rename');
 var jshint = require('gulp-jshint');
 var cached = require('gulp-cached');
 var filter = require('gulp-filter');
+var replace = require('gulp-replace');
 var wrapper = require('gulp-wrapper');
 var stylish = require('gulp-jscs-stylish');
 var sourcemaps = require('gulp-sourcemaps');
@@ -222,6 +223,28 @@ function majorBump() {
 }
 
 /**
+ * Update version in readme
+ */
+function updateReadmeVersion() {
+  return gulp.src([
+    './README.md'
+  ]).pipe(replace(
+    /([0-9]\.[0-9]+\.[0-9]+)/g, packageJson().version
+  )).pipe(gulp.dest('./'));
+}
+
+/**
+ * Update version in ngGo.js
+ */
+function updateSourceVersion() {
+  return gulp.src([
+    './src/ngGo.js'
+  ]).pipe(replace(
+    /'([0-9]\.[0-9]+\.[0-9]+)'/g, packageJson().version
+  )).pipe(gulp.dest('./'));
+}
+
+/**
  * Commit the version bump
  */
 function commitBump() {
@@ -270,13 +293,13 @@ gulp.task('watch', watch);
  * Bump version numbers
  */
 gulp.task('patch', gulp.series(
-  patchBump, 'release', commitBump, tagBump
+  patchBump, updateReadmeVersion, updateSourceVersion, 'release', commitBump, tagBump
 ));
 gulp.task('minor', gulp.series(
-  minorBump, 'release', commitBump, tagBump
+  minorBump, updateReadmeVersion, updateSourceVersion, 'release', commitBump, tagBump
 ));
 gulp.task('major', gulp.series(
-  majorBump, 'release', commitBump, tagBump
+  majorBump, updateReadmeVersion, updateSourceVersion, 'release', commitBump, tagBump
 ));
 
 /**
