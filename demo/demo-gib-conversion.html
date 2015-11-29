@@ -2,10 +2,10 @@
 <html>
 <head>
   <title>ngGo demo - GIB conversion</title>
-  <meta charset="utf-8" />
-  <meta name="author" content="Adam Buczynski" />
-  <link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css" />
-  <link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
+  <meta charset="utf-8">
+  <meta name="author" content="Adam Buczynski">
+  <link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css">
+  <link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css">
   <script src="../angular/angular.js"></script>
   <script src="../release/ngGo.js"></script>
 </head>
@@ -19,47 +19,47 @@
   <aside class="goban-info">
     <h3>{{Game.get('game.name')}}</h3>
     <p>
-      <span ng-repeat="Player in Game.get('game.players')">{{Player.name}} ({{Player.rank}})<span ng-show="$first"> vs. </span></span><br/>
-      {{Game.getTurn() | stoneColor}} to play<br/>
-      Move number: {{Game.path.getMove()}}<br/>
-      Komi: {{Game.get('game.komi')}}<br/>
+      <span ng-repeat="Player in Game.get('game.players')">{{Player.name}} ({{Player.rank}})<span ng-show="$first"> vs. </span></span><br>
+      {{Game.getTurn() | stoneColor}} to play<br>
+      Move number: {{Game.path.getMove()}}<br>
+      Komi: {{Game.get('game.komi')}}<br>
       Result: {{Game.get('game.result')}}
     </p>
 
     <p>
-      Player mode:<br/>
+      Player mode:<br>
       <button ng-repeat="(mode, modeClass) in Player.modes" ng-click="Player.switchMode(mode)" ng-disabled="Player.mode == mode">{{mode}}</button>
     </p>
 
     <p>
-      Player tool:<br/>
+      Player tool:<br>
       <button ng-repeat="tool in Player.tools" ng-click="Player.switchTool(tool)" ng-disabled="Player.tool == tool">{{tool}}</button>
     </p>
 
     <p ng-show="Player.tool == 'setup'">
-      Setup tool:<br/>
+      Setup tool:<br>
       <button ng-repeat="tool in SetupTools" ng-click="Player.switchSetupTool(tool)" ng-disabled="Player.setupTool == tool">{{tool}}</button>
     </p>
 
     <p ng-show="Player.tool == 'markup'">
-      Markup tool:<br/>
+      Markup tool:<br>
       <button ng-repeat="tool in MarkupTools" ng-click="Player.switchMarkupTool(tool)" ng-disabled="Player.markupTool == tool">{{tool}}</button>
     </p>
 
     <p>
-      Options:<br/>
+      Options:<br>
       <button ng-click="Player.board.swapColors()">Swap colors</button>
       <button ng-click="Player.board.toggleCoordinates()">Toggle coordinates</button>
       <button ng-click="Player.setVariationMarkup(!Player.variationMarkup)">Toggle variation markup</button>
-    </p/>
+    </p>
 
     <p>
-      Navigate &amp; auto play:<br/>
+      Navigate &amp; auto play:<br>
       <button ng-click="Player.first()">&lt;&lt;</button>
       <button ng-click="Player.previous()">&lt;</button>
       <button ng-click="Player.next()">&gt;</button>
       <button ng-click="Player.last()">&gt;&gt;</button>
-      <br/>
+      <br>
       <button ng-click="Player.start()">Start</button>
       <button ng-click="Player.stop()">Stop</button>
     </p>

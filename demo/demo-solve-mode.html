@@ -2,10 +2,10 @@
 <html>
 <head>
   <title>ngGo demo - Solve mode</title>
-  <meta charset="utf-8" />
-  <meta name="author" content="Adam Buczynski" />
-  <link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css" />
-  <link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
+  <meta charset="utf-8">
+  <meta name="author" content="Adam Buczynski">
+  <link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css">
+  <link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css">
   <script src="../angular/angular.js"></script>
   <script src="../release/ngGo.js"></script>
 </head>
@@ -22,13 +22,13 @@
     <p>You are playing as: {{Player.getPlayerColor(true) | stoneColor}}</p>
     <p>{{solution}}</p>
     <p>
-      Options:<br/>
+      Options:<br>
       <button ng-click="Player.board.swapColors()">Swap board colors</button>
       <button ng-click="Player.setPlayerColor(-1*Player.playerColor)">Switch player color</button>
       <button ng-click="Player.board.toggleCoordinates()">Toggle coordinates</button>
       <button ng-click="Player.toggleSolutionPaths()">Toggle solution paths</button>
       <button ng-click="Player.restartProblem()">Restart problem</button>
-    </p/>
+    </p>
   </aside>
 </main>
 <script>
