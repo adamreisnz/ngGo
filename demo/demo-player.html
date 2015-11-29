@@ -1,199 +1,199 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>ngGo demo - Player</title>
-	<meta charset="utf-8" />
-	<meta name="author" content="Adam Buczynski" />
-	<link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css" />
-	<link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css" />
-	<script src="../angular/angular.js"></script>
-	<script src="../release/ngGo.js"></script>
+  <title>ngGo demo - Player</title>
+  <meta charset="utf-8">
+  <meta name="author" content="Adam Buczynski">
+  <link rel="stylesheet" type="text/css" media="screen" href="../release/ngGo.css">
+  <link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css">
+  <script src="../node_modules/angular/angular.js"></script>
+  <script src="../release/ngGo.js"></script>
 </head>
 <body lang="en">
 <main ng-controller="ngGoDemoController">
-	<section class="goban">
-		<player mode="replay">
-			<board coordinates="true"></board>
-		</player>
-	</section>
-	<aside class="goban-info">
-		<h3>{{Game.get('game.name')}}</h3>
-		<p>
-			<span ng-repeat="Player in Game.get('game.players')">{{Player.name}} ({{Player.rank}})<span ng-show="$first"> vs. </span></span><br/>
-			{{Game.getTurn() | stoneColor}} to play<br/>
-			Move number: {{Game.path.getMove()}}<br/>
-			Komi: {{Game.get('game.komi')}}<br/>
-			Result: {{Game.get('game.result')}}
-		</p>
+  <section class="goban">
+    <player mode="replay">
+      <board coordinates="true"></board>
+    </player>
+  </section>
+  <aside class="goban-info">
+    <h3>{{Game.get('game.name')}}</h3>
+    <p>
+      <span ng-repeat="Player in Game.get('game.players')">{{Player.name}} ({{Player.rank}})<span ng-show="$first"> vs. </span></span><br>
+      {{Game.getTurn() | stoneColor}} to play<br>
+      Move number: {{Game.path.getMove()}}<br>
+      Komi: {{Game.get('game.komi')}}<br>
+      Result: {{Game.get('game.result')}}
+    </p>
 
-		<p>
-			Player mode:<br/>
-			<button ng-repeat="(mode, modeClass) in Player.modes" ng-click="Player.switchMode(mode)" ng-disabled="Player.mode == mode">{{mode}}</button>
-		</p>
+    <p>
+      Player mode:<br>
+      <button ng-repeat="(mode, modeClass) in Player.modes" ng-click="Player.switchMode(mode)" ng-disabled="Player.mode == mode">{{mode}}</button>
+    </p>
 
-		<p>
-			Player tool:<br/>
-			<button ng-repeat="tool in Player.tools" ng-click="Player.switchTool(tool)" ng-disabled="Player.tool == tool">{{tool}}</button>
-		</p>
+    <p>
+      Player tool:<br>
+      <button ng-repeat="tool in Player.tools" ng-click="Player.switchTool(tool)" ng-disabled="Player.tool == tool">{{tool}}</button>
+    </p>
 
-		<p ng-show="Player.tool == 'setup'">
-			Setup tool:<br/>
-			<button ng-repeat="tool in SetupTools" ng-click="Player.switchSetupTool(tool)" ng-disabled="Player.setupTool == tool">{{tool}}</button>
-		</p>
+    <p ng-show="Player.tool == 'setup'">
+      Setup tool:<br>
+      <button ng-repeat="tool in SetupTools" ng-click="Player.switchSetupTool(tool)" ng-disabled="Player.setupTool == tool">{{tool}}</button>
+    </p>
 
-		<p ng-show="Player.tool == 'markup'">
-			Markup tool:<br/>
-			<button ng-repeat="tool in MarkupTools" ng-click="Player.switchMarkupTool(tool)" ng-disabled="Player.markupTool == tool">{{tool}}</button>
-		</p>
+    <p ng-show="Player.tool == 'markup'">
+      Markup tool:<br>
+      <button ng-repeat="tool in MarkupTools" ng-click="Player.switchMarkupTool(tool)" ng-disabled="Player.markupTool == tool">{{tool}}</button>
+    </p>
 
-		<p>
-			Options:<br/>
-			<button ng-click="Player.board.swapColors()">Swap colors</button>
-			<button ng-click="Player.board.toggleCoordinates()">Toggle coordinates</button>
-			<button ng-click="Player.setVariationMarkup(!Player.variationMarkup)">Toggle variation markup</button>
-		</p/>
+    <p>
+      Options:<br>
+      <button ng-click="Player.board.swapColors()">Swap colors</button>
+      <button ng-click="Player.board.toggleCoordinates()">Toggle coordinates</button>
+      <button ng-click="Player.setVariationMarkup(!Player.variationMarkup)">Toggle variation markup</button>
+    </p>
 
-		<p>
-			Navigate &amp; auto play:<br/>
-			<button ng-click="Player.first()">&lt;&lt;</button>
-			<button ng-click="Player.previous()">&lt;</button>
-			<button ng-click="Player.next()">&gt;</button>
-			<button ng-click="Player.last()">&gt;&gt;</button>
-			<br/>
-			<button ng-click="Player.start()">Start</button>
-			<button ng-click="Player.stop()">Stop</button>
-		</p>
-	</aside>
+    <p>
+      Navigate &amp; auto play:<br>
+      <button ng-click="Player.first()">&lt;&lt;</button>
+      <button ng-click="Player.previous()">&lt;</button>
+      <button ng-click="Player.next()">&gt;</button>
+      <button ng-click="Player.last()">&gt;&gt;</button>
+      <br>
+      <button ng-click="Player.start()">Start</button>
+      <button ng-click="Player.stop()">Stop</button>
+    </p>
+
+    <p>
+      Comments:<br>
+      <span ng-repeat="comment in Game.node.comments">{{comment}}<br></span>
+    </p>
+  </aside>
 </main>
 <script>
 
-	/**
-	 * Some JGF data to work with, since Chrome doesnt allow loading a file due to cross domain policy
-	 */
-	var jgf = {
-		"record": {
-			"application": "ngGo v1.0.3",
-			"version": 1,
-			"charset": "UTF-8"
-		},
-		"game": {
-			"type": "go",
-			"name": "Demo JGF",
-			"players": [
-				{
-					"color": "black",
-					"name": "Black",
-					"rank": "5k"
-				},
-				{
-					"color": "white",
-					"name": "White",
-					"rank": "2d"
-				}
-			],
-			"rules": "Japanese",
-			"komi": 0.5
-		},
-		"board": {
-			"width": 9,
-			"height": 9
-		},
-		"tree": [{"root":true,"markup":{"circle":["af","bf","cf"],"label":[["ac","1"],["bc","2"],["cc","3"],["ag","A"],["bg","B"],["cg","C"]],"happy":["ah","ch"],"sad":["bh"],"triangle":["aa","ba","ca"],"square":["ab","bb","cb"],"select":["ae","be","ce"],"mark":["ad","bd","cd"]},"setup":{"W":["ba","bb","bc","bd","be","bf","bg","bh"],"B":["aa","ab","ac","ad","ae","af","ag","ah"]},"comments":["Comment at start of game"]},[[{"move":{"B":"gc"},"comments":["Comment at first variation"],"name":"First variation"},{"move":{"W":"gg"}},{"move":{"B":"cc"}},{"move":{"W":"dc"}},{"move":{"B":"cb"}},{"move":{"W":"db"}},{"move":{"B":"ca"}},{"move":{"W":"cd"}},{"move":{"B":"da"}},{"move":{"W":"ea"}},{"move":{"B":"bi"}},{"move":{"W":"ef"}},{"move":{"B":"ch"}},{"move":{"W":"cg"}},{"move":{"B":"dh"}},{"move":{"W":"dg"}},{"move":{"B":"eh"}},{"move":{"W":"ge"}},{"move":{"B":"fg"}},{"move":{"W":"ff"}},{"move":{"B":"gh"}},{"move":{"W":"hg"}},{"move":{"B":"hh"}},{"move":{"W":"ig"}},{"move":{"B":"ih"}},{"move":{"W":"fd"}},{"move":{"B":"ai"}},{"move":{"W":"hd"}},{"move":{"B":"ci"}},{"move":{"W":"eg"}},{"move":{"B":"fh"}},{"move":{"W":"gi"}},{"move":{"B":"fi"}}],[{"move":{"B":"gg"},"comments":["Comment at second variation"],"name":"Second variation"},[[{"move":{"W":"gc"}},{"mode":"solve","move":{"B":"eg"}},[[{"move":{"W":"ec","solution":true}},{"move":{"B":"fe","solution":true}}],[{"move":{"W":"ge","solution":true}},{"move":{"B":"dh","solution":true}}]]],[{"setup":{"E":["aa","ba","ab","bb","ac","bc","ad","bd","ae","be","af","bf","ag","bg","ah","bh"]},"comments":["Variation where setup stones have been removed"],"name":"Third variation"},{"move":{"W":"cc"}},{"move":{"B":"cg"}},{"move":{"W":"gc"}},{"move":{"B":"ef"}},{"move":{"W":"ed"}}]]]]]
-	};
+  /**
+   * Some JGF data to work with, since Chrome doesnt allow loading a file due to cross domain policy
+   */
+  var jgf = {
+    "record": {
+      "application": "ngGo v1.0.3",
+      "version": 1,
+      "charset": "UTF-8"
+    },
+    "game": {
+      "type": "go",
+      "name": "Demo JGF",
+      "players": [
+        {
+          "color": "black",
+          "name": "Black",
+          "rank": "5k"
+        },
+        {
+          "color": "white",
+          "name": "White",
+          "rank": "2d"
+        }
+      ],
+      "rules": "Japanese",
+      "komi": 0.5
+    },
+    "board": {
+      "width": 9,
+      "height": 9
+    },
+    "tree": [{"root":true,"markup":{"circle":["af","bf","cf"],"label":[["ac","1"],["bc","2"],["cc","3"],["ag","A"],["bg","B"],["cg","C"]],"happy":["ah","ch"],"sad":["bh"],"triangle":["aa","ba","ca"],"square":["ab","bb","cb"],"select":["ae","be","ce"],"mark":["ad","bd","cd"]},"setup":{"W":["ba","bb","bc","bd","be","bf","bg","bh"],"B":["aa","ab","ac","ad","ae","af","ag","ah"]},"comments":["Comment at start of game"]},[[{"move":{"B":"gc"},"comments":["Comment at first variation"],"name":"First variation"},{"move":{"W":"gg"}},{"move":{"B":"cc"}},{"move":{"W":"dc"}},{"move":{"B":"cb"}},{"move":{"W":"db"}},{"move":{"B":"ca"}},{"move":{"W":"cd"}},{"move":{"B":"da"}},{"move":{"W":"ea"}},{"move":{"B":"bi"}},{"move":{"W":"ef"}},{"move":{"B":"ch"}},{"move":{"W":"cg"}},{"move":{"B":"dh"}},{"move":{"W":"dg"}},{"move":{"B":"eh"}},{"move":{"W":"ge"}},{"move":{"B":"fg"}},{"move":{"W":"ff"}},{"move":{"B":"gh"}},{"move":{"W":"hg"}},{"move":{"B":"hh"}},{"move":{"W":"ig"}},{"move":{"B":"ih"}},{"move":{"W":"fd"}},{"move":{"B":"ai"}},{"move":{"W":"hd"}},{"move":{"B":"ci"}},{"move":{"W":"eg"}},{"move":{"B":"fh"}},{"move":{"W":"gi"}},{"move":{"B":"fi"}}],[{"move":{"B":"gg"},"comments":["Comment at second variation"],"name":"Second variation"},[[{"move":{"W":"gc"}},{"mode":"solve","move":{"B":"eg"}},[[{"move":{"W":"ec","solution":true}},{"move":{"B":"fe","solution":true}}],[{"move":{"W":"ge","solution":true}},{"move":{"B":"dh","solution":true}}]]],[{"setup":{"E":["aa","ba","ab","bb","ac","bc","ad","bd","ae","be","af","bf","ag","bg","ah","bh"]},"comments":["Variation where setup stones have been removed"],"name":"Third variation"},{"move":{"W":"cc"}},{"move":{"B":"cg"}},{"move":{"W":"gc"}},{"move":{"B":"ef"}},{"move":{"W":"ed"}}]]]]]
+  };
 
-	/**
-	 * Module definition and dependencies
-	 */
-	angular.module('ngGoDemo', [
+  /**
+   * Module definition and dependencies
+   */
+  angular.module('ngGoDemo', [
 
-		//ngGo player
-		'ngGo.Player.Service',
+    //ngGo player
+    'ngGo.Player.Service',
 
-		//ngGo player modes that you wish to enable
-		'ngGo.Player.Mode.Edit.Service',
-		'ngGo.Player.Mode.Replay.Service'
-	])
+    //ngGo player modes that you wish to enable
+    'ngGo.Player.Mode.Edit.Service',
+    'ngGo.Player.Mode.Replay.Service'
+  ])
 
-	/**
-	 * Configuration
-	 */
-	.config(function(
-		PlayerProvider, BoardProvider, BoardThemeProvider
-	) {
+  /**
+   * Configuration
+   */
+  .config(function(
+    PlayerProvider, BoardProvider, BoardThemeProvider
+  ) {
 
-		//Player configuration
-		PlayerProvider.setConfig({
-			last_move_marker: 'circle',
-			replay_auto_play_delay: 750
-		});
+    //Player configuration
+    PlayerProvider.setConfig({
+      last_move_marker: 'circle',
+      replay_auto_play_delay: 750
+    });
 
-		//Board configuration
-		BoardProvider.setConfig({
-			coordinates: true
-		});
+    //Board configuration
+    BoardProvider.setConfig({
+      coordinates: true
+    });
 
-		//Board theme
-		BoardThemeProvider.setTheme({
-			coordinates: {
-				vertical: {
-					style: 'kanji',
-					inverse: false
-				},
-				horizontal: {
-					style: 'numbers',
-					inverse: false
-				}
-			}
-		});
-	})
+    //Board theme
+    BoardThemeProvider.setTheme({
+      coordinates: {
+        vertical: {
+          style: 'kanji',
+          inverse: false
+        },
+        horizontal: {
+          style: 'numbers',
+          inverse: false
+        }
+      }
+    });
+  })
 
-	/**
-	 * Controller
-	 */
-	.controller('ngGoDemoController', function($scope, $http, Player, SetupTools, MarkupTools) {
+  /**
+   * Controller
+   */
+  .controller('ngGoDemoController', function($scope, $http, Player, SetupTools, MarkupTools) {
 
-		//Set the game in scope for easy access
-		$scope.Game = Player.game;
+    //Set the game in scope for easy access
+    $scope.Game = Player.game;
 
-		//Set setup tools and markup tools in scope
-		$scope.SetupTools = SetupTools;
-		$scope.MarkupTools = MarkupTools;
+    //Set setup tools and markup tools in scope
+    $scope.SetupTools = SetupTools;
+    $scope.MarkupTools = MarkupTools;
 
-		//Load game data from external source
-		/*$http.get('test.jgf').success(function(data) {
-			Player.load(data);
-		});*/
+    //Load local data
+    Player.load(jgf);
+  })
 
-		//Load local data
-		Player.load(jgf);
-	})
+  /**
+   * Stone color example filter
+   */
+  .filter('stoneColor', function(StoneColor) {
+    return function(color) {
+      if (color == StoneColor.B) {
+        return 'Black';
+      }
+      else if (color == StoneColor.W) {
+        return 'White';
+      }
+      else if (color == StoneColor.E) {
+        return '';
+      }
+      return input;
+    };
+  });
 
-	/**
-	 * Stone color example filter
-	 */
-	.filter('stoneColor', function(StoneColor) {
-		return function(color) {
-			if (color == StoneColor.B) {
-				return 'Black';
-			}
-			else if (color == StoneColor.W) {
-				return 'White';
-			}
-			else if (color == StoneColor.E) {
-				return '';
-			}
-			return input;
-		};
-	});
-
-	/**
-	 * Bootstrap angular
-	 */
-	angular.element(document).ready(function() {
-		setTimeout(function() {
-			angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
-		}, 10);
-	});
+  /**
+   * Bootstrap angular
+   */
+  angular.element(document).ready(function() {
+    setTimeout(function() {
+      angular.bootstrap(document.getElementsByTagName('html')[0], ['ngGoDemo']);
+    }, 10);
+  });
 </script>
 </body>
 </html>

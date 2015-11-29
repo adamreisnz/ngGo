@@ -8,8 +8,8 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Player.Mode.Common.Service', [
-	'ngGo',
-	'ngGo.Game.Scorer.Service'
+  'ngGo',
+  'ngGo.Game.Scorer.Service'
 ])
 
 /**
@@ -17,27 +17,27 @@ angular.module('ngGo.Player.Mode.Common.Service', [
  */
 .run(function(Player, PlayerModes, PlayerModeCommon) {
 
-	/**
-	 * Register common event handlers
-	 */
-	Player.on('keydown', PlayerModeCommon.keyDown, [
-		PlayerModes.REPLAY, PlayerModes.EDIT
-	]);
-	Player.on('mousewheel wheel', PlayerModeCommon.mouseWheel, [
-		PlayerModes.REPLAY, PlayerModes.EDIT
-	]);
-	Player.on('mousemove', PlayerModeCommon.mouseMove, [
-		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
-	]);
-	Player.on('mouseout', PlayerModeCommon.mouseOut, [
-		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
-	]);
-	Player.on('mousedown', PlayerModeCommon.mouseDown, [
-		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
-	]);
-	Player.on('mouseup', PlayerModeCommon.mouseUp, [
-		PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
-	]);
+  /**
+   * Register common event handlers
+   */
+  Player.on('keydown', PlayerModeCommon.keyDown, [
+    PlayerModes.REPLAY, PlayerModes.EDIT
+  ]);
+  Player.on('mousewheel wheel', PlayerModeCommon.mouseWheel, [
+    PlayerModes.REPLAY, PlayerModes.EDIT
+  ]);
+  Player.on('mousemove', PlayerModeCommon.mouseMove, [
+    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+  ]);
+  Player.on('mouseout', PlayerModeCommon.mouseOut, [
+    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+  ]);
+  Player.on('mousedown', PlayerModeCommon.mouseDown, [
+    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+  ]);
+  Player.on('mouseup', PlayerModeCommon.mouseUp, [
+    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+  ]);
 })
 
 /**
@@ -45,226 +45,277 @@ angular.module('ngGo.Player.Mode.Common.Service', [
  */
 .factory('PlayerModeCommon', function(Player, PlayerTools, GameScorer, KeyCodes) {
 
-	/**
-	 * Helper to build drag object
-	 */
-	var dragObject = function(event) {
+  /**
+   * Helper to build drag object
+   */
+  var dragObject = function(event) {
 
-		//Initialize drag object
-		var drag = {
-			start: {
-				x: (this.mouse.dragStart.x > event.x) ? event.x : this.mouse.dragStart.x,
-				y: (this.mouse.dragStart.y > event.y) ? event.y : this.mouse.dragStart.y,
-			},
-			stop: {
-				x: (this.mouse.dragStart.x > event.x) ? this.mouse.dragStart.x : event.x,
-				y: (this.mouse.dragStart.y > event.y) ? this.mouse.dragStart.y : event.y,
-			}
-		};
+    //Initialize drag object
+    var drag = {
+      start: {
+        x: (this.mouse.dragStart.x > event.x) ? event.x : this.mouse.dragStart.x,
+        y: (this.mouse.dragStart.y > event.y) ? event.y : this.mouse.dragStart.y
+      },
+      stop: {
+        x: (this.mouse.dragStart.x > event.x) ? this.mouse.dragStart.x : event.x,
+        y: (this.mouse.dragStart.y > event.y) ? this.mouse.dragStart.y : event.y
+      }
+    };
 
-		//Fix boundaries
-		if (drag.start.x < 0) {
-			drag.start.x = 0;
-		}
-		if (drag.start.y < 0) {
-			drag.start.y = 0;
-		}
-		if (drag.stop.x > this.board.width - 1) {
-			drag.stop.x = this.board.width - 1;
-		}
-		if (drag.stop.y > this.board.height - 1) {
-			drag.stop.y = this.board.height - 1;
-		}
+    //Fix boundaries
+    if (drag.start.x < 0) {
+      drag.start.x = 0;
+    }
+    if (drag.start.y < 0) {
+      drag.start.y = 0;
+    }
+    if (drag.stop.x > this.board.width - 1) {
+      drag.stop.x = this.board.width - 1;
+    }
+    if (drag.stop.y > this.board.height - 1) {
+      drag.stop.y = this.board.height - 1;
+    }
 
-		//Return
-		return drag;
-	};
+    //Return
+    return drag;
+  };
 
-	/**
-	 * Player extension
-	 */
-	angular.extend(Player, {
+  /**
+   * Normalize the mousewheel event helper
+   */
+  function normalizeMousewheelEvent(event) {
 
-		/**
-		 * Mouse coordinate helper vars
-		 */
-		mouse: {
+    //Initialize vars
+    var deltaX = 0;
+    var deltaY = 0;
 
-			//Drag start
-			dragStart: null,
+    //Old school scrollwheel delta
+    if ('detail' in event) {
+      deltaY = event.detail * -1;
+    }
+    if ('wheelDelta' in event) {
+      deltaY = event.wheelDelta;
+    }
+    if ('wheelDeltaY' in event) {
+      deltaY = event.wheelDeltaY;
+    }
+    if ('wheelDeltaX' in event) {
+      deltaX = event.wheelDeltaX * -1;
+    }
 
-			//Last grid coordinates
-			lastX: -1,
-			lastY: -1
-		}
-	});
+    // Firefox < 17 horizontal scrolling related to DOMMouseScroll event
+    if ('axis' in event && event.axis === event.HORIZONTAL_AXIS) {
+      deltaX = deltaY * -1;
+      deltaY = 0;
+    }
 
-	/**
-	 * Player mode definition
-	 */
-	var PlayerMode = {
+    //New type wheel delta (WheelEvent)
+    if ('deltaY' in event) {
+      deltaY = event.deltaY * -1;
+    }
+    if ('deltaX' in event) {
+      deltaX = event.deltaX;
+    }
 
-		/**
-		 * Handler for keydown events
-		 */
-		keyDown: function(event, keyboardEvent) {
+    //Set in event (have to use different property name because of strict mode)
+    event.mouseWheelX = deltaX;
+    event.mouseWheelY = deltaY;
 
-			//No game?
-			if (!this.game || !this.game.isLoaded()) {
-				return;
-			}
+    //Return
+    return event;
+  }
 
-			//Switch key code
-			switch (keyboardEvent.keyCode) {
+  /**
+   * Player extension
+   */
+  angular.extend(Player, {
 
-				//ESC
-				case KeyCodes.ESC:
+    /**
+     * Mouse coordinate helper vars
+     */
+    mouse: {
 
-					//Cancel drag event, and prevent click event as well
-					this.mouse.dragStart = null;
-					this.preventClickEvent = true;
-					break;
+      //Drag start
+      dragStart: null,
 
-				//Right arrow
-				case KeyCodes.RIGHT:
+      //Last grid coordinates
+      lastX: -1,
+      lastY: -1
+    }
+  });
 
-					//Arrow navigation enabled?
-					if (this.arrowKeysNavigation) {
-						keyboardEvent.preventDefault();
+  /**
+   * Player mode definition
+   */
+  var PlayerMode = {
 
-						//Advance to the next move
-						if (this.tool == PlayerTools.MOVE && this.game.node != this.restrictNodeEnd) {
-							this.next();
-						}
-					}
-					break;
+    /**
+     * Handler for keydown events
+     */
+    keyDown: function(event, keyboardEvent) {
 
-				//Left arrow
-				case KeyCodes.LEFT:
+      //No game?
+      if (!this.game || !this.game.isLoaded()) {
+        return;
+      }
 
-					//Arrow navigation enabled?
-					if (this.arrowKeysNavigation) {
-						keyboardEvent.preventDefault();
+      //Switch key code
+      switch (keyboardEvent.keyCode) {
 
-						//Go to the previous move
-						if (this.tool == PlayerTools.MOVE && this.game.node != this.restrictNodeStart) {
-							this.previous();
-						}
-					}
-					break;
+        //ESC
+        case KeyCodes.ESC:
 
-				//Up arrow
-				case KeyCodes.UP:
-					break;
+          //Cancel drag event, and prevent click event as well
+          this.mouse.dragStart = null;
+          this.preventClickEvent = true;
+          break;
 
-				//Down arrow
-				case KeyCodes.DOWN:
-					break;
-			}
-		},
+        //Right arrow
+        case KeyCodes.RIGHT:
 
-		/**
-		 * Handler for mousewheel events
-		 */
-		mouseWheel: function(event, mouseEvent) {
+          //Arrow navigation enabled?
+          if (this.arrowKeysNavigation) {
+            keyboardEvent.preventDefault();
 
-			//Disabled or not using move tool?
-			if (!this.scrollWheelNavigation || this.tool != PlayerTools.MOVE) {
-				return true;
-			}
+            //Advance to the next move
+            if (this.tool === PlayerTools.MOVE && this.game.node !== this.restrictNodeEnd) {
+              this.next();
+            }
+          }
+          break;
 
-			//No game?
-			if (!this.game || !this.game.isLoaded()) {
-				return true;
-			}
+        //Left arrow
+        case KeyCodes.LEFT:
 
-			//Normalize mousewheel event
-			mouseEvent = normalizeMousewheelEvent(mouseEvent);
+          //Arrow navigation enabled?
+          if (this.arrowKeysNavigation) {
+            keyboardEvent.preventDefault();
 
-			//Find delta
-			var delta = mouseEvent.mouseWheelY || mouseEvent.deltaY;
+            //Go to the previous move
+            if (this.tool === PlayerTools.MOVE && this.game.node !== this.restrictNodeStart) {
+              this.previous();
+            }
+          }
+          break;
 
-			//Next move
-			if (delta < 0) {
-				if (this.board) {
-					this.board.removeAll('hover');
-				}
-				this.next();
-			}
+        //Up arrow
+        case KeyCodes.UP:
+          break;
 
-			//Previous move
-			else if (delta > 0) {
-				if (this.board) {
-					this.board.removeAll('hover');
-				}
-				this.previous();
-			}
+        //Down arrow
+        case KeyCodes.DOWN:
+          break;
+      }
+    },
 
-			//Don't scroll the window
-			if (delta !== 0) {
-				mouseEvent.preventDefault();
-			}
-		},
+    /**
+     * Handler for mousewheel events
+     */
+    mouseWheel: function(event, mouseEvent) {
 
-		/**
-		 * Mouse out handler
-		 */
-		mouseOut: function(event, mouseEvent) {
-			if (this.board) {
-				this.board.removeAll('hover');
-			}
-		},
+      //Disabled or not using move tool?
+      if (!this.scrollWheelNavigation || this.tool !== PlayerTools.MOVE) {
+        return true;
+      }
 
-		/**
-		 * Mouse move handler
-		 */
-		mouseMove: function(event, mouseEvent) {
+      //No game?
+      if (!this.game || !this.game.isLoaded()) {
+        return true;
+      }
 
-			//Attach drag object to events
-			if (this.mouse.dragStart && (this.mouse.dragStart.x != event.x || this.mouse.dragStart.y != event.y)) {
-				mouseEvent.drag = dragObject.call(this, event);
-			}
+      //Normalize mousewheel event
+      mouseEvent = normalizeMousewheelEvent(mouseEvent);
 
-			//Nothing else to do?
-			if (!this.board || !this.board.layers.hover) {
-				return;
-			}
+      //Find delta
+      var delta = mouseEvent.mouseWheelY || mouseEvent.deltaY;
 
-			//Last coordinates are the same?
-			if (this.mouse.lastX == event.x && this.mouse.lastY == event.y) {
-				return;
-			}
+      //Next move
+      if (delta < 0) {
+        if (this.board) {
+          this.board.removeAll('hover');
+        }
+        this.next();
+      }
 
-			//Remember last coordinates
-			this.mouse.lastX = event.x;
-			this.mouse.lastY = event.y;
+      //Previous move
+      else if (delta > 0) {
+        if (this.board) {
+          this.board.removeAll('hover');
+        }
+        this.previous();
+      }
 
-			//Broadcast hover event
-			this.broadcast('hover', mouseEvent);
-		},
+      //Don't scroll the window
+      if (delta !== 0) {
+        mouseEvent.preventDefault();
+      }
+    },
 
-		/**
-		 * Mouse down handler
-		 */
-		mouseDown: function(event, mouseEvent) {
-			this.mouse.dragStart = {
-				x: event.x,
-				y: event.y
-			};
-		},
+    /**
+     * Mouse out handler
+     */
+    mouseOut: function() {
+      if (this.board) {
+        this.board.removeAll('hover');
+      }
+    },
 
-		/**
-		 * Mouse up handler
-		 */
-		mouseUp: function(event, mouseEvent) {
-			if (this.mouse.dragStart && (this.mouse.dragStart.x != event.x || this.mouse.dragStart.y != event.y)) {
-				mouseEvent.drag = dragObject.call(this, event);
-				this.broadcast('mousedrag', mouseEvent);
-			}
-			this.mouse.dragStart = null;
-		}
-	};
+    /**
+     * Mouse move handler
+     */
+    mouseMove: function(event, mouseEvent) {
 
-	//Return
-	return PlayerMode;
+      //Attach drag object to events
+      if (
+        this.mouse.dragStart &&
+        (this.mouse.dragStart.x !== event.x || this.mouse.dragStart.y !== event.y)
+      ) {
+        mouseEvent.drag = dragObject.call(this, event);
+      }
+
+      //Nothing else to do?
+      if (!this.board || !this.board.layers.hover) {
+        return;
+      }
+
+      //Last coordinates are the same?
+      if (this.mouse.lastX === event.x && this.mouse.lastY === event.y) {
+        return;
+      }
+
+      //Remember last coordinates
+      this.mouse.lastX = event.x;
+      this.mouse.lastY = event.y;
+
+      //Broadcast hover event
+      this.broadcast('hover', mouseEvent);
+    },
+
+    /**
+     * Mouse down handler
+     */
+    mouseDown: function(event) {
+      this.mouse.dragStart = {
+        x: event.x,
+        y: event.y
+      };
+    },
+
+    /**
+     * Mouse up handler
+     */
+    mouseUp: function(event, mouseEvent) {
+      if (
+        this.mouse.dragStart &&
+        (this.mouse.dragStart.x !== event.x || this.mouse.dragStart.y !== event.y)
+      ) {
+        mouseEvent.drag = dragObject.call(this, event);
+        this.broadcast('mousedrag', mouseEvent);
+      }
+      this.mouse.dragStart = null;
+    }
+  };
+
+  //Return
+  return PlayerMode;
 });

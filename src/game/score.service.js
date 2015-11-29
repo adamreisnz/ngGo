@@ -7,7 +7,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Game.Score.Service', [
-	'ngGo'
+  'ngGo'
 ])
 
 /**
@@ -15,71 +15,72 @@ angular.module('ngGo.Game.Score.Service', [
  */
 .factory('GameScore', function(StoneColor) {
 
-	/**
-	 * Helper to calculate the total points
-	 */
-	var calcTotal = function() {
-		return parseInt(this.stones) + parseInt(this.territory) + parseInt(this.captures) + parseInt(this.komi);
-	};
+  /**
+   * Helper to calculate the total points
+   */
+  var calcTotal = function() {
+    return parseInt(this.stones) + parseInt(this.territory) +
+      parseInt(this.captures) + parseInt(this.komi);
+  };
 
-	/**
-	 * Constructor
-	 */
-	var GameScore = function() {
+  /**
+   * Constructor
+   */
+  var GameScore = function() {
 
-		//Get self
-		var self = this;
+    //Get self
+    var self = this;
 
-		//Setup score containers
-		this.black = {};
-		this.white = {};
+    //Setup score containers
+    this.black = {};
+    this.white = {};
 
-		//Initialize
-		this.reset();
+    //Initialize
+    this.reset();
 
-		//Add total handlers
-		this.black.total = function() {
-			return calcTotal.call(self.black);
-		};
-		this.white.total = function() {
-			return calcTotal.call(self.white);
-		};
-	};
+    //Add total handlers
+    this.black.total = function() {
+      return calcTotal.call(self.black);
+    };
+    this.white.total = function() {
+      return calcTotal.call(self.white);
+    };
+  };
 
-	/**
-	 * Reset the game score
-	 */
-	GameScore.prototype.reset = function() {
+  /**
+   * Reset the game score
+   */
+  GameScore.prototype.reset = function() {
 
-		//Get properties to loop
-		var props = ['stones', 'territory', 'captures', 'komi'];
+    //Get properties to loop
+    var props = ['stones', 'territory', 'captures', 'komi'];
 
-		//Score for black player
-		for (var i in props) {
-			this.black[props[i]] = 0;
-			this.white[props[i]] = 0;
-		}
-	};
+    //Score for black player
+    for (var i = 0; i < props.length; i++) {
+      this.black[props[i]] = 0;
+      this.white[props[i]] = 0;
+    }
+  };
 
-	/**
-	 * Get the winner
-	 */
-	GameScore.prototype.winner = function() {
+  /**
+   * Get the winner
+   */
+  GameScore.prototype.winner = function() {
 
-		//Get totals
-		var b = this.black.total(),
-			w = this.white.total();
+    //Get totals
+    var b = this.black.total();
+    var w = this.white.total();
 
-		//Determine winner
-		if (w > b) {
-			return StoneColor.W;
-		}
-		else if (b > w) {
-			return StoneColor.B;
-		}
-		return StoneColor.E;
-	};
+    //Determine winner
+    if (w > b) {
+      return StoneColor.W;
+    }
+    else if (b > w) {
+      return StoneColor.B;
+    }
+    return StoneColor.E;
+  };
 
-	//Return
-	return GameScore;
+  //Return
+  return GameScore;
 });
