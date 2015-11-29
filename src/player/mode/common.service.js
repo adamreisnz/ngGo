@@ -54,11 +54,11 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     var drag = {
       start: {
         x: (this.mouse.dragStart.x > event.x) ? event.x : this.mouse.dragStart.x,
-        y: (this.mouse.dragStart.y > event.y) ? event.y : this.mouse.dragStart.y,
+        y: (this.mouse.dragStart.y > event.y) ? event.y : this.mouse.dragStart.y
       },
       stop: {
         x: (this.mouse.dragStart.x > event.x) ? this.mouse.dragStart.x : event.x,
-        y: (this.mouse.dragStart.y > event.y) ? this.mouse.dragStart.y : event.y,
+        y: (this.mouse.dragStart.y > event.y) ? this.mouse.dragStart.y : event.y
       }
     };
 
@@ -86,7 +86,8 @@ angular.module('ngGo.Player.Mode.Common.Service', [
   function normalizeMousewheelEvent(event) {
 
     //Initialize vars
-    var deltaX = 0, deltaY = 0;
+    var deltaX = 0;
+    var deltaY = 0;
 
     //Old school scrollwheel delta
     if ('detail' in event) {
@@ -177,7 +178,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
             keyboardEvent.preventDefault();
 
             //Advance to the next move
-            if (this.tool === PlayerTools.MOVE && this.game.node !== = this.restrictNodeEnd) {
+            if (this.tool === PlayerTools.MOVE && this.game.node !== this.restrictNodeEnd) {
               this.next();
             }
           }
@@ -191,7 +192,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
             keyboardEvent.preventDefault();
 
             //Go to the previous move
-            if (this.tool === PlayerTools.MOVE && this.game.node !== = this.restrictNodeStart) {
+            if (this.tool === PlayerTools.MOVE && this.game.node !== this.restrictNodeStart) {
               this.previous();
             }
           }
@@ -213,7 +214,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     mouseWheel: function(event, mouseEvent) {
 
       //Disabled or not using move tool?
-      if (!this.scrollWheelNavigation || this.tool !==  PlayerTools.MOVE) {
+      if (!this.scrollWheelNavigation || this.tool !== PlayerTools.MOVE) {
         return true;
       }
 
@@ -245,7 +246,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
       }
 
       //Don't scroll the window
-      if (delta !== = 0) {
+      if (delta !== 0) {
         mouseEvent.preventDefault();
       }
     },
@@ -265,7 +266,10 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     mouseMove: function(event, mouseEvent) {
 
       //Attach drag object to events
-      if (this.mouse.dragStart && (this.mouse.dragStart.x !==  event.x || this.mouse.dragStart.y !==  event.y)) {
+      if (
+        this.mouse.dragStart &&
+        (this.mouse.dragStart.x !== event.x || this.mouse.dragStart.y !== event.y)
+      ) {
         mouseEvent.drag = dragObject.call(this, event);
       }
 
@@ -301,7 +305,10 @@ angular.module('ngGo.Player.Mode.Common.Service', [
      * Mouse up handler
      */
     mouseUp: function(event, mouseEvent) {
-      if (this.mouse.dragStart && (this.mouse.dragStart.x !==  event.x || this.mouse.dragStart.y !==  event.y)) {
+      if (
+        this.mouse.dragStart &&
+        (this.mouse.dragStart.x !== event.x || this.mouse.dragStart.y !== event.y)
+      ) {
         mouseEvent.drag = dragObject.call(this, event);
         this.broadcast('mousedrag', mouseEvent);
       }

@@ -28,10 +28,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
   var drawMono = function(stone) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(stone.x),
-      y = this.board.getAbsY(stone.y),
-      s = this.board.getCellSize(),
-      r = this.board.theme.get('stone.radius', s);
+    var x = this.board.getAbsX(stone.x);
+    var y = this.board.getAbsY(stone.y);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
 
     //Apply scaling factor?
     if (stone.scale) {
@@ -45,10 +45,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
     var color = stone.color * this.board.colorMultiplier;
 
     //Get theme properties
-    var lineWidth = this.board.theme.get('stone.mono.lineWidth', s) || 1,
-      fillStyle = this.board.theme.get('stone.mono.color', color),
-      strokeStyle = this.board.theme.get('stone.mono.lineColor', color),
-      canvasTranslate = this.board.theme.canvasTranslate();
+    var lineWidth = this.board.theme.get('stone.mono.lineWidth', s) || 1;
+    var fillStyle = this.board.theme.get('stone.mono.color', color);
+    var strokeStyle = this.board.theme.get('stone.mono.lineColor', color);
+    var canvasTranslate = this.board.theme.canvasTranslate();
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -63,7 +63,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
     //Draw stone
     this.context.beginPath();
-    this.context.arc(x, y, Math.max(0, r - lineWidth), 0, 2*Math.PI, true);
+    this.context.arc(x, y, Math.max(0, r - lineWidth), 0, 2 * Math.PI, true);
     this.context.fill();
 
     //Configure context
@@ -88,10 +88,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
   var drawGlass = function(stone) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(stone.x),
-      y = this.board.getAbsY(stone.y),
-      s = this.board.getCellSize(),
-      r = this.board.theme.get('stone.radius', s);
+    var x = this.board.getAbsX(stone.x);
+    var y = this.board.getAbsY(stone.y);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
 
     //Apply scaling factor?
     if (stone.scale) {
@@ -117,18 +117,22 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
     //Determine stone texture
     if (color === StoneColor.W) {
-      this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
+      this.context.fillStyle = this.context.createRadialGradient(
+        x - 2 * r / 5, y - 2 * r / 5, r / 3, x - r / 5, y - r / 5, 5 * r / 5
+      );
       this.context.fillStyle.addColorStop(0, '#fff');
       this.context.fillStyle.addColorStop(1, '#aaa');
     }
     else {
-      this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/5, y - r/5, 4*r/5);
+      this.context.fillStyle = this.context.createRadialGradient(
+        x - 2 * r / 5, y - 2 * r / 5, 1, x - r / 5, y - r / 5, 4 * r / 5
+      );
       this.context.fillStyle.addColorStop(0, '#666');
       this.context.fillStyle.addColorStop(1, '#111');
     }
 
     //Complete drawing
-    this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2*Math.PI, true);
+    this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
     this.context.fill();
 
     //Undo transparency?
@@ -146,10 +150,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
   var drawSlateShell = function(stone) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(stone.x),
-      y = this.board.getAbsY(stone.y),
-      s = this.board.getCellSize(),
-      r = this.board.theme.get('stone.radius', s);
+    var x = this.board.getAbsX(stone.x);
+    var y = this.board.getAbsY(stone.y);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
 
     //Apply scaling factor?
     if (stone.scale) {
@@ -163,10 +167,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
     var color = stone.color * this.board.colorMultiplier;
 
     //Get theme variables
-    var shellTypes = this.board.theme.get('stone.shell.types'),
-      fillStyle = this.board.theme.get('stone.shell.color', color),
-      strokeStyle = this.board.theme.get('stone.shell.stroke'),
-      canvasTranslate = this.board.theme.canvasTranslate();
+    var shellTypes = this.board.theme.get('stone.shell.types');
+    var fillStyle = this.board.theme.get('stone.shell.color', color);
+    var strokeStyle = this.board.theme.get('stone.shell.stroke');
+    var canvasTranslate = this.board.theme.canvasTranslate();
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -178,7 +182,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
     //Draw stone
     this.context.beginPath();
-    this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
+    this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
     this.context.fillStyle = fillStyle;
     this.context.fill();
 
@@ -186,21 +190,24 @@ angular.module('ngGo.Board.Object.Stone.Service', [
     if (color === StoneColor.W) {
 
       //Get random shell type
-      var type = shellSeed%(shellTypes.length + stone.x * this.board.width + stone.y) % shellTypes.length;
+      var type =
+        shellSeed % (shellTypes.length + stone.x * this.board.width + stone.y) % shellTypes.length;
 
       //Determine random angle
-      var z = this.board.width * this.board.height + stone.x * this.board.width + stone.y,
-        angle = (2/z)*(shellSeed%z);
+      var z = this.board.width * this.board.height + stone.x * this.board.width + stone.y;
+      var angle = (2 / z) * (shellSeed % z);
 
       //Draw shell pattern
       ShellPattern.call(shellTypes[type], this.context, x, y, r, angle, strokeStyle);
 
       //Add radial gradient
       this.context.beginPath();
-      this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/6, x - r/5, y - r/5, r);
+      this.context.fillStyle = this.context.createRadialGradient(
+        x - 2 * r / 5, y - 2 * r / 5, r / 6, x - r / 5, y - r / 5, r
+      );
       this.context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.9)');
       this.context.fillStyle.addColorStop(1, 'rgba(255,255,255,0)');
-      this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
+      this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
       this.context.fill();
     }
 
@@ -209,18 +216,22 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
       //Add radial gradient
       this.context.beginPath();
-      this.context.fillStyle = this.context.createRadialGradient(x + 2*r/5, y + 2*r/5, 0, x + r/2, y + r/2, r);
+      this.context.fillStyle = this.context.createRadialGradient(
+        x + 2 * r / 5, y + 2 * r / 5, 0, x + r / 2, y + r / 2, r
+      );
       this.context.fillStyle.addColorStop(0, 'rgba(32,32,32,1)');
       this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
-      this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
+      this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
       this.context.fill();
 
       //Add radial gradient
       this.context.beginPath();
-      this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/2, y - r/2, 3*r/2);
+      this.context.fillStyle = this.context.createRadialGradient(
+        x - 2 * r / 5, y - 2 * r / 5, 1, x - r / 2, y - r / 2, 3 * r / 2
+      );
       this.context.fillStyle.addColorStop(0, 'rgba(64,64,64,1)');
       this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
-      this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
+      this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
       this.context.fill();
     }
 
@@ -278,7 +289,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
       }
 
       //Add shadow
-      if (!this.board.static && stone.shadow !== = false && this.board.theme.get('stone.shadow')) {
+      if (!this.board.static && stone.shadow !== false && this.board.theme.get('stone.shadow')) {
         this.board.layers.shadow.add(stone);
       }
     },
@@ -297,7 +308,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
       BoardObject.clear.call(this, stone);
 
       //Remove shadow
-      if (!this.board.static && stone.shadow !== = false && this.board.theme.get('stone.shadow')) {
+      if (!this.board.static && stone.shadow !== false && this.board.theme.get('stone.shadow')) {
         this.board.layers.shadow.remove(stone);
       }
     }

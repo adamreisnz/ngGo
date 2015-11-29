@@ -1,8 +1,8 @@
 
 /**
- * DefaultClearHandler :: This is the default clear handler for clearing a cell of the board grid. It
- * is used by all objects that lack their own specific clear handler. Basically, it just clears a small
- * rectangular area on the canvas.
+ * DefaultClearHandler :: This is the default clear handler for clearing a cell of the board grid.
+ * It is used by all objects that lack their own specific clear handler. Basically, it just clears
+ * a small rectangular area on the canvas.
  */
 
 /**
@@ -31,12 +31,12 @@ angular.module('ngGo.Board.DefaultClearHandler.Service', [
     }
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(obj.x),
-      y = this.board.getAbsY(obj.y),
-      s = this.board.getCellSize(),
-      r = this.board.theme.get('stone.radius', s);
+    var x = this.board.getAbsX(obj.x);
+    var y = this.board.getAbsY(obj.y);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
 
     //Clear rectangle the size of the stone radius
-    context.clearRect(x-r, y-r, 2*r, 2*r);
+    context.clearRect(x - r, y - r, 2 * r, 2 * r);
   };
 });

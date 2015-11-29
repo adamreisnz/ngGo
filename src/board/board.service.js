@@ -1,9 +1,9 @@
 
 /**
  * Board :: This class represents the Go board. It is a placeholder for all the various board layers
- * and is used for placing and removing objects on the board. The class has helpers to figure out the
- * correct size of the grid cells and to toggle coordinates on or off. This class is responsible for
- * drawing all layers on the board.
+ * and is used for placing and removing objects on the board. The class has helpers to figure out
+ * the correct size of the grid cells and to toggle coordinates on or off. This class is
+ * responsible for drawing all layers on the board.
  */
 
 /**
@@ -43,7 +43,7 @@ angular.module('ngGo.Board.Service', [
     cutoff: [],
 
     //Section of board to display
-    section: {top:0,right:0,bottom:0,left:0},
+    section: {top: 0, right: 0, bottom: 0, left: 0},
 
     //Show coordinates?
     coordinates: false,
@@ -102,9 +102,9 @@ angular.module('ngGo.Board.Service', [
       //Initialize layers
       this.layers = {};
       for (var l = 0; l < this.layerOrder.length; l++) {
-        var layer = this.layerOrder[l],
-            layerClass = layer[0].toUpperCase() + layer.substr(1) + 'Layer',
-            LayerClass = $injector.get(layerClass);
+        var layer = this.layerOrder[l];
+        var layerClass = layer[0].toUpperCase() + layer.substr(1) + 'Layer';
+        var LayerClass = $injector.get(layerClass);
         this.layers[layer] = new LayerClass(this);
       }
 
@@ -157,7 +157,7 @@ angular.module('ngGo.Board.Service', [
       this.layerOrder = ['grid', 'stones', 'markup'];
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Configuration
      ***/
 
@@ -167,7 +167,7 @@ angular.module('ngGo.Board.Service', [
     Board.prototype.parseConfig = function(config) {
 
       //Validate
-      if (typeof config !==  'object') {
+      if (typeof config !== 'object') {
         return;
       }
 
@@ -193,7 +193,7 @@ angular.module('ngGo.Board.Service', [
       }
 
       //Set margin if changed
-      if (this.margin !==  margin) {
+      if (this.margin !== margin) {
         this.margin = margin;
         this.resized();
       }
@@ -218,7 +218,7 @@ angular.module('ngGo.Board.Service', [
       //Check if there's a change
       for (var side in this.cutoff) {
         if (this.cutoff.hasOwnProperty(side)) {
-          if (cutoff.indexOf(side) !==  -1) {
+          if (cutoff.indexOf(side) !== -1) {
             if (!this.cutoff[side]) {
               this.cutoff[side] = true;
               changes = true;
@@ -248,7 +248,7 @@ angular.module('ngGo.Board.Service', [
     Board.prototype.setSection = function(section) {
 
       //Nothing given?
-      if (!section || typeof section !==  'object') {
+      if (!section || typeof section !== 'object') {
         return this;
       }
 
@@ -261,7 +261,10 @@ angular.module('ngGo.Board.Service', [
       }, section);
 
       //No changes?
-      if (this.section.top === section.top && this.section.bottom === section.bottom && this.section.left === section.left && this.section.right === section.right) {
+      if (
+        this.section.top === section.top && this.section.bottom === section.bottom &&
+        this.section.left === section.left && this.section.right === section.right
+      ) {
         return this;
       }
 
@@ -288,7 +291,7 @@ angular.module('ngGo.Board.Service', [
       }
 
       //Changing?
-      if (width !==  this.width || height !==  this.height) {
+      if (width !== this.width || height !== this.height) {
 
         //Remember size
         this.width = width;
@@ -313,7 +316,7 @@ angular.module('ngGo.Board.Service', [
      * Set new draw size
      */
     Board.prototype.setDrawSize = function(width, height) {
-      if (width !==  this.drawWidth || height !==  this.drawHeight) {
+      if (width !== this.drawWidth || height !== this.drawHeight) {
         this.drawWidth = width;
         this.drawHeight = height;
         this.resized();
@@ -326,7 +329,7 @@ angular.module('ngGo.Board.Service', [
     Board.prototype.toggleCoordinates = function(show) {
 
       //Set or toggle
-      if (typeof show !==  'undefined') {
+      if (typeof show !== 'undefined') {
         this.coordinates = show;
       }
       else {
@@ -381,7 +384,7 @@ angular.module('ngGo.Board.Service', [
       }
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Theme handling
      ***/
 
@@ -400,7 +403,7 @@ angular.module('ngGo.Board.Service', [
       return this;
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Object handling
      ***/
 
@@ -408,7 +411,7 @@ angular.module('ngGo.Board.Service', [
      * Add an object to a board layer
      */
     Board.prototype.add = function(layer, x, y, value) {
-      if (typeof this.layers[layer] !==  'undefined') {
+      if (typeof this.layers[layer] !== 'undefined') {
         this.layers[layer].add(x, y, value);
       }
     };
@@ -417,7 +420,7 @@ angular.module('ngGo.Board.Service', [
      * Remove an object from a board layer
      */
     Board.prototype.remove = function(layer, x, y) {
-      if (typeof this.layers[layer] !==  'undefined') {
+      if (typeof this.layers[layer] !== 'undefined') {
         this.layers[layer].remove(x, y);
       }
     };
@@ -440,7 +443,7 @@ angular.module('ngGo.Board.Service', [
      * Set all objects (grid) for a given layer
      */
     Board.prototype.setAll = function(layer, grid) {
-      if (typeof this.layers[layer] !==  'undefined') {
+      if (typeof this.layers[layer] !== 'undefined') {
         this.layers[layer].setAll(grid);
       }
     };
@@ -450,7 +453,7 @@ angular.module('ngGo.Board.Service', [
      */
     Board.prototype.removeAll = function(layer) {
       if (layer) {
-        if (typeof this.layers[layer] !==  'undefined') {
+        if (typeof this.layers[layer] !== 'undefined') {
           this.layers[layer].removeAll();
         }
       }
@@ -463,7 +466,7 @@ angular.module('ngGo.Board.Service', [
       }
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Position handling
      ***/
 
@@ -487,7 +490,7 @@ angular.module('ngGo.Board.Service', [
       this.setAll('markup', position.markup);
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * State handling
      ***/
 
@@ -541,7 +544,7 @@ angular.module('ngGo.Board.Service', [
       }
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Drawing control
      ***/
 
@@ -610,7 +613,7 @@ angular.module('ngGo.Board.Service', [
       }
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Drawing helpers
      ***/
 
@@ -634,8 +637,8 @@ angular.module('ngGo.Board.Service', [
 
       //Determine number of cells horizontall and vertically
       //The margin is a factor of the cell size, so let's add it to the number of cells
-      var noCellsHor = this.width + this.margin,
-        noCellsVer = this.height + this.margin;
+      var noCellsHor = this.width + this.margin;
+      var noCellsVer = this.height + this.margin;
 
       //Are we cutting off parts of the grid? Add half a cell of draw size
       for (var side in this.cutoff) {
@@ -710,7 +713,10 @@ angular.module('ngGo.Board.Service', [
      * Check if given grid coordinates are on board
      */
     Board.prototype.isOnBoard = function(gridX, gridY) {
-      return gridX >= this.grid.xLeft && gridY >= this.grid.yTop && gridX <= this.grid.xRight && gridY <= this.grid.yBot;
+      return (
+        gridX >= this.grid.xLeft && gridY >= this.grid.yTop &&
+        gridX <= this.grid.xRight && gridY <= this.grid.yBot
+      );
     };
 
     //Return object

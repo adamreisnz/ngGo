@@ -36,7 +36,7 @@ describe('KifuBlank', function() {
     it('should have valid record info', function() {
       expect(jgf.record).toBeDefined();
       expect(jgf.record.application).toBeDefined();
-      expect(jgf.record.application).not.toBe("");
+      expect(jgf.record.application).not.toBe('');
       expect(jgf.record.version).toBe(1);
       expect(jgf.record.charset).toBe('UTF-8');
     });
@@ -87,13 +87,14 @@ describe('KifuBlank', function() {
   describe('JGF blank with base', function() {
 
     //Create jgf
-    var jgf, base = {
+    var jgf;
+    var base = {
       record: {
-        application: "Test app",
-        source: "Test source"
+        application: 'Test app',
+        source: 'Test source'
       },
       game: {
-        name: "Test name"
+        name: 'Test name'
       }
     };
     beforeEach(function() {
@@ -121,15 +122,15 @@ describe('KifuBlank', function() {
      * Base properties
      */
     it('should have new base properties', function() {
-      expect(jgf.record.source).toBe("Test source");
-      expect(jgf.game.name).toBe("Test name");
+      expect(jgf.record.source).toBe('Test source');
+      expect(jgf.game.name).toBe('Test name');
     });
 
     /**
      * Overwritten properties
      */
     it('should overwrite existing properties', function() {
-      expect(jgf.record.application).toBe("Test app");
+      expect(jgf.record.application).toBe('Test app');
     });
   });
 
@@ -156,28 +157,28 @@ describe('KifuBlank', function() {
      */
     it('should have application info', function() {
       expect(sgf.AP).toBeDefined();
-      expect(sgf.AP).not.toBe("");
+      expect(sgf.AP).not.toBe('');
     });
 
     /**
      * Character encoding
      */
     it('should have character encoding', function() {
-      expect(sgf.CA).toBe("UTF-8");
+      expect(sgf.CA).toBe('UTF-8');
     });
 
     /**
      * File format
      */
     it('should have a file format/version', function() {
-      expect(sgf.FF).toBe("4");
+      expect(sgf.FF).toBe('4');
     });
 
     /**
      * Game type
      */
     it('should have a go game type', function() {
-      expect(sgf.GM).toBe("1");
+      expect(sgf.GM).toBe('1');
     });
 
     /**
@@ -185,8 +186,8 @@ describe('KifuBlank', function() {
      */
     it('should have board size info', function() {
       expect(sgf.SZ).toBeDefined();
-      expect(sgf.SZ).not.toBe("");
-      expect(sgf.SZ).not.toBe("0");
+      expect(sgf.SZ).not.toBe('');
+      expect(sgf.SZ).not.toBe('0');
     });
 
     /**
@@ -194,9 +195,9 @@ describe('KifuBlank', function() {
      */
     it('should have player info', function() {
       expect(sgf.PB).toBeDefined();
-      expect(sgf.PB).not.toBe("");
+      expect(sgf.PB).not.toBe('');
       expect(sgf.PW).toBeDefined();
-      expect(sgf.PW).not.toBe("");
+      expect(sgf.PW).not.toBe('');
     });
   });
 
@@ -206,9 +207,10 @@ describe('KifuBlank', function() {
   describe('SGF blank with base', function() {
 
     //Create jgf
-    var sgf, base = {
-      AP: "Test app",
-      KM: "6.5"
+    var sgf;
+    var base = {
+      AP: 'Test app',
+      KM: '6.5'
     };
     beforeEach(function() {
       sgf = KifuBlank.sgf(base);
@@ -225,14 +227,14 @@ describe('KifuBlank', function() {
      * Base properties
      */
     it('should have new base properties', function() {
-      expect(sgf.KM).toBe("6.5");
+      expect(sgf.KM).toBe('6.5');
     });
 
     /**
      * Overwritten properties
      */
     it('should overwrite existing properties', function() {
-      expect(sgf.AP).toBe("Test app");
+      expect(sgf.AP).toBe('Test app');
     });
   });
 });

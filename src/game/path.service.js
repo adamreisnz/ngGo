@@ -109,18 +109,18 @@ angular.module('ngGo.Game.Path.Service', [
   GamePath.prototype.compare = function(otherPath) {
 
     //Invalid object?
-    if (!otherPath || typeof otherPath !==  'object' || typeof otherPath.move === 'undefined') {
+    if (!otherPath || typeof otherPath !== 'object' || typeof otherPath.move === 'undefined') {
       return;
     }
 
     //Different move number or path length?
-    if (this.move !== = otherPath.move || this.branches !==  otherPath.branches) {
+    if (this.move !== otherPath.move || this.branches !== otherPath.branches) {
       return false;
     }
 
     //Check path
     for (var i in this.path) {
-      if (typeof otherPath.path[i] === 'undefined' || this.path[i] !==  otherPath.path[i]) {
+      if (typeof otherPath.path[i] === 'undefined' || this.path[i] !== otherPath.path[i]) {
         return false;
       }
     }

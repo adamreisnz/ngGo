@@ -1,7 +1,7 @@
 
 /**
- * PlayerModeReplay :: This module governs the "replay" mode of the player, e.g. traversing through an
- * existing game record without the ability to deviate from the tree or its variations.
+ * PlayerModeReplay :: This module governs the "replay" mode of the player, e.g. traversing
+ * through an existing game record without the ability to deviate from the tree or its variations.
  */
 
 /**
@@ -142,7 +142,8 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       }
 
       //Get the current node
-      var node = this.game.getNode(), variations;
+      var node = this.game.getNode();
+      var variations;
       if (!node) {
         return;
       }
@@ -184,7 +185,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
        * Set auto play delay
        */
       setAutoPlayDelay: function(delay) {
-        if (this.autoPlayDelay !==  delay) {
+        if (this.autoPlayDelay !== delay) {
           this.autoPlayDelay = delay;
           this.broadcast('settingChange', 'autoPlayDelay');
         }
@@ -196,7 +197,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       start: function(delay) {
 
         //Not in replay mode or already auto playing?
-        if (this.mode !==  PlayerModes.REPLAY || this.autoPlaying) {
+        if (this.mode !== PlayerModes.REPLAY || this.autoPlaying) {
           return;
         }
 
@@ -237,7 +238,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       stop: function() {
 
         //Not in replay mode or not auto playing?
-        if (this.mode !==  PlayerModes.REPLAY || !this.autoPlaying) {
+        if (this.mode !== PlayerModes.REPLAY || !this.autoPlaying) {
           return;
         }
 

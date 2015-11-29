@@ -164,11 +164,6 @@
     $scope.SetupTools = SetupTools;
     $scope.MarkupTools = MarkupTools;
 
-    //Load game data from external source
-    /*$http.get('test.jgf').success(function(data) {
-      Player.load(data);
-    });*/
-
     //Load local data
     Player.load(jgf);
   })

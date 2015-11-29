@@ -23,29 +23,30 @@ angular.module('ngGo.Errors.InvalidPositionError.Service', [
     //Set name and message
     this.code = code;
     this.name = 'InvalidPositionError';
-      this.message = 'Invalid position detected.';
+    this.message = 'Invalid position detected.';
 
-      //Add position data
-      if (typeof x !==  'undefined' && typeof y !==  'undefined' && typeof color !==  'undefined') {
-        this.message += " Trying to place a " + (color === StoneColor.W ? "white" : "black") + " stone on (" + x + ", " + y + ")";
+    //Add position data
+    if (typeof x !== 'undefined' && typeof y !== 'undefined' && typeof color !== 'undefined') {
+      this.message += ' Trying to place a ' + (color === StoneColor.W ? 'white' : 'black') +
+        ' stone on (' + x + ', ' + y + ')';
     }
 
     //Append code message
     switch (code) {
       case ngGo.error.POSTITION_OUT_OF_BOUNDS:
-        this.message += ", but these coordinates are not on the board.";
+        this.message += ', but these coordinates are not on the board.';
         break;
       case ngGo.error.POSTITION_ALREADY_HAS_STONE:
-        this.message += ", but there is already a stone on those coordinates.";
+        this.message += ', but there is already a stone on those coordinates.';
         break;
       case ngGo.error.POSTITION_IS_SUICIDE:
-        this.message += ", but that would be suicide.";
+        this.message += ', but that would be suicide.';
         break;
       case ngGo.error.POSTITION_IS_REPEATING:
-        this.message += ", but this position already occured.";
+        this.message += ', but this position already occured.';
         break;
       default:
-        this.message += ".";
+        this.message += '.';
     }
   };
 

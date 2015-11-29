@@ -27,7 +27,7 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
    */
   angular.extend(MarkupLayer.prototype, BoardLayer.prototype);
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Object handling
    ***/
 
@@ -37,7 +37,8 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
   MarkupLayer.prototype.setAll = function(grid) {
 
     //Get changes compared to current grid
-    var i, changes = this.grid.compare(grid, 'type');
+    var i;
+    var changes = this.grid.compare(grid, 'type');
 
     //Clear removed stuff
     for (i = 0; i < changes.remove.length; i++) {
@@ -70,7 +71,7 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
     this.grid.empty();
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Drawing
    ***/
 

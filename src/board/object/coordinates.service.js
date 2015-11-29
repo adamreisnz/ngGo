@@ -24,8 +24,8 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
   ];
 
   //Character codes
-  var aChar = 'A'.charCodeAt(0),
-      aCharLc = 'a'.charCodeAt(0);
+  var aChar = 'A'.charCodeAt(0);
+  var aCharLc = 'a'.charCodeAt(0);
 
   /**
    * Coordinate generators
@@ -100,25 +100,25 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
       var cellSize = this.board.getCellSize();
 
       //Get boundary coordinates
-      var xl = Math.ceil((this.board.drawMarginHor - cellSize/2) / 2),
-        xr = this.board.drawWidth - xl,
-        yt = Math.ceil((this.board.drawMarginVer - cellSize/2) / 2),
-        yb = this.board.drawHeight - yt;
+      var xl = Math.ceil((this.board.drawMarginHor - cellSize / 2) / 2);
+      var xr = this.board.drawWidth - xl;
+      var yt = Math.ceil((this.board.drawMarginVer - cellSize / 2) / 2);
+      var yb = this.board.drawHeight - yt;
 
       //Get theme properties
-      var fillStyle = this.board.theme.get('coordinates.color'),
-        vertical = {
-          font: this.board.theme.get('coordinates.vertical.font'),
-          size: this.board.theme.get('coordinates.vertical.size'),
-          style: this.board.theme.get('coordinates.vertical.style'),
-          inverse: this.board.theme.get('coordinates.vertical.inverse')
-        },
-        horizontal = {
-          font: this.board.theme.get('coordinates.horizontal.font'),
-          size: this.board.theme.get('coordinates.horizontal.size'),
-          style: this.board.theme.get('coordinates.horizontal.style'),
-          inverse: this.board.theme.get('coordinates.horizontal.inverse')
-        };
+      var fillStyle = this.board.theme.get('coordinates.color');
+      var vertical = {
+        font: this.board.theme.get('coordinates.vertical.font'),
+        size: this.board.theme.get('coordinates.vertical.size'),
+        style: this.board.theme.get('coordinates.vertical.style'),
+        inverse: this.board.theme.get('coordinates.vertical.inverse')
+      };
+      var horizontal = {
+        font: this.board.theme.get('coordinates.horizontal.font'),
+        size: this.board.theme.get('coordinates.horizontal.size'),
+        style: this.board.theme.get('coordinates.horizontal.style'),
+        inverse: this.board.theme.get('coordinates.horizontal.inverse')
+      };
 
       //Configure context
       this.context.fillStyle = fillStyle;

@@ -19,8 +19,8 @@ angular.module('ngGo.Board.Directive', [
   var createLayerCanvas = function(name) {
 
     //Create canvas element and get context
-    var canvas = document.createElement('canvas'),
-      context = canvas.getContext('2d');
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
 
     //Scale context depending on pixel ratio
     if (pixelRatio > 1) {
@@ -69,7 +69,7 @@ angular.module('ngGo.Board.Directive', [
     }
 
     //Broadcast new size if changed
-    if (scope.lastDrawWidth !==  drawWidth || scope.lastDrawHeight !==  drawHeight) {
+    if (scope.lastDrawWidth !== drawWidth || scope.lastDrawHeight !== drawHeight) {
       scope.lastDrawWidth = drawWidth;
       scope.lastDrawHeight = drawHeight;
       scope.$broadcast('ngGo.board.drawSizeChanged', drawWidth, drawHeight);
@@ -85,7 +85,7 @@ angular.module('ngGo.Board.Directive', [
    */
   return {
     restrict: 'E',
-    scope:    {
+    scope: {
       instance: '&'
     },
 
@@ -95,10 +95,10 @@ angular.module('ngGo.Board.Directive', [
     link: function(scope, element, attrs) {
 
       //Init vars
-      var i, context, layer, playerElement,
-        parent = element.parent(),
-        sizingElement = element[0],
-        existingInstance = true;
+      var i, context, layer, playerElement;
+      var parent = element.parent();
+      var sizingElement = element[0];
+      var existingInstance = true;
 
       //Remember last draw width/height
       scope.lastDrawWidth = 0;
@@ -163,7 +163,7 @@ angular.module('ngGo.Board.Directive', [
       scope.$on('ngGo.board.resize', function(event, board) {
 
         //Only relevent if this was our own board
-        if (board !==  scope.Board) {
+        if (board !== scope.Board) {
           return;
         }
 
@@ -204,7 +204,7 @@ angular.module('ngGo.Board.Directive', [
 
       //Observe the board size attribute
       attrs.$observe('size', function(size) {
-        if (typeof size === 'string' && size.toLowerCase().indexOf('x') !== = -1) {
+        if (typeof size === 'string' && size.toLowerCase().indexOf('x') !== -1) {
           size = size.split('x');
           scope.Board.setSize(size[0], size[1]);
         }

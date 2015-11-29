@@ -112,7 +112,9 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
     //Other objects to restore?
     for (var i = 0; i < this.restore.length; i++) {
       if (this.restore[i].x === x && this.restore[i].y === y) {
-        this.board.add(this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value);
+        this.board.add(
+          this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
+        );
         this.restore.splice(i, 1);
       }
     }
@@ -129,7 +131,8 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
     }
 
     //Get all item as objects
-    var i, hover = this.grid.all('layer');
+    var i;
+    var hover = this.grid.all('layer');
 
     //Clear them
     for (i = 0; i < hover.length; i++) {
@@ -144,7 +147,9 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 
     //Restore objects on other layers
     for (i = 0; i < this.restore.length; i++) {
-      this.board.add(this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value);
+      this.board.add(
+        this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
+      );
     }
 
     //Clear restore array

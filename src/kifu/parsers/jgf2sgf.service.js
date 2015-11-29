@@ -38,7 +38,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
     return String.fromCharCode(aChar + coords[0]) + String.fromCharCode(aChar + coords[1]);
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Conversion helpers
    ***/
 
@@ -47,7 +47,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
    */
   var escapeSgf = function(text) {
     if (typeof text === 'string') {
-      return text.replace(/\\/g, "\\\\").replace(/]/g, "\\]");
+      return text.replace(/\\/g, '\\\\').replace(/]/g, '\\]');
     }
     return text;
   };
@@ -145,7 +145,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
         }
 
         //Convert type
-        if (typeof jgfAliases[type] !==  'undefined') {
+        if (typeof jgfAliases[type] !== 'undefined') {
           type = jgfAliases[type];
         }
 
@@ -168,7 +168,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   var parseComments = function(comments, output) {
 
     //Determine key
-    var key = (typeof jgfAliases.comments !==  'undefined') ? jgfAliases.comments : 'C';
+    var key = (typeof jgfAliases.comments !== 'undefined') ? jgfAliases.comments : 'C';
 
     //Flatten comment objects
     var flatComments = [];
@@ -189,7 +189,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
    * Node name parser
    */
   var parseNodeName = function(nodeName, output) {
-    var key = (typeof jgfAliases.name !==  'undefined') ? jgfAliases.name : 'N';
+    var key = (typeof jgfAliases.name !== 'undefined') ? jgfAliases.name : 'N';
     output.sgf += key + '[' + escapeSgf(nodeName) + ']';
   };
 
@@ -235,7 +235,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
     }
 
     //Set in root properties
-    rootProperties['ST'] = st;
+    rootProperties.ST = st;
   };
 
   /**
@@ -248,27 +248,27 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
       //Same dimensions?
       if (board.width === board.height) {
-        rootProperties['SZ'] = board.width;
+        rootProperties.SZ = board.width;
       }
 
       //Different dimensions are not supported by SGF, but OGS uses the
       //format w:h, so we will stick with that for anyone who supports it.
       else {
-        rootProperties['SZ'] = board.width + ':' + board.height;
+        rootProperties.SZ = board.width + ':' + board.height;
       }
     }
 
     //Otherwise, check if only width or height were given at least
     else if (board.width) {
-      rootProperties['SZ'] = board.width;
+      rootProperties.SZ = board.width;
     }
     else if (board.height) {
-      rootProperties['SZ'] = board.height;
+      rootProperties.SZ = board.height;
     }
 
     //Can't determine size
     else {
-      rootProperties['SZ'] = '';
+      rootProperties.SZ = '';
     }
   };
 
@@ -281,7 +281,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
     for (var p = 0; p < players.length; p++) {
 
       //Validate color
-      if (!players[p].color || (players[p].color !==  'black' && players[p].color !==  'white')) {
+      if (!players[p].color || (players[p].color !== 'black' && players[p].color !== 'white')) {
         continue;
       }
 
@@ -311,23 +311,23 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   var parsingMap = {
 
     //Node properties
-    'move':     parseMove,
-    'setup':    parseSetup,
-    'score':    parseScore,
-    'markup':   parseMarkup,
-    'turn':     parseTurn,
-    'comments':   parseComments,
-    'name':     parseNodeName,
+    'move': parseMove,
+    'setup': parseSetup,
+    'score': parseScore,
+    'markup': parseMarkup,
+    'turn': parseTurn,
+    'comments': parseComments,
+    'name': parseNodeName,
 
     //Info properties
     'record.application': parseApplication,
-    'player':       parsePlayer,
-    'board':        parseBoard,
-    'game.type':      parseGame,
-    'game.players':     parsePlayers
+    'player': parsePlayer,
+    'board': parseBoard,
+    'game.type': parseGame,
+    'game.players': parsePlayers
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Parser functions
    ***/
 
@@ -343,9 +343,9 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
       //Array? That means a variation
       if (angular.isArray(node)) {
         for (var j = 0; j < node.length; j++) {
-          output.sgf += "(\n;";
+          output.sgf += '(\n;';
           writeTree(node[j], output);
-          output.sgf += "\n)";
+          output.sgf += '\n)';
         }
 
         //Continue
@@ -357,13 +357,13 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
         if (node.hasOwnProperty(key)) {
 
           //Handler present in parsing map?
-          if (typeof parsingMap[key] !== = 'undefined') {
+          if (typeof parsingMap[key] !== 'undefined') {
             parsingMap[key](node[key], output);
             continue;
           }
 
           //Other object, can't handle it
-          if (typeof props[key] === 'object') {
+          if (typeof node[key] === 'object') {
             continue;
           }
 
@@ -374,7 +374,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
       //More to come?
       if ((i + 1) < tree.length) {
-        output.sgf += "\n;";
+        output.sgf += '\n;';
       }
     }
   };
@@ -391,44 +391,46 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
     //Loop properties of jgf node
     for (var subKey in jgf) {
+      if (jgf.hasOwnProperty(subKey)) {
 
-      //Skip SGF signature (as we keep our own)
-      if (subKey === 'sgf') {
-        continue;
-      }
-
-      //Build jgf key
-      var jgfKey = (key === '') ? subKey : key + '.' + subKey;
-
-      //If the item is an object, handle separately
-      if (typeof jgf[subKey] === 'object') {
-
-        //Handler for this object present in parsing map?
-        if (typeof parsingMap[jgfKey] !== = 'undefined') {
-          parsingMap[jgfKey](jgf[subKey], rootProperties);
+        //Skip SGF signature (as we keep our own)
+        if (subKey === 'sgf') {
+          continue;
         }
 
-        //Otherwise, just flatten and call this function recursively
-        else {
-          extractRootProperties(jgf[subKey], rootProperties, jgfKey);
-        }
-        continue;
-      }
+        //Build jgf key
+        var jgfKey = (key === '') ? subKey : key + '.' + subKey;
 
-      //Check if it's a known key, if so, append the value to the root
-      var value;
-      if (typeof jgfAliases[jgfKey] !==  'undefined') {
+        //If the item is an object, handle separately
+        if (typeof jgf[subKey] === 'object') {
 
-        //Handler present in parsing map?
-        if (typeof parsingMap[jgfKey] !== = 'undefined') {
-          value = parsingMap[jgfKey](jgf[subKey]);
-        }
-        else {
-          value = escapeSgf(jgf[subKey]);
+          //Handler for this object present in parsing map?
+          if (typeof parsingMap[jgfKey] !== 'undefined') {
+            parsingMap[jgfKey](jgf[subKey], rootProperties);
+          }
+
+          //Otherwise, just flatten and call this function recursively
+          else {
+            extractRootProperties(jgf[subKey], rootProperties, jgfKey);
+          }
+          continue;
         }
 
-        //Set in root properties
-        rootProperties[jgfAliases[jgfKey]] = value;
+        //Check if it's a known key, if so, append the value to the root
+        var value;
+        if (typeof jgfAliases[jgfKey] !== 'undefined') {
+
+          //Handler present in parsing map?
+          if (typeof parsingMap[jgfKey] !== 'undefined') {
+            value = parsingMap[jgfKey](jgf[subKey]);
+          }
+          else {
+            value = escapeSgf(jgf[subKey]);
+          }
+
+          //Set in root properties
+          rootProperties[jgfAliases[jgfKey]] = value;
+        }
       }
     }
   };
@@ -455,9 +457,9 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
       }
 
       //Initialize output (as object, so it remains a reference) and root properties container
-      var output = {sgf: "(\n;"},
-        root = angular.copy(jgf),
-        rootProperties = KifuBlank.sgf();
+      var output = {sgf: '(\n;'};
+      var root = angular.copy(jgf);
+      var rootProperties = KifuBlank.sgf();
 
       //The first node of the JGF tree is the root node, and it can contain comments,
       //board setup parameters, etc. It doesn't contain moves. We handle it separately here
@@ -483,7 +485,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
       writeTree(jgf.tree, output);
 
       //Close SGF and return
-      output.sgf += ")";
+      output.sgf += ')';
       return output.sgf;
     }
   };

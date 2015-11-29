@@ -1,8 +1,8 @@
 
 /**
- * BoardLayer :: This class represents a layer on the board and is the base class for all board layers.
- * Each layer can contain it's own objects on a grid with coordinates and is responsible for drawing
- * itself as well as its objects onto the canvas.
+ * BoardLayer :: This class represents a layer on the board and is the base class for all board
+ * layers. Each layer can contain it's own objects on a grid with coordinates and is responsible
+ * for drawing itself as well as its objects onto the canvas.
  */
 
 /**
@@ -31,7 +31,7 @@ angular.module('ngGo.Board.Layer.Service', [
     this.grid = new BoardGrid();
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Generic grid and object handling
    ***/
 
@@ -101,7 +101,7 @@ angular.module('ngGo.Board.Layer.Service', [
     return this.grid.has(x, y);
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Generic drawing methods
    ***/
 
@@ -117,7 +117,9 @@ angular.module('ngGo.Board.Layer.Service', [
    */
   BoardLayer.prototype.clear = function() {
     if (this.context) {
-      this.context.clearRect(0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight);
+      this.context.clearRect(
+        0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight
+      );
     }
   };
 

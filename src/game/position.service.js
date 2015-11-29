@@ -1,9 +1,9 @@
 
 /**
- * GamePosition :: This class represents a single game position. It keeps track of the stones and markup
- * on the board in this position, as well as any captures that were made and which player's turn it is.
- * The class is also equipped with helpers to check for liberties, capture stones, and compare changes
- * to other positions.
+ * GamePosition :: This class represents a single game position. It keeps track of the stones and
+ * markup on the board in this position, as well as any captures that were made and which player's
+ * turn it is. The class is also equipped with helpers to check for liberties, capture stones, and
+ * compare changes to other positions.
  */
 
 /**
@@ -89,7 +89,7 @@ angular.module('ngGo.Game.Position.Service', [
     this.markup.set(x, y, markup);
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Liberties and capturing
    ***/
 
@@ -127,10 +127,10 @@ angular.module('ngGo.Game.Position.Service', [
 
     //Ok, so we're looking at a stone of our own color. Test adjacent positions.
     //If we get at least one true, we have a liberty
-    return  this.hasLiberties(x, y-1, groupColor, tested) ||
-        this.hasLiberties(x, y+1, groupColor, tested) ||
-        this.hasLiberties(x-1, y, groupColor, tested) ||
-        this.hasLiberties(x+1, y, groupColor, tested);
+    return this.hasLiberties(x, y - 1, groupColor, tested) ||
+        this.hasLiberties(x, y + 1, groupColor, tested) ||
+        this.hasLiberties(x - 1, y, groupColor, tested) ||
+        this.hasLiberties(x + 1, y, groupColor, tested);
   };
 
   /**
@@ -155,16 +155,16 @@ angular.module('ngGo.Game.Position.Service', [
     var captured = false;
 
     //Check adjacent positions now, capturing stones in the process if possible
-    if (this.canCapture(x, y-1, -friendlyColor, true)) {
+    if (this.canCapture(x, y - 1, -friendlyColor, true)) {
       captured = true;
     }
-    if (this.canCapture(x, y+1, -friendlyColor, true)) {
+    if (this.canCapture(x, y + 1, -friendlyColor, true)) {
       captured = true;
     }
-    if (this.canCapture(x-1, y, -friendlyColor, true)) {
+    if (this.canCapture(x - 1, y, -friendlyColor, true)) {
       captured = true;
     }
-    if (this.canCapture(x+1, y, -friendlyColor, true)) {
+    if (this.canCapture(x + 1, y, -friendlyColor, true)) {
       captured = true;
     }
 
@@ -191,7 +191,7 @@ angular.module('ngGo.Game.Position.Service', [
     enemyColor = enemyColor || this.stones.get(x, y);
 
     //We need to have a stone of matching group color in order to be able to capture it
-    if (this.stones.get(x, y) !== = enemyColor) {
+    if (this.stones.get(x, y) !== enemyColor) {
       return false;
     }
 
@@ -223,7 +223,7 @@ angular.module('ngGo.Game.Position.Service', [
     enemyColor = enemyColor || this.stones.get(x, y);
 
     //Stone at position does not match the given group color? Can't capture it
-    if (this.stones.get(x, y) !== = enemyColor) {
+    if (this.stones.get(x, y) !== enemyColor) {
       return false;
     }
 
@@ -231,10 +231,10 @@ angular.module('ngGo.Game.Position.Service', [
     this.captureStone(x, y);
 
     //Capture the rest of the group
-    this.captureGroup(x, y-1, enemyColor);
-    this.captureGroup(x, y+1, enemyColor);
-    this.captureGroup(x-1, y, enemyColor);
-    this.captureGroup(x+1, y, enemyColor);
+    this.captureGroup(x, y - 1, enemyColor);
+    this.captureGroup(x, y + 1, enemyColor);
+    this.captureGroup(x - 1, y, enemyColor);
+    this.captureGroup(x + 1, y, enemyColor);
 
     //At least one stone was captured
     return true;
@@ -260,7 +260,7 @@ angular.module('ngGo.Game.Position.Service', [
 
     //Ok, stone present, capture it
     this.stones.set(x, y, StoneColor.EMPTY);
-    this.captures[color].push({x:x, y:y});
+    this.captures[color].push({x: x, y: y});
   };
 
   /**
@@ -284,7 +284,7 @@ angular.module('ngGo.Game.Position.Service', [
     return this.captures[-color].length;
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Turn control
    ***/
 
@@ -309,14 +309,12 @@ angular.module('ngGo.Game.Position.Service', [
     this.turn = -this.turn;
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Cloning and comparison
    ***/
 
   /**
    * Clones the whole position except turn and captures
-   *
-   * @return  object  Copy of this position
    */
   GamePosition.prototype.clone = function() {
 
@@ -340,7 +338,7 @@ angular.module('ngGo.Game.Position.Service', [
   GamePosition.prototype.isSameAs = function(newPosition) {
 
     //Must have the same size
-    if (this.width !==  newPosition.width || this.height !==  newPosition.height) {
+    if (this.width !== newPosition.width || this.height !== newPosition.height) {
       return false;
     }
 

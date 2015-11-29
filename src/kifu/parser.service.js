@@ -54,8 +54,8 @@ angular.module('ngGo.Kifu.Parser.Service', [
   'WR': 'rank',
 
   //Node annotation
-  'N':  'name',
-  'C':  'comments',
+  'N': 'name',
+  'C': 'comments',
   'CR': 'circle',
   'TR': 'triangle',
   'SQ': 'square',

@@ -30,7 +30,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
    */
   angular.extend(StonesLayer.prototype, BoardLayer.prototype);
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Object handling
    ***/
 
@@ -40,7 +40,8 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
   StonesLayer.prototype.setAll = function(grid) {
 
     //Get changes compared to current grid
-    var i, changes = this.grid.compare(grid, 'color');
+    var i;
+    var changes = this.grid.compare(grid, 'color');
 
     //Clear removed stuff
     for (i = 0; i < changes.remove.length; i++) {
@@ -56,7 +57,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
     this.grid = grid.clone();
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Drawing
    ***/
 

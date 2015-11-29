@@ -171,12 +171,12 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       }
 
       //Get node and variations
-      var node = this.game.getNode(),
-        variations = node.getMoveVariations();
+      var node = this.game.getNode();
+      var variations = node.getMoveVariations();
 
       //When showing, make sure it's not during the auto solver's move
       if (show && !this.problemSolved && this.solveAutoPlay) {
-        if (this.game.getTurn() !==  this.playerColor) {
+        if (this.game.getTurn() !== this.playerColor) {
           hideSolutionPaths.call(this, variations);
           return;
         }
@@ -220,7 +220,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
        * Set solve auto play delay
        */
       setSolveAutoPlay: function(autoPlay) {
-        if (this.solveAutoPlay !==  autoPlay) {
+        if (this.solveAutoPlay !== autoPlay) {
           this.solveAutoPlay = autoPlay;
           this.broadcast('settingChange', 'solveAutoPlay');
         }
@@ -230,7 +230,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
        * Set solve auto play delay
        */
       setSolveAutoPlayDelay: function(delay) {
-        if (this.solveAutoPlayDelay !==  delay) {
+        if (this.solveAutoPlayDelay !== delay) {
           this.solveAutoPlayDelay = delay;
           this.broadcast('settingChange', 'solveAutoPlayDelay');
         }
@@ -240,7 +240,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
        * Set player color
        */
       setPlayerColor: function(color) {
-        if (this.playerColor !==  color) {
+        if (this.playerColor !== color) {
           this.playerColor = color;
           this.broadcast('settingChange', 'playerColor');
         }
@@ -267,7 +267,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
         }
 
         //Change?
-        if (solutionPaths !==  this.solutionPaths) {
+        if (solutionPaths !== this.solutionPaths) {
           this.solutionPaths = solutionPaths;
           this.broadcast('settingChange', 'solutionPaths');
         }
@@ -284,7 +284,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
         }
 
         //Init vars
-        var children = [], self = this, i;
+        var children = [];
+        var self = this;
+        var i;
 
         //When picking a child node, we always prefer to pick a valid solution
         for (i = 0; i < this.game.node.children.length; i++) {
@@ -339,7 +341,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
         this.restrictNode();
 
         //Auto play next move if it's not our turn
-        if (this.solveAutoPlay && this.game.getTurn() !==  this.playerColor) {
+        if (this.solveAutoPlay && this.game.getTurn() !== this.playerColor) {
           this.autoPlayNext();
         }
       },
@@ -350,7 +352,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       restartProblem: function() {
 
         //Must be in solve mode, must have game
-        if (this.mode !==  PlayerModes.SOLVE || !this.game || !this.game.isLoaded()) {
+        if (this.mode !== PlayerModes.SOLVE || !this.game || !this.game.isLoaded()) {
           return;
         }
 
@@ -364,7 +366,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
         }
 
         //Auto play next move if it's not our turn
-        if (this.solveAutoPlay && this.game.getTurn() !==  this.playerColor) {
+        if (this.solveAutoPlay && this.game.getTurn() !== this.playerColor) {
           this.autoPlayNext();
         }
       }
@@ -396,7 +398,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       settingChange: function(event, setting) {
 
         //Solution paths setting changes?
-        if (setting === 'solutionPaths')  {
+        if (setting === 'solutionPaths') {
           drawSolutionPaths.call(this, this.solutionPaths);
         }
 
@@ -407,7 +409,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
           drawSolutionPaths.call(this, this.solutionPaths);
 
           //Make an auto play move if it's not our turn
-          if (!this.problemSolved && this.solveAutoPlay && this.game.getTurn() !==  this.playerColor) {
+          if (
+            !this.problemSolved && this.solveAutoPlay && this.game.getTurn() !== this.playerColor
+          ) {
             this.autoPlayNext(true);
           }
         }
@@ -452,7 +456,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
               keyboardEvent.preventDefault();
 
               //Navigation not blocked?
-              if (!this.solveNavigationBlocked && this.game.node !==  this.restrictNodeEnd) {
+              if (!this.solveNavigationBlocked && this.game.node !== this.restrictNodeEnd) {
 
                 //Go forward one move if solved
                 if (this.problemSolved) {
@@ -470,14 +474,17 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
               keyboardEvent.preventDefault();
 
               //Navigation not blocked and not reached the start?
-              if (!this.solveNavigationBlocked && this.game.node !==  this.restrictNodeStart) {
+              if (!this.solveNavigationBlocked && this.game.node !== this.restrictNodeStart) {
 
                 //Go back one move
                 this.previous();
 
                 //Go back one more if this is not the player's turn and if
                 //the problem hasn't been solved yet
-                if (!this.problemSolved && this.solveAutoPlay && this.game.getTurn() === -this.playerColor) {
+                if (
+                  !this.problemSolved && this.solveAutoPlay &&
+                  this.game.getTurn() === -this.playerColor
+                ) {
                   this.previous();
                 }
               }

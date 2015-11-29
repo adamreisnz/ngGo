@@ -1,7 +1,7 @@
 
 /**
- * this.gameScorer :: This class is used to determine the score of a certain game position. It also provides
- * handling of manual adjustment of dead/living groups.
+ * GameScorer :: This class is used to determine the score of a certain game position. It also
+ * provides handling of manual adjustment of dead / living groups.
  */
 
 /**
@@ -36,8 +36,8 @@ angular.module('ngGo.Game.Scorer.Service', [
   var territorySet = function(x, y, candidateColor, boundaryColor) {
 
     //Get color at given position
-    var posColor = this.stones.get(x, y),
-      origColor = this.game.position.stones.get(x, y);
+    var posColor = this.stones.get(x, y);
+    var origColor = this.game.position.stones.get(x, y);
 
     //If border reached, or a position which is already this color, or boundary color, can't set
     if (!this.stones.isOnGrid(x, y) || posColor === candidateColor || posColor === boundaryColor) {
@@ -56,10 +56,10 @@ angular.module('ngGo.Game.Scorer.Service', [
     }
 
     //Set adjacent squares
-    territorySet.call(this, x-1, y, candidateColor, boundaryColor);
-    territorySet.call(this, x, y-1, candidateColor, boundaryColor);
-    territorySet.call(this, x+1, y, candidateColor, boundaryColor);
-    territorySet.call(this, x, y+1, candidateColor, boundaryColor);
+    territorySet.call(this, x - 1, y, candidateColor, boundaryColor);
+    territorySet.call(this, x, y - 1, candidateColor, boundaryColor);
+    territorySet.call(this, x + 1, y, candidateColor, boundaryColor);
+    territorySet.call(this, x, y + 1, candidateColor, boundaryColor);
   };
 
   /**
@@ -79,10 +79,10 @@ angular.module('ngGo.Game.Scorer.Service', [
     this.stones.set(x, y, origColor);
 
     //Set adjacent squares
-    territoryReset.call(this, x-1, y);
-    territoryReset.call(this, x, y-1);
-    territoryReset.call(this, x+1, y);
-    territoryReset.call(this, x, y+1);
+    territoryReset.call(this, x - 1, y);
+    territoryReset.call(this, x, y - 1);
+    territoryReset.call(this, x + 1, y);
+    territoryReset.call(this, x, y + 1);
   };
 
   /**
@@ -91,7 +91,8 @@ angular.module('ngGo.Game.Scorer.Service', [
   var determineScoreState = function() {
 
     //Initialize vars
-    var change = true, curState, newState, adjacent, b, w, a, x, y;
+    var change = true;
+    var curState, newState, adjacent, b, w, a, x, y;
 
     //Loop while there is change
     while (change) {
@@ -107,14 +108,18 @@ angular.module('ngGo.Game.Scorer.Service', [
           curState = this.stones.get(x, y);
 
           //Unknown or candiates?
-          if (curState === scoreState.UNKNOWN || curState === scoreState.BLACK_CANDIDATE || curState === scoreState.WHITE_CANDIDATE) {
+          if (
+            curState === scoreState.UNKNOWN ||
+            curState === scoreState.BLACK_CANDIDATE ||
+            curState === scoreState.WHITE_CANDIDATE
+          ) {
 
             //Get state in adjacent positions
             adjacent = [
-              this.stones.get(x-1, y),
-              this.stones.get(x, y-1),
-              this.stones.get(x+1, y),
-              this.stones.get(x, y+1)
+              this.stones.get(x - 1, y),
+              this.stones.get(x, y - 1),
+              this.stones.get(x + 1, y),
+              this.stones.get(x, y + 1)
             ];
 
             //Reset
@@ -122,10 +127,16 @@ angular.module('ngGo.Game.Scorer.Service', [
 
             //Loop adjacent squares
             for (a = 0; a < 4; a++) {
-              if (adjacent[a] === scoreState.BLACK_STONE || adjacent[a] === scoreState.BLACK_CANDIDATE) {
+              if (
+                adjacent[a] === scoreState.BLACK_STONE ||
+                adjacent[a] === scoreState.BLACK_CANDIDATE
+              ) {
                 b = true;
               }
-              else if (adjacent[a] === scoreState.WHITE_STONE || adjacent[a] === scoreState.WHITE_CANDIDATE) {
+              else if (
+                adjacent[a] === scoreState.WHITE_STONE ||
+                adjacent[a] === scoreState.WHITE_CANDIDATE
+              ) {
                 w = true;
               }
               else if (adjacent[a] === scoreState.NEUTRAL) {
@@ -148,7 +159,7 @@ angular.module('ngGo.Game.Scorer.Service', [
             }
 
             //Change?
-            if (newState !== = false && newState !==  curState) {
+            if (newState !== false && newState !== curState) {
               change = true;
               this.stones.set(x, y, newState);
             }
@@ -221,7 +232,7 @@ angular.module('ngGo.Game.Scorer.Service', [
 
       //No game?
       if (!this.game) {
-        console.warn("No game loaded in game scorer, can't calutlate score.");
+        console.warn('No game loaded in game scorer, can\'t calutlate score.');
         return;
       }
 
@@ -233,8 +244,8 @@ angular.module('ngGo.Game.Scorer.Service', [
       determineScoreState.call(this);
 
       //Get komi and captures
-      var komi = this.game.get('game.komi'),
-        captures = this.game.getCaptureCount();
+      var komi = this.game.get('game.komi');
+      var captures = this.game.getCaptureCount();
 
       //Reset score
       this.score.reset();
@@ -303,8 +314,8 @@ angular.module('ngGo.Game.Scorer.Service', [
     mark: function(x, y) {
 
       //Get color of original position and state of the count position
-      var color = this.game.position.stones.get(x, y),
-        state = this.stones.get(x, y);
+      var color = this.game.position.stones.get(x, y);
+      var state = this.stones.get(x, y);
 
       //White stone
       if (color === StoneColor.W) {

@@ -1,11 +1,138 @@
 /**
- * ngGo v1.1.1
- * https://github.com/AdamBuczynski/ngGo
+ * ngGo - v1.2.0 - 30-10-2015
+ * https://github.com/adambuczynski/ngGo
  *
- * Copyright (c) 2015 Adam Buczynski
+ * Copyright (c) 2015 Adam Buczynski <me@adambuczynski.com>
+ * License: MIT
  */
-(function (window, angular, undefined) {
-  'use strict';
+(function(window, angular, undefined) {'use strict';
+/**
+ * ngGo
+ *
+ * This is the AngularJS implementation of WGo, based on WGo version 2.3.1. All code has been
+ * refactored to fit the Angular framework, as well as having been linted, properly commented
+ * and generally cleaned up.
+ *
+ * Copyright (c) 2013 Jan Prokop (WGo)
+ * Copyright (c) 2014-2015 Adam Buczynski (ngGo)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo', [])
+
+/**
+ * ngGo constants
+ */
+.constant('ngGo', {
+  name: 'ngGo',
+  version: '1.1.1',
+  error: {
+
+    //Position errors
+    POSITION_OUT_OF_BOUNDS: 1,
+    POSITION_ALREADY_HAS_STONE: 2,
+    POSITION_IS_SUICIDE: 3,
+    POSITION_IS_REPEATING: 4,
+
+    //Data loading errors
+    NO_DATA: 5,
+    UNKNOWN_DATA: 6,
+    INVALID_SGF: 7,
+    INVALID_GIB: 8,
+    INVALID_JGF_JSON: 9,
+    INVALID_JGF_TREE_JSON: 10
+  }
+})
+
+/**
+ * Stone colors
+ */
+.constant('StoneColor', {
+  E: 0,
+  EMPTY: 0,
+  B: 1,
+  BLACK: 1,
+  W: -1,
+  WHITE: -1
+})
+
+/**
+ * Markup types
+ */
+.constant('MarkupTypes', {
+  TRIANGLE: 'triangle',
+  CIRCLE: 'circle',
+  SQUARE: 'square',
+  MARK: 'mark',
+  SELECT: 'select',
+  LABEL: 'label',
+  LAST: 'last',
+  SAD: 'sad',
+  HAPPY: 'happy'
+})
+
+/**
+ * Player modes
+ */
+.constant('PlayerModes', {
+  PLAY: 'play',
+  REPLAY: 'replay',
+  EDIT: 'edit',
+  SOLVE: 'solve'
+})
+
+/**
+ * Player tools
+ */
+.constant('PlayerTools', {
+  NONE: 'none',
+  MOVE: 'move',
+  SCORE: 'score',
+  SETUP: 'setup',
+  MARKUP: 'markup'
+})
+
+/**
+ * Key codes
+ */
+.constant('KeyCodes', {
+  LEFT: 37,
+  RIGHT: 39,
+  UP: 38,
+  DOWN: 40,
+  ESC: 27,
+  ENTER: 13,
+  SPACE: 32,
+  TAB: 9,
+  SHIFT: 16,
+  CTRL: 17,
+  ALT: 18,
+  HOME: 36,
+  END: 35,
+  PAGEUP: 33,
+  PAGEDOWN: 34
+});
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
 /**
  * Module definition and dependencies
  */
@@ -16,7 +143,7 @@ angular.module('ngGo.Board.Directive', [
 /**
  * Directive definition
  */
-.directive('board', ["$window", "Board", function($window, Board) {
+.directive('board', ['$window', 'Board', function($window, Board) {
 
   //Get pixel ratio
   var pixelRatio = window.pixelRatio || 1;
@@ -27,8 +154,8 @@ angular.module('ngGo.Board.Directive', [
   var createLayerCanvas = function(name) {
 
     //Create canvas element and get context
-    var canvas = document.createElement('canvas'),
-      context = canvas.getContext('2d');
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
 
     //Scale context depending on pixel ratio
     if (pixelRatio > 1) {
@@ -77,7 +204,7 @@ angular.module('ngGo.Board.Directive', [
     }
 
     //Broadcast new size if changed
-    if (scope.lastDrawWidth != drawWidth || scope.lastDrawHeight != drawHeight) {
+    if (scope.lastDrawWidth !== drawWidth || scope.lastDrawHeight !== drawHeight) {
       scope.lastDrawWidth = drawWidth;
       scope.lastDrawHeight = drawHeight;
       scope.$broadcast('ngGo.board.drawSizeChanged', drawWidth, drawHeight);
@@ -93,7 +220,7 @@ angular.module('ngGo.Board.Directive', [
    */
   return {
     restrict: 'E',
-    scope:    {
+    scope: {
       instance: '&'
     },
 
@@ -103,10 +230,10 @@ angular.module('ngGo.Board.Directive', [
     link: function(scope, element, attrs) {
 
       //Init vars
-      var i, context, layer, playerElement,
-        parent = element.parent(),
-        sizingElement = element[0],
-        existingInstance = true;
+      var i, context, layer, playerElement;
+      var parent = element.parent();
+      var sizingElement = element[0];
+      var existingInstance = true;
 
       //Remember last draw width/height
       scope.lastDrawWidth = 0;
@@ -116,7 +243,7 @@ angular.module('ngGo.Board.Directive', [
       scope.Board = scope.instance();
 
       //Function given?
-      if (typeof scope.Board == 'function') {
+      if (typeof scope.Board === 'function') {
         scope.Board = scope.Board();
       }
 
@@ -130,7 +257,7 @@ angular.module('ngGo.Board.Directive', [
       scope.Board.linkElement(element);
 
       //Find player element
-      if (parent[0].tagName == 'PLAYER') {
+      if (parent[0].tagName === 'PLAYER') {
         playerElement = parent;
         sizingElement = parent.parent()[0];
       }
@@ -168,10 +295,10 @@ angular.module('ngGo.Board.Directive', [
       });
 
       //On board grid resize, determine the draw size again
-      scope.$on('ngGo.board.resize', function(event, board, width, height) {
+      scope.$on('ngGo.board.resize', function(event, board) {
 
         //Only relevent if this was our own board
-        if (board != scope.Board) {
+        if (board !== scope.Board) {
           return;
         }
 
@@ -212,7 +339,7 @@ angular.module('ngGo.Board.Directive', [
 
       //Observe the board size attribute
       attrs.$observe('size', function(size) {
-        if (typeof size == 'string' && size.toLowerCase().indexOf('x') !== -1) {
+        if (typeof size === 'string' && size.toLowerCase().indexOf('x') !== -1) {
           size = size.split('x');
           scope.Board.setSize(size[0], size[1]);
         }
@@ -253,11 +380,15 @@ angular.module('ngGo.Board.Directive', [
   };
 }]);
 
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
 /**
  * Board :: This class represents the Go board. It is a placeholder for all the various board layers
- * and is used for placing and removing objects on the board. The class has helpers to figure out the
- * correct size of the grid cells and to toggle coordinates on or off. This class is responsible for
- * drawing all layers on the board.
+ * and is used for placing and removing objects on the board. The class has helpers to figure out
+ * the correct size of the grid cells and to toggle coordinates on or off. This class is
+ * responsible for drawing all layers on the board.
  */
 
 /**
@@ -297,7 +428,7 @@ angular.module('ngGo.Board.Service', [
     cutoff: [],
 
     //Section of board to display
-    section: {top:0,right:0,bottom:0,left:0},
+    section: {top: 0, right: 0, bottom: 0, left: 0},
 
     //Show coordinates?
     coordinates: false,
@@ -316,7 +447,7 @@ angular.module('ngGo.Board.Service', [
   /**
    * Service getter
    */
-  this.$get = ["$rootScope", "BoardTheme", "GridLayer", "ShadowLayer", "StonesLayer", "MarkupLayer", "ScoreLayer", "HoverLayer", function($rootScope, BoardTheme, GridLayer, ShadowLayer, StonesLayer, MarkupLayer, ScoreLayer, HoverLayer) {
+  this.$get = ['$rootScope', '$injector', 'BoardTheme', function($rootScope, $injector, BoardTheme) {
 
     /**
      * Board constructor
@@ -350,16 +481,17 @@ angular.module('ngGo.Board.Service', [
       this.gridDrawWidth = 0;
       this.gridDrawHeight = 0;
 
-      //Initialize layers
+      //Set layer order
       this.layerOrder = ['grid', 'shadow', 'stones', 'score', 'markup', 'hover'];
-      this.layers = {
-        grid: new GridLayer(this),
-        shadow: new ShadowLayer(this),
-        stones: new StonesLayer(this),
-        markup: new MarkupLayer(this),
-        score: new ScoreLayer(this),
-        hover: new HoverLayer(this)
-      };
+
+      //Initialize layers
+      this.layers = {};
+      for (var l = 0; l < this.layerOrder.length; l++) {
+        var layer = this.layerOrder[l];
+        var layerClass = layer[0].toUpperCase() + layer.substr(1) + 'Layer';
+        var LayerClass = $injector.get(layerClass);
+        this.layers[layer] = new LayerClass(this);
+      }
 
       //Static board flag
       this.static = false;
@@ -410,7 +542,7 @@ angular.module('ngGo.Board.Service', [
       this.layerOrder = ['grid', 'stones', 'markup'];
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Configuration
      ***/
 
@@ -420,7 +552,7 @@ angular.module('ngGo.Board.Service', [
     Board.prototype.parseConfig = function(config) {
 
       //Validate
-      if (typeof config != 'object') {
+      if (typeof config !== 'object') {
         return;
       }
 
@@ -441,12 +573,12 @@ angular.module('ngGo.Board.Service', [
     Board.prototype.setMargin = function(margin) {
 
       //Reset when not defined
-      if (typeof margin == 'undefined') {
+      if (typeof margin === 'undefined') {
         margin = this.theme.get('board.margin');
       }
 
       //Set margin if changed
-      if (this.margin != margin) {
+      if (this.margin !== margin) {
         this.margin = margin;
         this.resized();
       }
@@ -470,16 +602,18 @@ angular.module('ngGo.Board.Service', [
 
       //Check if there's a change
       for (var side in this.cutoff) {
-        if (cutoff.indexOf(side) != -1) {
-          if (!this.cutoff[side]) {
-            this.cutoff[side] = true;
-            changes = true;
+        if (this.cutoff.hasOwnProperty(side)) {
+          if (cutoff.indexOf(side) !== -1) {
+            if (!this.cutoff[side]) {
+              this.cutoff[side] = true;
+              changes = true;
+            }
           }
-        }
-        else {
-          if (this.cutoff[side]) {
-            this.cutoff[side] = false;
-            changes = true;
+          else {
+            if (this.cutoff[side]) {
+              this.cutoff[side] = false;
+              changes = true;
+            }
           }
         }
       }
@@ -499,7 +633,7 @@ angular.module('ngGo.Board.Service', [
     Board.prototype.setSection = function(section) {
 
       //Nothing given?
-      if (!section || typeof section != 'object') {
+      if (!section || typeof section !== 'object') {
         return this;
       }
 
@@ -512,7 +646,10 @@ angular.module('ngGo.Board.Service', [
       }, section);
 
       //No changes?
-      if (this.section.top == section.top && this.section.bottom == section.bottom && this.section.left == section.left && this.section.right == section.right) {
+      if (
+        this.section.top === section.top && this.section.bottom === section.bottom &&
+        this.section.left === section.left && this.section.right === section.right
+      ) {
         return this;
       }
 
@@ -539,7 +676,7 @@ angular.module('ngGo.Board.Service', [
       }
 
       //Changing?
-      if (width != this.width || height != this.height) {
+      if (width !== this.width || height !== this.height) {
 
         //Remember size
         this.width = width;
@@ -547,7 +684,9 @@ angular.module('ngGo.Board.Service', [
 
         //Set size in layers
         for (var layer in this.layers) {
-          this.layers[layer].setSize(width, height);
+          if (this.layers.hasOwnProperty(layer)) {
+            this.layers[layer].setSize(width, height);
+          }
         }
 
         //Broadcast event (no call to resized, as that is handled in the directive)
@@ -562,7 +701,7 @@ angular.module('ngGo.Board.Service', [
      * Set new draw size
      */
     Board.prototype.setDrawSize = function(width, height) {
-      if (width != this.drawWidth || height != this.drawHeight) {
+      if (width !== this.drawWidth || height !== this.drawHeight) {
         this.drawWidth = width;
         this.drawHeight = height;
         this.resized();
@@ -575,7 +714,7 @@ angular.module('ngGo.Board.Service', [
     Board.prototype.toggleCoordinates = function(show) {
 
       //Set or toggle
-      if (typeof show != 'undefined') {
+      if (typeof show !== 'undefined') {
         this.coordinates = show;
       }
       else {
@@ -600,7 +739,7 @@ angular.module('ngGo.Board.Service', [
     Board.prototype.swapColors = function(multiplier) {
 
       //Multiplier not given? Set to inverse of current value
-      if (typeof multiplier == 'undefined') {
+      if (typeof multiplier === 'undefined') {
         multiplier = -this.colorMultiplier;
       }
       else {
@@ -611,7 +750,7 @@ angular.module('ngGo.Board.Service', [
       }
 
       //No change?
-      if (multiplier == this.colorMultiplier) {
+      if (multiplier === this.colorMultiplier) {
         return;
       }
 
@@ -630,7 +769,7 @@ angular.module('ngGo.Board.Service', [
       }
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Theme handling
      ***/
 
@@ -649,7 +788,7 @@ angular.module('ngGo.Board.Service', [
       return this;
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Object handling
      ***/
 
@@ -657,7 +796,7 @@ angular.module('ngGo.Board.Service', [
      * Add an object to a board layer
      */
     Board.prototype.add = function(layer, x, y, value) {
-      if (typeof this.layers[layer] != 'undefined') {
+      if (typeof this.layers[layer] !== 'undefined') {
         this.layers[layer].add(x, y, value);
       }
     };
@@ -666,7 +805,7 @@ angular.module('ngGo.Board.Service', [
      * Remove an object from a board layer
      */
     Board.prototype.remove = function(layer, x, y) {
-      if (typeof this.layers[layer] != 'undefined') {
+      if (typeof this.layers[layer] !== 'undefined') {
         this.layers[layer].remove(x, y);
       }
     };
@@ -689,7 +828,7 @@ angular.module('ngGo.Board.Service', [
      * Set all objects (grid) for a given layer
      */
     Board.prototype.setAll = function(layer, grid) {
-      if (typeof this.layers[layer] != 'undefined') {
+      if (typeof this.layers[layer] !== 'undefined') {
         this.layers[layer].setAll(grid);
       }
     };
@@ -699,18 +838,20 @@ angular.module('ngGo.Board.Service', [
      */
     Board.prototype.removeAll = function(layer) {
       if (layer) {
-        if (typeof this.layers[layer] != 'undefined') {
+        if (typeof this.layers[layer] !== 'undefined') {
           this.layers[layer].removeAll();
         }
       }
       else {
         for (layer in this.layers) {
-          this.layers[layer].removeAll();
+          if (this.layers.hasOwnProperty(layer)) {
+            this.layers[layer].removeAll();
+          }
         }
       }
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Position handling
      ***/
 
@@ -734,7 +875,7 @@ angular.module('ngGo.Board.Service', [
       this.setAll('markup', position.markup);
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * State handling
      ***/
 
@@ -754,9 +895,11 @@ angular.module('ngGo.Board.Service', [
       //All layers
       var state = {};
       for (layer in this.layers) {
-        var grid = this.layers[layer].getAll();
-        if (grid && !grid.isEmpty()) {
-          state[layer] = grid;
+        if (this.layers.hasOwnProperty(layer)) {
+          var grid = this.layers[layer].getAll();
+          if (grid && !grid.isEmpty()) {
+            state[layer] = grid;
+          }
         }
       }
       return state;
@@ -777,14 +920,16 @@ angular.module('ngGo.Board.Service', [
 
       //All layers
       for (layer in this.layers) {
-        this.layers[layer].removeAll();
-        if (state[layer]) {
-          this.layers[layer].setAll(state[layer]);
+        if (this.layers.hasOwnProperty(layer)) {
+          this.layers[layer].removeAll();
+          if (state[layer]) {
+            this.layers[layer].setAll(state[layer]);
+          }
         }
       }
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Drawing control
      ***/
 
@@ -814,7 +959,9 @@ angular.module('ngGo.Board.Service', [
 
       //Clear all layers
       for (layer in this.layers) {
-        this.layers[layer].clear();
+        if (this.layers.hasOwnProperty(layer)) {
+          this.layers[layer].clear();
+        }
       }
     };
 
@@ -851,7 +998,7 @@ angular.module('ngGo.Board.Service', [
       }
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Drawing helpers
      ***/
 
@@ -875,13 +1022,13 @@ angular.module('ngGo.Board.Service', [
 
       //Determine number of cells horizontall and vertically
       //The margin is a factor of the cell size, so let's add it to the number of cells
-      var noCellsHor = this.width + this.margin,
-        noCellsVer = this.height + this.margin;
+      var noCellsHor = this.width + this.margin;
+      var noCellsVer = this.height + this.margin;
 
       //Are we cutting off parts of the grid? Add half a cell of draw size
       for (var side in this.cutoff) {
         if (this.cutoff[side]) {
-          if (side == 'top' || side == 'bottom') {
+          if (side === 'top' || side === 'bottom') {
             noCellsVer += 0.5;
           }
           else {
@@ -951,7 +1098,10 @@ angular.module('ngGo.Board.Service', [
      * Check if given grid coordinates are on board
      */
     Board.prototype.isOnBoard = function(gridX, gridY) {
-      return gridX >= this.grid.xLeft && gridY >= this.grid.yTop && gridX <= this.grid.xRight && gridY <= this.grid.yBot;
+      return (
+        gridX >= this.grid.xLeft && gridY >= this.grid.yTop &&
+        gridX <= this.grid.xRight && gridY <= this.grid.yBot
+      );
     };
 
     //Return object
@@ -959,10 +1109,14 @@ angular.module('ngGo.Board.Service', [
   }];
 });
 
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
 /**
- * DefaultClearHandler :: This is the default clear handler for clearing a cell of the board grid. It
- * is used by all objects that lack their own specific clear handler. Basically, it just clears a small
- * rectangular area on the canvas.
+ * DefaultClearHandler :: This is the default clear handler for clearing a cell of the board grid.
+ * It is used by all objects that lack their own specific clear handler. Basically, it just clears
+ * a small rectangular area on the canvas.
  */
 
 /**
@@ -991,15 +1145,19 @@ angular.module('ngGo.Board.DefaultClearHandler.Service', [
     }
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(obj.x),
-      y = this.board.getAbsY(obj.y),
-      s = this.board.getCellSize(),
-      r = this.board.theme.get('stone.radius', s);
+    var x = this.board.getAbsX(obj.x);
+    var y = this.board.getAbsY(obj.y);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
 
     //Clear rectangle the size of the stone radius
-    context.clearRect(x-r, y-r, 2*r, 2*r);
+    context.clearRect(x - r, y - r, 2 * r, 2 * r);
   };
 });
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
 
 /**
  * BoardGrid :: This class represents a board grid of a given size. It acts as a container for
@@ -1018,7 +1176,7 @@ angular.module('ngGo.Board.Grid.Service', [
 /**
  * Factory definition
  */
-.factory('BoardGrid', ["BoardGridChanges", function(BoardGridChanges) {
+.factory('BoardGrid', ['BoardGridChanges', function(BoardGridChanges) {
 
   /**
    * Helper to convert a value at given coordinates to an object
@@ -1032,7 +1190,7 @@ angular.module('ngGo.Board.Grid.Service', [
     };
 
     //Already an object?
-    if (typeof this.grid[x][y] == 'object') {
+    if (typeof this.grid[x][y] === 'object') {
       return angular.extend(obj, this.grid[x][y]);
     }
 
@@ -1053,7 +1211,7 @@ angular.module('ngGo.Board.Grid.Service', [
     this.emptyValue = null;
 
     //Set empty value if given
-    if (typeof emptyValue != 'undefined') {
+    if (typeof emptyValue !== 'undefined') {
       this.emptyValue = emptyValue;
     }
 
@@ -1114,7 +1272,7 @@ angular.module('ngGo.Board.Grid.Service', [
     return toObject.call(this, x, y, valueKey);
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Mass operations
    ***/
 
@@ -1199,7 +1357,7 @@ angular.module('ngGo.Board.Grid.Service', [
     return newGrid;
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Comparison
    ***/
 
@@ -1209,14 +1367,14 @@ angular.module('ngGo.Board.Grid.Service', [
   BoardGrid.prototype.isSameAs = function(grid) {
 
     //Must have the same size
-    if (this.width != grid.width || this.height != grid.height) {
+    if (this.width !== grid.width || this.height !== grid.height) {
       return false;
     }
 
     //Loop all coordinates
     for (var x = 0; x < this.width; x++) {
       for (var y = 0; y < this.height; y++) {
-        if (this.grid[x][y] != grid[x][y]) {
+        if (this.grid[x][y] !== grid[x][y]) {
           return false;
         }
       }
@@ -1232,10 +1390,10 @@ angular.module('ngGo.Board.Grid.Service', [
   BoardGrid.prototype.compare = function(newGrid, valueKey) {
 
     //Initialize board grid changes object
-    var change, changes = new BoardGridChanges();
+    var changes = new BoardGridChanges();
 
     //Must have the same size
-    if (this.width != newGrid.width || this.height != newGrid.height) {
+    if (this.width !== newGrid.width || this.height !== newGrid.height) {
       console.warn('Trying to compare grids of a different size');
       return changes;
     }
@@ -1260,7 +1418,7 @@ angular.module('ngGo.Board.Grid.Service', [
     return changes;
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Helpers
    ***/
 
@@ -1312,6 +1470,10 @@ angular.module('ngGo.Board.Grid.Service', [
   return BoardGrid;
 }]);
 
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
 /**
  * BoardGridChanges :: This is a simple class which acts as a wrapper for changes between two board
  * grids. It simply keeps track of what was added and what was removed.
@@ -1333,11 +1495,12 @@ angular.module('ngGo.Board.GridChanges.Service', [
    * Helper to subtract sets
    */
   var setSubtract = function(a, b) {
-    var n = [], q;
-    for (var i in a) {
+    var n = [];
+    var q;
+    for (var i = 0; i < a.length; i++) {
       q = true;
       for (var j in b) {
-        if (a[i].x == b[j].x && a[i].y == b[j].y) {
+        if (a[i].x === b[j].x && a[i].y === b[j].y) {
           q = false;
           break;
         }
@@ -1377,10 +1540,14 @@ angular.module('ngGo.Board.GridChanges.Service', [
   };
 });
 
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
 /**
- * BoardLayer :: This class represents a layer on the board and is the base class for all board layers.
- * Each layer can contain it's own objects on a grid with coordinates and is responsible for drawing
- * itself as well as its objects onto the canvas.
+ * BoardLayer :: This class represents a layer on the board and is the base class for all board
+ * layers. Each layer can contain it's own objects on a grid with coordinates and is responsible
+ * for drawing itself as well as its objects onto the canvas.
  */
 
 /**
@@ -1394,7 +1561,7 @@ angular.module('ngGo.Board.Layer.Service', [
 /**
  * Factory definition
  */
-.factory('BoardLayer', ["BoardGrid", function(BoardGrid) {
+.factory('BoardLayer', ['BoardGrid', function(BoardGrid) {
 
   /**
    * Constructor
@@ -1409,7 +1576,7 @@ angular.module('ngGo.Board.Layer.Service', [
     this.grid = new BoardGrid();
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Generic grid and object handling
    ***/
 
@@ -1479,7 +1646,7 @@ angular.module('ngGo.Board.Layer.Service', [
     return this.grid.has(x, y);
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Generic drawing methods
    ***/
 
@@ -1495,7 +1662,9 @@ angular.module('ngGo.Board.Layer.Service', [
    */
   BoardLayer.prototype.clear = function() {
     if (this.context) {
-      this.context.clearRect(0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight);
+      this.context.clearRect(
+        0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight
+      );
     }
   };
 
@@ -1510,14 +1679,14 @@ angular.module('ngGo.Board.Layer.Service', [
   /**
    * Draw cell
    */
-  BoardLayer.prototype.drawCell = function(x, y) {
+  BoardLayer.prototype.drawCell = function(/*x, y*/) {
     //Drawing method to be implemented in specific layer class
   };
 
   /**
    * Clear cell
    */
-  BoardLayer.prototype.clearCell = function(x, y) {
+  BoardLayer.prototype.clearCell = function(/*x, y*/) {
     //Clearing method to be implemented in specific layer class
   };
 
@@ -1547,865 +1716,9 @@ angular.module('ngGo.Board.Layer.Service', [
   return BoardLayer;
 }]);
 
-/**
- * GridLayer :: This class represents the grid layer of the board, and it is responsible for drawing
- * gridlines, starpoints and coordinates via the Coordinates class.
- */
+})(window, window.angular);
 
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Layer.GridLayer.Service', [
-  'ngGo',
-  'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Coordinates.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('GridLayer', ["BoardLayer", "Coordinates", function(BoardLayer, Coordinates) {
-
-  /**
-   * Helper for drawing starpoints
-   */
-  var drawStarPoint = function(gridX, gridY, starRadius, starColor) {
-
-    //Don't draw if it falls outsize of the board grid
-    if (gridX < this.board.grid.xLeft || gridX > this.board.grid.xRight) {
-      return;
-    }
-    if (gridY < this.board.grid.yTop || gridY > this.board.grid.yBot) {
-      return;
-    }
-
-    //Get absolute coordinates and star point radius
-    var x = this.board.getAbsX(gridX),
-      y = this.board.getAbsY(gridY);
-
-    //Draw star point
-    this.context.beginPath();
-    this.context.fillStyle = starColor;
-    this.context.arc(x, y, starRadius, 0, 2*Math.PI, true);
-    this.context.fill();
-  };
-
-  /**
-   * Constructor
-   */
-  var GridLayer = function(board, context) {
-
-    //Set coordinates setting
-    this.coordinates = false;
-
-    //Call parent constructor
-    BoardLayer.call(this, board, context);
-  };
-
-  /**
-   * Prototype extension
-   */
-  angular.extend(GridLayer.prototype, BoardLayer.prototype);
-
-  /**
-   * Show or hide the coordinates.
-   */
-  GridLayer.prototype.setCoordinates = function(show) {
-    this.coordinates = show;
-  };
-
-  /***********************************************************************************************
-   * Object handling
-   ***/
-
-  /**
-   * Get all has nothing to return
-   */
-  GridLayer.prototype.getAll = function() {
-    return null;
-  };
-
-  /**
-   * Set all has nothing to set
-   */
-  GridLayer.prototype.setAll = function(grid) {
-    return;
-  };
-
-  /**
-   * Remove all has nothing to remove
-   */
-  GridLayer.prototype.removeAll = function() {
-    return;
-  };
-
-  /***********************************************************************************************
-   * Drawing
-   ***/
-
-  /**
-   * Draw method
-   */
-  GridLayer.prototype.draw = function() {
-
-    //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //Determine top x and y margin
-    var tx = this.board.drawMarginHor,
-      ty = this.board.drawMarginVer;
-
-    //Get theme properties
-    var cellSize = this.board.getCellSize(),
-      lineWidth = this.board.theme.get('grid.lineWidth', cellSize),
-      lineCap = this.board.theme.get('grid.lineCap'),
-      strokeStyle = this.board.theme.get('grid.lineColor'),
-      starRadius = this.board.theme.get('grid.star.radius', cellSize),
-      starColor = this.board.theme.get('grid.star.color'),
-      starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height),
-      canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.beginPath();
-    this.context.lineWidth = lineWidth;
-    this.context.lineCap = lineCap;
-    this.context.strokeStyle = strokeStyle;
-
-    //Helper vars
-    var i, x, y;
-
-    //Draw vertical lines
-    for (i = this.board.grid.xLeft; i <= this.board.grid.xRight; i++) {
-      x = this.board.getAbsX(i);
-      this.context.moveTo(x, ty);
-      this.context.lineTo(x, ty + this.board.gridDrawHeight);
-    }
-
-    //Draw horizontal lines
-    for (i = this.board.grid.yTop; i <= this.board.grid.yBot; i++) {
-      y = this.board.getAbsY(i);
-      this.context.moveTo(tx, y);
-      this.context.lineTo(tx + this.board.gridDrawWidth, y);
-    }
-
-    //Draw grid lines
-    this.context.stroke();
-
-    //Star points defined?
-    for (i in starPoints) {
-      drawStarPoint.call(this, starPoints[i].x, starPoints[i].y, starRadius, starColor);
-    }
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-
-    //Draw coordinates
-    if (this.coordinates) {
-      Coordinates.draw.call(this);
-    }
-  };
-
-  /**
-   * Clear a square cell area on the grid
-   */
-  GridLayer.prototype.clearCell = function(gridX, gridY) {
-
-    //Get absolute coordinates and stone radius
-    var x = this.board.getAbsX(gridX),
-      y = this.board.getAbsY(gridY),
-      s = this.board.getCellSize(),
-      r = this.board.theme.get('stone.radius', s);
-
-    //Get theme properties
-    var lineWidth = this.board.theme.get('grid.lineWidth', s),
-      canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Clear rectangle
-    this.context.clearRect(x-r, y-r, 2*r, 2*r);
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Redraw a square cell area on the grid
-   */
-  GridLayer.prototype.redrawCell = function(gridX, gridY) {
-
-    //Get absolute coordinates and stone radius
-    var x = this.board.getAbsX(gridX),
-      y = this.board.getAbsY(gridY),
-      s = this.board.getCellSize(),
-      r = this.board.theme.get('stone.radius', s);
-
-    //Get theme properties
-    var lineWidth = this.board.theme.get('grid.lineWidth', s),
-      strokeStyle = this.board.theme.get('grid.lineColor'),
-      starRadius = this.board.theme.get('grid.star.radius', s),
-      starColor = this.board.theme.get('grid.star.color'),
-      canvasTranslate = this.board.theme.canvasTranslate(lineWidth),
-      starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height);
-
-    //Determine draw coordinates
-    var x1 = (gridX === 0) ? x : x-r,
-      x2 = (gridX === this.board.width - 1) ? x : x+r,
-      y1 = (gridY === 0) ? y : y-r,
-      y2 = (gridY === this.board.height - 1) ? y : y+r;
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.beginPath();
-    this.context.lineWidth = lineWidth;
-    this.context.strokeStyle = strokeStyle;
-
-    //Patch up grid lines
-    this.context.moveTo(x1, y);
-    this.context.lineTo(x2, y);
-    this.context.moveTo(x, y1);
-    this.context.lineTo(x, y2);
-    this.context.stroke();
-
-    //Check if we need to draw a star point here
-    for (var i in starPoints) {
-      if (starPoints[i].x == gridX && starPoints[i].y == gridY) {
-        drawStarPoint.call(this, gridX, gridY, starRadius, starColor);
-      }
-    }
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  //Return
-  return GridLayer;
-}]);
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Layer.HoverLayer.Service', [
-  'ngGo',
-  'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Markup.Service',
-  'ngGo.Board.Object.StoneFaded.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('HoverLayer', ["BoardLayer", "Markup", "StoneFaded", function(BoardLayer, Markup, StoneFaded) {
-
-  /**
-   * Constructor
-   */
-  var HoverLayer = function(board, context) {
-
-    //Container for items to restore
-    this.restore = [];
-
-    //Call parent constructor
-    BoardLayer.call(this, board, context);
-  };
-
-  /**
-   * Prototype extension
-   */
-  angular.extend(HoverLayer.prototype, BoardLayer.prototype);
-
-  /**
-   * Add hover item
-   */
-  HoverLayer.prototype.add = function(x, y, hover) {
-
-    //Validate coordinates
-    if (!this.grid.isOnGrid(x, y)) {
-      return;
-    }
-
-    //Remove any previous item at this position
-    this.remove(x, y);
-
-    //Create hover object
-    hover.object = {
-      x: x,
-      y: y
-    };
-
-    //Stones
-    if (hover.type == 'stones') {
-      hover.objectClass = StoneFaded;
-      hover.object.color = hover.value;
-    }
-
-    //Markup
-    else if (hover.type == 'markup') {
-      hover.objectClass = Markup;
-      if (typeof hover.value == 'object') {
-        hover.object = angular.extend(hover.object, hover.value);
-      }
-      else {
-        hover.object.type = hover.value;
-      }
-    }
-
-    //Unknown
-    else {
-      console.warn('Unknown hover type', hover.type);
-      return;
-    }
-
-    //Check if we need to hide something on layers underneath
-    if (this.board.has(hover.type, x, y)) {
-      this.restore.push({
-        x: x,
-        y: y,
-        layer: hover.type,
-        value: this.board.get(hover.type, x, y)
-      });
-      this.board.remove(hover.type, x, y);
-    }
-
-    //Add to stack
-    this.grid.set(x, y, hover);
-
-    //Draw item
-    if (hover.objectClass && hover.objectClass.draw) {
-      hover.objectClass.draw.call(this, hover.object);
-    }
-  };
-
-  /**
-   * Remove the hover object
-   */
-  HoverLayer.prototype.remove = function(x, y) {
-
-    //Validate coordinates
-    if (!this.grid.has(x, y)) {
-      return;
-    }
-
-    //Get object and clear it
-    var hover = this.grid.get(x, y);
-    if (hover.objectClass && hover.objectClass.clear) {
-      hover.objectClass.clear.call(this, hover.object);
-    }
-
-    //Other objects to restore?
-    for (var i = 0; i < this.restore.length; i++) {
-      if (this.restore[i].x == x && this.restore[i].y == y) {
-        this.board.add(this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value);
-        this.restore.splice(i, 1);
-      }
-    }
-  };
-
-  /**
-   * Remove all hover objects
-   */
-  HoverLayer.prototype.removeAll = function() {
-
-    //Anything to do?
-    if (this.grid.isEmpty()) {
-      return;
-    }
-
-    //Get all item as objects
-    var i, hover = this.grid.all('layer');
-
-    //Clear them
-    for (i = 0; i < hover.length; i++) {
-      if (hover[i].objectClass && hover[i].objectClass.clear) {
-        hover[i].objectClass.clear.call(this, hover[i].object);
-      }
-    }
-
-    //Clear layer and empty grid
-    this.clear();
-    this.grid.empty();
-
-    //Restore objects on other layers
-    for (i = 0; i < this.restore.length; i++) {
-      this.board.add(this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value);
-    }
-
-    //Clear restore array
-    this.restore = [];
-  };
-
-  /**
-   * Draw layer
-   */
-  HoverLayer.prototype.draw = function() {
-
-    //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //Loop objects and clear them
-    var hover = this.grid.all('hover');
-    for (var i = 0; i < hover.length; i++) {
-      if (hover.objectClass && hover.objectClass.draw) {
-        hover.objectClass.draw.call(this, hover.object);
-      }
-    }
-  };
-
-  //Return
-  return HoverLayer;
-}]);
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
-  'ngGo',
-  'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Markup.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('MarkupLayer', ["BoardLayer", "Markup", function(BoardLayer, Markup) {
-
-  /**
-   * Constructor
-   */
-  var MarkupLayer = function(board, context) {
-
-    //Call parent constructor
-    BoardLayer.call(this, board, context);
-  };
-
-  /**
-   * Prototype extension
-   */
-  angular.extend(MarkupLayer.prototype, BoardLayer.prototype);
-
-  /***********************************************************************************************
-   * Object handling
-   ***/
-
-  /**
-   * Set all markup at once
-   */
-  MarkupLayer.prototype.setAll = function(grid) {
-
-    //Get changes compared to current grid
-    var i, changes = this.grid.compare(grid, 'type');
-
-    //Clear removed stuff
-    for (i = 0; i < changes.remove.length; i++) {
-      Markup.clear.call(this, changes.remove[i]);
-    }
-
-    //Draw added stuff
-    for (i = 0; i < changes.add.length; i++) {
-      Markup.draw.call(this, changes.add[i]);
-    }
-
-    //Remember new grid
-    this.grid = grid.clone();
-  };
-
-  /**
-   * Remove all (clear layer and empty grid)
-   */
-  MarkupLayer.prototype.removeAll = function() {
-
-    //Get all markup as objects
-    var markup = this.grid.all('type');
-
-    //Clear them
-    for (var i = 0; i < markup.length; i++) {
-      Markup.clear.call(this, markup[i]);
-    }
-
-    //Empty the grid now
-    this.grid.empty();
-  };
-
-  /***********************************************************************************************
-   * Drawing
-   ***/
-
-  /**
-   * Draw layer
-   */
-  MarkupLayer.prototype.draw = function() {
-
-    //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //Get all markup as objects
-    var markup = this.grid.all('type');
-
-    //Draw them
-    for (var i = 0; i < markup.length; i++) {
-      Markup.draw.call(this, markup[i]);
-    }
-  };
-
-  /**
-   * Draw cell
-   */
-  MarkupLayer.prototype.drawCell = function(x, y) {
-
-    //Can only draw when we have dimensions
-    if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //On grid?
-    if (this.grid.has(x, y)) {
-      Markup.draw.call(this, this.grid.get(x, y, 'type'));
-    }
-  };
-
-  /**
-   * Clear cell
-   */
-  MarkupLayer.prototype.clearCell = function(x, y) {
-    if (this.grid.has(x, y)) {
-      Markup.clear.call(this, this.grid.get(x, y, 'type'));
-    }
-  };
-
-  //Return
-  return MarkupLayer;
-}]);
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
-  'ngGo',
-  'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.StoneMini.Service',
-  'ngGo.Board.Object.StoneFaded.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('ScoreLayer', ["BoardLayer", "StoneMini", "StoneFaded", function(BoardLayer, StoneMini, StoneFaded) {
-
-  /**
-   * Constructor
-   */
-  var ScoreLayer = function(board, context) {
-
-    //Points and captures
-    this.points = [];
-    this.captures = [];
-
-    //Call parent constructor
-    BoardLayer.call(this, board, context);
-  };
-
-  /**
-   * Prototype extension
-   */
-  angular.extend(ScoreLayer.prototype, BoardLayer.prototype);
-
-  /***********************************************************************************************
-   * Object handling
-   ***/
-
-  /**
-   * Set points and captures
-   */
-  ScoreLayer.prototype.setAll = function(points, captures) {
-
-    //Remove all existing stuff first
-    this.removeAll();
-
-    //Set new stuff
-    this.points = points.all('color');
-    this.captures = captures.all('color');
-
-    //Draw
-    this.draw();
-  };
-
-  /**
-   * Remove all scoring
-   */
-  ScoreLayer.prototype.removeAll = function() {
-
-    //If there are captures, draw them back onto the stones layer
-    for (var i = 0; i < this.captures.length; i++) {
-      this.board.add('stones', this.captures[i].x, this.captures[i].y, this.captures[i].color);
-    }
-
-    //Clear the layer
-    this.clear();
-
-    //Remove all stuff
-    this.points = [];
-    this.captures = [];
-  };
-
-  /***********************************************************************************************
-   * Drawing
-   ***/
-
-  /**
-   * Draw layer
-   */
-  ScoreLayer.prototype.draw = function() {
-
-    //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //Init
-    var i;
-
-    //Draw captures first (removing stones from the stones layer)
-    for (i = 0; i < this.captures.length; i++) {
-      this.board.remove('stones', this.captures[i].x, this.captures[i].y);
-      StoneFaded.draw.call(this, this.captures[i]);
-    }
-
-    //Draw points on top of it
-    for (i = 0; i < this.points.length; i++) {
-      StoneMini.draw.call(this, this.points[i]);
-    }
-  };
-
-  //Return
-  return ScoreLayer;
-}]);
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
-  'ngGo',
-  'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.StoneShadow.Service',
-])
-
-/**
- * Factory definition
- */
-.factory('ShadowLayer', ["BoardLayer", "StoneShadow", function(BoardLayer, StoneShadow) {
-
-  /**
-   * Constructor
-   */
-  var ShadowLayer = function(board, context) {
-
-    //Call parent constructor
-    BoardLayer.call(this, board, context);
-  };
-
-  /**
-   * Prototype extension
-   */
-  angular.extend(ShadowLayer.prototype, BoardLayer.prototype);
-
-  /**
-   * Add a stone
-   */
-  ShadowLayer.prototype.add = function(stone) {
-
-    //Don't add if no shadow
-    if (stone.shadow === false || (typeof stone.alpha != 'undefined' && stone.alpha < 1)) {
-      return;
-    }
-
-    //Already have a stone here?
-    if (this.grid.has(stone.x, stone.y)) {
-      return;
-    }
-
-    //Add to grid
-    this.grid.set(stone.x, stone.y, stone.color);
-
-    //Draw it if there is a context
-    if (this.context && this.board.drawWidth !== 0 && this.board.drawheight !== 0) {
-      StoneShadow.draw.call(this, stone);
-    }
-  };
-
-  /**
-   * Remove a stone
-   */
-  ShadowLayer.prototype.remove = function(stone) {
-
-    //Remove from grid
-    this.grid.unset(stone.x, stone.y);
-
-    //Redraw whole layer
-    this.redraw();
-  };
-
-  /**
-   * Draw layer
-   */
-  ShadowLayer.prototype.draw = function() {
-
-    //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //Get shadowsize from theme
-    var shadowSize = this.board.theme.get('shadow.size', this.board.getCellSize());
-
-    //Apply shadow transformation
-    this.context.setTransform(1, 0, 0, 1, shadowSize, shadowSize);
-
-    //Get all stones as objects
-    var stones = this.grid.all('color');
-
-    //Draw them
-    for (var i = 0; i < stones.length; i++) {
-      StoneShadow.draw.call(this, stones[i]);
-    }
-  };
-
-  //Return
-  return ShadowLayer;
-}]);
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Layer.StonesLayer.Service', [
-  'ngGo',
-  'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Stone.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('StonesLayer', ["BoardLayer", "Stone", "StoneColor", function(BoardLayer, Stone, StoneColor) {
-
-  /**
-   * Constructor
-   */
-  var StonesLayer = function(board, context) {
-
-    //Call parent constructor
-    BoardLayer.call(this, board, context);
-
-    //Set empty value for grid
-    this.grid.whenEmpty(StoneColor.EMPTY);
-  };
-
-  /**
-   * Prototype extension
-   */
-  angular.extend(StonesLayer.prototype, BoardLayer.prototype);
-
-  /***********************************************************************************************
-   * Object handling
-   ***/
-
-  /**
-   * Set all stones at once
-   */
-  StonesLayer.prototype.setAll = function(grid) {
-
-    //Get changes compared to current grid
-    var i, changes = this.grid.compare(grid, 'color');
-
-    //Clear removed stuff
-    for (i = 0; i < changes.remove.length; i++) {
-      Stone.clear.call(this, changes.remove[i]);
-    }
-
-    //Draw added stuff
-    for (i = 0; i < changes.add.length; i++) {
-      Stone.draw.call(this, changes.add[i]);
-    }
-
-    //Remember new grid
-    this.grid = grid.clone();
-  };
-
-  /***********************************************************************************************
-   * Drawing
-   ***/
-
-  /**
-   * Draw layer
-   */
-  StonesLayer.prototype.draw = function() {
-
-    //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //Get all stones as objects
-    var stones = this.grid.all('color');
-
-    //Draw them
-    for (var i = 0; i < stones.length; i++) {
-      Stone.draw.call(this, stones[i]);
-    }
-  };
-
-  /**
-   * Redraw layer
-   */
-  StonesLayer.prototype.redraw = function() {
-
-    //Clear shadows layer
-    this.board.removeAll('shadow');
-
-    //Redraw ourselves
-    this.clear();
-    this.draw();
-  };
-
-  /**
-   * Draw cell
-   */
-  StonesLayer.prototype.drawCell = function(x, y) {
-
-    //Can only draw when we have dimensions
-    if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //On grid?
-    if (this.grid.has(x, y)) {
-      Stone.draw.call(this, this.grid.get(x, y, 'color'));
-    }
-  };
-
-  /**
-   * Clear cell
-   */
-  StonesLayer.prototype.clearCell = function(x, y) {
-    if (this.grid.has(x, y)) {
-      Stone.clear.call(this, this.grid.get(x, y, 'color'));
-    }
-  };
-
-  //Return
-  return StonesLayer;
-}]);
+(function(window, angular, undefined) {'use strict';
 
 /**
  * BoardObject :: Base class for drawing board objects
@@ -2422,7 +1735,7 @@ angular.module('ngGo.Board.Object.Service', [
 /**
  * Factory definition
  */
-.factory('BoardObject', ["DefaultClearHandler", function(DefaultClearHandler) {
+.factory('BoardObject', ['DefaultClearHandler', function(DefaultClearHandler) {
 
   /**
    * Constructor
@@ -2432,7 +1745,7 @@ angular.module('ngGo.Board.Object.Service', [
     /**
      * Draw method
      */
-    draw: function(obj) {
+    draw: function(/*obj*/) {
       if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
         return;
       }
@@ -2450,1253 +1763,9 @@ angular.module('ngGo.Board.Object.Service', [
   return BoardObject;
 }]);
 
-/**
- * Coordinates :: This class is used for drawing board coordinates
- */
+})(window, window.angular);
 
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Object.Coordinates.Service', [
-  'ngGo'
-])
-
-/**
- * Factory definition
- */
-.factory('Coordinates', function() {
-
-  //Kanji
-  var kanji = [
-    '一', '二', '三', '四', '五', '六', '七', '八', '九', '十',
-    '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
-    '二十一', '二十二', '二十三', '二十四', '二十五', '二十六', '二十七', '二十八', '二十九', '三十',
-    '三十一', '三十二', '三十三', '三十四', '三十五', '三十六', '三十七', '三十八', '三十九', '四十'
-  ];
-
-  //Some character codes
-  var aChar = 'A'.charCodeAt(0),
-    iChar = 'I'.charCodeAt(0),
-    aCharLc = 'a'.charCodeAt(0);
-
-  /**
-   * Coordinate generators
-   */
-  var coordinates = {
-
-    //Kanji coordinates
-    kanji: function(i) {
-      return kanji[i] || '';
-    },
-
-    //Numbers from 1
-    numbers: function(i) {
-      return i + 1;
-    },
-
-    //Capital letters from A
-    letters: function(i) {
-
-      //Initialize
-      var ch = '';
-
-      //Beyond Z? Prepend with A
-      if (i >= 25) {
-        ch = 'A';
-        i -= 25;
-      }
-
-      //The letter I is ommitted
-      if (i >= 8) {
-        i++;
-      }
-
-      //Return
-      return ch + String.fromCharCode(aChar + i);
-    },
-
-    //JGF coordinates (e.g. 0, 1, ...)
-    jgf: function(i) {
-      return i;
-    },
-
-    //SGF coordinates (e.g. a, b, ...)
-    sgf: function(i) {
-      var ch;
-      if (i < 26) {
-        ch = aCharLc + i;
-      }
-      else {
-        ch = aChar + i;
-      }
-      return String.fromCharCode(ch);
-    }
-  };
-
-  /**
-   * Coordinates object
-   */
-  var Coordinates = {
-
-    /**
-     * Draw
-     */
-    draw: function() {
-
-      //Can only draw when we have context and dimensions
-      if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-        return;
-      }
-
-      //Get cell size
-      var cellSize = this.board.getCellSize();
-
-      //Get boundary coordinates
-      var xl = Math.ceil((this.board.drawMarginHor - cellSize/2) / 2),
-        xr = this.board.drawWidth - xl,
-        yt = Math.ceil((this.board.drawMarginVer - cellSize/2) / 2),
-        yb = this.board.drawHeight - yt;
-
-      //Get theme properties
-      var stoneRadius = this.board.theme.get('stone.radius', cellSize),
-        fillStyle = this.board.theme.get('coordinates.color'),
-        vertical = {
-          font: this.board.theme.get('coordinates.vertical.font'),
-          size: this.board.theme.get('coordinates.vertical.size'),
-          style: this.board.theme.get('coordinates.vertical.style'),
-          inverse: this.board.theme.get('coordinates.vertical.inverse')
-        },
-        horizontal = {
-          font: this.board.theme.get('coordinates.horizontal.font'),
-          size: this.board.theme.get('coordinates.horizontal.size'),
-          style: this.board.theme.get('coordinates.horizontal.style'),
-          inverse: this.board.theme.get('coordinates.horizontal.inverse')
-        };
-
-      //Configure context
-      this.context.fillStyle = fillStyle;
-      this.context.textBaseline = 'middle';
-      this.context.textAlign = 'center';
-
-      //Helper vars
-      var i, j, x, y, ch;
-
-      //Draw vertical coordinates
-      for (i = 0; i < this.board.height; i++) {
-
-        //Inverse?
-        j = i;
-        if (vertical.inverse) {
-          j = this.board.height - i - 1;
-        }
-
-        //Get character
-        if (typeof vertical.style == 'function') {
-          ch = vertical.style.call(this, j);
-        }
-        else if (coordinates[vertical.style]) {
-          ch = coordinates[vertical.style].call(this, j);
-        }
-        else {
-          ch = j;
-        }
-
-        //Draw
-        y = this.board.getAbsY(i);
-        this.context.font = vertical.size(ch, cellSize) + ' ' + vertical.font;
-        this.context.fillText(ch, xl, y);
-        this.context.fillText(ch, xr, y);
-      }
-
-      //Draw horizontal coordinates
-      for (i = 0; i < this.board.width; i++) {
-
-        //Inverse?
-        j = i;
-        if (horizontal.inverse) {
-          j = this.board.width - i - 1;
-        }
-
-        //Get character
-        if (typeof horizontal.style == 'function') {
-          ch = horizontal.style.call(this, j);
-        }
-        else if (coordinates[horizontal.style]) {
-          ch = coordinates[horizontal.style].call(this, j);
-        }
-        else {
-          ch = j;
-        }
-
-        //Draw
-        x = this.board.getAbsX(i);
-        this.context.font = horizontal.size(ch, cellSize) + ' ' + horizontal.font;
-        this.context.fillText(ch, x, yt);
-        this.context.fillText(ch, x, yb);
-      }
-    }
-  };
-
-  //Return
-  return Coordinates;
-});
-
-/**
- * Markup :: This class is used for drawing markup
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Object.Markup.Service', [
-  'ngGo',
-  'ngGo.Board.Object.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('Markup', ["MarkupTypes", "BoardObject", function(MarkupTypes, BoardObject) {
-
-  /**
-   * Math constants
-   */
-  var cosPi4 = Math.cos(Math.PI/4),
-    cosPi6 = Math.cos(Math.PI/6);
-
-  /**
-   * Triangle draw handler
-   */
-  var drawTriangle = function(markup) {
-
-    //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x),
-      y = this.board.getAbsY(markup.y),
-      s = this.board.getCellSize(),
-      r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.triangle.scale'));
-
-    //Apply scaling factor?
-    if (markup.scale) {
-      r = Math.round(r * markup.scale);
-    }
-
-    //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
-
-    //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
-      strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-      canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.strokeStyle = strokeStyle;
-    this.context.lineWidth = lineWidth;
-
-    //Draw element
-    this.context.beginPath();
-    this.context.moveTo(x, y-r);
-    this.context.lineTo(x - Math.round(r*cosPi6), y + Math.round(r/2));
-    this.context.lineTo(x + Math.round(r*cosPi6), y + Math.round(r/2));
-    this.context.closePath();
-    this.context.stroke();
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Square draw handler
-   */
-  var drawSquare = function(markup) {
-
-    //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x),
-      y = this.board.getAbsY(markup.y),
-      s = this.board.getCellSize(),
-      r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.square.scale'));
-
-    //Apply scaling factor?
-    if (markup.scale) {
-      r = Math.round(r * markup.scale);
-    }
-
-    //Determine cos
-    var rcos = Math.round(r*cosPi4);
-
-    //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
-
-    //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
-      strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-      canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.strokeStyle = strokeStyle;
-    this.context.lineWidth = lineWidth;
-
-    //Draw element
-    this.context.beginPath();
-    this.context.rect(x - rcos, y - rcos, 2*rcos, 2*rcos);
-    this.context.stroke();
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Draw circle handler
-   */
-  var drawCircle = function(markup) {
-
-    //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x),
-      y = this.board.getAbsY(markup.y),
-      s = this.board.getCellSize(),
-      r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.circle.scale'));
-
-    //Apply scaling factor?
-    if (markup.scale) {
-      r = Math.round(r * markup.scale);
-    }
-
-    //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
-
-    //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
-      strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-      canvasTranslate = this.board.theme.canvasTranslate();
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.strokeStyle = strokeStyle;
-    this.context.lineWidth = lineWidth;
-
-    //Draw element
-    this.context.beginPath();
-    this.context.arc(x, y, r, 0, 2*Math.PI, true);
-    this.context.stroke();
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Draw mark handler
-   */
-  var drawMark = function(markup) {
-
-    //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x),
-      y = this.board.getAbsY(markup.y),
-      s = this.board.getCellSize(),
-      r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.mark.scale'));
-
-    //Apply scaling factor?
-    if (markup.scale) {
-      r = Math.round(r * markup.scale);
-    }
-
-    //Determine cos
-    var rcos = Math.round(r*cosPi4);
-
-    //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
-
-    //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
-      lineCap = markup.lineCap || this.board.theme.get('markup.mark.lineCap'),
-      strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-      canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.strokeStyle = strokeStyle;
-    this.context.lineWidth = lineWidth;
-    this.context.lineCap = lineCap;
-
-    //Draw element
-    this.context.beginPath();
-    this.context.moveTo(x - rcos, y - rcos);
-    this.context.lineTo(x + rcos, y + rcos);
-    this.context.moveTo(x + rcos, y - rcos);
-    this.context.lineTo(x - rcos, y + rcos);
-    this.context.stroke();
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Draw select handler
-   */
-  var drawSelect = function(markup) {
-
-    //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x),
-      y = this.board.getAbsY(markup.y),
-      s = this.board.getCellSize(),
-      r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.circle.scale'));
-
-    //Apply scaling factor?
-    if (markup.scale) {
-      r = Math.round(r * markup.scale);
-    }
-
-    //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
-
-    //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
-      fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-      canvasTranslate = this.board.theme.canvasTranslate();
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.fillStyle = fillStyle;
-    this.context.lineWidth = lineWidth;
-
-    //Draw element
-    this.context.beginPath();
-    this.context.arc(x, y, r, 0, 2*Math.PI, true);
-    this.context.fill();
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Last move draw handler
-   */
-  var drawLast = function(markup) {
-
-    //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x),
-      y = this.board.getAbsY(markup.y),
-      s = this.board.getCellSize(),
-      r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.last.scale'));
-
-    //Apply scaling factor?
-    if (markup.scale) {
-      r = Math.round(r * markup.scale);
-    }
-
-    //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
-
-    //Get theme properties
-    var fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-      canvasTranslate = this.board.theme.canvasTranslate(s);
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.fillStyle = fillStyle;
-
-    //Draw element
-    this.context.beginPath();
-    this.context.moveTo(x, y);
-    this.context.lineTo(x + r, y);
-    this.context.lineTo(x, y + r);
-    this.context.closePath();
-    this.context.fill();
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Draw happy smiley handler
-   */
-  var drawHappySmiley = function(markup) {
-
-    //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x),
-      y = this.board.getAbsY(markup.y),
-      s = this.board.getCellSize(),
-      r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.smiley.scale'));
-
-    //Apply scaling factor?
-    if (markup.scale) {
-      r = Math.round(r * markup.scale);
-    }
-
-    //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
-
-    //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
-      lineCap = markup.lineCap || this.board.theme.get('markup.smiley.lineCap'),
-      strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-      canvasTranslate = this.board.theme.canvasTranslate();
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.strokeStyle = strokeStyle;
-    this.context.lineWidth = lineWidth;
-    this.context.lineCap = lineCap;
-
-    //Draw element
-    this.context.beginPath();
-    this.context.arc(x - r/3, y - r/3, r/6, 0, 2*Math.PI, true);
-    this.context.stroke();
-    this.context.beginPath();
-    this.context.arc(x + r/3, y - r/3, r/6, 0, 2*Math.PI, true);
-    this.context.stroke();
-    this.context.beginPath();
-    this.context.moveTo(x - r/1.6, y + r/8);
-    this.context.bezierCurveTo(x - r/1.8, y + r/1.5, x + r/1.8, y + r/1.5, x + r/1.6, y + r/8);
-    this.context.stroke();
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Draw sad smiley handler
-   */
-  var drawSadSmiley = function(markup) {
-
-    //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x),
-      y = this.board.getAbsY(markup.y),
-      s = this.board.getCellSize(),
-      r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.smiley.scale'));
-
-    //Apply scaling factor?
-    if (markup.scale) {
-      r = Math.round(r * markup.scale);
-    }
-
-    //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
-
-    //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1,
-      lineCap = markup.lineCap || this.board.theme.get('markup.smiley.lineCap'),
-      strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-      canvasTranslate = this.board.theme.canvasTranslate();
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.strokeStyle = strokeStyle;
-    this.context.lineWidth = lineWidth;
-    this.context.lineCap = lineCap;
-
-    //Draw element
-    this.context.beginPath();
-    this.context.arc(x - r/3, y - r/3, r/6, 0, 2*Math.PI, true);
-    this.context.stroke();
-    this.context.beginPath();
-    this.context.arc(x + r/3, y - r/3, r/6, 0, 2*Math.PI, true);
-    this.context.stroke();
-    this.context.beginPath();
-    this.context.moveTo(x - r/1.6, y + r/1.5 -1);
-    this.context.bezierCurveTo(x - r/1.8, y + r/8 -1, x + r/1.8, y + r/8 -1, x + r/1.6, y + r/1.5 -1);
-    this.context.stroke();
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Draw label
-   */
-  var drawLabel = function(markup) {
-
-    //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x),
-      y = this.board.getAbsY(markup.y),
-      s = this.board.getCellSize(),
-      r = this.board.theme.get('stone.radius', s);
-
-    //Apply scaling factor?
-    if (markup.scale) {
-      r = Math.round(r * markup.scale);
-    }
-
-    //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
-
-    //Get theme properties
-    var font = markup.font || this.board.theme.get('markup.label.font') || '',
-      fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor),
-      canvasTranslate = this.board.theme.canvasTranslate();
-
-    //First, clear grid square below for clarity
-    if (!this.board.has('stones', markup.x, markup.y)) {
-      this.board.layers.grid.clearCell(markup.x, markup.y);
-    }
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.fillStyle = fillStyle;
-    this.context.textBaseline = 'middle';
-    this.context.textAlign = 'center';
-
-    //Convert to text
-    if (typeof markup.text == 'number') {
-      markup.text = markup.text.toString();
-    }
-
-    //Determine font size
-    if (markup.text.length == 1) {
-      this.context.font = Math.round(r * 1.5) + 'px ' + font;
-    }
-    else if (markup.text.length == 2) {
-      this.context.font = Math.round(r * 1.2) + 'px ' + font;
-    }
-    else {
-      this.context.font = r + 'px ' + font;
-    }
-
-    //Draw element
-    this.context.beginPath();
-    this.context.fillText(markup.text, x, y, 2*r);
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Clear label
-   */
-  var clearLabel = function(markup) {
-
-    //No stone on location? Redraw the grid square, if we cleared it
-    if (!this.board.has('stones', markup.x, markup.y)) {
-      var r = this.board.theme.get('stone.radius', this.board.getCellSize());
-      this.board.layers.grid.redrawCell(markup.x, markup.y);
-    }
-  };
-
-  /**
-   * Markup class
-   */
-  var Markup = {
-
-    /**
-     * Draw
-     */
-    draw: function(markup) {
-
-      //Can only draw when we have dimensions and context
-      if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-        return;
-      }
-
-      //Drawing depends on type
-      switch (markup.type) {
-
-        //Triangle
-        case MarkupTypes.TRIANGLE:
-          drawTriangle.call(this, markup);
-          break;
-
-        //Square
-        case MarkupTypes.SQUARE:
-          drawSquare.call(this, markup);
-          break;
-
-        //Circle
-        case MarkupTypes.CIRCLE:
-          drawCircle.call(this, markup);
-          break;
-
-        //Mark
-        case MarkupTypes.MARK:
-          drawMark.call(this, markup);
-          break;
-
-        //Select
-        case MarkupTypes.SELECT:
-          drawSelect.call(this, markup);
-          break;
-
-        //happy
-        case MarkupTypes.HAPPY:
-          drawHappySmiley.call(this, markup);
-          break;
-
-        //Sad
-        case MarkupTypes.SAD:
-          drawSadSmiley.call(this, markup);
-          break;
-
-        //Last move marker
-        case MarkupTypes.LAST:
-          drawLast.call(this, markup);
-          break;
-
-        //Label
-        case MarkupTypes.LABEL:
-          markup.text = markup.text || '';
-          drawLabel.call(this, markup);
-          break;
-      }
-    },
-
-    /**
-     * Clear
-     */
-    clear: function(markup) {
-
-      //Can only draw when we have dimensions and context
-      if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-        return;
-      }
-
-      //Call parent method
-      BoardObject.clear.call(this, markup);
-
-      //Special handling for label
-      if (markup.type == MarkupTypes.LABEL) {
-        clearLabel.call(this, markup);
-      }
-    }
-  };
-
-  //Return
-  return Markup;
-}]);
-
-/**
- * Stone :: This class is used for drawing stones on the board.
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Object.Stone.Service', [
-  'ngGo',
-  'ngGo.Board.Object.Service',
-  'ngGo.Board.ShellPattern.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('Stone', ["$injector", "BoardObject", "StoneColor", "ShellPattern", function($injector, BoardObject, StoneColor, ShellPattern) {
-
-  /**
-   * Shell random seed
-   */
-  var shellSeed;
-
-  /**
-   * Mono colored stones
-   */
-  var drawMono = function(stone) {
-
-    //Get coordinates and stone radius
-    var x = this.board.getAbsX(stone.x),
-      y = this.board.getAbsY(stone.y),
-      s = this.board.getCellSize(),
-      r = this.board.theme.get('stone.radius', s);
-
-    //Apply scaling factor?
-    if (stone.scale) {
-      r = Math.round(r * stone.scale);
-    }
-
-    //Don't draw shadow
-    stone.shadow = false;
-
-    //Apply color multiplier
-    var color = stone.color * this.board.colorMultiplier;
-
-    //Get theme properties
-    var lineWidth = this.board.theme.get('stone.mono.lineWidth', s) || 1,
-      fillStyle = this.board.theme.get('stone.mono.color', color),
-      strokeStyle = this.board.theme.get('stone.mono.lineColor', color),
-      canvasTranslate = this.board.theme.canvasTranslate();
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Apply transparency?
-    if (stone.alpha && stone.alpha < 1) {
-      this.context.globalAlpha = stone.alpha;
-    }
-
-    //Configure context
-    this.context.fillStyle = fillStyle;
-
-    //Draw stone
-    this.context.beginPath();
-    this.context.arc(x, y, Math.max(0, r - lineWidth), 0, 2*Math.PI, true);
-    this.context.fill();
-
-    //Configure context
-    this.context.lineWidth = lineWidth;
-    this.context.strokeStyle = strokeStyle;
-
-    //Draw outline
-    this.context.stroke();
-
-    //Undo transparency?
-    if (stone.alpha && stone.alpha < 1) {
-      this.context.globalAlpha = 1;
-    }
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Glass stones
-   */
-  var drawGlass = function(stone) {
-
-    //Get coordinates and stone radius
-    var x = this.board.getAbsX(stone.x),
-      y = this.board.getAbsY(stone.y),
-      s = this.board.getCellSize(),
-      r = this.board.theme.get('stone.radius', s);
-
-    //Apply scaling factor?
-    if (stone.scale) {
-      r = Math.round(r * stone.scale);
-    }
-
-    //Apply color multiplier
-    var color = stone.color * this.board.colorMultiplier;
-
-    //Get theme variables
-    var canvasTranslate = this.board.theme.canvasTranslate();
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Apply transparency?
-    if (stone.alpha && stone.alpha < 1) {
-      this.context.globalAlpha = stone.alpha;
-    }
-
-    //Begin path
-    this.context.beginPath();
-
-    //Determine stone texture
-    if (color == StoneColor.W) {
-      this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/3, x - r/5, y - r/5, 5*r/5);
-      this.context.fillStyle.addColorStop(0, '#fff');
-      this.context.fillStyle.addColorStop(1, '#aaa');
-    }
-    else {
-      this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/5, y - r/5, 4*r/5);
-      this.context.fillStyle.addColorStop(0, '#666');
-      this.context.fillStyle.addColorStop(1, '#111');
-    }
-
-    //Complete drawing
-    this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2*Math.PI, true);
-    this.context.fill();
-
-    //Undo transparency?
-    if (stone.alpha && stone.alpha < 1) {
-      this.context.globalAlpha = 1;
-    }
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Slate and shell stones
-   */
-  var drawSlateShell = function(stone) {
-
-    //Get coordinates and stone radius
-    var x = this.board.getAbsX(stone.x),
-      y = this.board.getAbsY(stone.y),
-      s = this.board.getCellSize(),
-      r = this.board.theme.get('stone.radius', s);
-
-    //Apply scaling factor?
-    if (stone.scale) {
-      r = Math.round(r * stone.scale);
-    }
-
-    //Get random seed
-    shellSeed = shellSeed || Math.ceil(Math.random() * 9999999);
-
-    //Apply color multiplier
-    var color = stone.color * this.board.colorMultiplier;
-
-    //Get theme variables
-    var shellTypes = this.board.theme.get('stone.shell.types'),
-      fillStyle = this.board.theme.get('stone.shell.color', color),
-      strokeStyle = this.board.theme.get('stone.shell.stroke'),
-      canvasTranslate = this.board.theme.canvasTranslate();
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Apply transparency?
-    if (stone.alpha && stone.alpha < 1) {
-      this.context.globalAlpha = stone.alpha;
-    }
-
-    //Draw stone
-    this.context.beginPath();
-    this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
-    this.context.fillStyle = fillStyle;
-    this.context.fill();
-
-    //Shell stones
-    if (color == StoneColor.W) {
-
-      //Get random shell type
-      var type = shellSeed%(shellTypes.length + stone.x * this.board.width + stone.y) % shellTypes.length;
-
-      //Determine random angle
-      var z = this.board.width * this.board.height + stone.x * this.board.width + stone.y,
-        angle = (2/z)*(shellSeed%z);
-
-      //Draw shell pattern
-      ShellPattern.call(shellTypes[type], this.context, x, y, r, angle, strokeStyle);
-
-      //Add radial gradient
-      this.context.beginPath();
-      this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, r/6, x - r/5, y - r/5, r);
-      this.context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.9)');
-      this.context.fillStyle.addColorStop(1, 'rgba(255,255,255,0)');
-      this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
-      this.context.fill();
-    }
-
-    //Slate stones
-    else {
-
-      //Add radial gradient
-      this.context.beginPath();
-      this.context.fillStyle = this.context.createRadialGradient(x + 2*r/5, y + 2*r/5, 0, x + r/2, y + r/2, r);
-      this.context.fillStyle.addColorStop(0, 'rgba(32,32,32,1)');
-      this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
-      this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
-      this.context.fill();
-
-      //Add radial gradient
-      this.context.beginPath();
-      this.context.fillStyle = this.context.createRadialGradient(x - 2*r/5, y - 2*r/5, 1, x - r/2, y - r/2, 3*r/2);
-      this.context.fillStyle.addColorStop(0, 'rgba(64,64,64,1)');
-      this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
-      this.context.arc(x, y, Math.max(0, r-0.5), 0, 2*Math.PI, true);
-      this.context.fill();
-    }
-
-    //Undo transparency?
-    if (stone.alpha && stone.alpha < 1) {
-      this.context.globalAlpha = 1;
-    }
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Constructor
-   */
-  var Stone = {
-
-    /**
-     * Draw a stone
-     */
-    draw: function(stone) {
-
-      //Can only draw when we have dimensions and context
-      if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-        return;
-      }
-
-      //Determine style of stone
-      var style = this.board.theme.get('stone.style');
-
-      //Draw using the appropriate handler
-      switch (style) {
-
-        //Slate and shell
-        case 'shell':
-          drawSlateShell.call(this, stone);
-          break;
-
-        //Glass stones
-        case 'glass':
-          drawGlass.call(this, stone);
-          break;
-
-        //Mono stones
-        case 'mono':
-          drawMono.call(this, stone);
-          break;
-
-        //Custom type
-        default:
-          var handler = $injector.get(style);
-          if (handler) {
-            handler.call(this, stone);
-          }
-      }
-
-      //Add shadow
-      if (!this.board.static && stone.shadow !== false && this.board.theme.get('stone.shadow')) {
-        this.board.layers.shadow.add(stone);
-      }
-    },
-
-    /**
-     * Clear a stone
-     */
-    clear: function(stone) {
-
-      //Can only draw when we have dimensions and context
-      if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-        return;
-      }
-
-      //Call parent method
-      BoardObject.clear.call(this, stone);
-
-      //Remove shadow
-      if (!this.board.static && stone.shadow !== false && this.board.theme.get('stone.shadow')) {
-        this.board.layers.shadow.remove(stone);
-      }
-    }
-  };
-
-  //Return
-  return Stone;
-}]);
-
-/**
- * StoneFaded :: This class extends the Stone class and is used for drawing faded stones.
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Object.StoneFaded.Service', [
-  'ngGo',
-  'ngGo.Board.Object.Stone.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('StoneFaded', ["Stone", function(Stone) {
-
-  /**
-   * Class
-   */
-  var StoneFaded = {
-
-    /**
-     * Draw stone
-     */
-    draw: function(stone) {
-
-      //Set scale and alpha
-      stone.scale = this.board.theme.get('stone.faded.scale');
-      stone.alpha = this.board.theme.get('stone.faded.alpha', stone.color);
-
-      //Don't show shadow
-      stone.shadow = false;
-
-      //Now call the regular stone draw handler
-      Stone.draw.call(this, stone);
-    },
-
-    /**
-     * Clear stone
-     */
-    clear: function(stone) {
-
-      //Don't show shadow
-      stone.shadow = false;
-
-      //Call parent method
-      Stone.clear.call(this, stone);
-    }
-  };
-
-  //Return
-  return StoneFaded;
-}]);
-
-/**
- * StoneMini :: This class extends the Stone class and is used for drawing mini stones (for scoring).
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Object.StoneMini.Service', [
-  'ngGo',
-  'ngGo.Board.Object.Stone.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('StoneMini', ["Stone", function(Stone) {
-
-  /**
-   * Class
-   */
-  var StoneMini = {
-
-    /**
-     * Draw stone
-     */
-    draw: function(stone) {
-
-      //Set scale and alpha
-      stone.scale = this.board.theme.get('stone.mini.scale');
-      stone.alpha = this.board.theme.get('stone.mini.alpha', stone.color);
-
-      //Don't show shadow
-      stone.shadow = false;
-
-      //Now call the regular stone draw handler
-      Stone.draw.call(this, stone);
-    },
-
-    /**
-     * Clear stone
-     */
-    clear: function(stone) {
-
-      //Don't show shadow
-      stone.shadow = false;
-
-      //Call parent method
-      Stone.clear.call(this, stone);
-    }
-  };
-
-  //Return
-  return StoneMini;
-}]);
-
-/**
- * StoneShadow :: This class is used for drawing stone shadows on the board.
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Object.StoneShadow.Service', [
-  'ngGo',
-  'ngGo.Board.Object.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('StoneShadow', ["BoardObject", function(BoardObject) {
-
-  /**
-   * Constructor
-   */
-  var StoneShadow = {
-
-    /**
-     * Draw a stone shadow
-     */
-    draw: function(stone) {
-
-      //No context?
-      if (!this.context) {
-        return;
-      }
-
-      //Don't draw shadows if there is stone alpha or if explicitly stated
-      if ((stone.alpha && stone.alpha < 1) || stone.shadow === false) {
-        return;
-      }
-
-      //Get coordinates and stone radius
-      var x = this.board.getAbsX(stone.x),
-        y = this.board.getAbsY(stone.y),
-        s = this.board.getCellSize(),
-        r = Math.max(0, this.board.theme.get('stone.radius', s) - 0.5);
-
-      //Apply scaling factor?
-      if (stone.scale) {
-        r = Math.round(r * stone.scale);
-      }
-
-      //Get theme properties
-      var blur = this.board.theme.get('shadow.blur', s),
-        offsetX = this.board.theme.get('shadow.offsetX', s),
-        offsetY = this.board.theme.get('shadow.offsetY', s),
-        shadowColor = this.board.theme.get('shadow.color');
-
-      //Configure context
-      this.context.fillStyle = this.context.createRadialGradient(x + offsetX, y + offsetY, r-1-blur, x + offsetX, y + offsetY, r+blur);
-      this.context.fillStyle.addColorStop(0, shadowColor);
-      this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
-
-      //Draw shadow
-      this.context.beginPath();
-      this.context.arc(x + offsetX, y + offsetY, r+blur, 0, 2*Math.PI, true);
-      this.context.fill();
-    },
-
-    /**
-     * Clear a stone shadow
-     */
-    clear: function(stone) {
-
-      //Note: this method is currently not in use due to the overlappign shadows
-      //problem. Instead, the entire shadow layer is simply cleared and redrawn
-      //when removing stones. The multiple canvasses solution from WGo didn't seem
-      //appropriate either, so for now we will leave it at this.
-
-      //No context?
-      if (!this.context) {
-        return;
-      }
-
-      //Don't draw shadows if there is stone alpha or if explicitly stated
-      if ((stone.alpha && stone.alpha < 1) || stone.shadow === false) {
-        return;
-      }
-
-      //Get coordinates and stone radius
-      var x = this.board.getAbsX(stone.x),
-        y = this.board.getAbsY(stone.y),
-        s = this.board.getCellSize(),
-        r = this.board.theme.get('stone.radius', s);
-
-      //Clear a generous rectangle
-      this.context.clearRect(x - 1.2*r, y - 1.2*r, 2.4*r, 2.4*r);
-    }
-  };
-
-  //Return
-  return StoneShadow;
-}]);
+(function(window, angular, undefined) {'use strict';
 
 /**
  * ShellPattern :: This is a helper class to draw shell patterned white stones.
@@ -3722,42 +1791,42 @@ angular.module('ngGo.Board.ShellPattern.Service', [
     //Initialize
     ctx.shadowBlur = 2;
     ctx.strokeStyle = strokeStyle;
-    ctx.lineWidth = (radius/30) * this.thickness;
+    ctx.lineWidth = (radius / 30) * this.thickness;
     ctx.beginPath();
 
     //Lower radius
     radius -= Math.max(1, ctx.lineWidth);
 
     //Determine coordinates
-    var x1 = x + radius * Math.cos(startAngle * Math.PI),
-      y1 = y + radius * Math.sin(startAngle * Math.PI),
-      x2 = x + radius * Math.cos(endAngle * Math.PI),
-      y2 = y + radius * Math.sin(endAngle * Math.PI);
+    var x1 = x + radius * Math.cos(startAngle * Math.PI);
+    var y1 = y + radius * Math.sin(startAngle * Math.PI);
+    var x2 = x + radius * Math.cos(endAngle * Math.PI);
+    var y2 = y + radius * Math.sin(endAngle * Math.PI);
 
     //Math magic
     var m, angle;
     if (x2 > x1) {
-      m = (y2-y1) / (x2-x1);
+      m = (y2 - y1) / (x2 - x1);
       angle = Math.atan(m);
     }
-    else if (x2 == x1) {
-      angle = Math.PI/2;
+    else if (x2 === x1) {
+      angle = Math.PI / 2;
     }
     else {
-      m = (y2-y1) / (x2-x1);
-      angle = Math.atan(m)-Math.PI;
+      m = (y2 - y1) / (x2 - x1);
+      angle = Math.atan(m) - Math.PI;
     }
 
     //Curvature factor
-    var c = this.factor * radius,
-      diff_x = Math.sin(angle) * c,
-      diff_y = Math.cos(angle) * c;
+    var c = this.factor * radius;
+    var dx = Math.sin(angle) * c;
+    var dy = Math.cos(angle) * c;
 
     //Curvature coordinates
-    var bx1 = x1 + diff_x,
-      by1 = y1 - diff_y,
-      bx2 = x2 + diff_x,
-      by2 = y2 - diff_y;
+    var bx1 = x1 + dx;
+    var by1 = y1 - dy;
+    var bx2 = x2 + dx;
+    var by2 = y2 - dy;
 
     //Draw shell stroke
     ctx.moveTo(x1, y1);
@@ -3771,8 +1840,8 @@ angular.module('ngGo.Board.ShellPattern.Service', [
   return function(ctx, x, y, radius, angle, strokeStyle) {
 
     //Initialize start and end angle
-    var startAngle = angle,
-      endAngle = angle;
+    var startAngle = angle;
+    var endAngle = angle;
 
     //Loop lines
     for (var i = 0; i < this.lines.length; i++) {
@@ -3782,6 +1851,10 @@ angular.module('ngGo.Board.ShellPattern.Service', [
     }
   };
 });
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
 
 /**
  * BoardTheme :: This class representes the theme of a Go board. It contains all tweakable visual
@@ -3800,7 +1873,7 @@ angular.module('ngGo.Board.Theme.Service', [
 /**
  * Factory definition
  */
-.provider('BoardTheme', ["StoneColor", "MarkupTypes", function(StoneColor, MarkupTypes) {
+.provider('BoardTheme', ['StoneColor', 'MarkupTypes', function(StoneColor, MarkupTypes) {
 
   /**
    * Default theme
@@ -3827,7 +1900,7 @@ angular.module('ngGo.Board.Theme.Service', [
       //Shell stones
       shell: {
         color: function(stoneColor) {
-          if (stoneColor == StoneColor.B) {
+          if (stoneColor === StoneColor.B) {
             return '#111';
           }
           return '#BFBFBA';
@@ -3860,11 +1933,11 @@ angular.module('ngGo.Board.Theme.Service', [
       //Mono stones
       mono: {
         lineWidth: 1,
-        lineColor: function(stoneColor) {
+        lineColor: function() {
           return '#000';
         },
         color: function(stoneColor) {
-          if (stoneColor == StoneColor.B) {
+          if (stoneColor === StoneColor.B) {
             return '#000';
           }
           return '#fff';
@@ -3881,7 +1954,7 @@ angular.module('ngGo.Board.Theme.Service', [
       faded: {
         scale: 1,
         alpha: function(stoneColor) {
-          if (stoneColor == StoneColor.B) {
+          if (stoneColor === StoneColor.B) {
             return 0.3;
           }
           return 0.4;
@@ -3919,7 +1992,7 @@ angular.module('ngGo.Board.Theme.Service', [
 
       //Standard color
       color: function(stoneColor) {
-        if (stoneColor == StoneColor.B) {
+        if (stoneColor === StoneColor.B) {
           return 'rgba(255,255,255,0.9)';
         }
         return 'rgba(0,0,0,0.9)';
@@ -3971,7 +2044,7 @@ angular.module('ngGo.Board.Theme.Service', [
       variation: {
         type: MarkupTypes.LABEL,
         text: function(i) {
-          return String.fromCharCode(65+i);
+          return String.fromCharCode(65 + i);
         },
         color: 'rgba(86,114,30,0.9)'
       },
@@ -4034,28 +2107,28 @@ angular.module('ngGo.Board.Theme.Service', [
         points: function(width, height) {
 
           //19x19
-          if (width == height && width == 19) {
+          if (width === height && width === 19) {
             return [
-              {x:3, y:3}, {x:9, y:3}, {x:15,y:3},
-              {x:3, y:9}, {x:9, y:9}, {x:15,y:9},
-              {x:3, y:15}, {x:9, y:15}, {x:15,y:15}
+              { x: 3, y: 3 }, { x: 9, y: 3 }, { x: 15,y: 3 },
+              { x: 3, y: 9 }, { x: 9, y: 9 }, { x: 15,y: 9 },
+              { x: 3, y: 15 }, { x: 9, y: 15 }, { x: 15,y: 15 }
             ];
           }
 
           //13x13
-          if (width == height && width == 13) {
+          if (width === height && width === 13) {
             return [
-              {x:3, y:3}, {x:9, y:3},
-              {x:3, y:9}, {x:9, y:9}
+              { x: 3, y: 3 }, { x: 9, y: 3 },
+              { x: 3, y: 9 }, { x: 9, y: 9 }
             ];
           }
 
           //9x9
-          if (width == height && width == 9) {
+          if (width === height && width === 9) {
             return [
-              {x:4, y:4}, {x:2, y:2},
-              {x:2, y:6}, {x:6, y:2},
-              {x:6, y:6}
+              { x: 4, y: 4}, { x: 2, y: 2},
+              { x: 2, y: 6}, { x: 6, y: 2},
+              { x: 6, y: 6}
             ];
           }
 
@@ -4105,14 +2178,14 @@ angular.module('ngGo.Board.Theme.Service', [
    */
   this.setTheme = function(theme) {
     if (theme) {
-      defaultTheme = angular.extendDeep(defaultTheme, theme);
+      defaultTheme = angular.merge(defaultTheme, theme);
     }
   };
 
   /**
    * Service getter
    */
-  this.$get = ["StoneColor", function(StoneColor) {
+  this.$get = function() {
 
     /**
      * Board theme constructor
@@ -4134,7 +2207,7 @@ angular.module('ngGo.Board.Theme.Service', [
 
       //Add any instance theme properties
       if (this.instanceTheme) {
-        angular.extendDeep(this.theme, this.instanceTheme);
+        angular.merge(this.theme, this.instanceTheme);
       }
     };
 
@@ -4144,14 +2217,14 @@ angular.module('ngGo.Board.Theme.Service', [
     BoardTheme.prototype.get = function(property) {
 
       //Determine path to the property
-      var path = property.split('.'),
-        prop = this.theme;
+      var path = property.split('.');
+      var prop = this.theme;
 
       //Loop path
       for (var i = 0; i < path.length; i++) {
 
         //Can't find the property?
-        if (typeof prop[path[i]] == 'undefined') {
+        if (typeof prop[path[i]] === 'undefined') {
           console.warn('Could not find theme property', property);
           return null;
         }
@@ -4161,7 +2234,7 @@ angular.module('ngGo.Board.Theme.Service', [
       }
 
       //Found what we're looking for
-      if (typeof prop != 'function') {
+      if (typeof prop !== 'function') {
         return prop;
       }
 
@@ -4183,20 +2256,20 @@ angular.module('ngGo.Board.Theme.Service', [
     BoardTheme.prototype.set = function(property, value) {
 
       //Determine path to the property
-      var path = property.split('.'),
-        prop = this.theme;
+      var path = property.split('.');
+      var prop = this.theme;
 
       //Loop path
       for (var i = 0; i < path.length; i++) {
 
         //Time to set?
-        if ((i + 1) == path.length) {
+        if ((i + 1) === path.length) {
           prop[path[i]] = value;
           break;
         }
 
         //Not set?
-        if (typeof prop[path[i]] == 'undefined') {
+        if (typeof prop[path[i]] === 'undefined') {
           prop[path[i]] = {};
         }
 
@@ -4216,7 +2289,7 @@ angular.module('ngGo.Board.Theme.Service', [
 
       //If no linewidth specified, use the grid line width as a reference
       //to make sure stuff is aligned to the grid
-      if (typeof lineWidth == 'undefined') {
+      if (typeof lineWidth === 'undefined') {
         lineWidth = this.get('grid.lineWidth');
       }
 
@@ -4226,8 +2299,12 @@ angular.module('ngGo.Board.Theme.Service', [
 
     //Return
     return BoardTheme;
-  }];
+  };
 }]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
 
 /**
  * InvalidDataError :: Error class to handle invalid data.
@@ -4243,7 +2320,7 @@ angular.module('ngGo.Errors.InvalidDataError.Service', [
 /**
  * Factory definition
  */
-.factory('InvalidDataError', ["ngGo", function(ngGo) {
+.factory('InvalidDataError', ['ngGo', function(ngGo) {
 
   /**
    * Define error
@@ -4253,30 +2330,30 @@ angular.module('ngGo.Errors.InvalidDataError.Service', [
     //Set name and message
     this.code = code;
     this.name = 'InvalidDataError';
-      this.message = 'Invalid data: ';
+    this.message = 'Invalid data: ';
 
     //Append code message
     switch (code) {
       case ngGo.error.NO_DATA:
-        this.message += "no data to process.";
+        this.message += 'no data to process.';
         break;
       case ngGo.error.UNKNOWN_DATA:
-        this.message += "unknown data format.";
+        this.message += 'unknown data format.';
         break;
       case ngGo.error.INVALID_GIB:
-        this.message += "unable to parse GIB data.";
+        this.message += 'unable to parse GIB data.';
         break;
       case ngGo.error.INVALID_SGF:
-        this.message += "unable to parse SGF data.";
+        this.message += 'unable to parse SGF data.';
         break;
       case ngGo.error.INVALID_JGF_JSON:
-        this.message += "unable to parse JGF data.";
+        this.message += 'unable to parse JGF data.';
         break;
       case ngGo.error.INVALID_JGF_TREE_JSON:
-        this.message += "unable to parse the JGF tree data.";
+        this.message += 'unable to parse the JGF tree data.';
         break;
       default:
-        this.message += "unable to parse the data.";
+        this.message += 'unable to parse the data.';
     }
   };
 
@@ -4289,6 +2366,10 @@ angular.module('ngGo.Errors.InvalidDataError.Service', [
   //Return object
   return InvalidDataError;
 }]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
 
 /**
  * InvalidPositionError :: Error class to handle invalid moves.
@@ -4304,7 +2385,7 @@ angular.module('ngGo.Errors.InvalidPositionError.Service', [
 /**
  * Factory definition
  */
-.factory('InvalidPositionError', ["ngGo", "StoneColor", function(ngGo, StoneColor) {
+.factory('InvalidPositionError', ['ngGo', 'StoneColor', function(ngGo, StoneColor) {
 
   /**
    * Define error
@@ -4314,29 +2395,30 @@ angular.module('ngGo.Errors.InvalidPositionError.Service', [
     //Set name and message
     this.code = code;
     this.name = 'InvalidPositionError';
-      this.message = 'Invalid position detected.';
+    this.message = 'Invalid position detected.';
 
-      //Add position data
-      if (typeof x != 'undefined' && typeof y != 'undefined' && typeof color != 'undefined') {
-        this.message += " Trying to place a " + (color == StoneColor.W ? "white" : "black") + " stone on (" + x + ", " + y + ")";
+    //Add position data
+    if (typeof x !== 'undefined' && typeof y !== 'undefined' && typeof color !== 'undefined') {
+      this.message += ' Trying to place a ' + (color === StoneColor.W ? 'white' : 'black') +
+        ' stone on (' + x + ', ' + y + ')';
     }
 
     //Append code message
     switch (code) {
       case ngGo.error.POSTITION_OUT_OF_BOUNDS:
-        this.message += ", but these coordinates are not on the board.";
+        this.message += ', but these coordinates are not on the board.';
         break;
       case ngGo.error.POSTITION_ALREADY_HAS_STONE:
-        this.message += ", but there is already a stone on those coordinates.";
+        this.message += ', but there is already a stone on those coordinates.';
         break;
       case ngGo.error.POSTITION_IS_SUICIDE:
-        this.message += ", but that would be suicide.";
+        this.message += ', but that would be suicide.';
         break;
       case ngGo.error.POSTITION_IS_REPEATING:
-        this.message += ", but this position already occured.";
+        this.message += ', but this position already occured.';
         break;
       default:
-        this.message += ".";
+        this.message += '.';
     }
   };
 
@@ -4349,6 +2431,10 @@ angular.module('ngGo.Errors.InvalidPositionError.Service', [
   //Return object
   return InvalidPositionError;
 }]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Game :: This class represents a game record or a game that is being played/edited. The class
@@ -4409,9 +2495,12 @@ angular.module('ngGo.Game.Service', [
   /**
    * Service getter
    */
-  this.$get = ["ngGo", "StoneColor", "GamePath", "GameNode", "GamePosition", "KifuParser", "KifuBlank", "InvalidDataError", "InvalidPositionError", function(ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser, KifuBlank, InvalidDataError, InvalidPositionError) {
+  this.$get = ['ngGo', 'StoneColor', 'GamePath', 'GameNode', 'GamePosition', 'KifuParser', 'KifuBlank', 'InvalidDataError', 'InvalidPositionError', function(
+    ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser,
+    KifuBlank, InvalidDataError, InvalidPositionError
+  ) {
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * General helpers
      ***/
 
@@ -4431,21 +2520,21 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Set defaults
-      if (typeof this.info.board.width == 'undefined') {
+      if (typeof this.info.board.width === 'undefined') {
         this.info.board.width = this.config.defaultSize;
       }
-      if (typeof this.info.board.height == 'undefined') {
+      if (typeof this.info.board.height === 'undefined') {
         this.info.board.height = this.config.defaultSize;
       }
-      if (typeof this.info.game.komi == 'undefined') {
+      if (typeof this.info.game.komi === 'undefined') {
         this.info.game.komi = this.config.defaultKomi;
       }
-      if (typeof this.info.game.handicap == 'undefined') {
+      if (typeof this.info.game.handicap === 'undefined') {
         this.info.game.handicap = this.config.defaultHandicap;
       }
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Node navigation helpers
      ***/
 
@@ -4466,7 +2555,7 @@ angular.module('ngGo.Game.Service', [
 
       //Determine which child node to process
       i = i || 0;
-      if (i == -1) {
+      if (i === -1) {
         i = 0;
       }
 
@@ -4516,7 +2605,7 @@ angular.module('ngGo.Game.Service', [
       this.setTurn((this.info.game.handicap > 1) ? StoneColor.W : StoneColor.B);
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Position history helpers
      ***/
 
@@ -4526,7 +2615,7 @@ angular.module('ngGo.Game.Service', [
     var initializeHistory = function() {
 
       //Already at beginning?
-      if (this.history.length == 1) {
+      if (this.history.length === 1) {
         return;
       }
 
@@ -4580,7 +2669,7 @@ angular.module('ngGo.Game.Service', [
       }
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Execution helpers
      ***/
 
@@ -4595,7 +2684,8 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Initialize new position
-      var i, newPosition = this.position.clone();
+      var i;
+      var newPosition = this.position.clone();
 
       //Handle moves
       if (this.node.move) {
@@ -4615,14 +2705,22 @@ angular.module('ngGo.Game.Service', [
       //Handle setup instructions
       if (this.node.setup) {
         for (i in this.node.setup) {
-          newPosition.stones.set(this.node.setup[i].x, this.node.setup[i].y, this.node.setup[i].color);
+          if (this.node.setup.hasOwnProperty(i)) {
+            newPosition.stones.set(
+              this.node.setup[i].x, this.node.setup[i].y, this.node.setup[i].color
+            );
+          }
         }
       }
 
       //Handle markup
       if (this.node.markup) {
         for (i in this.node.markup) {
-          newPosition.markup.set(this.node.markup[i].x, this.node.markup[i].y, this.node.markup[i]);
+          if (this.node.markup.hasOwnProperty(i)) {
+            newPosition.markup.set(
+              this.node.markup[i].x, this.node.markup[i].y, this.node.markup[i]
+            );
+          }
         }
       }
 
@@ -4630,7 +2728,7 @@ angular.module('ngGo.Game.Service', [
       pushPosition.call(this, newPosition);
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Game class
      ***/
 
@@ -4728,7 +2826,7 @@ angular.module('ngGo.Game.Service', [
       return this.root !== null;
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Game cloning and conversion
      ***/
 
@@ -4738,8 +2836,8 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.clone = function() {
 
       //Create new kifu object and get properties
-      var clone = new Game(),
-        props = Object.getOwnPropertyNames(this);
+      var clone = new Game();
+      var props = Object.getOwnPropertyNames(this);
 
       //Copy all properties
       for (var p = 0; p < props.length; p++) {
@@ -4761,15 +2859,15 @@ angular.module('ngGo.Game.Service', [
       }
 
       //String given, could be stringified JGF, an SGF or GIB file
-      if (typeof data == 'string') {
+      if (typeof data === 'string') {
         var c = data.charAt(0);
-        if (c == '(') {
+        if (c === '(') {
           return this.fromSgf(data);
         }
-        else if (c == '{') {
+        else if (c === '{' || c === '[') {
           return this.fromJgf(data);
         }
-        else if (c == '\\') {
+        else if (c === '\\') {
           return this.fromGib(data);
         }
         else {
@@ -4778,7 +2876,7 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Object given? Probably a JGF object
-      else if (typeof data == 'object') {
+      else if (typeof data === 'object') {
         this.fromJgf(data);
       }
 
@@ -4824,7 +2922,7 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.fromJgf = function(jgf) {
 
       //Parse jgf string
-      if (typeof jgf == 'string') {
+      if (typeof jgf === 'string') {
         try {
           jgf = angular.fromJson(jgf);
         }
@@ -4833,9 +2931,16 @@ angular.module('ngGo.Game.Service', [
         }
       }
 
+      //If array given, convert to object with only tree
+      if (angular.isArray(jgf)) {
+        jgf = {
+          tree: jgf
+        };
+      }
+
       //Parse tree string
-      if (typeof jgf.tree == 'string') {
-        if (jgf.tree.charAt(0) == '[') {
+      if (typeof jgf.tree === 'string') {
+        if (jgf.tree.charAt(0) === '[') {
           try {
             jgf.tree = angular.fromJson(jgf.tree);
           }
@@ -4850,7 +2955,7 @@ angular.module('ngGo.Game.Service', [
 
       //Copy all properties except moves tree
       for (var i in jgf) {
-        if (i != 'tree') {
+        if (jgf.hasOwnProperty(i) && i !== 'tree') {
           this.info[i] = angular.copy(jgf[i]);
         }
       }
@@ -4883,14 +2988,14 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.toJgf = function(stringify) {
 
       //Initialize JGF and get properties
-      var jgf = KifuBlank.jgf(),
-        props = Object.getOwnPropertyNames(this);
+      var jgf = KifuBlank.jgf();
+      var props = Object.getOwnPropertyNames(this);
 
       //Copy properties
       for (var p = 0; p < props.length; p++) {
 
         //Skip root
-        if (p == 'root') {
+        if (p === 'root') {
           continue;
         }
 
@@ -4912,7 +3017,7 @@ angular.module('ngGo.Game.Service', [
       return stringify ? angular.toJson(jgf) : jgf;
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Getters
      ***/
 
@@ -5040,12 +3145,13 @@ angular.module('ngGo.Game.Service', [
       }
 
       //The item's position in the object is given by dot separated strings
-      if (typeof position == 'string') {
+      if (typeof position === 'string') {
         position = position.split('.');
       }
 
       //Initialize object we're getting info from
-      var obj = this.info, key;
+      var obj = this.info;
+      var key;
 
       //Loop the position
       for (var p = 0; p < position.length; p++) {
@@ -5054,12 +3160,12 @@ angular.module('ngGo.Game.Service', [
         key = position[p];
 
         //Last key reached? Done, get value
-        if ((p + 1) == position.length) {
+        if ((p + 1) === position.length) {
           return obj[key];
         }
 
         //Must be object container
-        if (typeof obj[key] != 'object') {
+        if (typeof obj[key] !== 'object') {
           console.warn('Game property', key, 'is not an object');
           return;
         }
@@ -5069,7 +3175,7 @@ angular.module('ngGo.Game.Service', [
       }
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Checkers
      ***/
 
@@ -5093,18 +3199,18 @@ angular.module('ngGo.Game.Service', [
     /**
      * Check if a given position is repeating within this game
      */
-    Game.prototype.isRepeatingPosition = function(checkPosition, x, y) {
+    Game.prototype.isRepeatingPosition = function(checkPosition) {
 
       //Init
-      var flag, stop;
+      var stop;
 
       //Check for ko only? (Last two positions)
-      if (this.checkRepeat == 'KO' && (this.history.length - 2) >= 0) {
-        stop = this.history.length-2;
+      if (this.checkRepeat === 'KO' && (this.history.length - 2) >= 0) {
+        stop = this.history.length - 2;
       }
 
       //Check all history?
-      else if (this.checkRepeat == 'ALL') {
+      else if (this.checkRepeat === 'ALL') {
         stop = 0;
       }
 
@@ -5114,7 +3220,7 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Loop history of positions to check
-      for (var i = this.history.length-2; i >= stop; i--) {
+      for (var i = this.history.length - 2; i >= stop; i--) {
         if (checkPosition.isSameAs(this.history[i])) {
           return true;
         }
@@ -5153,7 +3259,7 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Something already here?
-      if (this.position.stones.get(x, y) != StoneColor.EMPTY) {
+      if (this.position.stones.get(x, y) !== StoneColor.EMPTY) {
         throw new InvalidPositionError(ngGo.error.POSTITION_ALREADY_HAS_STONE, x, y, color);
       }
 
@@ -5188,7 +3294,7 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Check history for repeating moves
-      if (this.checkRepeat && this.isRepeatingPosition(newPosition, x, y)) {
+      if (this.checkRepeat && this.isRepeatingPosition(newPosition)) {
         throw new InvalidPositionError(ngGo.error.POSTITION_IS_REPEATING, x, y, color);
       }
 
@@ -5230,7 +3336,7 @@ angular.module('ngGo.Game.Service', [
       }
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Stone and markup handling
      ***/
 
@@ -5251,7 +3357,7 @@ angular.module('ngGo.Game.Service', [
       this.validatePlacement(x, y, color, tempPosition);
 
       //No setup instructions container in this node?
-      if (typeof this.node.setup == 'undefined') {
+      if (typeof this.node.setup === 'undefined') {
 
         //Is this a move node?
         if (this.node.move) {
@@ -5287,7 +3393,7 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.addMarkup = function(x, y, markup) {
 
       //No markup instructions container in this node?
-      if (typeof this.node.markup == 'undefined') {
+      if (typeof this.node.markup === 'undefined') {
         this.node.markup = [];
       }
 
@@ -5307,9 +3413,9 @@ angular.module('ngGo.Game.Service', [
       var foundInSetup = false;
 
       //Remove from node setup instruction
-      if (typeof this.node.setup != 'undefined') {
+      if (typeof this.node.setup !== 'undefined') {
         for (var i = 0; i < this.node.setup.length; i++) {
-          if (x == this.node.setup[i].x && y == this.node.setup[i].y) {
+          if (x === this.node.setup[i].x && y === this.node.setup[i].y) {
 
             //Remove from node and unset in position
             this.node.setup.splice(i, 1);
@@ -5334,9 +3440,9 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.removeMarkup = function(x, y) {
 
       //Remove from node
-      if (typeof this.node.markup != 'undefined') {
+      if (typeof this.node.markup !== 'undefined') {
         for (var i = 0; i < this.node.markup.length; i++) {
-          if (x == this.node.markup[i].x && y == this.node.markup[i].y) {
+          if (x === this.node.markup[i].x && y === this.node.markup[i].y) {
             this.node.markup.splice(i, 1);
             this.position.markup.unset(x, y);
             break;
@@ -5349,7 +3455,7 @@ angular.module('ngGo.Game.Service', [
      * Check if there is a stone at the given coordinates for the current position
      */
     Game.prototype.hasStone = function(x, y, color) {
-      if (typeof color != 'undefined') {
+      if (typeof color !== 'undefined') {
         return this.position.stones.is(x, y, color);
       }
       return this.position.stones.has(x, y);
@@ -5359,7 +3465,7 @@ angular.module('ngGo.Game.Service', [
      * Check if there is markup at the given coordinate for the current position
      */
     Game.prototype.hasMarkup = function(x, y, type) {
-      if (typeof type != 'undefined') {
+      if (typeof type !== 'undefined') {
         return this.position.markup.is(x, y, type);
       }
       return this.position.markup.has(x, y);
@@ -5379,7 +3485,7 @@ angular.module('ngGo.Game.Service', [
       return this.position.markup.get(x, y);
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Move handling
      ***/
 
@@ -5450,7 +3556,7 @@ angular.module('ngGo.Game.Service', [
       this.path.advance(i);
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * Game tree navigation
      ***/
 
@@ -5460,7 +3566,7 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.next = function(i) {
 
       //Object (node) given as parameter? Find index
-      if (typeof i == 'object') {
+      if (typeof i === 'object') {
         i = this.node.children.indexOf(i);
       }
 
@@ -5470,12 +3576,16 @@ angular.module('ngGo.Game.Service', [
         //If an invalid move is detected, we can't go on
         try {
           executeNode.call(this);
+          return true;
         }
         catch (error) {
           previousNode.call(this);
           throw error;
         }
       }
+
+      //Didn't go to next position
+      return false;
     };
 
     /**
@@ -5486,7 +3596,11 @@ angular.module('ngGo.Game.Service', [
       //Go to the previous node
       if (previousNode.call(this)) {
         popPosition.call(this);
+        return true;
       }
+
+      //Didn't go to previous position
+      return false;
     };
 
     /**
@@ -5532,12 +3646,12 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Nothing given?
-      if (typeof target == 'undefined') {
+      if (typeof target === 'undefined') {
         return;
       }
 
       //Function given? Call now
-      if (typeof target == 'function') {
+      if (typeof target === 'function') {
         target = target.call(this);
       }
 
@@ -5545,16 +3659,16 @@ angular.module('ngGo.Game.Service', [
       var path;
 
       //Simple move number? Convert to path object
-      if (typeof target == 'number') {
+      if (typeof target === 'number') {
         path = this.path.clone();
         path.setMove(target);
       }
 
       //String? Named node
-      else if (typeof target == 'string') {
+      else if (typeof target === 'string') {
 
         //Already here?
-        if (this.node.name == target) {
+        if (this.node.name === target) {
           return;
         }
 
@@ -5609,10 +3723,10 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.lastFork = function() {
 
       //Loop until we find a node with more than one child
-      while (execPrevious.call(this) && this.node.children.length == 1) {}
+      while (previousNode.call(this) && this.node.children.length === 1) {}
     };
 
-    /***********************************************************************************************
+    /*****************************************************************************
      * State handling
      ***/
 
@@ -5656,12 +3770,16 @@ angular.module('ngGo.Game.Service', [
   }];
 });
 
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
 /**
- * GameNode :: This class represents a single node in the game moves tree. It contains properties like
- * the x and y grid coordinates, the move played, board setup instructions, markup, player turn and
- * comments. The moves tree in the game record is represented by a string of GameNodes, each with pointers
- * to their parent and children. Each node can have multiple children (move variations), but only
- * one parent.
+ * GameNode :: This class represents a single node in the game moves tree. It contains
+ * properties like the x and y grid coordinates, the move played, board setup instructions,
+ * markup, player turn and comments. The moves tree in the game record is represented by a
+ * string of GameNodes, each with pointers to their parent and children. Each node can have
+ * multiple children (move variations), but only one parent.
  */
 
 /**
@@ -5674,7 +3792,7 @@ angular.module('ngGo.Game.Node.Service', [
 /**
  * Factory definition
  */
-.factory('GameNode', ["StoneColor", function(StoneColor) {
+.factory('GameNode', ['StoneColor', function(StoneColor) {
 
   /**
    * Character index of "a"
@@ -5685,7 +3803,7 @@ angular.module('ngGo.Game.Node.Service', [
    * Helper to convert SGF coordinates
    */
   var convertCoordinates = function(coords) {
-    return [coords.charCodeAt(0)-aChar, coords.charCodeAt(1)-aChar];
+    return [coords.charCodeAt(0) - aChar, coords.charCodeAt(1) - aChar];
   };
 
   /**
@@ -5693,13 +3811,13 @@ angular.module('ngGo.Game.Node.Service', [
    */
   var coordinatesObject = function(coords, baseObject) {
     baseObject = baseObject || {};
-    if (coords === '' || coords == 'pass') {
+    if (coords === '' || coords === 'pass') {
       baseObject.pass = true;
     }
     else {
 
       //Backwards compatibility with SGF string coordinates in JGF
-      if (typeof coords == 'string') {
+      if (typeof coords === 'string') {
         coords = convertCoordinates(coords);
       }
 
@@ -5714,23 +3832,23 @@ angular.module('ngGo.Game.Node.Service', [
    * Convert a numeric color value (color constant) to a string
    */
   var toStringColor = function(color) {
-    return (color == StoneColor.B) ? 'B' : (((color == StoneColor.W) ? 'W' : ''));
+    return (color === StoneColor.B) ? 'B' : (((color === StoneColor.W) ? 'W' : ''));
   };
 
   /**
    * Convert a string color value to a numeric color constant
    */
   var toColorConstant = function(color) {
-    if (color == 'B') {
+    if (color === 'B') {
       return StoneColor.B;
     }
-    else if (color == 'W') {
+    else if (color === 'W') {
       return StoneColor.W;
     }
     return StoneColor.E;
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Helpers for conversion between JGF / KIFU format
    ***/
 
@@ -5740,8 +3858,8 @@ angular.module('ngGo.Game.Node.Service', [
   var convertMoveToJgf = function(move) {
 
     //Initialize JGF move object and determine color
-    var jgfMove = angular.copy(move),
-      color = toStringColor(move.color);
+    var jgfMove = angular.copy(move);
+    var color = toStringColor(move.color);
 
     //No color?
     if (color === '') {
@@ -5773,8 +3891,7 @@ angular.module('ngGo.Game.Node.Service', [
   var convertMoveFromJgf = function(move) {
 
     //Prepare color, coordinates
-    var i, color, coords,
-      colors = ['W', 'B'];
+    var color, coords;
 
     //Check whose move it was
     if (move.W) {
@@ -5803,21 +3920,24 @@ angular.module('ngGo.Game.Node.Service', [
   var convertSetupToJgf = function(setup) {
 
     //Initialize variables
-    var i, color, jgfSetup = {};
+    var i, color;
+    var jgfSetup = {};
 
     //Loop setup objects
     for (i in setup) {
+      if (setup.hasOwnProperty(i)) {
 
-      //Get color
-      color = toStringColor(setup[i].color) || 'E';
+        //Get color
+        color = toStringColor(setup[i].color) || 'E';
 
-      //Initialize array
-      if (typeof jgfSetup[color] == 'undefined') {
-        jgfSetup[color] = [];
+        //Initialize array
+        if (typeof jgfSetup[color] === 'undefined') {
+          jgfSetup[color] = [];
+        }
+
+        //Add coordinates
+        jgfSetup[color].push([setup[i].x, setup[i].y]);
       }
-
-      //Add coordinates
-      jgfSetup[color].push([setup[i].x, setup[i].y]);
     }
 
     //Return
@@ -5830,19 +3950,24 @@ angular.module('ngGo.Game.Node.Service', [
   var convertSetupFromJgf = function(setup) {
 
     //Initialize variables
-    var c, key, color, gameSetup = [];
+    var c, key, color;
+    var gameSetup = [];
 
     //Loop setup
     for (key in setup) {
+      if (setup.hasOwnProperty(key)) {
 
-      //Get color constant
-      color = toColorConstant(key);
+        //Get color constant
+        color = toColorConstant(key);
 
-      //Loop coordinates
-      for (c in setup[key]) {
-        gameSetup.push(coordinatesObject(setup[key][c], {
-          color: color
-        }));
+        //Loop coordinates
+        for (c in setup[key]) {
+          if (setup[key].hasOwnProperty(c)) {
+            gameSetup.push(coordinatesObject(setup[key][c], {
+              color: color
+            }));
+          }
+        }
       }
     }
 
@@ -5856,25 +3981,28 @@ angular.module('ngGo.Game.Node.Service', [
   var convertMarkupToJgf = function(markup) {
 
     //Initialize variables
-    var i, type, jgfMarkup = {};
+    var i, type;
+    var jgfMarkup = {};
 
     //Loop setup objects
     for (i in markup) {
+      if (markup.hasOwnProperty(i)) {
 
-      //Get type
-      type = markup[i].type;
+        //Get type
+        type = markup[i].type;
 
-      //Initialize array
-      if (typeof jgfMarkup[type] == 'undefined') {
-        jgfMarkup[type] = [];
-      }
+        //Initialize array
+        if (typeof jgfMarkup[type] === 'undefined') {
+          jgfMarkup[type] = [];
+        }
 
-      //Label?
-      if (type == 'LB') {
-        jgfMarkup[type].push([markup[i].x, markup[i].y, markup[i].text]);
-      }
-      else {
-        jgfMarkup[type].push([markup[i].x, markup[i].y]);
+        //Label?
+        if (type === 'label') {
+          jgfMarkup[type].push([markup[i].x, markup[i].y, markup[i].text]);
+        }
+        else {
+          jgfMarkup[type].push([markup[i].x, markup[i].y]);
+        }
       }
     }
 
@@ -5888,46 +4016,51 @@ angular.module('ngGo.Game.Node.Service', [
   var convertMarkupFromJgf = function(markup) {
 
     //Initialize variables
-    var l, type, gameMarkup = [];
+    var l, type;
+    var gameMarkup = [];
 
     //Loop markup types
     for (type in markup) {
+      if (markup.hasOwnProperty(type)) {
 
-      //Label?
-      if (type == 'label') {
-        for (l = 0; l < markup[type].length; l++) {
+        //Label?
+        if (type === 'label') {
+          for (l = 0; l < markup[type].length; l++) {
 
-          //Validate
-          if (!angular.isArray(markup[type][l])) {
-            continue;
+            //Validate
+            if (!angular.isArray(markup[type][l])) {
+              continue;
+            }
+
+            //SGF type coordinates?
+            if (markup[type][l].length === 2 && typeof markup[type][l][0] === 'string') {
+              var text = markup[type][l][1];
+              markup[type][l] = convertCoordinates(markup[type][l][0]);
+              markup[type][l].push(text);
+            }
+
+            //Validate length
+            if (markup[type][l].length < 3) {
+              continue;
+            }
+
+            //Add to stack
+            gameMarkup.push(coordinatesObject(markup[type][l], {
+              type: type,
+              text: markup[type][l][2]
+            }));
           }
-
-          //SGF type coordinates?
-          if (markup[type][l].length == 2 && typeof markup[type][l][0] == 'string') {
-            var text = markup[type][l][1];
-            markup[type][l] = convertCoordinates(markup[type][l][0]);
-            markup[type][l].push(text);
-          }
-
-          //Validate length
-          if (markup[type][l].length < 3) {
-            continue;
-          }
-
-          //Add to stack
-          gameMarkup.push(coordinatesObject(markup[type][l], {
-            type: type,
-            text: markup[type][l][2]
-          }));
         }
-      }
-      else {
+        else {
 
-        //Loop coordinates
-        for (l in markup[type]) {
-          gameMarkup.push(coordinatesObject(markup[type][l], {
-            type: type
-          }));
+          //Loop coordinates
+          for (l in markup[type]) {
+            if (markup[type].hasOwnProperty(l)) {
+              gameMarkup.push(coordinatesObject(markup[type][l], {
+                type: type
+              }));
+            }
+          }
         }
       }
     }
@@ -5969,16 +4102,16 @@ angular.module('ngGo.Game.Node.Service', [
    */
   var conversionMap = {
     toJgf: {
-      'move':   convertMoveToJgf,
-      'setup':  convertSetupToJgf,
-      'markup': convertMarkupToJgf,
-      'turn':   convertTurnToJgf
+      move: convertMoveToJgf,
+      setup: convertSetupToJgf,
+      markup: convertMarkupToJgf,
+      turn: convertTurnToJgf
     },
     fromJgf: {
-      'move':   convertMoveFromJgf,
-      'setup':  convertSetupFromJgf,
-      'markup': convertMarkupFromJgf,
-      'turn':   convertTurnFromJgf
+      move: convertMoveFromJgf,
+      setup: convertSetupFromJgf,
+      markup: convertMarkupFromJgf,
+      turn: convertTurnFromJgf
     }
   };
 
@@ -5994,7 +4127,9 @@ angular.module('ngGo.Game.Node.Service', [
     //Save properties
     if (properties) {
       for (var key in properties) {
-        this[key] = properties[key];
+        if (properties.hasOwnProperty(key)) {
+          this[key] = properties[key];
+        }
       }
     }
   };
@@ -6085,8 +4220,8 @@ angular.module('ngGo.Game.Node.Service', [
   GameNode.prototype.getMoveVariation = function(x, y) {
 
     //Loop the child nodes
-    for (var i in this.children) {
-      if (this.children[i].move && this.children[i].move.x == x && this.children[i].move.y == y) {
+    for (var i = 0; i < this.children.length; i++) {
+      if (this.children[i].move && this.children[i].move.x === x && this.children[i].move.y === y) {
         return i;
       }
     }
@@ -6101,8 +4236,8 @@ angular.module('ngGo.Game.Node.Service', [
   GameNode.prototype.isMoveVariation = function(x, y) {
 
     //Loop the child nodes
-    for (var i in this.children) {
-      if (this.children[i].move && this.children[i].move.x == x && this.children[i].move.y == y) {
+    for (var i = 0; i < this.children.length; i++) {
+      if (this.children[i].move && this.children[i].move.x === x && this.children[i].move.y === y) {
         return true;
       }
     }
@@ -6111,7 +4246,7 @@ angular.module('ngGo.Game.Node.Service', [
     return false;
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Node manipulation
    ***/
 
@@ -6202,7 +4337,7 @@ angular.module('ngGo.Game.Node.Service', [
   GameNode.prototype.insertNode = function(node) {
 
     //Loop our children and change parent node
-    for (var i in this.children) {
+    for (var i = 0; i < this.children.length; i++) {
       this.children[i].parent = node;
     }
 
@@ -6214,7 +4349,7 @@ angular.module('ngGo.Game.Node.Service', [
     this.children = [node];
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * JGF conversion
    ***/
 
@@ -6260,17 +4395,19 @@ angular.module('ngGo.Game.Node.Service', [
 
         //Copy node properties
         for (var key in properties) {
-          var prop = properties[key];
+          if (properties.hasOwnProperty(key)) {
+            var prop = properties[key];
 
-          //Conversion function present?
-          if (typeof conversionMap.fromJgf[prop] != 'undefined') {
-            gameNode[prop] = conversionMap.fromJgf[prop](jgf[i][prop]);
-          }
-          else if (typeof jgf[i][prop] == 'object') {
-            gameNode[prop] = angular.copy(jgf[i][prop]);
-          }
-          else {
-            gameNode[prop] = jgf[i][prop];
+            //Conversion function present?
+            if (typeof conversionMap.fromJgf[prop] !== 'undefined') {
+              gameNode[prop] = conversionMap.fromJgf[prop](jgf[i][prop]);
+            }
+            else if (typeof jgf[i][prop] === 'object') {
+              gameNode[prop] = angular.copy(jgf[i][prop]);
+            }
+            else {
+              gameNode[prop] = jgf[i][prop];
+            }
           }
         }
       }
@@ -6278,7 +4415,7 @@ angular.module('ngGo.Game.Node.Service', [
       //Next element is a regular node? Prepare new working node
       //Otherwise, if there are no more nodes or if the next element is
       //an array (e.g. variations), we keep our working node as the current one
-      if ((i + 1) < jgf.length && !angular.isArray(jgf[i+1])) {
+      if ((i + 1) < jgf.length && !angular.isArray(jgf[i + 1])) {
         nextNode = new GameNode();
         gameNode.appendChild(nextNode);
         gameNode = nextNode;
@@ -6295,27 +4432,29 @@ angular.module('ngGo.Game.Node.Service', [
     container = container || [];
 
     //Initialize node and get properties
-    var node = {},
-      properties = Object.getOwnPropertyNames(this);
+    var node = {};
+    var properties = Object.getOwnPropertyNames(this);
 
     //Copy node properties
     for (var key in properties) {
-      var prop = properties[key];
+      if (properties.hasOwnProperty(key)) {
+        var prop = properties[key];
 
-      //Skip some properties
-      if (prop == 'parent' || prop == 'children') {
-        continue;
-      }
+        //Skip some properties
+        if (prop === 'parent' || prop === 'children') {
+          continue;
+        }
 
-      //Conversion function present?
-      if (typeof conversionMap.toJgf[prop] != 'undefined') {
-        node[prop] = conversionMap.toJgf[prop](this[prop]);
-      }
-      else if (typeof this[prop] == 'object') {
-        node[prop] = angular.copy(this[prop]);
-      }
-      else {
-        node[prop] = this[prop];
+        //Conversion function present?
+        if (typeof conversionMap.toJgf[prop] !== 'undefined') {
+          node[prop] = conversionMap.toJgf[prop](this[prop]);
+        }
+        else if (typeof this[prop] === 'object') {
+          node[prop] = angular.copy(this[prop]);
+        }
+        else {
+          node[prop] = this[prop];
+        }
       }
     }
 
@@ -6330,7 +4469,7 @@ angular.module('ngGo.Game.Node.Service', [
       container.push(variationsContainer);
 
       //Loop child (variation) nodes
-      for (var i in this.children) {
+      for (var i = 0; i < this.children.length; i++) {
 
         //Create container for this variation
         var variationContainer = [];
@@ -6342,7 +4481,7 @@ angular.module('ngGo.Game.Node.Service', [
     }
 
     //Just one child?
-    else if (this.children.length == 1) {
+    else if (this.children.length === 1) {
       this.children[0].toJgf(container);
     }
 
@@ -6353,6 +4492,10 @@ angular.module('ngGo.Game.Node.Service', [
   //Return object
   return GameNode;
 }]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
 
 /**
  * GamePath :: A simple class that keeps track of a path taken in a game.
@@ -6455,7 +4598,7 @@ angular.module('ngGo.Game.Path.Service', [
    * Get the node choice at a specific move number
    */
   GamePath.prototype.nodeAt = function(no) {
-    return (typeof this.path[no] == 'undefined') ? 0 : this.path[no];
+    return (typeof this.path[no] === 'undefined') ? 0 : this.path[no];
   };
 
   /**
@@ -6464,18 +4607,18 @@ angular.module('ngGo.Game.Path.Service', [
   GamePath.prototype.compare = function(otherPath) {
 
     //Invalid object?
-    if (!otherPath || typeof otherPath != 'object' || typeof otherPath.move == 'undefined') {
+    if (!otherPath || typeof otherPath !== 'object' || typeof otherPath.move === 'undefined') {
       return;
     }
 
     //Different move number or path length?
-    if (this.move !== otherPath.move || this.branches != otherPath.branches) {
+    if (this.move !== otherPath.move || this.branches !== otherPath.branches) {
       return false;
     }
 
     //Check path
     for (var i in this.path) {
-      if (typeof otherPath.path[i] == 'undefined' || this.path[i] != otherPath.path[i]) {
+      if (typeof otherPath.path[i] === 'undefined' || this.path[i] !== otherPath.path[i]) {
         return false;
       }
     }
@@ -6507,7 +4650,7 @@ angular.module('ngGo.Game.Path.Service', [
   var findNodeName = function(node, nodeName, path) {
 
     //Found in this node?
-    if (node.name && node.name == nodeName) {
+    if (node.name && node.name === nodeName) {
       return true;
     }
 
@@ -6551,11 +4694,15 @@ angular.module('ngGo.Game.Path.Service', [
   return GamePath;
 });
 
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
 /**
- * GamePosition :: This class represents a single game position. It keeps track of the stones and markup
- * on the board in this position, as well as any captures that were made and which player's turn it is.
- * The class is also equipped with helpers to check for liberties, capture stones, and compare changes
- * to other positions.
+ * GamePosition :: This class represents a single game position. It keeps track of the stones and
+ * markup on the board in this position, as well as any captures that were made and which player's
+ * turn it is. The class is also equipped with helpers to check for liberties, capture stones, and
+ * compare changes to other positions.
  */
 
 /**
@@ -6569,7 +4716,7 @@ angular.module('ngGo.Game.Position.Service', [
 /**
  * Factory definition
  */
-.factory('GamePosition', ["StoneColor", "BoardGrid", function(StoneColor, BoardGrid) {
+.factory('GamePosition', ['StoneColor', 'BoardGrid', function(StoneColor, BoardGrid) {
 
   /**
    * Constructor
@@ -6641,7 +4788,7 @@ angular.module('ngGo.Game.Position.Service', [
     this.markup.set(x, y, markup);
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Liberties and capturing
    ***/
 
@@ -6679,10 +4826,10 @@ angular.module('ngGo.Game.Position.Service', [
 
     //Ok, so we're looking at a stone of our own color. Test adjacent positions.
     //If we get at least one true, we have a liberty
-    return  this.hasLiberties(x, y-1, groupColor, tested) ||
-        this.hasLiberties(x, y+1, groupColor, tested) ||
-        this.hasLiberties(x-1, y, groupColor, tested) ||
-        this.hasLiberties(x+1, y, groupColor, tested);
+    return this.hasLiberties(x, y - 1, groupColor, tested) ||
+        this.hasLiberties(x, y + 1, groupColor, tested) ||
+        this.hasLiberties(x - 1, y, groupColor, tested) ||
+        this.hasLiberties(x + 1, y, groupColor, tested);
   };
 
   /**
@@ -6699,7 +4846,7 @@ angular.module('ngGo.Game.Position.Service', [
     friendlyColor = friendlyColor || this.stones.get(x, y);
 
     //Can't capture empty spots
-    if (friendlyColor == StoneColor.EMPTY) {
+    if (friendlyColor === StoneColor.EMPTY) {
       return false;
     }
 
@@ -6707,16 +4854,16 @@ angular.module('ngGo.Game.Position.Service', [
     var captured = false;
 
     //Check adjacent positions now, capturing stones in the process if possible
-    if (this.canCapture(x, y-1, -friendlyColor, true)) {
+    if (this.canCapture(x, y - 1, -friendlyColor, true)) {
       captured = true;
     }
-    if (this.canCapture(x, y+1, -friendlyColor, true)) {
+    if (this.canCapture(x, y + 1, -friendlyColor, true)) {
       captured = true;
     }
-    if (this.canCapture(x-1, y, -friendlyColor, true)) {
+    if (this.canCapture(x - 1, y, -friendlyColor, true)) {
       captured = true;
     }
-    if (this.canCapture(x+1, y, -friendlyColor, true)) {
+    if (this.canCapture(x + 1, y, -friendlyColor, true)) {
       captured = true;
     }
 
@@ -6735,7 +4882,7 @@ angular.module('ngGo.Game.Position.Service', [
     }
 
     //Empty spot? Can't capture
-    if (this.stones.get(x, y) == StoneColor.EMPTY) {
+    if (this.stones.get(x, y) === StoneColor.EMPTY) {
       return false;
     }
 
@@ -6783,10 +4930,10 @@ angular.module('ngGo.Game.Position.Service', [
     this.captureStone(x, y);
 
     //Capture the rest of the group
-    this.captureGroup(x, y-1, enemyColor);
-    this.captureGroup(x, y+1, enemyColor);
-    this.captureGroup(x-1, y, enemyColor);
-    this.captureGroup(x+1, y, enemyColor);
+    this.captureGroup(x, y - 1, enemyColor);
+    this.captureGroup(x, y + 1, enemyColor);
+    this.captureGroup(x - 1, y, enemyColor);
+    this.captureGroup(x + 1, y, enemyColor);
 
     //At least one stone was captured
     return true;
@@ -6812,7 +4959,7 @@ angular.module('ngGo.Game.Position.Service', [
 
     //Ok, stone present, capture it
     this.stones.set(x, y, StoneColor.EMPTY);
-    this.captures[color].push({x:x, y:y});
+    this.captures[color].push({x: x, y: y});
   };
 
   /**
@@ -6836,7 +4983,7 @@ angular.module('ngGo.Game.Position.Service', [
     return this.captures[-color].length;
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Turn control
    ***/
 
@@ -6861,14 +5008,12 @@ angular.module('ngGo.Game.Position.Service', [
     this.turn = -this.turn;
   };
 
-  /***********************************************************************************************
+  /*****************************************************************************
    * Cloning and comparison
    ***/
 
   /**
    * Clones the whole position except turn and captures
-   *
-   * @return  object  Copy of this position
    */
   GamePosition.prototype.clone = function() {
 
@@ -6892,7 +5037,7 @@ angular.module('ngGo.Game.Position.Service', [
   GamePosition.prototype.isSameAs = function(newPosition) {
 
     //Must have the same size
-    if (this.width != newPosition.width || this.height != newPosition.height) {
+    if (this.width !== newPosition.width || this.height !== newPosition.height) {
       return false;
     }
 
@@ -6903,6 +5048,10 @@ angular.module('ngGo.Game.Position.Service', [
   //Return
   return GamePosition;
 }]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
 
 /**
  * GameScore :: A simple class that contains a game score
@@ -6918,13 +5067,14 @@ angular.module('ngGo.Game.Score.Service', [
 /**
  * Factory definition
  */
-.factory('GameScore', ["StoneColor", function(StoneColor) {
+.factory('GameScore', ['StoneColor', function(StoneColor) {
 
   /**
    * Helper to calculate the total points
    */
   var calcTotal = function() {
-    return parseInt(this.stones) + parseInt(this.territory) + parseInt(this.captures) + parseInt(this.komi);
+    return parseInt(this.stones) + parseInt(this.territory) +
+      parseInt(this.captures) + parseInt(this.komi);
   };
 
   /**
@@ -6960,7 +5110,7 @@ angular.module('ngGo.Game.Score.Service', [
     var props = ['stones', 'territory', 'captures', 'komi'];
 
     //Score for black player
-    for (var i in props) {
+    for (var i = 0; i < props.length; i++) {
       this.black[props[i]] = 0;
       this.white[props[i]] = 0;
     }
@@ -6972,8 +5122,8 @@ angular.module('ngGo.Game.Score.Service', [
   GameScore.prototype.winner = function() {
 
     //Get totals
-    var b = this.black.total(),
-      w = this.white.total();
+    var b = this.black.total();
+    var w = this.white.total();
 
     //Determine winner
     if (w > b) {
@@ -6989,9 +5139,13 @@ angular.module('ngGo.Game.Score.Service', [
   return GameScore;
 }]);
 
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
 /**
- * this.gameScorer :: This class is used to determine the score of a certain game position. It also provides
- * handling of manual adjustment of dead/living groups.
+ * GameScorer :: This class is used to determine the score of a certain game position. It also
+ * provides handling of manual adjustment of dead / living groups.
  */
 
 /**
@@ -7006,7 +5160,7 @@ angular.module('ngGo.Game.Scorer.Service', [
 /**
  * Factory definition
  */
-.factory('GameScorer', ["GameScore", "StoneColor", "BoardGrid", function(GameScore, StoneColor, BoardGrid) {
+.factory('GameScorer', ['GameScore', 'StoneColor', 'BoardGrid', function(GameScore, StoneColor, BoardGrid) {
 
   /**
    * Possible score states
@@ -7026,17 +5180,17 @@ angular.module('ngGo.Game.Scorer.Service', [
   var territorySet = function(x, y, candidateColor, boundaryColor) {
 
     //Get color at given position
-    var posColor = this.stones.get(x, y),
-      origColor = this.game.position.stones.get(x, y);
+    var posColor = this.stones.get(x, y);
+    var origColor = this.game.position.stones.get(x, y);
 
     //If border reached, or a position which is already this color, or boundary color, can't set
-    if (!this.stones.isOnGrid(x, y) || posColor == candidateColor || posColor == boundaryColor) {
+    if (!this.stones.isOnGrid(x, y) || posColor === candidateColor || posColor === boundaryColor) {
       return;
     }
 
     //Don't turn stones which are already this color into candidates, instead
     //reset their color to what they were
-    if (origColor * 2 == candidateColor) {
+    if (origColor * 2 === candidateColor) {
       this.stones.set(x, y, origColor);
     }
 
@@ -7046,10 +5200,10 @@ angular.module('ngGo.Game.Scorer.Service', [
     }
 
     //Set adjacent squares
-    territorySet.call(this, x-1, y, candidateColor, boundaryColor);
-    territorySet.call(this, x, y-1, candidateColor, boundaryColor);
-    territorySet.call(this, x+1, y, candidateColor, boundaryColor);
-    territorySet.call(this, x, y+1, candidateColor, boundaryColor);
+    territorySet.call(this, x - 1, y, candidateColor, boundaryColor);
+    territorySet.call(this, x, y - 1, candidateColor, boundaryColor);
+    territorySet.call(this, x + 1, y, candidateColor, boundaryColor);
+    territorySet.call(this, x, y + 1, candidateColor, boundaryColor);
   };
 
   /**
@@ -7061,7 +5215,7 @@ angular.module('ngGo.Game.Scorer.Service', [
     var origColor = this.game.position.stones.get(x, y);
 
     //Not on grid, or already this color?
-    if (!this.stones.isOnGrid(x, y) || this.stones.get(x, y) == origColor) {
+    if (!this.stones.isOnGrid(x, y) || this.stones.get(x, y) === origColor) {
       return;
     }
 
@@ -7069,10 +5223,10 @@ angular.module('ngGo.Game.Scorer.Service', [
     this.stones.set(x, y, origColor);
 
     //Set adjacent squares
-    territoryReset.call(this, x-1, y);
-    territoryReset.call(this, x, y-1);
-    territoryReset.call(this, x+1, y);
-    territoryReset.call(this, x, y+1);
+    territoryReset.call(this, x - 1, y);
+    territoryReset.call(this, x, y - 1);
+    territoryReset.call(this, x + 1, y);
+    territoryReset.call(this, x, y + 1);
   };
 
   /**
@@ -7081,7 +5235,8 @@ angular.module('ngGo.Game.Scorer.Service', [
   var determineScoreState = function() {
 
     //Initialize vars
-    var change = true, curState, newState, adjacent, b, w, a, x, y;
+    var change = true;
+    var curState, newState, adjacent, b, w, a, x, y;
 
     //Loop while there is change
     while (change) {
@@ -7097,14 +5252,18 @@ angular.module('ngGo.Game.Scorer.Service', [
           curState = this.stones.get(x, y);
 
           //Unknown or candiates?
-          if (curState == scoreState.UNKNOWN || curState == scoreState.BLACK_CANDIDATE || curState == scoreState.WHITE_CANDIDATE) {
+          if (
+            curState === scoreState.UNKNOWN ||
+            curState === scoreState.BLACK_CANDIDATE ||
+            curState === scoreState.WHITE_CANDIDATE
+          ) {
 
             //Get state in adjacent positions
             adjacent = [
-              this.stones.get(x-1, y),
-              this.stones.get(x, y-1),
-              this.stones.get(x+1, y),
-              this.stones.get(x, y+1)
+              this.stones.get(x - 1, y),
+              this.stones.get(x, y - 1),
+              this.stones.get(x + 1, y),
+              this.stones.get(x, y + 1)
             ];
 
             //Reset
@@ -7112,13 +5271,19 @@ angular.module('ngGo.Game.Scorer.Service', [
 
             //Loop adjacent squares
             for (a = 0; a < 4; a++) {
-              if (adjacent[a] == scoreState.BLACK_STONE || adjacent[a] == scoreState.BLACK_CANDIDATE) {
+              if (
+                adjacent[a] === scoreState.BLACK_STONE ||
+                adjacent[a] === scoreState.BLACK_CANDIDATE
+              ) {
                 b = true;
               }
-              else if (adjacent[a] == scoreState.WHITE_STONE || adjacent[a] == scoreState.WHITE_CANDIDATE) {
+              else if (
+                adjacent[a] === scoreState.WHITE_STONE ||
+                adjacent[a] === scoreState.WHITE_CANDIDATE
+              ) {
                 w = true;
               }
-              else if (adjacent[a] == scoreState.NEUTRAL) {
+              else if (adjacent[a] === scoreState.NEUTRAL) {
                 b = w = true;
               }
             }
@@ -7138,7 +5303,7 @@ angular.module('ngGo.Game.Scorer.Service', [
             }
 
             //Change?
-            if (newState !== false && newState != curState) {
+            if (newState !== false && newState !== curState) {
               change = true;
               this.stones.set(x, y, newState);
             }
@@ -7211,7 +5376,7 @@ angular.module('ngGo.Game.Scorer.Service', [
 
       //No game?
       if (!this.game) {
-        console.warn("No game loaded in game scorer, can't calutlate score.");
+        console.warn('No game loaded in game scorer, can\'t calutlate score.');
         return;
       }
 
@@ -7223,8 +5388,8 @@ angular.module('ngGo.Game.Scorer.Service', [
       determineScoreState.call(this);
 
       //Get komi and captures
-      var komi = this.game.get('game.komi'),
-        captures = this.game.getCaptureCount();
+      var komi = this.game.get('game.komi');
+      var captures = this.game.getCaptureCount();
 
       //Reset score
       this.score.reset();
@@ -7247,24 +5412,24 @@ angular.module('ngGo.Game.Scorer.Service', [
           color = this.game.position.stones.get(x, y);
 
           //Black stone
-          if (state == scoreState.BLACK_STONE && color == StoneColor.B) {
+          if (state === scoreState.BLACK_STONE && color === StoneColor.B) {
             this.score.black.stones++;
             continue;
           }
 
           //White stone
-          if (state == scoreState.WHITE_STONE && color == StoneColor.W) {
+          if (state === scoreState.WHITE_STONE && color === StoneColor.W) {
             this.score.white.stones++;
             continue;
           }
 
           //Black candidate
-          if (state == scoreState.BLACK_CANDIDATE) {
+          if (state === scoreState.BLACK_CANDIDATE) {
             this.score.black.territory++;
             this.points.set(x, y, StoneColor.B);
 
             //White stone underneath?
-            if (color == StoneColor.W) {
+            if (color === StoneColor.W) {
               this.score.black.captures++;
               this.captures.set(x, y, StoneColor.W);
             }
@@ -7272,12 +5437,12 @@ angular.module('ngGo.Game.Scorer.Service', [
           }
 
           //White candidate
-          if (state == scoreState.WHITE_CANDIDATE) {
+          if (state === scoreState.WHITE_CANDIDATE) {
             this.score.white.territory++;
             this.points.set(x, y, StoneColor.W);
 
             //Black stone underneath?
-            if (color == StoneColor.B) {
+            if (color === StoneColor.B) {
               this.score.white.captures++;
               this.captures.set(x, y, StoneColor.B);
             }
@@ -7293,14 +5458,14 @@ angular.module('ngGo.Game.Scorer.Service', [
     mark: function(x, y) {
 
       //Get color of original position and state of the count position
-      var color = this.game.position.stones.get(x, y),
-        state = this.stones.get(x, y);
+      var color = this.game.position.stones.get(x, y);
+      var state = this.stones.get(x, y);
 
       //White stone
-      if (color == StoneColor.W) {
+      if (color === StoneColor.W) {
 
         //Was white, mark it and any territory it's in as black's
-        if (state == scoreState.WHITE_STONE) {
+        if (state === scoreState.WHITE_STONE) {
           territorySet.call(this, x, y, scoreState.BLACK_CANDIDATE, scoreState.BLACK_STONE);
         }
 
@@ -7311,10 +5476,10 @@ angular.module('ngGo.Game.Scorer.Service', [
       }
 
       //Black stone
-      else if (color == StoneColor.B) {
+      else if (color === StoneColor.B) {
 
         //Was black, mark it and any territory it's in as white's
-        if (state == scoreState.BLACK_STONE) {
+        if (state === scoreState.BLACK_STONE) {
           territorySet.call(this, x, y, scoreState.WHITE_CANDIDATE, scoreState.WHITE_STONE);
         }
 
@@ -7330,6 +5495,10 @@ angular.module('ngGo.Game.Scorer.Service', [
   return GameScorer;
 }]);
 
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
 /**
  * KifuBlank :: This is a class which can generate blank JGF or SGF templates.
  */
@@ -7344,7 +5513,7 @@ angular.module('ngGo.Kifu.Blank.Service', [
 /**
  * Factory definition
  */
-.factory('KifuBlank', ["ngGo", function(ngGo) {
+.factory('KifuBlank', ['ngGo', function(ngGo) {
 
   /**
    * Blank JGF
@@ -7404,7 +5573,9 @@ angular.module('ngGo.Kifu.Blank.Service', [
       //Base given?
       if (base) {
         for (var p in base) {
-          blank[p] = angular.extend(blank[p] || {}, base[p]);
+          if (base.hasOwnProperty(p)) {
+            blank[p] = angular.extend(blank[p] || {}, base[p]);
+          }
         }
       }
 
@@ -7423,7 +5594,9 @@ angular.module('ngGo.Kifu.Blank.Service', [
       //Base given?
       if (base) {
         for (var p in base) {
-          blank[p] = base[p];
+          if (base.hasOwnProperty(p)) {
+            blank[p] = base[p];
+          }
         }
       }
 
@@ -7435,6 +5608,10 @@ angular.module('ngGo.Kifu.Blank.Service', [
   //Return object
   return KifuBlank;
 }]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
 
 /**
  * KifuParser :: This is a wrapper class for all available kifu parsers. It also provides
@@ -7491,8 +5668,8 @@ angular.module('ngGo.Kifu.Parser.Service', [
   'WR': 'rank',
 
   //Node annotation
-  'N':  'name',
-  'C':  'comments',
+  'N': 'name',
+  'C': 'comments',
   'CR': 'circle',
   'TR': 'triangle',
   'SQ': 'square',
@@ -7517,7 +5694,7 @@ angular.module('ngGo.Kifu.Parser.Service', [
 /**
  * Factory definition
  */
-.factory('KifuParser', ["Gib2Jgf", "Sgf2Jgf", "Jgf2Sgf", function(Gib2Jgf, Sgf2Jgf, Jgf2Sgf) {
+.factory('KifuParser', ['Gib2Jgf', 'Sgf2Jgf', 'Jgf2Sgf', function(Gib2Jgf, Sgf2Jgf, Jgf2Sgf) {
 
   /**
    * Parser wrapper class
@@ -7550,1396 +5727,9 @@ angular.module('ngGo.Kifu.Parser.Service', [
   return KifuParser;
 }]);
 
-/**
- * Gib2Jgf :: This is a parser wrapped by the KifuParser which is used to convert fom GIB to JGF.
- * Since the Gib format is not public, the accuracy of this parser is not guaranteed.
- */
+})(window, window.angular);
 
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
-  'ngGo',
-  'ngGo.Kifu.Blank.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('Gib2Jgf', ["ngGo", "KifuBlank", function(ngGo, KifuBlank) {
-
-  /**
-   * Regular expressions
-   */
-  var regMove = /STO\s0\s([0-9]+)\s(1|2)\s([0-9]+)\s([0-9]+)/gi,
-    regPlayer = /GAME(BLACK|WHITE)NAME=([A-Za-z0-9]+)\s\(([0-9]+D|K)\)/gi,
-    regKomi = /GAMEGONGJE=([0-9]+)/gi,
-    regDate = /GAMEDATE=([0-9]+)-\s?([0-9]+)-\s?([0-9]+)/g,
-    regResultMargin = /GAMERESULT=(white|black)\s([0-9]+\.?[0-9]?)/gi,
-    regResultOther = /GAMERESULT=(white|black)\s[a-z\s]+(resignation|time)/gi;
-
-  /**
-   * Player parser function
-   */
-  var parsePlayer = function(jgf, match) {
-
-    //Initialize players container
-    if (typeof jgf.game.players == 'undefined') {
-      jgf.game.players = [];
-    }
-
-    //Determine player color
-    var color = (match[1].toUpperCase() == 'BLACK') ? 'black' : 'white';
-
-    //Create player object
-    var player = {
-      color: color,
-      name: match[2],
-      rank: match[3].toLowerCase()
-    };
-
-    //Check if player of this color already exists, if so, overwrite
-    for (var p = 0; p < jgf.game.players.length; p++) {
-      if (jgf.game.players[p].color == color) {
-        jgf.game.players[p] = player;
-        return;
-      }
-    }
-
-    //Player of this color not found, push
-    jgf.game.players.push(player);
-  };
-
-  /**
-   * Komi parser function
-   */
-  var parseKomi = function(jgf, match) {
-    jgf.game.komi = parseFloat(match[1]/10);
-  };
-
-  /**
-   * Date parser function
-   */
-  var parseDate = function(jgf, match) {
-
-    //Initialize dates container
-    if (typeof jgf.game.dates == 'undefined') {
-      jgf.game.dates = [];
-    }
-
-    //Push date
-    jgf.game.dates.push(match[1]+'-'+match[2]+'-'+match[3]);
-  };
-
-  /**
-   * Result parser function
-   */
-  var parseResult = function(jgf, match) {
-
-    //Winner color
-    var result = (match[1].toLowerCase() == 'black') ? 'B' : 'W';
-    result += '+';
-
-    //Win condition
-    if (match[2].match(/res/i)) {
-      result += 'R';
-    }
-    else if (match[2].match(/time/i)) {
-      result += 'T';
-    }
-    else {
-      result += match[2];
-    }
-
-    //Set in JGF
-    jgf.game.result = result;
-  };
-
-  /**
-   * Move parser function
-   */
-  var parseMove = function(jgf, node, match) {
-
-    //Determine player color
-    var color = match[2];
-    if (color == 1) {
-      color = 'B';
-    }
-    else if (color == 2) {
-      color = 'W';
-    }
-    else {
-      return;
-    }
-
-    //Create move container
-    node.move = {};
-
-    //Pass
-    if (false) {
-
-    }
-
-    //Regular move
-    else {
-      node.move[color] = [match[3] * 1, match[4] * 1];
-    }
-  };
-
-  /**
-   * Parser class
-   */
-  var Parser = {
-
-    /**
-     * Parse GIB string into a JGF object or string
-     */
-    parse: function(gib, stringified) {
-
-      //Get new JGF object
-      var jgf = KifuBlank.jgf();
-
-      //Initialize
-      var match, container = jgf.tree;
-
-      //Create first node for game, which is usually an empty board position, but can
-      //contain comments or board setup instructions, which will be added to the node
-      //later if needed.
-      var node = {root: true};
-      container.push(node);
-
-      //Find player information
-      while (match = regPlayer.exec(gib)) {
-        parsePlayer(jgf, match);
-      }
-
-      //Find komi
-      if (match = regKomi.exec(gib)) {
-        parseKomi(jgf, match);
-      }
-
-      //Find game date
-      if (match = regDate.exec(gib)) {
-        parseDate(jgf, match);
-      }
-
-      //Find game result
-      if ((match = regResultMargin.exec(gib)) || (match = regResultOther.exec(gib))) {
-        parseResult(jgf, match);
-      }
-
-      //Find moves
-      while (match = regMove.exec(gib)) {
-
-        //Create new node
-        node = {};
-
-        //Parse move
-        parseMove(jgf, node, match);
-
-        //Push node to container
-        container.push(node);
-      }
-
-      //Return jgf
-      return jgf;
-    }
-  };
-
-  //Return object
-  return Parser;
-}]);
-
-/**
- * Jgf2Sgf :: This is a parser wrapped by the KifuParser which is used to convert fom JGF to SGF
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
-  'ngGo',
-  'ngGo.Kifu.Blank.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('Jgf2Sgf', ["ngGo", "sgfAliases", "sgfGames", "KifuBlank", function(ngGo, sgfAliases, sgfGames, KifuBlank) {
-
-  /**
-   * Flip SGF alias map and create JGF alias map
-   */
-  var jgfAliases = {};
-  for (var sgfProp in sgfAliases) {
-    jgfAliases[sgfAliases[sgfProp]] = sgfProp;
-  }
-
-  /**
-   * Character index of "a"
-   */
-  var aChar = 'a'.charCodeAt(0);
-
-  /**
-   * Helper to convert to SGF coordinates
-   */
-  var convertCoordinates = function(coords) {
-    return String.fromCharCode(aChar + coords[0]) + String.fromCharCode(aChar + coords[1]);
-  };
-
-  /***********************************************************************************************
-   * Conversion helpers
-   ***/
-
-  /**
-   * Helper to escape SGF info
-   */
-  var escapeSgf = function(text) {
-    if (typeof text == 'string') {
-      return text.replace(/\\/g, "\\\\").replace(/]/g, "\\]");
-    }
-    return text;
-  };
-
-  /**
-   * Helper to write an SGF group
-   */
-  var writeGroup = function(prop, values, output, escape) {
-    if (values.length) {
-      output.sgf += prop;
-      for (var i = 0; i < values.length; i++) {
-        output.sgf += '[' + (escape ? escapeSgf(values[i]) : values[i]) + ']';
-      }
-    }
-  };
-
-  /**
-   * Move parser
-   */
-  var parseMove = function(move, output) {
-
-    //Determine and validate color
-    var color = move.B ? 'B' : (move.W ? 'W' : '');
-    if (color === '') {
-      return;
-    }
-
-    //Determine move
-    var coords = (move[color] == 'pass') ? '' : move[color];
-
-    //Append to SGF
-    output.sgf += color + '[' + convertCoordinates(coords) + ']';
-  };
-
-  /**
-   * Setup parser
-   */
-  var parseSetup = function(setup, output) {
-
-    //Loop colors
-    for (var color in setup) {
-
-      //Convert coordinates
-      for (var i = 0; i < setup[color].length; i++) {
-        setup[color][i] = convertCoordinates(setup[color][i]);
-      }
-
-      //Write as group
-      writeGroup('A' + color, setup[color], output);
-    }
-  };
-
-  /**
-   * Score parser
-   */
-  var parseScore = function(score, output) {
-
-    //Loop colors
-    for (var color in score) {
-
-      //Convert coordinates
-      for (var i = 0; i < score[color].length; i++) {
-        score[color][i] = convertCoordinates(score[color][i]);
-      }
-
-      //Write as group
-      writeGroup('T' + color, score[color], output);
-    }
-  };
-
-  /**
-   * Markup parser
-   */
-  var parseMarkup = function(markup, output) {
-
-    //Loop markup types
-    for (var type in markup) {
-      var i;
-
-      //Label type has the label text appended to the coords
-      if (type == 'label') {
-        for (i = 0; i < markup[type].length; i++) {
-          markup[type][i] = convertCoordinates(markup[type][i]) + ':' + markup[type][i][2];
-        }
-      }
-      else {
-        for (i = 0; i < markup[type].length; i++) {
-          markup[type][i] = convertCoordinates(markup[type][i]);
-        }
-      }
-
-      //Convert type
-      if (typeof jgfAliases[type] != 'undefined') {
-        type = jgfAliases[type];
-      }
-
-      //Write as group
-      writeGroup(type, markup[type], output);
-    }
-  };
-
-  /**
-   * Turn parser
-   */
-  var parseTurn = function(turn, output) {
-    output.sgf += 'PL[' + turn + ']';
-  };
-
-  /**
-   * Comments parser
-   */
-  var parseComments = function(comments, output) {
-
-    //Determine key
-    var key = (typeof jgfAliases.comments != 'undefined') ? jgfAliases.comments : 'C';
-
-    //Flatten comment objects
-    var flatComments = [];
-    for (var c = 0; c < comments.length; c++) {
-      if (typeof comments[c] == 'string') {
-        flatComments.push(comments[c]);
-      }
-      else if (comments[c].comment) {
-        flatComments.push(comments[c].comment);
-      }
-    }
-
-    //Write as group
-    writeGroup(key, flatComments, output, true);
-  };
-
-  /**
-   * Node name parser
-   */
-  var parseNodeName = function(nodeName, output) {
-    var key = (typeof jgfAliases.name != 'undefined') ? jgfAliases.name : 'N';
-    output.sgf += key + '[' + escapeSgf(nodeName) + ']';
-  };
-
-  /**
-   * Game parser
-   */
-  var parseGame = function(game) {
-
-    //Loop SGF game definitions
-    for (var i in sgfGames) {
-      if (sgfGames[i] == game) {
-        return i;
-      }
-    }
-
-    //Not found
-    return 0;
-  };
-
-  /**
-   * Application parser
-   */
-  var parseApplication = function(application) {
-    var parts = application.split(' v');
-    if (parts.length > 1) {
-      return parts[0] + ':' + parts[1];
-    }
-    return application;
-  };
-
-  /**
-   * Player instructions parser
-   */
-  var parsePlayer = function(player, rootProperties) {
-
-    //Variation handling
-    var st = 0;
-    if (!player.variation_markup) {
-      st += 2;
-    }
-    if (player.variation_siblings) {
-      st += 1;
-    }
-
-    //Set in root properties
-    rootProperties['ST'] = st;
-  };
-
-  /**
-   * Board parser
-   */
-  var parseBoard = function(board, rootProperties) {
-
-    //Both width and height should be given
-    if (board.width && board.height) {
-
-      //Same dimensions?
-      if (board.width == board.height) {
-        rootProperties['SZ'] = board.width;
-      }
-
-      //Different dimensions are not supported by SGF, but OGS uses the
-      //format w:h, so we will stick with that for anyone who supports it.
-      else {
-        rootProperties['SZ'] = board.width + ':' + board.height;
-      }
-    }
-
-    //Otherwise, check if only width or height were given at least
-    else if (board.width) {
-      rootProperties['SZ'] = board.width;
-    }
-    else if (board.height) {
-      rootProperties['SZ'] = board.height;
-    }
-
-    //Can't determine size
-    else {
-      rootProperties['SZ'] = '';
-    }
-  };
-
-  /**
-   * Players parser
-   */
-  var parsePlayers = function(players, rootProperties) {
-
-    //Loop players
-    for (var p = 0; p < players.length; p++) {
-
-      //Validate color
-      if (!players[p].color || (players[p].color != 'black' && players[p].color != 'white')) {
-        continue;
-      }
-
-      //Get SGF color
-      var color = (players[p].color == 'black') ? 'B' : 'W';
-
-      //Name given?
-      if (players[p].name) {
-        rootProperties['P' + color] = players[p].name;
-      }
-
-      //Rank given?
-      if (players[p].rank) {
-        rootProperties[color + 'R'] = players[p].rank;
-      }
-
-      //Team given?
-      if (players[p].team) {
-        rootProperties[color + 'T'] = players[p].team;
-      }
-    }
-  };
-
-  /**
-   * Parse function to property mapper
-   */
-  var parsingMap = {
-
-    //Node properties
-    'move':     parseMove,
-    'setup':    parseSetup,
-    'score':    parseScore,
-    'markup':   parseMarkup,
-    'turn':     parseTurn,
-    'comments':   parseComments,
-    'name':     parseNodeName,
-
-    //Info properties
-    'record.application': parseApplication,
-    'player':       parsePlayer,
-    'board':        parseBoard,
-    'game.type':      parseGame,
-    'game.players':     parsePlayers
-  };
-
-  /***********************************************************************************************
-   * Parser functions
-   ***/
-
-  /**
-   * Helper to write a JGF tree to SGF
-   */
-  var writeTree = function(tree, output) {
-
-    //Loop nodes in the tree
-    for (var i = 0; i < tree.length; i++) {
-      var node = tree[i];
-
-      //Array? That means a variation
-      if (angular.isArray(node)) {
-        for (var j = 0; j < node.length; j++) {
-          output.sgf += "(\n;";
-          writeTree(node[j], output);
-          output.sgf += "\n)";
-        }
-
-        //Continue
-        continue;
-      }
-
-      //Loop node properties
-      for (var key in node) {
-
-        //Handler present in parsing map?
-        if (typeof parsingMap[key] !== 'undefined') {
-          parsingMap[key](node[key], output);
-          continue;
-        }
-
-        //Other object, can't handle it
-        if (typeof props[key] == 'object') {
-          continue;
-        }
-
-        //Anything else, append it
-        output.sgf += key + '[' + escapeSgf(node[key]) + ']';
-      }
-
-      //More to come?
-      if ((i + 1) < tree.length) {
-        output.sgf += "\n;";
-      }
-    }
-  };
-
-  /**
-   * Helper to extract all SGF root properties from a JGF object
-   */
-  var extractRootProperties = function(jgf, rootProperties, key) {
-
-    //Initialize key
-    if (typeof key == 'undefined') {
-      key = '';
-    }
-
-    //Loop properties of jgf node
-    for (var subKey in jgf) {
-
-      //Skip SGF signature (as we keep our own)
-      if (subKey == 'sgf') {
-        continue;
-      }
-
-      //Build jgf key
-      var jgfKey = (key === '') ? subKey : key + '.' + subKey;
-
-      //If the item is an object, handle separately
-      if (typeof jgf[subKey] == 'object') {
-
-        //Handler for this object present in parsing map?
-        if (typeof parsingMap[jgfKey] !== 'undefined') {
-          parsingMap[jgfKey](jgf[subKey], rootProperties);
-        }
-
-        //Otherwise, just flatten and call this function recursively
-        else {
-          extractRootProperties(jgf[subKey], rootProperties, jgfKey);
-        }
-        continue;
-      }
-
-      //Check if it's a known key, if so, append the value to the root
-      var value;
-      if (typeof jgfAliases[jgfKey] != 'undefined') {
-
-        //Handler present in parsing map?
-        if (typeof parsingMap[jgfKey] !== 'undefined') {
-          value = parsingMap[jgfKey](jgf[subKey]);
-        }
-        else {
-          value = escapeSgf(jgf[subKey]);
-        }
-
-        //Set in root properties
-        rootProperties[jgfAliases[jgfKey]] = value;
-      }
-    }
-  };
-
-  /**
-   * Parser class
-   */
-  var Parser = {
-
-    /**
-     * Parse JGF object or string into an SGF string
-     */
-    parse: function(jgf) {
-
-      //String given?
-      if (typeof jgf == 'string') {
-        jgf = angular.fromJson(jgf);
-      }
-
-      //Must have moves tree
-      if (!jgf.tree) {
-        console.error('No moves tree in JGF object');
-        return;
-      }
-
-      //Initialize output (as object, so it remains a reference) and root properties container
-      var output = {sgf: "(\n;"},
-        root = angular.copy(jgf),
-        rootProperties = KifuBlank.sgf();
-
-      //The first node of the JGF tree is the root node, and it can contain comments,
-      //board setup parameters, etc. It doesn't contain moves. We handle it separately here
-      //and attach it to the root
-      if (jgf.tree && jgf.tree.length > 0 && jgf.tree[0].root) {
-        root = angular.extend(root, jgf.tree[0]);
-        delete root.root;
-        delete jgf.tree[0];
-      }
-
-      //Set root properties
-      delete root.tree;
-      extractRootProperties(root, rootProperties);
-
-      //Write root properties
-      for (var key in rootProperties) {
-        if (rootProperties[key]) {
-          output.sgf += key + '[' + escapeSgf(rootProperties[key]) + ']';
-        }
-      }
-
-      //Write game tree
-      writeTree(jgf.tree, output);
-
-      //Close SGF and return
-      output.sgf += ")";
-      return output.sgf;
-    }
-  };
-
-  //Return object
-  return Parser;
-}]);
-
-/**
- * Sgf2Jgf :: This is a parser wrapped by the KifuParser which is used to convert fom SGF to JGF
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
-  'ngGo',
-  'ngGo.Kifu.Blank.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('Sgf2Jgf', ["ngGo", "sgfAliases", "sgfGames", "KifuBlank", function(ngGo, sgfAliases, sgfGames, KifuBlank) {
-
-  /**
-   * Regular expressions for SGF data
-   */
-  var regSequence = /\(|\)|(;(\s*[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+)*)/g,
-    regNode = /[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+/g,
-    regProperty = /[A-Z]+/,
-    regValues = /(\[\])|(\[(.|\s)*?([^\\]\]))/g;
-
-  /**
-   * Character index of "a"
-   */
-  var aChar = 'a'.charCodeAt(0);
-
-  /**
-   * Helper to convert SGF coordinates
-   */
-  var convertCoordinates = function(coords) {
-    return [coords.charCodeAt(0)-aChar, coords.charCodeAt(1)-aChar];
-  };
-
-  /***********************************************************************************************
-   * Conversion helpers
-   ***/
-
-  /**
-   * Application parser function (doesn't overwrite existing signature)
-   */
-  var parseApp = function(jgf, node, key, value) {
-    if (!jgf.record.application) {
-      var app = value[0].split(':');
-      if (app.length > 1) {
-        jgf.record.application = app[0] + ' v' + app[1];
-      }
-      else {
-        jgf.record.application = app[0];
-      }
-    }
-  };
-
-  /**
-   * SGF format parser
-   */
-  var parseSgfFormat = function(jgf, node, key, value) {
-    return;
-  };
-
-  /**
-   * Game type parser function
-   */
-  var parseGame = function(jgf, node, key, value) {
-    var game = value[0];
-    if (typeof sgfGames[game] != 'undefined') {
-      jgf.game.type = sgfGames[game];
-    }
-    else {
-      jgf.game.type = value[0];
-    }
-  };
-
-  /**
-   * Move parser function
-   */
-  var parseMove = function(jgf, node, key, value) {
-
-    //Create move container
-    node.move = {};
-
-    //Pass
-    if (value[0] === '' || (jgf.width <= 19 && value[0] == 'tt')) {
-      node.move[key] = 'pass';
-    }
-
-    //Regular move
-    else {
-      node.move[key] = convertCoordinates(value[0]);
-    }
-  };
-
-  /**
-   * Comment parser function
-   */
-  var parseComment = function(jgf, node, key, value) {
-
-    //Get key alias
-    if (typeof sgfAliases[key] != 'undefined') {
-      key = sgfAliases[key];
-    }
-
-    //Set value
-    node[key] = value;
-  };
-
-  /**
-   * Node name parser function
-   */
-  var parseNodeName = function(jgf, node, key, value) {
-
-    //Get key alias
-    if (typeof sgfAliases[key] != 'undefined') {
-      key = sgfAliases[key];
-    }
-
-    //Set value
-    node[key] = value[0];
-  };
-
-  /**
-   * Board setup parser function
-   */
-  var parseSetup = function(jgf, node, key, value) {
-
-    //Initialize setup container on node
-    if (typeof node.setup == 'undefined') {
-      node.setup = {};
-    }
-
-    //Remove "A" from setup key
-    key = key.charAt(1);
-
-    //Initialize setup container of this type
-    if (typeof node.setup[key] == 'undefined') {
-      node.setup[key] = [];
-    }
-
-    //Add values
-    for (var i = 0; i < value.length; i++) {
-      node.setup[key].push(convertCoordinates(value[i]));
-    }
-  };
-
-  /**
-   * Scoring parser function
-   */
-  var parseScore = function(jgf, node, key, value) {
-
-    //Initialize score container on node
-    if (typeof node.score == 'undefined') {
-      node.score = {
-        B: [],
-        W: []
-      };
-    }
-
-    //Remove "T" from setup key
-    key = key.charAt(1);
-
-    //Add values
-    for (var i = 0; i < value.length; i++) {
-      node.score[key].push(convertCoordinates(value[i]));
-    }
-  };
-
-  /**
-   * Turn parser function
-   */
-  var parseTurn = function(jgf, node, key, value) {
-    node.turn = value[0];
-  };
-
-  /**
-   * Label parser function
-   */
-  var parseLabel = function(jgf, node, key, value) {
-
-    //Get key alias
-    if (typeof sgfAliases[key] != 'undefined') {
-      key = sgfAliases[key];
-    }
-
-    //Initialize markup container on node
-    if (typeof node.markup == 'undefined') {
-      node.markup = {};
-    }
-
-    //Initialize markup container of this type
-    if (typeof node.markup[key] == 'undefined') {
-      node.markup[key] = [];
-    }
-
-    //Add values
-    for (var i = 0; i < value.length; i++) {
-
-      //Split off coordinates and add label contents
-      var coords = convertCoordinates(value[i].substr(0, 2));
-      coords.push(value[i].substr(3));
-
-      //Add to node
-      node.markup[key].push(coords);
-    }
-  };
-
-  /**
-   * Markup parser function
-   */
-  var parseMarkup = function(jgf, node, key, value) {
-
-    //Get key alias
-    if (typeof sgfAliases[key] != 'undefined') {
-      key = sgfAliases[key];
-    }
-
-    //Initialize markup container on node
-    if (typeof node.markup == 'undefined') {
-      node.markup = {};
-    }
-
-    //Initialize markup container of this type
-    if (typeof node.markup[key] == 'undefined') {
-      node.markup[key] = [];
-    }
-
-    //Add values
-    for (var i in value) {
-      node.markup[key].push(convertCoordinates(value[i]));
-    }
-  };
-
-  /**
-   * Size parser function
-   */
-  var parseSize = function(jgf, node, key, value) {
-
-    //Initialize board container
-    if (typeof jgf.board == 'undefined') {
-      jgf.board = {};
-    }
-
-    //Add size property (can be width:height or just a single size)
-    var size = value[0].split(':');
-    if (size.length > 1) {
-      jgf.board.width = parseInt(size[0]);
-      jgf.board.height = parseInt(size[1]);
-    }
-    else {
-      jgf.board.width = jgf.board.height = parseInt(size[0]);
-    }
-  };
-
-  /**
-   * Date parser function
-   */
-  var parseDate = function(jgf, node, key, value) {
-
-    //Initialize dates container
-    if (typeof jgf.game.dates == 'undefined') {
-      jgf.game.dates = [];
-    }
-
-    //Explode dates
-    var dates = value[0].split(',');
-    for (var d = 0; d < dates.length; d++) {
-      jgf.game.dates.push(dates[d]);
-    }
-  };
-
-  /**
-   * Komi parser function
-   */
-  var parseKomi = function(jgf, node, key, value) {
-    jgf.game.komi = parseFloat(value[0]);
-  };
-
-  /**
-   * Variations handling parser function
-   */
-  var parseVariations = function(jgf, node, key, value) {
-
-    //Initialize display property
-    if (typeof jgf.player == 'undefined') {
-      jgf.player = {};
-    }
-
-    //Initialize variation display settings
-    jgf.player.variation_markup = false;
-    jgf.player.variation_children = false;
-    jgf.player.variation_siblings = false;
-
-    //Parse as integer
-    var st = parseInt(value[0]);
-
-    //Determine what we want (see SGF specs for details)
-    switch (st) {
-      case 0:
-        jgf.player.variation_markup = true;
-        jgf.player.variation_children = true;
-        break;
-      case 1:
-        jgf.player.variation_markup = true;
-        jgf.player.variation_siblings = true;
-        break;
-      case 2:
-        jgf.player.variation_children = true;
-        break;
-      case 3:
-        jgf.player.variation_siblings = true;
-        break;
-    }
-  };
-
-  /**
-   * Player info parser function
-   */
-  var parsePlayer = function(jgf, node, key, value) {
-
-    //Initialize players container
-    if (typeof jgf.game.players == 'undefined') {
-      jgf.game.players = [];
-    }
-
-    //Determine player color
-    var color = (key == 'PB' || key == 'BT' || key == 'BR') ? 'black' : 'white';
-
-    //Get key alias
-    if (typeof sgfAliases[key] != 'undefined') {
-      key = sgfAliases[key];
-    }
-
-    //Check if player of this color already exists
-    for (var p = 0; p < jgf.game.players.length; p++) {
-      if (jgf.game.players[p].color == color) {
-        jgf.game.players[p][key] = value[0];
-        return;
-      }
-    }
-
-    //Player of this color not found, initialize
-    var player = {color: color};
-    player[key] = value[0];
-    jgf.game.players.push(player);
-  };
-
-  /**
-   * Parsing function to property mapper
-   */
-  var parsingMap = {
-
-    //Application, game type, board size, komi, date
-    'AP': parseApp,
-    'FF': parseSgfFormat,
-    'GM': parseGame,
-    'SZ': parseSize,
-    'KM': parseKomi,
-    'DT': parseDate,
-
-    //Variations handling
-    'ST': parseVariations,
-
-    //Player info handling
-    'PB': parsePlayer,
-    'PW': parsePlayer,
-    'BT': parsePlayer,
-    'WT': parsePlayer,
-    'BR': parsePlayer,
-    'WR': parsePlayer,
-
-    //Moves
-    'B':  parseMove,
-    'W':  parseMove,
-
-    //Node annotation
-    'C':  parseComment,
-    'N':  parseNodeName,
-
-    //Board setup
-    'AB': parseSetup,
-    'AW': parseSetup,
-    'AE': parseSetup,
-    'PL': parseTurn,
-    'TW': parseScore,
-    'TB': parseScore,
-
-    //Markup
-    'CR': parseMarkup,
-    'SQ': parseMarkup,
-    'TR': parseMarkup,
-    'MA': parseMarkup,
-    'SL': parseMarkup,
-    'LB': parseLabel
-  };
-
-  /**
-   * These properties need a node object
-   */
-  var needsNode = ['B', 'W', 'C', 'N', 'AB', 'AW', 'AE', 'PL', 'LB', 'CR', 'SQ', 'TR', 'MA', 'SL', 'TW', 'TB'];
-
-  /***********************************************************************************************
-   * Parser helpers
-   ***/
-
-  /**
-   * Set info in the JGF tree at a certain position
-   */
-  var setInfo = function(jgf, position, value) {
-
-    //Position given must be an array
-    if (typeof position != 'object') {
-      return;
-    }
-
-    //Initialize node to attach value to
-    var node = jgf, key;
-
-    //Loop the position
-    for (var p = 0; p < position.length; p++) {
-
-      //Get key
-      key = position[p];
-
-      //Last key reached? Done
-      if ((p + 1) == position.length) {
-        break;
-      }
-
-      //Create container if not set
-      if (typeof node[key] != 'object') {
-        node[key] = {};
-      }
-
-      //Move up in tree
-      node = node[key];
-    }
-
-    //Set value
-    node[key] = value;
-  };
-
-  /**
-   * Parser class
-   */
-  var Parser = {
-
-    /**
-     * Parse SGF string into a JGF object or string
-     */
-    parse: function(sgf, stringified) {
-
-      //Get new JGF object (with SGF node as a base)
-      var jgf = KifuBlank.jgf({record: {sgf: {}}});
-
-      //Initialize
-      var stack = [],
-        container = jgf.tree;
-
-      //Create first node for game, which is usually an empty board position, but can
-      //contain comments or board setup instructions, which will be added to the node
-      //later if needed.
-      var node = {root: true};
-      container.push(node);
-
-      //Find sequence of elements
-      var sequence = sgf.match(regSequence);
-
-      //Loop sequence items
-      for (var i in sequence) {
-
-        //Push stack if new variation found
-        if (sequence[i] == '(') {
-
-          //First encounter, this defines the main tree branch, so skip
-          if (i === 0 || i === '0') {
-            continue;
-          }
-
-          //Push the current container to the stack
-          stack.push(container);
-
-          //Create variation container if it doesn't exist yet
-          if (!angular.isArray(container[container.length-1])) {
-            container.push([]);
-          }
-
-          //Use variation container
-          container = container[container.length-1];
-
-          //Now create moves container
-          container.push([]);
-          container = container[container.length-1];
-          continue;
-        }
-
-        //Grab last container from stack if end of variation reached
-        else if (sequence[i] == ')') {
-          if (stack.length) {
-            container = stack.pop();
-          }
-          continue;
-        }
-
-        //Make array of properties within this sequence
-        var properties = sequence[i].match(regNode) || [];
-
-        //Loop them
-        for (var j in properties) {
-
-          //Get property's key and separate values
-          var key = regProperty.exec(properties[j])[0].toUpperCase(),
-            values = properties[j].match(regValues);
-
-          //Remove additional braces [ and ]
-          for (var k in values) {
-            values[k] = values[k].substring(1, values[k].length - 1).replace(/\\(?!\\)/g, "");
-          }
-
-          //SGF parser present for this key? Call it, and we're done
-          if (typeof parsingMap[key] != 'undefined') {
-
-            //Does this type of property need a node?
-            if (needsNode.indexOf(key) !== -1) {
-
-              //If no node object present, create a new node
-              //For moves, always a new node is created
-              if (!node || key == 'B' || key == 'W') {
-                node = {};
-                container.push(node);
-              }
-            }
-
-            //Apply parsing function on node
-            parsingMap[key](jgf, node, key, values);
-            continue;
-          }
-
-          //No SGF parser present, we continue with regular property handling
-
-          //If there is only one value, simplify array
-          if (values.length == 1) {
-            values = values[0];
-          }
-
-          //SGF alias known? Then this is an info element and we handle it accordingly
-          if (typeof sgfAliases[key] != 'undefined') {
-
-            //The position in the JGF object is represented by dot separated strings
-            //in the sgfAliases array. Split the position and use the setInfo helper
-            //to set the info on the JGF object
-            setInfo(jgf, sgfAliases[key].split('.'), values);
-            continue;
-          }
-
-          //No SGF alias present either, just append the data
-
-          //Save in node
-          if (node) {
-            node[key] = values;
-          }
-
-          //Save in root
-          else {
-            jgf[key] = values;
-          }
-        }
-
-        //Reset node, unless this was the root node
-        if (node && !node.root) {
-          node = null;
-        }
-      }
-
-      //Return jgf
-      return jgf;
-    }
-  };
-
-  //Return object
-  return Parser;
-}]);
-/**
- * ngGo
- *
- * This is the AngularJS implementation of WGo, based on WGo version 2.3.1. All code has been
- * refactored to fit the Angular framework, as well as having been linted, properly commented
- * and generally cleaned up.
- *
- * Copyright (c) 2013 Jan Prokop (WGo)
- * Copyright (c) 2014-2015 Adam Buczynski (ngGo)
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the "Software"), to deal in the Software
- * without restriction, including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
- * to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
- * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo', [])
-
-/**
- * ngGo constants
- */
-.constant('ngGo', {
-  name:   'ngGo',
-  version:  '1.1.1',
-  error:    {
-
-    //Position errors
-    POSITION_OUT_OF_BOUNDS:   1,
-    POSITION_ALREADY_HAS_STONE: 2,
-    POSITION_IS_SUICIDE:    3,
-    POSITION_IS_REPEATING:    4,
-
-    //Data loading errors
-    NO_DATA:          5,
-    UNKNOWN_DATA:       6,
-    INVALID_SGF:        7,
-    INVALID_GIB:        8,
-    INVALID_JGF_JSON:     9,
-    INVALID_JGF_TREE_JSON:    10
-  }
-})
-
-/**
- * Stone colors
- */
-.constant('StoneColor', {
-  E: 0,
-  EMPTY: 0,
-  B:  1,
-  BLACK: 1,
-  W:  -1,
-  WHITE: -1
-})
-
-/**
- * Markup types
- */
-.constant('MarkupTypes', {
-  TRIANGLE: 'triangle',
-  CIRCLE:   'circle',
-  SQUARE:   'square',
-  MARK:   'mark',
-  SELECT:   'select',
-  LABEL:    'label',
-  LAST:   'last',
-  SAD:    'sad',
-  HAPPY:    'happy'
-})
-
-/**
- * Player modes
- */
-.constant('PlayerModes', {
-  PLAY: 'play',
-  REPLAY: 'replay',
-  EDIT: 'edit',
-  SOLVE:  'solve'
-})
-
-/**
- * Player tools
- */
-.constant('PlayerTools', {
-  NONE: 'none',
-  MOVE: 'move',
-  SCORE:  'score',
-  SETUP:  'setup',
-  MARKUP: 'markup'
-})
-
-/**
- * Key codes
- */
-.constant('KeyCodes', {
-  LEFT:   37,
-  RIGHT:    39,
-  UP:     38,
-  DOWN:   40,
-  ESC:    27,
-  ENTER:    13,
-  SPACE:    32,
-  TAB:    9,
-  SHIFT:    16,
-  CTRL:   17,
-  ALT:    18,
-  HOME:   36,
-  END:    35,
-  PAGEUP:   33,
-  PAGEDOWN: 34
-});
-
+(function(window, angular, undefined) {'use strict';
 /**
  * Module definition and dependencies
  */
@@ -8950,14 +5740,14 @@ angular.module('ngGo.Player.Directive', [
 /**
  * Directive definition
  */
-.directive('player', ["Player", function(Player) {
+.directive('player', ['Player', function(Player) {
   return {
     restrict: 'E',
 
     /**
      * Controller
      */
-    controller: ["$scope", function($scope) {
+    controller: ['$scope', function($scope) {
 
       //Set player in scope
       if (!$scope.Player) {
@@ -8995,6 +5785,10 @@ angular.module('ngGo.Player.Directive', [
   };
 }]);
 
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
 /**
  * Player :: This class brings the board to life and allows a user to interact with it. It
  * handles user input, controls objects going to the board, can load game records, and allows the
@@ -9017,7 +5811,7 @@ angular.module('ngGo.Player.Service', [
 /**
  * Provider definition
  */
-.provider('Player', ["PlayerModes", "PlayerTools", "MarkupTypes", function(PlayerModes, PlayerTools, MarkupTypes) {
+.provider('Player', ['PlayerModes', 'PlayerTools', 'MarkupTypes', function(PlayerModes, PlayerTools, MarkupTypes) {
 
   /**
    * Default configuration
@@ -9052,7 +5846,7 @@ angular.module('ngGo.Player.Service', [
   /**
    * Service getter
    */
-  this.$get = ["$rootScope", "$document", "Game", "GameScorer", "Board", "PlayerTools", function($rootScope, $document, Game, GameScorer, Board, PlayerTools) {
+  this.$get = ['$rootScope', '$document', 'Game', 'GameScorer', 'Board', 'PlayerTools', function($rootScope, $document, Game, GameScorer, Board, PlayerTools) {
 
     /**
      * Helper to append board grid coordinatess to the broadcast event object
@@ -9067,27 +5861,36 @@ angular.module('ngGo.Player.Service', [
       }
 
       //Init
-      var x = 0, y = 0;
+      var x = 0;
+      var y = 0;
 
       //Set x
-      if (typeof mouseEvent.offsetX != 'undefined') {
+      if (typeof mouseEvent.offsetX !== 'undefined') {
         x = mouseEvent.offsetX;
       }
-      else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetX != 'undefined') {
+      else if (
+        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetX !== 'undefined'
+      ) {
         x = mouseEvent.originalEvent.offsetX;
       }
-      else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerX != 'undefined') {
+      else if (
+        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerX !== 'undefined'
+      ) {
         x = mouseEvent.originalEvent.layerX;
       }
 
       //Set y
-      if (typeof mouseEvent.offsetY != 'undefined') {
+      if (typeof mouseEvent.offsetY !== 'undefined') {
         y = mouseEvent.offsetY;
       }
-      else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetY != 'undefined') {
+      else if (
+        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetY !== 'undefined'
+      ) {
         y = mouseEvent.originalEvent.offsetY;
       }
-      else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerY != 'undefined') {
+      else if (
+        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerY !== 'undefined'
+      ) {
         y = mouseEvent.originalEvent.layerY;
       }
 
@@ -9185,7 +5988,7 @@ angular.module('ngGo.Player.Service', [
         this.registerElementEvent('wheel');
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Configuration
        ***/
 
@@ -9221,7 +6024,7 @@ angular.module('ngGo.Player.Service', [
        * Set arrow keys navigation
        */
       setArrowKeysNavigation: function(arrowKeys) {
-        if (arrowKeys != this.arrowKeysNavigation) {
+        if (arrowKeys !== this.arrowKeysNavigation) {
           this.arrowKeysNavigation = arrowKeys;
           this.broadcast('settingChange', 'arrowKeysNavigation');
         }
@@ -9231,7 +6034,7 @@ angular.module('ngGo.Player.Service', [
        * Set scroll wheel navigation
        */
       setScrollWheelNavigation: function(scrollWheel) {
-        if (scrollWheel != this.scrollWheelNavigation) {
+        if (scrollWheel !== this.scrollWheelNavigation) {
           this.scrollWheelNavigation = scrollWheel;
           this.broadcast('settingChange', 'scrollWheelNavigation');
         }
@@ -9241,7 +6044,7 @@ angular.module('ngGo.Player.Service', [
        * Set the last move marker
        */
       setLastMoveMarker: function(lastMoveMarker) {
-        if (lastMoveMarker != this.lastMoveMarker) {
+        if (lastMoveMarker !== this.lastMoveMarker) {
           this.lastMoveMarker = lastMoveMarker;
           this.broadcast('settingChange', 'lastMoveMarker');
         }
@@ -9256,19 +6059,23 @@ angular.module('ngGo.Player.Service', [
         var change = false;
 
         //Markup setting change?
-        if (variationMarkup != this.variationMarkup) {
+        if (variationMarkup !== this.variationMarkup) {
           this.variationMarkup = variationMarkup;
           change = true;
         }
 
         //Children setting change?
-        if (typeof variationChildren != 'undefined' && variationChildren != this.variationChildren) {
+        if (
+          typeof variationChildren !== 'undefined' && variationChildren !== this.variationChildren
+        ) {
           this.variationChildren = variationChildren;
           change = true;
         }
 
         //Siblings setting change?
-        if (typeof variationSiblings != 'undefined' && variationSiblings != this.variationSiblings) {
+        if (
+          typeof variationSiblings !== 'undefined' && variationSiblings !== this.variationSiblings
+        ) {
           this.variationSiblings = variationSiblings;
           change = true;
         }
@@ -9279,7 +6086,7 @@ angular.module('ngGo.Player.Service', [
         }
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Mode and tool handling
        ***/
 
@@ -9297,7 +6104,7 @@ angular.module('ngGo.Player.Service', [
         }
 
         //Force switch the mode now, if it matches the initial mode
-        if (this.mode == mode) {
+        if (this.mode === mode) {
           this.switchMode(this.mode, true);
           this.switchTool(this.tool, true);
         }
@@ -9321,7 +6128,7 @@ angular.module('ngGo.Player.Service', [
        * Check if we have a player tool
        */
       hasTool: function(tool) {
-        return (this.tools.indexOf(tool) != -1);
+        return (this.tools.indexOf(tool) !== -1);
       },
 
       /**
@@ -9330,7 +6137,7 @@ angular.module('ngGo.Player.Service', [
       switchMode: function(mode, force) {
 
         //No change?
-        if (!force && (!mode || this.mode == mode)) {
+        if (!force && (!mode || this.mode === mode)) {
           return false;
         }
 
@@ -9355,7 +6162,7 @@ angular.module('ngGo.Player.Service', [
       switchTool: function(tool, force) {
 
         //No change?
-        if (!force && (!tool || this.tool == tool)) {
+        if (!force && (!tool || this.tool === tool)) {
           return false;
         }
 
@@ -9407,7 +6214,7 @@ angular.module('ngGo.Player.Service', [
         this.restoreGameState();
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Game record handling
        ***/
 
@@ -9428,7 +6235,7 @@ angular.module('ngGo.Player.Service', [
         this.path = null;
 
         //Parse configuration from JGF if allowed
-        if (allowPlayerConfig || typeof allowPlayerConfig == 'undefined') {
+        if (allowPlayerConfig || typeof allowPlayerConfig === 'undefined') {
           this.parseConfig(this.game.get('settings'));
         }
 
@@ -9478,7 +6285,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Restore to the saved state
        */
-      restoreGameState: function(mode) {
+      restoreGameState: function() {
 
         //Must have game and saved state
         if (!this.game || !this.gameState) {
@@ -9495,7 +6302,7 @@ angular.module('ngGo.Player.Service', [
         }
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Navigation
        ***/
 
@@ -9503,7 +6310,7 @@ angular.module('ngGo.Player.Service', [
        * Go to the next position
        */
       next: function(i) {
-        if (this.game && this.game.node != this.restrictNodeEnd) {
+        if (this.game && this.game.node !== this.restrictNodeEnd) {
           this.game.next(i);
           this.processPosition();
         }
@@ -9513,7 +6320,7 @@ angular.module('ngGo.Player.Service', [
        * Go back to the previous position
        */
       previous: function() {
-        if (this.game && this.game.node != this.restrictNodeStart) {
+        if (this.game && this.game.node !== this.restrictNodeStart) {
           this.game.previous();
           this.processPosition();
         }
@@ -9579,10 +6386,10 @@ angular.module('ngGo.Player.Service', [
         }
 
         //Get current node and game position
-        var node = this.game.getNode(),
-          path = this.game.getPath(),
-          position = this.game.getPosition(),
-          pathChanged = !path.compare(this.path);
+        var node = this.game.getNode();
+        var path = this.game.getPath();
+        var position = this.game.getPosition();
+        var pathChanged = !path.compare(this.path);
 
         //Update board
         this.updateBoard(node, position, pathChanged);
@@ -9606,7 +6413,7 @@ angular.module('ngGo.Player.Service', [
         }
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Game handling
        ***/
 
@@ -9627,9 +6434,9 @@ angular.module('ngGo.Player.Service', [
         GameScorer.calculate();
 
         //Get score, points and captures
-        var score = GameScorer.getScore(),
-          points = GameScorer.getPoints(),
-          captures = GameScorer.getCaptures();
+        var score = GameScorer.getScore();
+        var points = GameScorer.getPoints();
+        var captures = GameScorer.getCaptures();
 
         //Remove all markup, and set captures and points
         this.board.layers.markup.removeAll();
@@ -9639,7 +6446,7 @@ angular.module('ngGo.Player.Service', [
         this.broadcast('scoreCalculated', score);
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Board handling
        ***/
 
@@ -9693,7 +6500,7 @@ angular.module('ngGo.Player.Service', [
         this.broadcast('boardUpdate', node);
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Event handling
        ***/
 
@@ -9703,7 +6510,7 @@ angular.module('ngGo.Player.Service', [
       registerElementEvent: function(event, element) {
 
         //Which element to use
-        if (typeof element == 'undefined' || !element.on) {
+        if (typeof element === 'undefined' || !element.on) {
           element = this.element;
         }
 
@@ -9719,7 +6526,7 @@ angular.module('ngGo.Player.Service', [
       on: function(type, listener, mode, $scope) {
 
         //Must have valid listener
-        if (typeof listener != 'function') {
+        if (typeof listener !== 'function') {
           console.warn('Listener is not a function:', listener);
           return;
         }
@@ -9740,35 +6547,38 @@ angular.module('ngGo.Player.Service', [
         }
 
         //Get self and determine scope to use
-        var self = this,
-          scope = $scope || $rootScope;
+        var self = this;
+        var scope = $scope || $rootScope;
 
         //Create listener and return de-registration function
         return scope.$on('ngGo.player.' + type, function() {
 
           //Filter on mode
           if (mode) {
-            if ((typeof mode == 'string' && mode != self.mode) || mode.indexOf(self.mode) === -1) {
+            if (
+              (typeof mode === 'string' && mode !== self.mode) ||
+              mode.indexOf(self.mode) === -1
+            ) {
               return;
             }
           }
 
           //Inside a text field?
-          if (type == 'keydown' && $document[0].querySelector(':focus')) {
+          if (type === 'keydown' && $document[0].querySelector(':focus')) {
             return;
           }
 
           //Append grid coordinates for mouse events
-          if (type == 'click' || type == 'hover' || type.substr(0, 5) == 'mouse') {
+          if (type === 'click' || type === 'hover' || type.substr(0, 5) === 'mouse') {
             processMouseEvent.call(self, arguments[0], arguments[1]);
           }
 
           //Dragging? Prevent click events from firing
-          if (self.preventClickEvent && type == 'click') {
+          if (self.preventClickEvent && type === 'click') {
             delete self.preventClickEvent;
             return;
           }
-          else if (type == 'mousedrag') {
+          else if (type === 'mousedrag') {
             self.preventClickEvent = true;
           }
 
@@ -9807,6 +6617,3508 @@ angular.module('ngGo.Player.Service', [
   }];
 }]);
 
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * GridLayer :: This class represents the grid layer of the board, and it is responsible for drawing
+ * gridlines, starpoints and coordinates via the Coordinates class.
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Layer.GridLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.Coordinates.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('GridLayer', ['BoardLayer', 'Coordinates', function(BoardLayer, Coordinates) {
+
+  /**
+   * Helper for drawing starpoints
+   */
+  var drawStarPoint = function(gridX, gridY, starRadius, starColor) {
+
+    //Don't draw if it falls outsize of the board grid
+    if (gridX < this.board.grid.xLeft || gridX > this.board.grid.xRight) {
+      return;
+    }
+    if (gridY < this.board.grid.yTop || gridY > this.board.grid.yBot) {
+      return;
+    }
+
+    //Get absolute coordinates and star point radius
+    var x = this.board.getAbsX(gridX);
+    var y = this.board.getAbsY(gridY);
+
+    //Draw star point
+    this.context.beginPath();
+    this.context.fillStyle = starColor;
+    this.context.arc(x, y, starRadius, 0, 2 * Math.PI, true);
+    this.context.fill();
+  };
+
+  /**
+   * Constructor
+   */
+  var GridLayer = function(board, context) {
+
+    //Set coordinates setting
+    this.coordinates = false;
+
+    //Call parent constructor
+    BoardLayer.call(this, board, context);
+  };
+
+  /**
+   * Prototype extension
+   */
+  angular.extend(GridLayer.prototype, BoardLayer.prototype);
+
+  /**
+   * Show or hide the coordinates.
+   */
+  GridLayer.prototype.setCoordinates = function(show) {
+    this.coordinates = show;
+  };
+
+  /*****************************************************************************
+   * Object handling
+   ***/
+
+  /**
+   * Get all has nothing to return
+   */
+  GridLayer.prototype.getAll = function() {
+    return null;
+  };
+
+  /**
+   * Set all has nothing to set
+   */
+  GridLayer.prototype.setAll = function(/*grid*/) {
+    return;
+  };
+
+  /**
+   * Remove all has nothing to remove
+   */
+  GridLayer.prototype.removeAll = function() {
+    return;
+  };
+
+  /*****************************************************************************
+   * Drawing
+   ***/
+
+  /**
+   * Draw method
+   */
+  GridLayer.prototype.draw = function() {
+
+    //Can only draw when we have dimensions and context
+    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //Determine top x and y margin
+    var tx = this.board.drawMarginHor;
+    var ty = this.board.drawMarginVer;
+
+    //Get theme properties
+    var cellSize = this.board.getCellSize();
+    var lineWidth = this.board.theme.get('grid.lineWidth', cellSize);
+    var lineCap = this.board.theme.get('grid.lineCap');
+    var strokeStyle = this.board.theme.get('grid.lineColor');
+    var starRadius = this.board.theme.get('grid.star.radius', cellSize);
+    var starColor = this.board.theme.get('grid.star.color');
+    var starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height);
+    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.beginPath();
+    this.context.lineWidth = lineWidth;
+    this.context.lineCap = lineCap;
+    this.context.strokeStyle = strokeStyle;
+
+    //Helper vars
+    var i, x, y;
+
+    //Draw vertical lines
+    for (i = this.board.grid.xLeft; i <= this.board.grid.xRight; i++) {
+      x = this.board.getAbsX(i);
+      this.context.moveTo(x, ty);
+      this.context.lineTo(x, ty + this.board.gridDrawHeight);
+    }
+
+    //Draw horizontal lines
+    for (i = this.board.grid.yTop; i <= this.board.grid.yBot; i++) {
+      y = this.board.getAbsY(i);
+      this.context.moveTo(tx, y);
+      this.context.lineTo(tx + this.board.gridDrawWidth, y);
+    }
+
+    //Draw grid lines
+    this.context.stroke();
+
+    //Star points defined?
+    for (i = 0; i < starPoints.length; i++) {
+      drawStarPoint.call(this, starPoints[i].x, starPoints[i].y, starRadius, starColor);
+    }
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+
+    //Draw coordinates
+    if (this.coordinates) {
+      Coordinates.draw.call(this);
+    }
+  };
+
+  /**
+   * Clear a square cell area on the grid
+   */
+  GridLayer.prototype.clearCell = function(gridX, gridY) {
+
+    //Get absolute coordinates and stone radius
+    var x = this.board.getAbsX(gridX);
+    var y = this.board.getAbsY(gridY);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
+
+    //Get theme properties
+    var lineWidth = this.board.theme.get('grid.lineWidth', s);
+    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Clear rectangle
+    this.context.clearRect(x - r, y - r, 2 * r, 2 * r);
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Redraw a square cell area on the grid
+   */
+  GridLayer.prototype.redrawCell = function(gridX, gridY) {
+
+    //Get absolute coordinates and stone radius
+    var x = this.board.getAbsX(gridX);
+    var y = this.board.getAbsY(gridY);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
+
+    //Get theme properties
+    var lineWidth = this.board.theme.get('grid.lineWidth', s);
+    var strokeStyle = this.board.theme.get('grid.lineColor');
+    var starRadius = this.board.theme.get('grid.star.radius', s);
+    var starColor = this.board.theme.get('grid.star.color');
+    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+    var starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height);
+
+    //Determine draw coordinates
+    var x1 = (gridX === 0) ? x : x - r;
+    var x2 = (gridX === this.board.width - 1) ? x : x + r;
+    var y1 = (gridY === 0) ? y : y - r;
+    var y2 = (gridY === this.board.height - 1) ? y : y + r;
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.beginPath();
+    this.context.lineWidth = lineWidth;
+    this.context.strokeStyle = strokeStyle;
+
+    //Patch up grid lines
+    this.context.moveTo(x1, y);
+    this.context.lineTo(x2, y);
+    this.context.moveTo(x, y1);
+    this.context.lineTo(x, y2);
+    this.context.stroke();
+
+    //Check if we need to draw a star point here
+    for (var i in starPoints) {
+      if (starPoints[i].x === gridX && starPoints[i].y === gridY) {
+        drawStarPoint.call(this, gridX, gridY, starRadius, starColor);
+      }
+    }
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  //Return
+  return GridLayer;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Layer.HoverLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.Markup.Service',
+  'ngGo.Board.Object.StoneFaded.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('HoverLayer', ['BoardLayer', 'Markup', 'StoneFaded', function(BoardLayer, Markup, StoneFaded) {
+
+  /**
+   * Constructor
+   */
+  var HoverLayer = function(board, context) {
+
+    //Container for items to restore
+    this.restore = [];
+
+    //Call parent constructor
+    BoardLayer.call(this, board, context);
+  };
+
+  /**
+   * Prototype extension
+   */
+  angular.extend(HoverLayer.prototype, BoardLayer.prototype);
+
+  /**
+   * Add hover item
+   */
+  HoverLayer.prototype.add = function(x, y, hover) {
+
+    //Validate coordinates
+    if (!this.grid.isOnGrid(x, y)) {
+      return;
+    }
+
+    //Remove any previous item at this position
+    this.remove(x, y);
+
+    //Create hover object
+    hover.object = {
+      x: x,
+      y: y
+    };
+
+    //Stones
+    if (hover.type === 'stones') {
+      hover.objectClass = StoneFaded;
+      hover.object.color = hover.value;
+    }
+
+    //Markup
+    else if (hover.type === 'markup') {
+      hover.objectClass = Markup;
+      if (typeof hover.value === 'object') {
+        hover.object = angular.extend(hover.object, hover.value);
+      }
+      else {
+        hover.object.type = hover.value;
+      }
+    }
+
+    //Unknown
+    else {
+      console.warn('Unknown hover type', hover.type);
+      return;
+    }
+
+    //Check if we need to hide something on layers underneath
+    if (this.board.has(hover.type, x, y)) {
+      this.restore.push({
+        x: x,
+        y: y,
+        layer: hover.type,
+        value: this.board.get(hover.type, x, y)
+      });
+      this.board.remove(hover.type, x, y);
+    }
+
+    //Add to stack
+    this.grid.set(x, y, hover);
+
+    //Draw item
+    if (hover.objectClass && hover.objectClass.draw) {
+      hover.objectClass.draw.call(this, hover.object);
+    }
+  };
+
+  /**
+   * Remove the hover object
+   */
+  HoverLayer.prototype.remove = function(x, y) {
+
+    //Validate coordinates
+    if (!this.grid.has(x, y)) {
+      return;
+    }
+
+    //Get object and clear it
+    var hover = this.grid.get(x, y);
+    if (hover.objectClass && hover.objectClass.clear) {
+      hover.objectClass.clear.call(this, hover.object);
+    }
+
+    //Other objects to restore?
+    for (var i = 0; i < this.restore.length; i++) {
+      if (this.restore[i].x === x && this.restore[i].y === y) {
+        this.board.add(
+          this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
+        );
+        this.restore.splice(i, 1);
+      }
+    }
+  };
+
+  /**
+   * Remove all hover objects
+   */
+  HoverLayer.prototype.removeAll = function() {
+
+    //Anything to do?
+    if (this.grid.isEmpty()) {
+      return;
+    }
+
+    //Get all item as objects
+    var i;
+    var hover = this.grid.all('layer');
+
+    //Clear them
+    for (i = 0; i < hover.length; i++) {
+      if (hover[i].objectClass && hover[i].objectClass.clear) {
+        hover[i].objectClass.clear.call(this, hover[i].object);
+      }
+    }
+
+    //Clear layer and empty grid
+    this.clear();
+    this.grid.empty();
+
+    //Restore objects on other layers
+    for (i = 0; i < this.restore.length; i++) {
+      this.board.add(
+        this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
+      );
+    }
+
+    //Clear restore array
+    this.restore = [];
+  };
+
+  /**
+   * Draw layer
+   */
+  HoverLayer.prototype.draw = function() {
+
+    //Can only draw when we have dimensions and context
+    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //Loop objects and clear them
+    var hover = this.grid.all('hover');
+    for (var i = 0; i < hover.length; i++) {
+      if (hover.objectClass && hover.objectClass.draw) {
+        hover.objectClass.draw.call(this, hover.object);
+      }
+    }
+  };
+
+  //Return
+  return HoverLayer;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.Markup.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('MarkupLayer', ['BoardLayer', 'Markup', function(BoardLayer, Markup) {
+
+  /**
+   * Constructor
+   */
+  var MarkupLayer = function(board, context) {
+
+    //Call parent constructor
+    BoardLayer.call(this, board, context);
+  };
+
+  /**
+   * Prototype extension
+   */
+  angular.extend(MarkupLayer.prototype, BoardLayer.prototype);
+
+  /*****************************************************************************
+   * Object handling
+   ***/
+
+  /**
+   * Set all markup at once
+   */
+  MarkupLayer.prototype.setAll = function(grid) {
+
+    //Get changes compared to current grid
+    var i;
+    var changes = this.grid.compare(grid, 'type');
+
+    //Clear removed stuff
+    for (i = 0; i < changes.remove.length; i++) {
+      Markup.clear.call(this, changes.remove[i]);
+    }
+
+    //Draw added stuff
+    for (i = 0; i < changes.add.length; i++) {
+      Markup.draw.call(this, changes.add[i]);
+    }
+
+    //Remember new grid
+    this.grid = grid.clone();
+  };
+
+  /**
+   * Remove all (clear layer and empty grid)
+   */
+  MarkupLayer.prototype.removeAll = function() {
+
+    //Get all markup as objects
+    var markup = this.grid.all('type');
+
+    //Clear them
+    for (var i = 0; i < markup.length; i++) {
+      Markup.clear.call(this, markup[i]);
+    }
+
+    //Empty the grid now
+    this.grid.empty();
+  };
+
+  /*****************************************************************************
+   * Drawing
+   ***/
+
+  /**
+   * Draw layer
+   */
+  MarkupLayer.prototype.draw = function() {
+
+    //Can only draw when we have dimensions and context
+    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //Get all markup as objects
+    var markup = this.grid.all('type');
+
+    //Draw them
+    for (var i = 0; i < markup.length; i++) {
+      Markup.draw.call(this, markup[i]);
+    }
+  };
+
+  /**
+   * Draw cell
+   */
+  MarkupLayer.prototype.drawCell = function(x, y) {
+
+    //Can only draw when we have dimensions
+    if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //On grid?
+    if (this.grid.has(x, y)) {
+      Markup.draw.call(this, this.grid.get(x, y, 'type'));
+    }
+  };
+
+  /**
+   * Clear cell
+   */
+  MarkupLayer.prototype.clearCell = function(x, y) {
+    if (this.grid.has(x, y)) {
+      Markup.clear.call(this, this.grid.get(x, y, 'type'));
+    }
+  };
+
+  //Return
+  return MarkupLayer;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.StoneMini.Service',
+  'ngGo.Board.Object.StoneFaded.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('ScoreLayer', ['BoardLayer', 'StoneMini', 'StoneFaded', function(BoardLayer, StoneMini, StoneFaded) {
+
+  /**
+   * Constructor
+   */
+  var ScoreLayer = function(board, context) {
+
+    //Points and captures
+    this.points = [];
+    this.captures = [];
+
+    //Call parent constructor
+    BoardLayer.call(this, board, context);
+  };
+
+  /**
+   * Prototype extension
+   */
+  angular.extend(ScoreLayer.prototype, BoardLayer.prototype);
+
+  /*****************************************************************************
+   * Object handling
+   ***/
+
+  /**
+   * Set points and captures
+   */
+  ScoreLayer.prototype.setAll = function(points, captures) {
+
+    //Remove all existing stuff first
+    this.removeAll();
+
+    //Set new stuff
+    this.points = points.all('color');
+    this.captures = captures.all('color');
+
+    //Draw
+    this.draw();
+  };
+
+  /**
+   * Remove all scoring
+   */
+  ScoreLayer.prototype.removeAll = function() {
+
+    //If there are captures, draw them back onto the stones layer
+    for (var i = 0; i < this.captures.length; i++) {
+      this.board.add('stones', this.captures[i].x, this.captures[i].y, this.captures[i].color);
+    }
+
+    //Clear the layer
+    this.clear();
+
+    //Remove all stuff
+    this.points = [];
+    this.captures = [];
+  };
+
+  /*****************************************************************************
+   * Drawing
+   ***/
+
+  /**
+   * Draw layer
+   */
+  ScoreLayer.prototype.draw = function() {
+
+    //Can only draw when we have dimensions and context
+    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //Init
+    var i;
+
+    //Draw captures first (removing stones from the stones layer)
+    for (i = 0; i < this.captures.length; i++) {
+      this.board.remove('stones', this.captures[i].x, this.captures[i].y);
+      StoneFaded.draw.call(this, this.captures[i]);
+    }
+
+    //Draw points on top of it
+    for (i = 0; i < this.points.length; i++) {
+      StoneMini.draw.call(this, this.points[i]);
+    }
+  };
+
+  //Return
+  return ScoreLayer;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.StoneShadow.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('ShadowLayer', ['BoardLayer', 'StoneShadow', function(BoardLayer, StoneShadow) {
+
+  /**
+   * Constructor
+   */
+  var ShadowLayer = function(board, context) {
+
+    //Call parent constructor
+    BoardLayer.call(this, board, context);
+  };
+
+  /**
+   * Prototype extension
+   */
+  angular.extend(ShadowLayer.prototype, BoardLayer.prototype);
+
+  /**
+   * Add a stone
+   */
+  ShadowLayer.prototype.add = function(stone) {
+
+    //Don't add if no shadow
+    if (stone.shadow === false || (typeof stone.alpha !== 'undefined' && stone.alpha < 1)) {
+      return;
+    }
+
+    //Already have a stone here?
+    if (this.grid.has(stone.x, stone.y)) {
+      return;
+    }
+
+    //Add to grid
+    this.grid.set(stone.x, stone.y, stone.color);
+
+    //Draw it if there is a context
+    if (this.context && this.board.drawWidth !== 0 && this.board.drawheight !== 0) {
+      StoneShadow.draw.call(this, stone);
+    }
+  };
+
+  /**
+   * Remove a stone
+   */
+  ShadowLayer.prototype.remove = function(stone) {
+
+    //Remove from grid
+    this.grid.unset(stone.x, stone.y);
+
+    //Redraw whole layer
+    this.redraw();
+  };
+
+  /**
+   * Draw layer
+   */
+  ShadowLayer.prototype.draw = function() {
+
+    //Can only draw when we have dimensions and context
+    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //Get shadowsize from theme
+    var shadowSize = this.board.theme.get('shadow.size', this.board.getCellSize());
+
+    //Apply shadow transformation
+    this.context.setTransform(1, 0, 0, 1, shadowSize, shadowSize);
+
+    //Get all stones as objects
+    var stones = this.grid.all('color');
+
+    //Draw them
+    for (var i = 0; i < stones.length; i++) {
+      StoneShadow.draw.call(this, stones[i]);
+    }
+  };
+
+  //Return
+  return ShadowLayer;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Layer.StonesLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.Stone.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('StonesLayer', ['BoardLayer', 'Stone', 'StoneColor', function(BoardLayer, Stone, StoneColor) {
+
+  /**
+   * Constructor
+   */
+  var StonesLayer = function(board, context) {
+
+    //Call parent constructor
+    BoardLayer.call(this, board, context);
+
+    //Set empty value for grid
+    this.grid.whenEmpty(StoneColor.EMPTY);
+  };
+
+  /**
+   * Prototype extension
+   */
+  angular.extend(StonesLayer.prototype, BoardLayer.prototype);
+
+  /*****************************************************************************
+   * Object handling
+   ***/
+
+  /**
+   * Set all stones at once
+   */
+  StonesLayer.prototype.setAll = function(grid) {
+
+    //Get changes compared to current grid
+    var i;
+    var changes = this.grid.compare(grid, 'color');
+
+    //Clear removed stuff
+    for (i = 0; i < changes.remove.length; i++) {
+      Stone.clear.call(this, changes.remove[i]);
+    }
+
+    //Draw added stuff
+    for (i = 0; i < changes.add.length; i++) {
+      Stone.draw.call(this, changes.add[i]);
+    }
+
+    //Remember new grid
+    this.grid = grid.clone();
+  };
+
+  /*****************************************************************************
+   * Drawing
+   ***/
+
+  /**
+   * Draw layer
+   */
+  StonesLayer.prototype.draw = function() {
+
+    //Can only draw when we have dimensions and context
+    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //Get all stones as objects
+    var stones = this.grid.all('color');
+
+    //Draw them
+    for (var i = 0; i < stones.length; i++) {
+      Stone.draw.call(this, stones[i]);
+    }
+  };
+
+  /**
+   * Redraw layer
+   */
+  StonesLayer.prototype.redraw = function() {
+
+    //Clear shadows layer
+    this.board.removeAll('shadow');
+
+    //Redraw ourselves
+    this.clear();
+    this.draw();
+  };
+
+  /**
+   * Draw cell
+   */
+  StonesLayer.prototype.drawCell = function(x, y) {
+
+    //Can only draw when we have dimensions
+    if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //On grid?
+    if (this.grid.has(x, y)) {
+      Stone.draw.call(this, this.grid.get(x, y, 'color'));
+    }
+  };
+
+  /**
+   * Clear cell
+   */
+  StonesLayer.prototype.clearCell = function(x, y) {
+    if (this.grid.has(x, y)) {
+      Stone.clear.call(this, this.grid.get(x, y, 'color'));
+    }
+  };
+
+  //Return
+  return StonesLayer;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Coordinates :: This class is used for drawing board coordinates
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Object.Coordinates.Service', [
+  'ngGo'
+])
+
+/**
+ * Factory definition
+ */
+.factory('Coordinates', function() {
+
+  //Kanji
+  var kanji = [
+    '一', '二', '三', '四', '五', '六', '七', '八', '九', '十',
+    '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+    '二十一', '二十二', '二十三', '二十四', '二十五', '二十六', '二十七', '二十八', '二十九', '三十',
+    '三十一', '三十二', '三十三', '三十四', '三十五', '三十六', '三十七', '三十八', '三十九', '四十'
+  ];
+
+  //Character codes
+  var aChar = 'A'.charCodeAt(0);
+  var aCharLc = 'a'.charCodeAt(0);
+
+  /**
+   * Coordinate generators
+   */
+  var coordinates = {
+
+    //Kanji coordinates
+    kanji: function(i) {
+      return kanji[i] || '';
+    },
+
+    //Numbers from 1
+    numbers: function(i) {
+      return i + 1;
+    },
+
+    //Capital letters from A
+    letters: function(i) {
+
+      //Initialize
+      var ch = '';
+
+      //Beyond Z? Prepend with A
+      if (i >= 25) {
+        ch = 'A';
+        i -= 25;
+      }
+
+      //The letter I is ommitted
+      if (i >= 8) {
+        i++;
+      }
+
+      //Return
+      return ch + String.fromCharCode(aChar + i);
+    },
+
+    //JGF coordinates (e.g. 0, 1, ...)
+    jgf: function(i) {
+      return i;
+    },
+
+    //SGF coordinates (e.g. a, b, ...)
+    sgf: function(i) {
+      var ch;
+      if (i < 26) {
+        ch = aCharLc + i;
+      }
+      else {
+        ch = aChar + i;
+      }
+      return String.fromCharCode(ch);
+    }
+  };
+
+  /**
+   * Coordinates object
+   */
+  var Coordinates = {
+
+    /**
+     * Draw
+     */
+    draw: function() {
+
+      //Can only draw when we have context and dimensions
+      if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+        return;
+      }
+
+      //Get cell size
+      var cellSize = this.board.getCellSize();
+
+      //Get boundary coordinates
+      var xl = Math.ceil((this.board.drawMarginHor - cellSize / 2) / 2);
+      var xr = this.board.drawWidth - xl;
+      var yt = Math.ceil((this.board.drawMarginVer - cellSize / 2) / 2);
+      var yb = this.board.drawHeight - yt;
+
+      //Get theme properties
+      var fillStyle = this.board.theme.get('coordinates.color');
+      var vertical = {
+        font: this.board.theme.get('coordinates.vertical.font'),
+        size: this.board.theme.get('coordinates.vertical.size'),
+        style: this.board.theme.get('coordinates.vertical.style'),
+        inverse: this.board.theme.get('coordinates.vertical.inverse')
+      };
+      var horizontal = {
+        font: this.board.theme.get('coordinates.horizontal.font'),
+        size: this.board.theme.get('coordinates.horizontal.size'),
+        style: this.board.theme.get('coordinates.horizontal.style'),
+        inverse: this.board.theme.get('coordinates.horizontal.inverse')
+      };
+
+      //Configure context
+      this.context.fillStyle = fillStyle;
+      this.context.textBaseline = 'middle';
+      this.context.textAlign = 'center';
+
+      //Helper vars
+      var i, j, x, y, ch;
+
+      //Draw vertical coordinates
+      for (i = 0; i < this.board.height; i++) {
+
+        //Inverse?
+        j = i;
+        if (vertical.inverse) {
+          j = this.board.height - i - 1;
+        }
+
+        //Get character
+        if (typeof vertical.style === 'function') {
+          ch = vertical.style.call(this, j);
+        }
+        else if (coordinates[vertical.style]) {
+          ch = coordinates[vertical.style].call(this, j);
+        }
+        else {
+          ch = j;
+        }
+
+        //Draw
+        y = this.board.getAbsY(i);
+        this.context.font = vertical.size(ch, cellSize) + ' ' + vertical.font;
+        this.context.fillText(ch, xl, y);
+        this.context.fillText(ch, xr, y);
+      }
+
+      //Draw horizontal coordinates
+      for (i = 0; i < this.board.width; i++) {
+
+        //Inverse?
+        j = i;
+        if (horizontal.inverse) {
+          j = this.board.width - i - 1;
+        }
+
+        //Get character
+        if (typeof horizontal.style === 'function') {
+          ch = horizontal.style.call(this, j);
+        }
+        else if (coordinates[horizontal.style]) {
+          ch = coordinates[horizontal.style].call(this, j);
+        }
+        else {
+          ch = j;
+        }
+
+        //Draw
+        x = this.board.getAbsX(i);
+        this.context.font = horizontal.size(ch, cellSize) + ' ' + horizontal.font;
+        this.context.fillText(ch, x, yt);
+        this.context.fillText(ch, x, yb);
+      }
+    }
+  };
+
+  //Return
+  return Coordinates;
+});
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Markup :: This class is used for drawing markup
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Object.Markup.Service', [
+  'ngGo',
+  'ngGo.Board.Object.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('Markup', ['MarkupTypes', 'BoardObject', function(MarkupTypes, BoardObject) {
+
+  /**
+   * Math constants
+   */
+  var cosPi4 = Math.cos(Math.PI / 4);
+  var cosPi6 = Math.cos(Math.PI / 6);
+
+  /**
+   * Triangle draw handler
+   */
+  var drawTriangle = function(markup) {
+
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(markup.x);
+    var y = this.board.getAbsY(markup.y);
+    var s = this.board.getCellSize();
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.triangle.scale')
+    );
+
+    //Apply scaling factor?
+    if (markup.scale) {
+      r = Math.round(r * markup.scale);
+    }
+
+    //Get stone color
+    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+
+    //Get theme properties
+    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    var strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.strokeStyle = strokeStyle;
+    this.context.lineWidth = lineWidth;
+
+    //Draw element
+    this.context.beginPath();
+    this.context.moveTo(x, y - r);
+    this.context.lineTo(x - Math.round(r * cosPi6), y + Math.round(r / 2));
+    this.context.lineTo(x + Math.round(r * cosPi6), y + Math.round(r / 2));
+    this.context.closePath();
+    this.context.stroke();
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Square draw handler
+   */
+  var drawSquare = function(markup) {
+
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(markup.x);
+    var y = this.board.getAbsY(markup.y);
+    var s = this.board.getCellSize();
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.square.scale')
+    );
+
+    //Apply scaling factor?
+    if (markup.scale) {
+      r = Math.round(r * markup.scale);
+    }
+
+    //Determine cos
+    var rcos = Math.round(r * cosPi4);
+
+    //Get stone color
+    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+
+    //Get theme properties
+    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    var strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.strokeStyle = strokeStyle;
+    this.context.lineWidth = lineWidth;
+
+    //Draw element
+    this.context.beginPath();
+    this.context.rect(x - rcos, y - rcos, 2 * rcos, 2 * rcos);
+    this.context.stroke();
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Draw circle handler
+   */
+  var drawCircle = function(markup) {
+
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(markup.x);
+    var y = this.board.getAbsY(markup.y);
+    var s = this.board.getCellSize();
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.circle.scale')
+    );
+
+    //Apply scaling factor?
+    if (markup.scale) {
+      r = Math.round(r * markup.scale);
+    }
+
+    //Get stone color
+    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+
+    //Get theme properties
+    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    var strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    var canvasTranslate = this.board.theme.canvasTranslate();
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.strokeStyle = strokeStyle;
+    this.context.lineWidth = lineWidth;
+
+    //Draw element
+    this.context.beginPath();
+    this.context.arc(x, y, r, 0, 2 * Math.PI, true);
+    this.context.stroke();
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Draw mark handler
+   */
+  var drawMark = function(markup) {
+
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(markup.x);
+    var y = this.board.getAbsY(markup.y);
+    var s = this.board.getCellSize();
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.mark.scale')
+    );
+
+    //Apply scaling factor?
+    if (markup.scale) {
+      r = Math.round(r * markup.scale);
+    }
+
+    //Determine cos
+    var rcos = Math.round(r * cosPi4);
+
+    //Get stone color
+    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+
+    //Get theme properties
+    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    var lineCap = markup.lineCap || this.board.theme.get('markup.mark.lineCap');
+    var strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.strokeStyle = strokeStyle;
+    this.context.lineWidth = lineWidth;
+    this.context.lineCap = lineCap;
+
+    //Draw element
+    this.context.beginPath();
+    this.context.moveTo(x - rcos, y - rcos);
+    this.context.lineTo(x + rcos, y + rcos);
+    this.context.moveTo(x + rcos, y - rcos);
+    this.context.lineTo(x - rcos, y + rcos);
+    this.context.stroke();
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Draw select handler
+   */
+  var drawSelect = function(markup) {
+
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(markup.x);
+    var y = this.board.getAbsY(markup.y);
+    var s = this.board.getCellSize();
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.circle.scale')
+    );
+
+    //Apply scaling factor?
+    if (markup.scale) {
+      r = Math.round(r * markup.scale);
+    }
+
+    //Get stone color
+    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+
+    //Get theme properties
+    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    var fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    var canvasTranslate = this.board.theme.canvasTranslate();
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.fillStyle = fillStyle;
+    this.context.lineWidth = lineWidth;
+
+    //Draw element
+    this.context.beginPath();
+    this.context.arc(x, y, r, 0, 2 * Math.PI, true);
+    this.context.fill();
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Last move draw handler
+   */
+  var drawLast = function(markup) {
+
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(markup.x);
+    var y = this.board.getAbsY(markup.y);
+    var s = this.board.getCellSize();
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.last.scale')
+    );
+
+    //Apply scaling factor?
+    if (markup.scale) {
+      r = Math.round(r * markup.scale);
+    }
+
+    //Get stone color
+    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+
+    //Get theme properties
+    var fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    var canvasTranslate = this.board.theme.canvasTranslate(s);
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.fillStyle = fillStyle;
+
+    //Draw element
+    this.context.beginPath();
+    this.context.moveTo(x, y);
+    this.context.lineTo(x + r, y);
+    this.context.lineTo(x, y + r);
+    this.context.closePath();
+    this.context.fill();
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Draw happy smiley handler
+   */
+  var drawHappySmiley = function(markup) {
+
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(markup.x);
+    var y = this.board.getAbsY(markup.y);
+    var s = this.board.getCellSize();
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.smiley.scale')
+    );
+
+    //Apply scaling factor?
+    if (markup.scale) {
+      r = Math.round(r * markup.scale);
+    }
+
+    //Get stone color
+    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+
+    //Get theme properties
+    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    var lineCap = markup.lineCap || this.board.theme.get('markup.smiley.lineCap');
+    var strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    var canvasTranslate = this.board.theme.canvasTranslate();
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.strokeStyle = strokeStyle;
+    this.context.lineWidth = lineWidth;
+    this.context.lineCap = lineCap;
+
+    //Draw element
+    this.context.beginPath();
+    this.context.arc(x - r / 3, y - r / 3, r / 6, 0, 2 * Math.PI, true);
+    this.context.stroke();
+    this.context.beginPath();
+    this.context.arc(x + r / 3, y - r / 3, r / 6, 0, 2 * Math.PI, true);
+    this.context.stroke();
+    this.context.beginPath();
+    this.context.moveTo(x - r / 1.6, y + r / 8);
+    this.context.bezierCurveTo(
+      x - r / 1.8, y + r / 1.5, x + r / 1.8, y + r / 1.5, x + r / 1.6, y + r / 8
+    );
+    this.context.stroke();
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Draw sad smiley handler
+   */
+  var drawSadSmiley = function(markup) {
+
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(markup.x);
+    var y = this.board.getAbsY(markup.y);
+    var s = this.board.getCellSize();
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.smiley.scale')
+    );
+
+    //Apply scaling factor?
+    if (markup.scale) {
+      r = Math.round(r * markup.scale);
+    }
+
+    //Get stone color
+    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+
+    //Get theme properties
+    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    var lineCap = markup.lineCap || this.board.theme.get('markup.smiley.lineCap');
+    var strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    var canvasTranslate = this.board.theme.canvasTranslate();
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.strokeStyle = strokeStyle;
+    this.context.lineWidth = lineWidth;
+    this.context.lineCap = lineCap;
+
+    //Draw element
+    this.context.beginPath();
+    this.context.arc(x - r / 3, y - r / 3, r / 6, 0, 2 * Math.PI, true);
+    this.context.stroke();
+    this.context.beginPath();
+    this.context.arc(x + r / 3, y - r / 3, r / 6, 0, 2 * Math.PI, true);
+    this.context.stroke();
+    this.context.beginPath();
+    this.context.moveTo(x - r / 1.6, y + r / 1.5 - 1);
+    this.context.bezierCurveTo(
+      x - r / 1.8, y + r / 8 - 1, x + r / 1.8, y + r / 8 - 1, x + r / 1.6, y + r / 1.5 - 1
+    );
+    this.context.stroke();
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Draw label
+   */
+  var drawLabel = function(markup) {
+
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(markup.x);
+    var y = this.board.getAbsY(markup.y);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
+
+    //Apply scaling factor?
+    if (markup.scale) {
+      r = Math.round(r * markup.scale);
+    }
+
+    //Get stone color
+    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+
+    //Get theme properties
+    var font = markup.font || this.board.theme.get('markup.label.font') || '';
+    var fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    var canvasTranslate = this.board.theme.canvasTranslate();
+
+    //First, clear grid square below for clarity
+    if (!this.board.has('stones', markup.x, markup.y)) {
+      this.board.layers.grid.clearCell(markup.x, markup.y);
+    }
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.fillStyle = fillStyle;
+    this.context.textBaseline = 'middle';
+    this.context.textAlign = 'center';
+
+    //Convert to text
+    if (typeof markup.text === 'number') {
+      markup.text = markup.text.toString();
+    }
+
+    //Determine font size
+    if (markup.text.length === 1) {
+      this.context.font = Math.round(r * 1.5) + 'px ' + font;
+    }
+    else if (markup.text.length === 2) {
+      this.context.font = Math.round(r * 1.2) + 'px ' + font;
+    }
+    else {
+      this.context.font = r + 'px ' + font;
+    }
+
+    //Draw element
+    this.context.beginPath();
+    this.context.fillText(markup.text, x, y, 2 * r);
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Clear label
+   */
+  var clearLabel = function(markup) {
+
+    //No stone on location? Redraw the grid square, if we cleared it
+    if (!this.board.has('stones', markup.x, markup.y)) {
+      this.board.layers.grid.redrawCell(markup.x, markup.y);
+    }
+  };
+
+  /**
+   * Markup class
+   */
+  var Markup = {
+
+    /**
+     * Draw
+     */
+    draw: function(markup) {
+
+      //Can only draw when we have dimensions and context
+      if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+        return;
+      }
+
+      //Drawing depends on type
+      switch (markup.type) {
+
+        //Triangle
+        case MarkupTypes.TRIANGLE:
+          drawTriangle.call(this, markup);
+          break;
+
+        //Square
+        case MarkupTypes.SQUARE:
+          drawSquare.call(this, markup);
+          break;
+
+        //Circle
+        case MarkupTypes.CIRCLE:
+          drawCircle.call(this, markup);
+          break;
+
+        //Mark
+        case MarkupTypes.MARK:
+          drawMark.call(this, markup);
+          break;
+
+        //Select
+        case MarkupTypes.SELECT:
+          drawSelect.call(this, markup);
+          break;
+
+        //happy
+        case MarkupTypes.HAPPY:
+          drawHappySmiley.call(this, markup);
+          break;
+
+        //Sad
+        case MarkupTypes.SAD:
+          drawSadSmiley.call(this, markup);
+          break;
+
+        //Last move marker
+        case MarkupTypes.LAST:
+          drawLast.call(this, markup);
+          break;
+
+        //Label
+        case MarkupTypes.LABEL:
+          markup.text = markup.text || '';
+          drawLabel.call(this, markup);
+          break;
+      }
+    },
+
+    /**
+     * Clear
+     */
+    clear: function(markup) {
+
+      //Can only draw when we have dimensions and context
+      if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+        return;
+      }
+
+      //Call parent method
+      BoardObject.clear.call(this, markup);
+
+      //Special handling for label
+      if (markup.type === MarkupTypes.LABEL) {
+        clearLabel.call(this, markup);
+      }
+    }
+  };
+
+  //Return
+  return Markup;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Stone :: This class is used for drawing stones on the board.
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Object.Stone.Service', [
+  'ngGo',
+  'ngGo.Board.Object.Service',
+  'ngGo.Board.ShellPattern.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('Stone', ['$injector', 'BoardObject', 'StoneColor', 'ShellPattern', function($injector, BoardObject, StoneColor, ShellPattern) {
+
+  /**
+   * Shell random seed
+   */
+  var shellSeed;
+
+  /**
+   * Mono colored stones
+   */
+  var drawMono = function(stone) {
+
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(stone.x);
+    var y = this.board.getAbsY(stone.y);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
+
+    //Apply scaling factor?
+    if (stone.scale) {
+      r = Math.round(r * stone.scale);
+    }
+
+    //Don't draw shadow
+    stone.shadow = false;
+
+    //Apply color multiplier
+    var color = stone.color * this.board.colorMultiplier;
+
+    //Get theme properties
+    var lineWidth = this.board.theme.get('stone.mono.lineWidth', s) || 1;
+    var fillStyle = this.board.theme.get('stone.mono.color', color);
+    var strokeStyle = this.board.theme.get('stone.mono.lineColor', color);
+    var canvasTranslate = this.board.theme.canvasTranslate();
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Apply transparency?
+    if (stone.alpha && stone.alpha < 1) {
+      this.context.globalAlpha = stone.alpha;
+    }
+
+    //Configure context
+    this.context.fillStyle = fillStyle;
+
+    //Draw stone
+    this.context.beginPath();
+    this.context.arc(x, y, Math.max(0, r - lineWidth), 0, 2 * Math.PI, true);
+    this.context.fill();
+
+    //Configure context
+    this.context.lineWidth = lineWidth;
+    this.context.strokeStyle = strokeStyle;
+
+    //Draw outline
+    this.context.stroke();
+
+    //Undo transparency?
+    if (stone.alpha && stone.alpha < 1) {
+      this.context.globalAlpha = 1;
+    }
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Glass stones
+   */
+  var drawGlass = function(stone) {
+
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(stone.x);
+    var y = this.board.getAbsY(stone.y);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
+
+    //Apply scaling factor?
+    if (stone.scale) {
+      r = Math.round(r * stone.scale);
+    }
+
+    //Apply color multiplier
+    var color = stone.color * this.board.colorMultiplier;
+
+    //Get theme variables
+    var canvasTranslate = this.board.theme.canvasTranslate();
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Apply transparency?
+    if (stone.alpha && stone.alpha < 1) {
+      this.context.globalAlpha = stone.alpha;
+    }
+
+    //Begin path
+    this.context.beginPath();
+
+    //Determine stone texture
+    if (color === StoneColor.W) {
+      this.context.fillStyle = this.context.createRadialGradient(
+        x - 2 * r / 5, y - 2 * r / 5, r / 3, x - r / 5, y - r / 5, 5 * r / 5
+      );
+      this.context.fillStyle.addColorStop(0, '#fff');
+      this.context.fillStyle.addColorStop(1, '#aaa');
+    }
+    else {
+      this.context.fillStyle = this.context.createRadialGradient(
+        x - 2 * r / 5, y - 2 * r / 5, 1, x - r / 5, y - r / 5, 4 * r / 5
+      );
+      this.context.fillStyle.addColorStop(0, '#666');
+      this.context.fillStyle.addColorStop(1, '#111');
+    }
+
+    //Complete drawing
+    this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
+    this.context.fill();
+
+    //Undo transparency?
+    if (stone.alpha && stone.alpha < 1) {
+      this.context.globalAlpha = 1;
+    }
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Slate and shell stones
+   */
+  var drawSlateShell = function(stone) {
+
+    //Get coordinates and stone radius
+    var x = this.board.getAbsX(stone.x);
+    var y = this.board.getAbsY(stone.y);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
+
+    //Apply scaling factor?
+    if (stone.scale) {
+      r = Math.round(r * stone.scale);
+    }
+
+    //Get random seed
+    shellSeed = shellSeed || Math.ceil(Math.random() * 9999999);
+
+    //Apply color multiplier
+    var color = stone.color * this.board.colorMultiplier;
+
+    //Get theme variables
+    var shellTypes = this.board.theme.get('stone.shell.types');
+    var fillStyle = this.board.theme.get('stone.shell.color', color);
+    var strokeStyle = this.board.theme.get('stone.shell.stroke');
+    var canvasTranslate = this.board.theme.canvasTranslate();
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Apply transparency?
+    if (stone.alpha && stone.alpha < 1) {
+      this.context.globalAlpha = stone.alpha;
+    }
+
+    //Draw stone
+    this.context.beginPath();
+    this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
+    this.context.fillStyle = fillStyle;
+    this.context.fill();
+
+    //Shell stones
+    if (color === StoneColor.W) {
+
+      //Get random shell type
+      var type =
+        shellSeed % (shellTypes.length + stone.x * this.board.width + stone.y) % shellTypes.length;
+
+      //Determine random angle
+      var z = this.board.width * this.board.height + stone.x * this.board.width + stone.y;
+      var angle = (2 / z) * (shellSeed % z);
+
+      //Draw shell pattern
+      ShellPattern.call(shellTypes[type], this.context, x, y, r, angle, strokeStyle);
+
+      //Add radial gradient
+      this.context.beginPath();
+      this.context.fillStyle = this.context.createRadialGradient(
+        x - 2 * r / 5, y - 2 * r / 5, r / 6, x - r / 5, y - r / 5, r
+      );
+      this.context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.9)');
+      this.context.fillStyle.addColorStop(1, 'rgba(255,255,255,0)');
+      this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
+      this.context.fill();
+    }
+
+    //Slate stones
+    else {
+
+      //Add radial gradient
+      this.context.beginPath();
+      this.context.fillStyle = this.context.createRadialGradient(
+        x + 2 * r / 5, y + 2 * r / 5, 0, x + r / 2, y + r / 2, r
+      );
+      this.context.fillStyle.addColorStop(0, 'rgba(32,32,32,1)');
+      this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
+      this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
+      this.context.fill();
+
+      //Add radial gradient
+      this.context.beginPath();
+      this.context.fillStyle = this.context.createRadialGradient(
+        x - 2 * r / 5, y - 2 * r / 5, 1, x - r / 2, y - r / 2, 3 * r / 2
+      );
+      this.context.fillStyle.addColorStop(0, 'rgba(64,64,64,1)');
+      this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
+      this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
+      this.context.fill();
+    }
+
+    //Undo transparency?
+    if (stone.alpha && stone.alpha < 1) {
+      this.context.globalAlpha = 1;
+    }
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Constructor
+   */
+  var Stone = {
+
+    /**
+     * Draw a stone
+     */
+    draw: function(stone) {
+
+      //Can only draw when we have dimensions and context
+      if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+        return;
+      }
+
+      //Determine style of stone
+      var style = this.board.theme.get('stone.style');
+
+      //Draw using the appropriate handler
+      switch (style) {
+
+        //Slate and shell
+        case 'shell':
+          drawSlateShell.call(this, stone);
+          break;
+
+        //Glass stones
+        case 'glass':
+          drawGlass.call(this, stone);
+          break;
+
+        //Mono stones
+        case 'mono':
+          drawMono.call(this, stone);
+          break;
+
+        //Custom type
+        default:
+          var handler = $injector.get(style);
+          if (handler) {
+            handler.call(this, stone);
+          }
+      }
+
+      //Add shadow
+      if (!this.board.static && stone.shadow !== false && this.board.theme.get('stone.shadow')) {
+        this.board.layers.shadow.add(stone);
+      }
+    },
+
+    /**
+     * Clear a stone
+     */
+    clear: function(stone) {
+
+      //Can only draw when we have dimensions and context
+      if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+        return;
+      }
+
+      //Call parent method
+      BoardObject.clear.call(this, stone);
+
+      //Remove shadow
+      if (!this.board.static && stone.shadow !== false && this.board.theme.get('stone.shadow')) {
+        this.board.layers.shadow.remove(stone);
+      }
+    }
+  };
+
+  //Return
+  return Stone;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * StoneFaded :: This class extends the Stone class and is used for drawing faded stones.
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Object.StoneFaded.Service', [
+  'ngGo',
+  'ngGo.Board.Object.Stone.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('StoneFaded', ['Stone', function(Stone) {
+
+  /**
+   * Class
+   */
+  var StoneFaded = {
+
+    /**
+     * Draw stone
+     */
+    draw: function(stone) {
+
+      //Set scale and alpha
+      stone.scale = this.board.theme.get('stone.faded.scale');
+      stone.alpha = this.board.theme.get('stone.faded.alpha', stone.color);
+
+      //Don't show shadow
+      stone.shadow = false;
+
+      //Now call the regular stone draw handler
+      Stone.draw.call(this, stone);
+    },
+
+    /**
+     * Clear stone
+     */
+    clear: function(stone) {
+
+      //Don't show shadow
+      stone.shadow = false;
+
+      //Call parent method
+      Stone.clear.call(this, stone);
+    }
+  };
+
+  //Return
+  return StoneFaded;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * StoneMini :: This class extends the Stone class and is used for drawing mini stones
+ * (for scoring).
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Object.StoneMini.Service', [
+  'ngGo',
+  'ngGo.Board.Object.Stone.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('StoneMini', ['Stone', function(Stone) {
+
+  /**
+   * Class
+   */
+  var StoneMini = {
+
+    /**
+     * Draw stone
+     */
+    draw: function(stone) {
+
+      //Set scale and alpha
+      stone.scale = this.board.theme.get('stone.mini.scale');
+      stone.alpha = this.board.theme.get('stone.mini.alpha', stone.color);
+
+      //Don't show shadow
+      stone.shadow = false;
+
+      //Now call the regular stone draw handler
+      Stone.draw.call(this, stone);
+    },
+
+    /**
+     * Clear stone
+     */
+    clear: function(stone) {
+
+      //Don't show shadow
+      stone.shadow = false;
+
+      //Call parent method
+      Stone.clear.call(this, stone);
+    }
+  };
+
+  //Return
+  return StoneMini;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * StoneShadow :: This class is used for drawing stone shadows on the board.
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Object.StoneShadow.Service', [
+  'ngGo',
+  'ngGo.Board.Object.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('StoneShadow', function() {
+
+  /**
+   * Constructor
+   */
+  var StoneShadow = {
+
+    /**
+     * Draw a stone shadow
+     */
+    draw: function(stone) {
+
+      //No context?
+      if (!this.context) {
+        return;
+      }
+
+      //Don't draw shadows if there is stone alpha or if explicitly stated
+      if ((stone.alpha && stone.alpha < 1) || stone.shadow === false) {
+        return;
+      }
+
+      //Get coordinates and stone radius
+      var x = this.board.getAbsX(stone.x);
+      var y = this.board.getAbsY(stone.y);
+      var s = this.board.getCellSize();
+      var r = Math.max(0, this.board.theme.get('stone.radius', s) - 0.5);
+
+      //Apply scaling factor?
+      if (stone.scale) {
+        r = Math.round(r * stone.scale);
+      }
+
+      //Get theme properties
+      var blur = this.board.theme.get('shadow.blur', s);
+      var offsetX = this.board.theme.get('shadow.offsetX', s);
+      var offsetY = this.board.theme.get('shadow.offsetY', s);
+      var shadowColor = this.board.theme.get('shadow.color');
+
+      //Configure context
+      this.context.fillStyle = this.context.createRadialGradient(
+        x + offsetX, y + offsetY, r - 1 - blur, x + offsetX, y + offsetY, r + blur
+      );
+      this.context.fillStyle.addColorStop(0, shadowColor);
+      this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
+
+      //Draw shadow
+      this.context.beginPath();
+      this.context.arc(x + offsetX, y + offsetY, r + blur, 0, 2 * Math.PI, true);
+      this.context.fill();
+    },
+
+    /**
+     * Clear a stone shadow
+     */
+    clear: function(stone) {
+
+      //Note: this method is currently not in use due to the overlapping shadows
+      //problem. Instead, the entire shadow layer is simply cleared and redrawn
+      //when removing stones. The multiple canvasses solution from WGo didn't seem
+      //appropriate either, so for now we will leave it at this.
+
+      //No context?
+      if (!this.context) {
+        return;
+      }
+
+      //Don't draw shadows if there is stone alpha or if explicitly stated
+      if ((stone.alpha && stone.alpha < 1) || stone.shadow === false) {
+        return;
+      }
+
+      //Get coordinates and stone radius
+      var x = this.board.getAbsX(stone.x);
+      var y = this.board.getAbsY(stone.y);
+      var s = this.board.getCellSize();
+      var r = this.board.theme.get('stone.radius', s);
+
+      //Clear a generous rectangle
+      this.context.clearRect(x - 1.2 * r, y - 1.2 * r, 2.4 * r, 2.4 * r);
+    }
+  };
+
+  //Return
+  return StoneShadow;
+});
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Gib2Jgf :: This is a parser wrapped by the KifuParser which is used to convert fom GIB to JGF.
+ * Since the Gib format is not public, the accuracy of this parser is not guaranteed.
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
+  'ngGo',
+  'ngGo.Kifu.Blank.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('Gib2Jgf', ['ngGo', 'KifuBlank', function(ngGo, KifuBlank) {
+
+  /**
+   * Regular expressions
+   */
+  var regMove = /STO\s0\s([0-9]+)\s(1|2)\s([0-9]+)\s([0-9]+)/gi;
+  var regPlayer = /GAME(BLACK|WHITE)NAME=([A-Za-z0-9]+)\s\(([0-9]+D|K)\)/gi;
+  var regKomi = /GAMEGONGJE=([0-9]+)/gi;
+  var regDate = /GAMEDATE=([0-9]+)-\s?([0-9]+)-\s?([0-9]+)/g;
+  var regResultMargin = /GAMERESULT=(white|black)\s([0-9]+\.?[0-9]?)/gi;
+  var regResultOther = /GAMERESULT=(white|black)\s[a-z\s]+(resignation|time)/gi;
+
+  /**
+   * Player parser function
+   */
+  var parsePlayer = function(jgf, match) {
+
+    //Initialize players container
+    if (typeof jgf.game.players === 'undefined') {
+      jgf.game.players = [];
+    }
+
+    //Determine player color
+    var color = (match[1].toUpperCase() === 'BLACK') ? 'black' : 'white';
+
+    //Create player object
+    var player = {
+      color: color,
+      name: match[2],
+      rank: match[3].toLowerCase()
+    };
+
+    //Check if player of this color already exists, if so, overwrite
+    for (var p = 0; p < jgf.game.players.length; p++) {
+      if (jgf.game.players[p].color === color) {
+        jgf.game.players[p] = player;
+        return;
+      }
+    }
+
+    //Player of this color not found, push
+    jgf.game.players.push(player);
+  };
+
+  /**
+   * Komi parser function
+   */
+  var parseKomi = function(jgf, match) {
+    jgf.game.komi = parseFloat(match[1] / 10);
+  };
+
+  /**
+   * Date parser function
+   */
+  var parseDate = function(jgf, match) {
+
+    //Initialize dates container
+    if (typeof jgf.game.dates === 'undefined') {
+      jgf.game.dates = [];
+    }
+
+    //Push date
+    jgf.game.dates.push(match[1] + '-' + match[2] + '-' + match[3]);
+  };
+
+  /**
+   * Result parser function
+   */
+  var parseResult = function(jgf, match) {
+
+    //Winner color
+    var result = (match[1].toLowerCase() === 'black') ? 'B' : 'W';
+    result += '+';
+
+    //Win condition
+    if (match[2].match(/res/i)) {
+      result += 'R';
+    }
+    else if (match[2].match(/time/i)) {
+      result += 'T';
+    }
+    else {
+      result += match[2];
+    }
+
+    //Set in JGF
+    jgf.game.result = result;
+  };
+
+  /**
+   * Move parser function
+   */
+  var parseMove = function(jgf, node, match) {
+
+    //Determine player color
+    var color = match[2];
+    if (color === 1) {
+      color = 'B';
+    }
+    else if (color === 2) {
+      color = 'W';
+    }
+    else {
+      return;
+    }
+
+    //Create move container
+    node.move = {};
+
+    //Pass
+    if (false) {
+
+    }
+
+    //Regular move
+    else {
+      node.move[color] = [match[3] * 1, match[4] * 1];
+    }
+  };
+
+  /**
+   * Parser class
+   */
+  var Parser = {
+
+    /**
+     * Parse GIB string into a JGF object or string
+     */
+    parse: function(gib, stringified) {
+
+      //Get new JGF object
+      var jgf = KifuBlank.jgf();
+
+      //Initialize
+      var match;
+      var container = jgf.tree;
+
+      //Create first node for game, which is usually an empty board position, but can
+      //contain comments or board setup instructions, which will be added to the node
+      //later if needed.
+      var node = {root: true};
+      container.push(node);
+
+      //Find player information
+      while ((match = regPlayer.exec(gib))) {
+        parsePlayer(jgf, match);
+      }
+
+      //Find komi
+      if ((match = regKomi.exec(gib))) {
+        parseKomi(jgf, match);
+      }
+
+      //Find game date
+      if ((match = regDate.exec(gib))) {
+        parseDate(jgf, match);
+      }
+
+      //Find game result
+      if ((match = regResultMargin.exec(gib)) || (match = regResultOther.exec(gib))) {
+        parseResult(jgf, match);
+      }
+
+      //Find moves
+      while ((match = regMove.exec(gib))) {
+
+        //Create new node
+        node = {};
+
+        //Parse move
+        parseMove(jgf, node, match);
+
+        //Push node to container
+        container.push(node);
+      }
+
+      //Return stringified
+      if (stringified) {
+        return angular.toJson(jgf);
+      }
+
+      //Return jgf
+      return jgf;
+    }
+  };
+
+  //Return object
+  return Parser;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Jgf2Sgf :: This is a parser wrapped by the KifuParser which is used to convert fom JGF to SGF
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
+  'ngGo',
+  'ngGo.Kifu.Blank.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('Jgf2Sgf', ['ngGo', 'sgfAliases', 'sgfGames', 'KifuBlank', function(ngGo, sgfAliases, sgfGames, KifuBlank) {
+
+  /**
+   * Flip SGF alias map and create JGF alias map
+   */
+  var jgfAliases = {};
+  for (var sgfProp in sgfAliases) {
+    if (sgfAliases.hasOwnProperty(sgfProp)) {
+      jgfAliases[sgfAliases[sgfProp]] = sgfProp;
+    }
+  }
+
+  /**
+   * Character index of "a"
+   */
+  var aChar = 'a'.charCodeAt(0);
+
+  /**
+   * Helper to convert to SGF coordinates
+   */
+  var convertCoordinates = function(coords) {
+    return String.fromCharCode(aChar + coords[0]) + String.fromCharCode(aChar + coords[1]);
+  };
+
+  /*****************************************************************************
+   * Conversion helpers
+   ***/
+
+  /**
+   * Helper to escape SGF info
+   */
+  var escapeSgf = function(text) {
+    if (typeof text === 'string') {
+      return text.replace(/\\/g, '\\\\').replace(/]/g, '\\]');
+    }
+    return text;
+  };
+
+  /**
+   * Helper to write an SGF group
+   */
+  var writeGroup = function(prop, values, output, escape) {
+    if (values.length) {
+      output.sgf += prop;
+      for (var i = 0; i < values.length; i++) {
+        output.sgf += '[' + (escape ? escapeSgf(values[i]) : values[i]) + ']';
+      }
+    }
+  };
+
+  /**
+   * Move parser
+   */
+  var parseMove = function(move, output) {
+
+    //Determine and validate color
+    var color = move.B ? 'B' : (move.W ? 'W' : '');
+    if (color === '') {
+      return;
+    }
+
+    //Determine move
+    var coords = (move[color] === 'pass') ? '' : move[color];
+
+    //Append to SGF
+    output.sgf += color + '[' + convertCoordinates(coords) + ']';
+  };
+
+  /**
+   * Setup parser
+   */
+  var parseSetup = function(setup, output) {
+
+    //Loop colors
+    for (var color in setup) {
+      if (setup.hasOwnProperty(color)) {
+
+        //Convert coordinates
+        for (var i = 0; i < setup[color].length; i++) {
+          setup[color][i] = convertCoordinates(setup[color][i]);
+        }
+
+        //Write as group
+        writeGroup('A' + color, setup[color], output);
+      }
+    }
+  };
+
+  /**
+   * Score parser
+   */
+  var parseScore = function(score, output) {
+
+    //Loop colors
+    for (var color in score) {
+      if (score.hasOwnProperty(color)) {
+
+        //Convert coordinates
+        for (var i = 0; i < score[color].length; i++) {
+          score[color][i] = convertCoordinates(score[color][i]);
+        }
+
+        //Write as group
+        writeGroup('T' + color, score[color], output);
+      }
+    }
+  };
+
+  /**
+   * Markup parser
+   */
+  var parseMarkup = function(markup, output) {
+
+    //Loop markup types
+    for (var type in markup) {
+      if (markup.hasOwnProperty(type)) {
+        var i;
+
+        //Label type has the label text appended to the coords
+        if (type === 'label') {
+          for (i = 0; i < markup[type].length; i++) {
+            markup[type][i] = convertCoordinates(markup[type][i]) + ':' + markup[type][i][2];
+          }
+        }
+        else {
+          for (i = 0; i < markup[type].length; i++) {
+            markup[type][i] = convertCoordinates(markup[type][i]);
+          }
+        }
+
+        //Convert type
+        if (typeof jgfAliases[type] !== 'undefined') {
+          type = jgfAliases[type];
+        }
+
+        //Write as group
+        writeGroup(type, markup[type], output);
+      }
+    }
+  };
+
+  /**
+   * Turn parser
+   */
+  var parseTurn = function(turn, output) {
+    output.sgf += 'PL[' + turn + ']';
+  };
+
+  /**
+   * Comments parser
+   */
+  var parseComments = function(comments, output) {
+
+    //Determine key
+    var key = (typeof jgfAliases.comments !== 'undefined') ? jgfAliases.comments : 'C';
+
+    //Flatten comment objects
+    var flatComments = [];
+    for (var c = 0; c < comments.length; c++) {
+      if (typeof comments[c] === 'string') {
+        flatComments.push(comments[c]);
+      }
+      else if (comments[c].comment) {
+        flatComments.push(comments[c].comment);
+      }
+    }
+
+    //Write as group
+    writeGroup(key, flatComments, output, true);
+  };
+
+  /**
+   * Node name parser
+   */
+  var parseNodeName = function(nodeName, output) {
+    var key = (typeof jgfAliases.name !== 'undefined') ? jgfAliases.name : 'N';
+    output.sgf += key + '[' + escapeSgf(nodeName) + ']';
+  };
+
+  /**
+   * Game parser
+   */
+  var parseGame = function(game) {
+
+    //Loop SGF game definitions
+    for (var i in sgfGames) {
+      if (sgfGames.hasOwnProperty(i) && sgfGames[i] === game) {
+        return i;
+      }
+    }
+
+    //Not found
+    return 0;
+  };
+
+  /**
+   * Application parser
+   */
+  var parseApplication = function(application) {
+    var parts = application.split(' v');
+    if (parts.length > 1) {
+      return parts[0] + ':' + parts[1];
+    }
+    return application;
+  };
+
+  /**
+   * Player instructions parser
+   */
+  var parsePlayer = function(player, rootProperties) {
+
+    //Variation handling
+    var st = 0;
+    if (!player.variation_markup) {
+      st += 2;
+    }
+    if (player.variation_siblings) {
+      st += 1;
+    }
+
+    //Set in root properties
+    rootProperties.ST = st;
+  };
+
+  /**
+   * Board parser
+   */
+  var parseBoard = function(board, rootProperties) {
+
+    //Both width and height should be given
+    if (board.width && board.height) {
+
+      //Same dimensions?
+      if (board.width === board.height) {
+        rootProperties.SZ = board.width;
+      }
+
+      //Different dimensions are not supported by SGF, but OGS uses the
+      //format w:h, so we will stick with that for anyone who supports it.
+      else {
+        rootProperties.SZ = board.width + ':' + board.height;
+      }
+    }
+
+    //Otherwise, check if only width or height were given at least
+    else if (board.width) {
+      rootProperties.SZ = board.width;
+    }
+    else if (board.height) {
+      rootProperties.SZ = board.height;
+    }
+
+    //Can't determine size
+    else {
+      rootProperties.SZ = '';
+    }
+  };
+
+  /**
+   * Players parser
+   */
+  var parsePlayers = function(players, rootProperties) {
+
+    //Loop players
+    for (var p = 0; p < players.length; p++) {
+
+      //Validate color
+      if (!players[p].color || (players[p].color !== 'black' && players[p].color !== 'white')) {
+        continue;
+      }
+
+      //Get SGF color
+      var color = (players[p].color === 'black') ? 'B' : 'W';
+
+      //Name given?
+      if (players[p].name) {
+        rootProperties['P' + color] = players[p].name;
+      }
+
+      //Rank given?
+      if (players[p].rank) {
+        rootProperties[color + 'R'] = players[p].rank;
+      }
+
+      //Team given?
+      if (players[p].team) {
+        rootProperties[color + 'T'] = players[p].team;
+      }
+    }
+  };
+
+  /**
+   * Parse function to property mapper
+   */
+  var parsingMap = {
+
+    //Node properties
+    'move': parseMove,
+    'setup': parseSetup,
+    'score': parseScore,
+    'markup': parseMarkup,
+    'turn': parseTurn,
+    'comments': parseComments,
+    'name': parseNodeName,
+
+    //Info properties
+    'record.application': parseApplication,
+    'player': parsePlayer,
+    'board': parseBoard,
+    'game.type': parseGame,
+    'game.players': parsePlayers
+  };
+
+  /*****************************************************************************
+   * Parser functions
+   ***/
+
+  /**
+   * Helper to write a JGF tree to SGF
+   */
+  var writeTree = function(tree, output) {
+
+    //Loop nodes in the tree
+    for (var i = 0; i < tree.length; i++) {
+      var node = tree[i];
+
+      //Array? That means a variation
+      if (angular.isArray(node)) {
+        for (var j = 0; j < node.length; j++) {
+          output.sgf += '(\n;';
+          writeTree(node[j], output);
+          output.sgf += '\n)';
+        }
+
+        //Continue
+        continue;
+      }
+
+      //Loop node properties
+      for (var key in node) {
+        if (node.hasOwnProperty(key)) {
+
+          //Handler present in parsing map?
+          if (typeof parsingMap[key] !== 'undefined') {
+            parsingMap[key](node[key], output);
+            continue;
+          }
+
+          //Other object, can't handle it
+          if (typeof node[key] === 'object') {
+            continue;
+          }
+
+          //Anything else, append it
+          output.sgf += key + '[' + escapeSgf(node[key]) + ']';
+        }
+      }
+
+      //More to come?
+      if ((i + 1) < tree.length) {
+        output.sgf += '\n;';
+      }
+    }
+  };
+
+  /**
+   * Helper to extract all SGF root properties from a JGF object
+   */
+  var extractRootProperties = function(jgf, rootProperties, key) {
+
+    //Initialize key
+    if (typeof key === 'undefined') {
+      key = '';
+    }
+
+    //Loop properties of jgf node
+    for (var subKey in jgf) {
+      if (jgf.hasOwnProperty(subKey)) {
+
+        //Skip SGF signature (as we keep our own)
+        if (subKey === 'sgf') {
+          continue;
+        }
+
+        //Build jgf key
+        var jgfKey = (key === '') ? subKey : key + '.' + subKey;
+
+        //If the item is an object, handle separately
+        if (typeof jgf[subKey] === 'object') {
+
+          //Handler for this object present in parsing map?
+          if (typeof parsingMap[jgfKey] !== 'undefined') {
+            parsingMap[jgfKey](jgf[subKey], rootProperties);
+          }
+
+          //Otherwise, just flatten and call this function recursively
+          else {
+            extractRootProperties(jgf[subKey], rootProperties, jgfKey);
+          }
+          continue;
+        }
+
+        //Check if it's a known key, if so, append the value to the root
+        var value;
+        if (typeof jgfAliases[jgfKey] !== 'undefined') {
+
+          //Handler present in parsing map?
+          if (typeof parsingMap[jgfKey] !== 'undefined') {
+            value = parsingMap[jgfKey](jgf[subKey]);
+          }
+          else {
+            value = escapeSgf(jgf[subKey]);
+          }
+
+          //Set in root properties
+          rootProperties[jgfAliases[jgfKey]] = value;
+        }
+      }
+    }
+  };
+
+  /**
+   * Parser class
+   */
+  var Parser = {
+
+    /**
+     * Parse JGF object or string into an SGF string
+     */
+    parse: function(jgf) {
+
+      //String given?
+      if (typeof jgf === 'string') {
+        jgf = angular.fromJson(jgf);
+      }
+
+      //Must have moves tree
+      if (!jgf.tree) {
+        console.error('No moves tree in JGF object');
+        return;
+      }
+
+      //Initialize output (as object, so it remains a reference) and root properties container
+      var output = {sgf: '(\n;'};
+      var root = angular.copy(jgf);
+      var rootProperties = KifuBlank.sgf();
+
+      //The first node of the JGF tree is the root node, and it can contain comments,
+      //board setup parameters, etc. It doesn't contain moves. We handle it separately here
+      //and attach it to the root
+      if (jgf.tree && jgf.tree.length > 0 && jgf.tree[0].root) {
+        root = angular.extend(root, jgf.tree[0]);
+        delete root.root;
+        delete jgf.tree[0];
+      }
+
+      //Set root properties
+      delete root.tree;
+      extractRootProperties(root, rootProperties);
+
+      //Write root properties
+      for (var key in rootProperties) {
+        if (rootProperties[key]) {
+          output.sgf += key + '[' + escapeSgf(rootProperties[key]) + ']';
+        }
+      }
+
+      //Write game tree
+      writeTree(jgf.tree, output);
+
+      //Close SGF and return
+      output.sgf += ')';
+      return output.sgf;
+    }
+  };
+
+  //Return object
+  return Parser;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Sgf2Jgf :: This is a parser wrapped by the KifuParser which is used to convert fom SGF to JGF
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
+  'ngGo',
+  'ngGo.Kifu.Blank.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('Sgf2Jgf', ['ngGo', 'sgfAliases', 'sgfGames', 'KifuBlank', function(ngGo, sgfAliases, sgfGames, KifuBlank) {
+
+  /**
+   * Regular expressions for SGF data
+   */
+  var regSequence = /\(|\)|(;(\s*[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+)*)/g;
+  var regNode = /[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+/g;
+  var regProperty = /[A-Z]+/;
+  var regValues = /(\[\])|(\[(.|\s)*?([^\\]\]))/g;
+
+  /**
+   * Character index of "a"
+   */
+  var aChar = 'a'.charCodeAt(0);
+
+  /**
+   * Helper to convert SGF coordinates
+   */
+  var convertCoordinates = function(coords) {
+    return [coords.charCodeAt(0) - aChar, coords.charCodeAt(1) - aChar];
+  };
+
+  /*****************************************************************************
+   * Conversion helpers
+   ***/
+
+  /**
+   * Application parser function (doesn't overwrite existing signature)
+   */
+  var parseApp = function(jgf, node, key, value) {
+    if (!jgf.record.application) {
+      var app = value[0].split(':');
+      if (app.length > 1) {
+        jgf.record.application = app[0] + ' v' + app[1];
+      }
+      else {
+        jgf.record.application = app[0];
+      }
+    }
+  };
+
+  /**
+   * SGF format parser
+   */
+  var parseSgfFormat = function() {
+    return;
+  };
+
+  /**
+   * Game type parser function
+   */
+  var parseGame = function(jgf, node, key, value) {
+    var game = value[0];
+    if (typeof sgfGames[game] !== 'undefined') {
+      jgf.game.type = sgfGames[game];
+    }
+    else {
+      jgf.game.type = value[0];
+    }
+  };
+
+  /**
+   * Move parser function
+   */
+  var parseMove = function(jgf, node, key, value) {
+
+    //Create move container
+    node.move = {};
+
+    //Pass
+    if (value[0] === '' || (jgf.width <= 19 && value[0] === 'tt')) {
+      node.move[key] = 'pass';
+    }
+
+    //Regular move
+    else {
+      node.move[key] = convertCoordinates(value[0]);
+    }
+  };
+
+  /**
+   * Comment parser function
+   */
+  var parseComment = function(jgf, node, key, value) {
+
+    //Get key alias
+    if (typeof sgfAliases[key] !== 'undefined') {
+      key = sgfAliases[key];
+    }
+
+    //Set value
+    node[key] = value;
+  };
+
+  /**
+   * Node name parser function
+   */
+  var parseNodeName = function(jgf, node, key, value) {
+
+    //Get key alias
+    if (typeof sgfAliases[key] !== 'undefined') {
+      key = sgfAliases[key];
+    }
+
+    //Set value
+    node[key] = value[0];
+  };
+
+  /**
+   * Board setup parser function
+   */
+  var parseSetup = function(jgf, node, key, value) {
+
+    //Initialize setup container on node
+    if (typeof node.setup === 'undefined') {
+      node.setup = {};
+    }
+
+    //Remove "A" from setup key
+    key = key.charAt(1);
+
+    //Initialize setup container of this type
+    if (typeof node.setup[key] === 'undefined') {
+      node.setup[key] = [];
+    }
+
+    //Add values
+    for (var i = 0; i < value.length; i++) {
+      node.setup[key].push(convertCoordinates(value[i]));
+    }
+  };
+
+  /**
+   * Scoring parser function
+   */
+  var parseScore = function(jgf, node, key, value) {
+
+    //Initialize score container on node
+    if (typeof node.score === 'undefined') {
+      node.score = {
+        B: [],
+        W: []
+      };
+    }
+
+    //Remove "T" from setup key
+    key = key.charAt(1);
+
+    //Add values
+    for (var i = 0; i < value.length; i++) {
+      node.score[key].push(convertCoordinates(value[i]));
+    }
+  };
+
+  /**
+   * Turn parser function
+   */
+  var parseTurn = function(jgf, node, key, value) {
+    node.turn = value[0];
+  };
+
+  /**
+   * Label parser function
+   */
+  var parseLabel = function(jgf, node, key, value) {
+
+    //Get key alias
+    if (typeof sgfAliases[key] !== 'undefined') {
+      key = sgfAliases[key];
+    }
+
+    //Initialize markup container on node
+    if (typeof node.markup === 'undefined') {
+      node.markup = {};
+    }
+
+    //Initialize markup container of this type
+    if (typeof node.markup[key] === 'undefined') {
+      node.markup[key] = [];
+    }
+
+    //Add values
+    for (var i = 0; i < value.length; i++) {
+
+      //Split off coordinates and add label contents
+      var coords = convertCoordinates(value[i].substr(0, 2));
+      coords.push(value[i].substr(3));
+
+      //Add to node
+      node.markup[key].push(coords);
+    }
+  };
+
+  /**
+   * Markup parser function
+   */
+  var parseMarkup = function(jgf, node, key, value) {
+
+    //Get key alias
+    if (typeof sgfAliases[key] !== 'undefined') {
+      key = sgfAliases[key];
+    }
+
+    //Initialize markup container on node
+    if (typeof node.markup === 'undefined') {
+      node.markup = {};
+    }
+
+    //Initialize markup container of this type
+    if (typeof node.markup[key] === 'undefined') {
+      node.markup[key] = [];
+    }
+
+    //Add values
+    for (var i = 0; i < value.length; i++) {
+      node.markup[key].push(convertCoordinates(value[i]));
+    }
+  };
+
+  /**
+   * Size parser function
+   */
+  var parseSize = function(jgf, node, key, value) {
+
+    //Initialize board container
+    if (typeof jgf.board === 'undefined') {
+      jgf.board = {};
+    }
+
+    //Add size property (can be width:height or just a single size)
+    var size = value[0].split(':');
+    if (size.length > 1) {
+      jgf.board.width = parseInt(size[0]);
+      jgf.board.height = parseInt(size[1]);
+    }
+    else {
+      jgf.board.width = jgf.board.height = parseInt(size[0]);
+    }
+  };
+
+  /**
+   * Date parser function
+   */
+  var parseDate = function(jgf, node, key, value) {
+
+    //Initialize dates container
+    if (typeof jgf.game.dates === 'undefined') {
+      jgf.game.dates = [];
+    }
+
+    //Explode dates
+    var dates = value[0].split(',');
+    for (var d = 0; d < dates.length; d++) {
+      jgf.game.dates.push(dates[d]);
+    }
+  };
+
+  /**
+   * Komi parser function
+   */
+  var parseKomi = function(jgf, node, key, value) {
+    jgf.game.komi = parseFloat(value[0]);
+  };
+
+  /**
+   * Variations handling parser function
+   */
+  var parseVariations = function(jgf, node, key, value) {
+
+    //Initialize display property
+    if (typeof jgf.player === 'undefined') {
+      jgf.player = {};
+    }
+
+    //Initialize variation display settings
+    jgf.player.variation_markup = false;
+    jgf.player.variation_children = false;
+    jgf.player.variation_siblings = false;
+
+    //Parse as integer
+    var st = parseInt(value[0]);
+
+    //Determine what we want (see SGF specs for details)
+    switch (st) {
+      case 0:
+        jgf.player.variation_markup = true;
+        jgf.player.variation_children = true;
+        break;
+      case 1:
+        jgf.player.variation_markup = true;
+        jgf.player.variation_siblings = true;
+        break;
+      case 2:
+        jgf.player.variation_children = true;
+        break;
+      case 3:
+        jgf.player.variation_siblings = true;
+        break;
+    }
+  };
+
+  /**
+   * Player info parser function
+   */
+  var parsePlayer = function(jgf, node, key, value) {
+
+    //Initialize players container
+    if (typeof jgf.game.players === 'undefined') {
+      jgf.game.players = [];
+    }
+
+    //Determine player color
+    var color = (key === 'PB' || key === 'BT' || key === 'BR') ? 'black' : 'white';
+
+    //Get key alias
+    if (typeof sgfAliases[key] !== 'undefined') {
+      key = sgfAliases[key];
+    }
+
+    //Check if player of this color already exists
+    for (var p = 0; p < jgf.game.players.length; p++) {
+      if (jgf.game.players[p].color === color) {
+        jgf.game.players[p][key] = value[0];
+        return;
+      }
+    }
+
+    //Player of this color not found, initialize
+    var player = {color: color};
+    player[key] = value[0];
+    jgf.game.players.push(player);
+  };
+
+  /**
+   * Parsing function to property mapper
+   */
+  var parsingMap = {
+
+    //Application, game type, board size, komi, date
+    'AP': parseApp,
+    'FF': parseSgfFormat,
+    'GM': parseGame,
+    'SZ': parseSize,
+    'KM': parseKomi,
+    'DT': parseDate,
+
+    //Variations handling
+    'ST': parseVariations,
+
+    //Player info handling
+    'PB': parsePlayer,
+    'PW': parsePlayer,
+    'BT': parsePlayer,
+    'WT': parsePlayer,
+    'BR': parsePlayer,
+    'WR': parsePlayer,
+
+    //Moves
+    'B': parseMove,
+    'W': parseMove,
+
+    //Node annotation
+    'C': parseComment,
+    'N': parseNodeName,
+
+    //Board setup
+    'AB': parseSetup,
+    'AW': parseSetup,
+    'AE': parseSetup,
+    'PL': parseTurn,
+    'TW': parseScore,
+    'TB': parseScore,
+
+    //Markup
+    'CR': parseMarkup,
+    'SQ': parseMarkup,
+    'TR': parseMarkup,
+    'MA': parseMarkup,
+    'SL': parseMarkup,
+    'LB': parseLabel
+  };
+
+  /**
+   * These properties need a node object
+   */
+  var needsNode = [
+    'B', 'W', 'C', 'N', 'AB', 'AW', 'AE', 'PL', 'LB', 'CR', 'SQ', 'TR', 'MA', 'SL', 'TW', 'TB'
+  ];
+
+  /*****************************************************************************
+   * Parser helpers
+   ***/
+
+  /**
+   * Set info in the JGF tree at a certain position
+   */
+  var setInfo = function(jgf, position, value) {
+
+    //Position given must be an array
+    if (typeof position !== 'object') {
+      return;
+    }
+
+    //Initialize node to attach value to
+    var node = jgf;
+    var key;
+
+    //Loop the position
+    for (var p = 0; p < position.length; p++) {
+
+      //Get key
+      key = position[p];
+
+      //Last key reached? Done
+      if ((p + 1) === position.length) {
+        break;
+      }
+
+      //Create container if not set
+      if (typeof node[key] !== 'object') {
+        node[key] = {};
+      }
+
+      //Move up in tree
+      node = node[key];
+    }
+
+    //Set value
+    node[key] = value;
+  };
+
+  /**
+   * Parser class
+   */
+  var Parser = {
+
+    /**
+     * Parse SGF string into a JGF object or string
+     */
+    parse: function(sgf, stringified) {
+
+      //Get new JGF object (with SGF node as a base)
+      var jgf = KifuBlank.jgf({record: {sgf: {}}});
+
+      //Initialize
+      var stack = [];
+      var container = jgf.tree;
+
+      //Create first node for game, which is usually an empty board position, but can
+      //contain comments or board setup instructions, which will be added to the node
+      //later if needed.
+      var node = {root: true};
+      container.push(node);
+
+      //Find sequence of elements
+      var sequence = sgf.match(regSequence);
+
+      //Loop sequence items
+      for (var i = 0; i < sequence.length; i++) {
+
+        //Push stack if new variation found
+        if (sequence[i] === '(') {
+
+          //First encounter, this defines the main tree branch, so skip
+          if (i === 0 || i === '0') {
+            continue;
+          }
+
+          //Push the current container to the stack
+          stack.push(container);
+
+          //Create variation container if it doesn't exist yet
+          if (!angular.isArray(container[container.length - 1])) {
+            container.push([]);
+          }
+
+          //Use variation container
+          container = container[container.length - 1];
+
+          //Now create moves container
+          container.push([]);
+          container = container[container.length - 1];
+          continue;
+        }
+
+        //Grab last container from stack if end of variation reached
+        else if (sequence[i] === ')') {
+          if (stack.length) {
+            container = stack.pop();
+          }
+          continue;
+        }
+
+        //Make array of properties within this sequence
+        var properties = sequence[i].match(regNode) || [];
+
+        //Loop them
+        for (var j = 0; j < properties.length; j++) {
+
+          //Get property's key and separate values
+          var key = regProperty.exec(properties[j])[0].toUpperCase();
+          var values = properties[j].match(regValues);
+
+          //Remove additional braces [ and ]
+          for (var k = 0; k < values.length; k++) {
+            values[k] = values[k].substring(1, values[k].length - 1).replace(/\\(?!\\)/g, '');
+          }
+
+          //SGF parser present for this key? Call it, and we're done
+          if (typeof parsingMap[key] !== 'undefined') {
+
+            //Does this type of property need a node?
+            if (needsNode.indexOf(key) !== -1) {
+
+              //If no node object present, create a new node
+              //For moves, always a new node is created
+              if (!node || key === 'B' || key === 'W') {
+                node = {};
+                container.push(node);
+              }
+            }
+
+            //Apply parsing function on node
+            parsingMap[key](jgf, node, key, values);
+            continue;
+          }
+
+          //No SGF parser present, we continue with regular property handling
+
+          //If there is only one value, simplify array
+          if (values.length === 1) {
+            values = values[0];
+          }
+
+          //SGF alias known? Then this is an info element and we handle it accordingly
+          if (typeof sgfAliases[key] !== 'undefined') {
+
+            //The position in the JGF object is represented by dot separated strings
+            //in the sgfAliases array. Split the position and use the setInfo helper
+            //to set the info on the JGF object
+            setInfo(jgf, sgfAliases[key].split('.'), values);
+            continue;
+          }
+
+          //No SGF alias present either, just append the data
+
+          //Save in node
+          if (node) {
+            node[key] = values;
+          }
+
+          //Save in root
+          else {
+            jgf[key] = values;
+          }
+        }
+
+        //Reset node, unless this was the root node
+        if (node && !node.root) {
+          node = null;
+        }
+      }
+
+      //Return stringified
+      if (stringified) {
+        return angular.toJson(jgf);
+      }
+
+      //Return jgf
+      return jgf;
+    }
+  };
+
+  //Return object
+  return Parser;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
 
 /**
  * PlayerModeCommon :: This class governs common event handling of the player shared by
@@ -9824,7 +10136,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 /**
  * Run block
  */
-.run(["Player", "PlayerModes", "PlayerModeCommon", function(Player, PlayerModes, PlayerModeCommon) {
+.run(['Player', 'PlayerModes', 'PlayerModeCommon', function(Player, PlayerModes, PlayerModeCommon) {
 
   /**
    * Register common event handlers
@@ -9852,7 +10164,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 /**
  * Factory definition
  */
-.factory('PlayerModeCommon', ["Player", "PlayerTools", "GameScorer", "KeyCodes", function(Player, PlayerTools, GameScorer, KeyCodes) {
+.factory('PlayerModeCommon', ['Player', 'PlayerTools', 'GameScorer', 'KeyCodes', function(Player, PlayerTools, GameScorer, KeyCodes) {
 
   /**
    * Helper to build drag object
@@ -9863,11 +10175,11 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     var drag = {
       start: {
         x: (this.mouse.dragStart.x > event.x) ? event.x : this.mouse.dragStart.x,
-        y: (this.mouse.dragStart.y > event.y) ? event.y : this.mouse.dragStart.y,
+        y: (this.mouse.dragStart.y > event.y) ? event.y : this.mouse.dragStart.y
       },
       stop: {
         x: (this.mouse.dragStart.x > event.x) ? this.mouse.dragStart.x : event.x,
-        y: (this.mouse.dragStart.y > event.y) ? this.mouse.dragStart.y : event.y,
+        y: (this.mouse.dragStart.y > event.y) ? this.mouse.dragStart.y : event.y
       }
     };
 
@@ -9888,6 +10200,51 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     //Return
     return drag;
   };
+
+  /**
+   * Normalize the mousewheel event helper
+   */
+  function normalizeMousewheelEvent(event) {
+
+    //Initialize vars
+    var deltaX = 0;
+    var deltaY = 0;
+
+    //Old school scrollwheel delta
+    if ('detail' in event) {
+      deltaY = event.detail * -1;
+    }
+    if ('wheelDelta' in event) {
+      deltaY = event.wheelDelta;
+    }
+    if ('wheelDeltaY' in event) {
+      deltaY = event.wheelDeltaY;
+    }
+    if ('wheelDeltaX' in event) {
+      deltaX = event.wheelDeltaX * -1;
+    }
+
+    // Firefox < 17 horizontal scrolling related to DOMMouseScroll event
+    if ('axis' in event && event.axis === event.HORIZONTAL_AXIS) {
+      deltaX = deltaY * -1;
+      deltaY = 0;
+    }
+
+    //New type wheel delta (WheelEvent)
+    if ('deltaY' in event) {
+      deltaY = event.deltaY * -1;
+    }
+    if ('deltaX' in event) {
+      deltaX = event.deltaX;
+    }
+
+    //Set in event (have to use different property name because of strict mode)
+    event.mouseWheelX = deltaX;
+    event.mouseWheelY = deltaY;
+
+    //Return
+    return event;
+  }
 
   /**
    * Player extension
@@ -9942,7 +10299,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
             keyboardEvent.preventDefault();
 
             //Advance to the next move
-            if (this.tool == PlayerTools.MOVE && this.game.node != this.restrictNodeEnd) {
+            if (this.tool === PlayerTools.MOVE && this.game.node !== this.restrictNodeEnd) {
               this.next();
             }
           }
@@ -9956,7 +10313,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
             keyboardEvent.preventDefault();
 
             //Go to the previous move
-            if (this.tool == PlayerTools.MOVE && this.game.node != this.restrictNodeStart) {
+            if (this.tool === PlayerTools.MOVE && this.game.node !== this.restrictNodeStart) {
               this.previous();
             }
           }
@@ -9978,7 +10335,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     mouseWheel: function(event, mouseEvent) {
 
       //Disabled or not using move tool?
-      if (!this.scrollWheelNavigation || this.tool != PlayerTools.MOVE) {
+      if (!this.scrollWheelNavigation || this.tool !== PlayerTools.MOVE) {
         return true;
       }
 
@@ -10018,7 +10375,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     /**
      * Mouse out handler
      */
-    mouseOut: function(event, mouseEvent) {
+    mouseOut: function() {
       if (this.board) {
         this.board.removeAll('hover');
       }
@@ -10030,7 +10387,10 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     mouseMove: function(event, mouseEvent) {
 
       //Attach drag object to events
-      if (this.mouse.dragStart && (this.mouse.dragStart.x != event.x || this.mouse.dragStart.y != event.y)) {
+      if (
+        this.mouse.dragStart &&
+        (this.mouse.dragStart.x !== event.x || this.mouse.dragStart.y !== event.y)
+      ) {
         mouseEvent.drag = dragObject.call(this, event);
       }
 
@@ -10040,7 +10400,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
       }
 
       //Last coordinates are the same?
-      if (this.mouse.lastX == event.x && this.mouse.lastY == event.y) {
+      if (this.mouse.lastX === event.x && this.mouse.lastY === event.y) {
         return;
       }
 
@@ -10055,7 +10415,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     /**
      * Mouse down handler
      */
-    mouseDown: function(event, mouseEvent) {
+    mouseDown: function(event) {
       this.mouse.dragStart = {
         x: event.x,
         y: event.y
@@ -10066,7 +10426,10 @@ angular.module('ngGo.Player.Mode.Common.Service', [
      * Mouse up handler
      */
     mouseUp: function(event, mouseEvent) {
-      if (this.mouse.dragStart && (this.mouse.dragStart.x != event.x || this.mouse.dragStart.y != event.y)) {
+      if (
+        this.mouse.dragStart &&
+        (this.mouse.dragStart.x !== event.x || this.mouse.dragStart.y !== event.y)
+      ) {
         mouseEvent.drag = dragObject.call(this, event);
         this.broadcast('mousedrag', mouseEvent);
       }
@@ -10077,6 +10440,10 @@ angular.module('ngGo.Player.Mode.Common.Service', [
   //Return
   return PlayerMode;
 }]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
 
 /**
  * PlayerModeEdit :: This module governs the "edit" mode of the player, e.g. editing
@@ -10095,9 +10462,9 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
  * Setup tools
  */
 .constant('SetupTools', {
-  BLACK:    'black',
-  WHITE:    'white',
-  CLEAR:    'clear'
+  BLACK: 'black',
+  WHITE: 'white',
+  CLEAR: 'clear'
 })
 
 /**
@@ -10105,21 +10472,21 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
  */
 .constant('MarkupTools', {
   TRIANGLE: 'triangle',
-  CIRCLE:   'circle',
-  SQUARE:   'square',
-  MARK:   'mark',
-  SELECT:   'select',
-  SAD:    'sad',
-  HAPPY:    'happy',
-  TEXT:   'text',
-  NUMBER:   'number',
-  CLEAR:    'clear'
+  CIRCLE: 'circle',
+  SQUARE: 'square',
+  MARK: 'mark',
+  SELECT: 'select',
+  SAD: 'sad',
+  HAPPY: 'happy',
+  TEXT: 'text',
+  NUMBER: 'number',
+  CLEAR: 'clear'
 })
 
 /**
  * Extend player functionality and register the mode
  */
-.run(["Player", "PlayerModes", "PlayerModeEdit", function(Player, PlayerModes, PlayerModeEdit) {
+.run(['Player', 'PlayerModes', 'PlayerModeEdit', function(Player, PlayerModes, PlayerModeEdit) {
 
   //Register event handlers
   Player.on('pathChange', PlayerModeEdit.pathChange, PlayerModes.EDIT);
@@ -10156,11 +10523,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
   /**
    * Service getter
    */
-  this.$get = ["Player", "PlayerTools", "SetupTools", "MarkupTools", "MarkupTypes", "GameScorer", "StoneColor", "KeyCodes", function(Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor, KeyCodes) {
+  this.$get = ['Player', 'PlayerTools', 'SetupTools', 'MarkupTools', 'MarkupTypes', 'GameScorer', 'StoneColor', function(
+    Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor
+  ) {
 
     //Character codes
-    var aChar = 'A'.charCodeAt(0),
-      aCharLc = 'a'.charCodeAt(0);
+    var aChar = 'A'.charCodeAt(0);
+    var aCharLc = 'a'.charCodeAt(0);
 
     /**
      * Update hover mark at specific coordinates
@@ -10168,7 +10537,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
     var updateHoverMark = function(x, y, isDrag) {
 
       //If no coordinates specified, use last mouse coordinates
-      if (typeof x == 'undefined' || typeof y == 'undefined') {
+      if (typeof x === 'undefined' || typeof y === 'undefined') {
         x = this.mouse.lastX;
         y = this.mouse.lastY;
       }
@@ -10185,7 +10554,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
         case PlayerTools.SETUP:
 
           //Clear tool
-          if (this.setupTool == SetupTools.CLEAR) {
+          if (this.setupTool === SetupTools.CLEAR) {
 
             //Stone present? Can remove it
             if (this.game.hasStone(x, y)) {
@@ -10221,7 +10590,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
         case PlayerTools.MARKUP:
 
           //Clear tool, or already markup in place?
-          if (this.markupTool == MarkupTools.CLEAR || this.game.hasMarkup(x, y)) {
+          if (this.markupTool === MarkupTools.CLEAR || this.game.hasMarkup(x, y)) {
             if (this.game.hasMarkup(x, y)) {
               this.board.add('hover', x, y, {
                 type: 'markup',
@@ -10231,7 +10600,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
           }
 
           //Text or number
-          else if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+          else if (this.markupTool === MarkupTools.TEXT || this.markupTool === MarkupTools.NUMBER) {
             this.board.add('hover', x, y, {
               type: 'markup',
               value: {
@@ -10288,9 +10657,9 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
         var markup = this.game.getMarkup(x, y);
 
         //Label? Also remove from our labels list
-        if (markup.type == MarkupTypes.LABEL && markup.text) {
+        if (markup.type === MarkupTypes.LABEL && markup.text) {
           var i = this.markupLabels.indexOf(markup.text);
-          if (i != -1) {
+          if (i !== -1) {
             this.markupLabels.splice(i, 1);
           }
         }
@@ -10301,12 +10670,12 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       }
 
       //Clear tool used? Done
-      if (this.markupTool == MarkupTools.CLEAR) {
+      if (this.markupTool === MarkupTools.CLEAR) {
         return;
       }
 
       //Text
-      else if (this.markupTool == MarkupTools.TEXT) {
+      else if (this.markupTool === MarkupTools.TEXT) {
         this.game.addMarkup(x, y, {
           type: MarkupTypes.LABEL,
           text: this.markupLabel
@@ -10318,7 +10687,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       }
 
       //Number
-      else if (this.markupTool == MarkupTools.NUMBER) {
+      else if (this.markupTool === MarkupTools.NUMBER) {
         this.game.addMarkup(x, y, {
           type: MarkupTypes.LABEL,
           text: this.markupLabel
@@ -10386,7 +10755,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       //Get all markup from position
       var markup = this.game.position.markup.all('type');
       for (var i = 0; i < markup.length; i++) {
-        if (markup[i].type == MarkupTypes.LABEL && markup[i].text !== '') {
+        if (markup[i].type === MarkupTypes.LABEL && markup[i].text !== '') {
           this.markupLabels.push(markup[i].text);
         }
       }
@@ -10417,7 +10786,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
        */
       switchMarkupTool: function(tool) {
         this.markupTool = tool;
-        if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+        if (this.markupTool === MarkupTools.TEXT || this.markupTool === MarkupTools.NUMBER) {
           this.determineMarkupLabel();
         }
       },
@@ -10461,7 +10830,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
             var i = 0;
 
             //Loop while the label is present
-            while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) != -1) {
+            while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) !== -1) {
 
               //A-Z
               if (i < 26) {
@@ -10475,7 +10844,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
               //AA, AB, AC, etc.
               else {
-                this.markupLabel = String.fromCharCode(aChar + Math.floor(i / 26) - 2) + String.fromCharCode(aChar + (i % 26));
+                this.markupLabel = String.fromCharCode(aChar + Math.floor(i / 26) - 2) +
+                  String.fromCharCode(aChar + (i % 26));
               }
 
               //Keep going
@@ -10488,7 +10858,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
             this.markupLabel = 0;
 
             //Loop while the label is present
-            while (this.markupLabel === 0 || this.markupLabels.indexOf(this.markupLabel) != -1) {
+            while (this.markupLabel === 0 || this.markupLabels.indexOf(this.markupLabel) !== -1) {
               this.markupLabel++;
             }
             break;
@@ -10515,13 +10885,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
         this.board.removeAll('hover');
 
         //Single coordinate?
-        if (!event.drag || (this.tool != PlayerTools.SETUP && this.tool != PlayerTools.MARKUP)) {
+        if (!event.drag || (this.tool !== PlayerTools.SETUP && this.tool !== PlayerTools.MARKUP)) {
           updateHoverMark.call(this);
           return;
         }
 
         //No dragging for labels
-        if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+        if (this.markupTool === MarkupTools.TEXT || this.markupTool === MarkupTools.NUMBER) {
           updateHoverMark.call(this);
           return;
         }
@@ -10549,7 +10919,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Click handler
        */
-      click: function(event, mouseEvent) {
+      click: function(event) {
 
         //Falling outside of grid?
         if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
@@ -10605,7 +10975,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Mouse drag handler
        */
-      mouseDrag: function(event, mouseEvent) {
+      mouseDrag: function(event) {
 
         //Initialize vars
         var x, y;
@@ -10637,7 +11007,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
           case PlayerTools.MARKUP:
 
             //Don't do this for labels
-            if (this.markupTool == MarkupTools.TEXT || this.markupTool == MarkupTools.NUMBER) {
+            if (this.markupTool === MarkupTools.TEXT || this.markupTool === MarkupTools.NUMBER) {
               break;
             }
 
@@ -10660,14 +11030,14 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Path change
        */
-      pathChange: function(event, node) {
+      pathChange: function() {
         findAllMarkupLabels.call(this);
       },
 
       /**
        * Handler for mode entry
        */
-      modeEnter: function(event) {
+      modeEnter: function() {
 
         //Set available tools for this mode
         this.setTools([
@@ -10687,10 +11057,10 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Handler for tool switches
        */
-      toolSwitch: function(event) {
+      toolSwitch: function() {
 
         //Switched to scoring?
-        if (this.tool == PlayerTools.SCORE) {
+        if (this.tool === PlayerTools.SCORE) {
 
           //Remember the current board state
           this.statePreScoring = this.board.getState();
@@ -10715,9 +11085,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
   }];
 });
 
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
 /**
- * PlayerModeReplay :: This module governs the "replay" mode of the player, e.g. traversing through an
- * existing game record without the ability to deviate from the tree or its variations.
+ * PlayerModeReplay :: This module governs the "replay" mode of the player, e.g. traversing
+ * through an existing game record without the ability to deviate from the tree or its variations.
  */
 
 /**
@@ -10731,7 +11105,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 /**
  * Extend player functionality and register the mode
  */
-.run(["Player", "PlayerModes", "PlayerModeReplay", function(Player, PlayerModes, PlayerModeReplay) {
+.run(['Player', 'PlayerModes', 'PlayerModeReplay', function(Player, PlayerModes, PlayerModeReplay) {
 
   //Register event handlers
   Player.on('settingChange', PlayerModeReplay.settingChange, PlayerModes.REPLAY);
@@ -10771,7 +11145,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
   /**
    * Service getter
    */
-  this.$get = ["$interval", "Player", "PlayerModes", "PlayerTools", "MarkupTypes", "GameScorer", function($interval, Player, PlayerModes, PlayerTools, MarkupTypes, GameScorer) {
+  this.$get = ['$interval', 'Player', 'PlayerModes', 'PlayerTools', 'MarkupTypes', 'GameScorer', function($interval, Player, PlayerModes, PlayerTools, MarkupTypes, GameScorer) {
 
     /**
      * Helper to update the hover mark
@@ -10779,7 +11153,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
     var updateHoverMark = function(x, y) {
 
       //If no coordinates specified, use last mouse coordinates
-      if (typeof x == 'undefined' || typeof y == 'undefined') {
+      if (typeof x === 'undefined' || typeof y === 'undefined') {
         x = this.mouse.lastX;
         y = this.mouse.lastY;
       }
@@ -10858,7 +11232,8 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       }
 
       //Get the current node
-      var node = this.game.getNode(), variations;
+      var node = this.game.getNode();
+      var variations;
       if (!node) {
         return;
       }
@@ -10900,7 +11275,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
        * Set auto play delay
        */
       setAutoPlayDelay: function(delay) {
-        if (this.autoPlayDelay != delay) {
+        if (this.autoPlayDelay !== delay) {
           this.autoPlayDelay = delay;
           this.broadcast('settingChange', 'autoPlayDelay');
         }
@@ -10912,7 +11287,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       start: function(delay) {
 
         //Not in replay mode or already auto playing?
-        if (this.mode != PlayerModes.REPLAY || this.autoPlaying) {
+        if (this.mode !== PlayerModes.REPLAY || this.autoPlaying) {
           return;
         }
 
@@ -10925,7 +11300,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
         var self = this;
 
         //Determine delay
-        delay = (typeof delay == 'number') ? delay : this.autoPlayDelay;
+        delay = (typeof delay === 'number') ? delay : this.autoPlayDelay;
 
         //Switch tool
         this.switchTool(PlayerTools.NONE);
@@ -10953,7 +11328,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       stop: function() {
 
         //Not in replay mode or not auto playing?
-        if (this.mode != PlayerModes.REPLAY || !this.autoPlaying) {
+        if (this.mode !== PlayerModes.REPLAY || !this.autoPlaying) {
           return;
         }
 
@@ -10994,7 +11369,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       settingChange: function(event, setting) {
 
         //Solution paths setting changes?
-        if (setting == 'variationMarkup') {
+        if (setting === 'variationMarkup') {
           drawMoveVariations.call(this, this.variationMarkup);
         }
       },
@@ -11002,7 +11377,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       /**
        * Hover handler
        */
-      hover: function(event) {
+      hover: function() {
 
         //Update hover mark
         if (this.board) {
@@ -11014,7 +11389,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       /**
        * Board update event handler
        */
-      boardUpdate: function(event, node) {
+      boardUpdate: function() {
 
         //Show move variations
         if (this.variationMarkup) {
@@ -11025,7 +11400,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       /**
        * Handler for mouse click events
        */
-      click: function(event, mouseEvent) {
+      click: function(event) {
 
         //Falling outside of grid?
         if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
@@ -11060,7 +11435,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       /**
        * Path change event
        */
-      pathChange: function(event, node) {
+      pathChange: function() {
 
         //Update hover mark
         if (this.board) {
@@ -11072,7 +11447,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       /**
        * Handler for mode entry
        */
-      modeEnter: function(event) {
+      modeEnter: function() {
 
         //Set available tools for this mode
         this.setTools([
@@ -11093,7 +11468,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       /**
        * Handler for mode exit
        */
-      modeExit: function(event) {
+      modeExit: function() {
 
         //Stop auto playing
         if (this.autoPlaying) {
@@ -11109,10 +11484,10 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       /**
        * Handler for tool switches
        */
-      toolSwitch: function(event) {
+      toolSwitch: function() {
 
         //Switched to scoring?
-        if (this.tool == PlayerTools.SCORE) {
+        if (this.tool === PlayerTools.SCORE) {
 
           //Remember the current board state
           this.statePreScoring = this.board.getState();
@@ -11137,6 +11512,10 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
   }];
 });
 
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
 /**
  * PlayerModeSolve :: This module governs the "solve" mode of the player, e.g. trying to solve
  * go problems and finding the right move or variations.
@@ -11152,7 +11531,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 /**
  * Extend player functionality and register the mode
  */
-.run(["Player", "PlayerModes", "PlayerModeSolve", function(Player, PlayerModes, PlayerModeSolve) {
+.run(['Player', 'PlayerModes', 'PlayerModeSolve', function(Player, PlayerModes, PlayerModeSolve) {
 
   //Register event handlers
   Player.on('settingChange', PlayerModeSolve.settingChange, PlayerModes.SOLVE);
@@ -11171,7 +11550,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 /**
  * Provider definition
  */
-.provider('PlayerModeSolve', ["StoneColor", function(StoneColor) {
+.provider('PlayerModeSolve', ['StoneColor', function(StoneColor) {
 
   /**
    * Default configuration
@@ -11199,7 +11578,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
   /**
    * Service getter
    */
-  this.$get = ["$timeout", "Player", "PlayerModes", "PlayerTools", "KeyCodes", function($timeout, Player, PlayerModes, PlayerTools, KeyCodes) {
+  this.$get = ['$timeout', 'Player', 'PlayerModes', 'PlayerTools', 'KeyCodes', function($timeout, Player, PlayerModes, PlayerTools, KeyCodes) {
 
     /**
      * Check if we can make a move
@@ -11224,7 +11603,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       }
 
       //...it's our turn
-      if (this.game.getTurn() == this.playerColor) {
+      if (this.game.getTurn() === this.playerColor) {
         return true;
       }
 
@@ -11238,7 +11617,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
     var updateHoverMark = function(x, y) {
 
       //If no coordinates specified, use last mouse coordinates
-      if (typeof x == 'undefined' || typeof y == 'undefined') {
+      if (typeof x === 'undefined' || typeof y === 'undefined') {
         x = this.mouse.lastX;
         y = this.mouse.lastY;
       }
@@ -11309,12 +11688,12 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       }
 
       //Get node and variations
-      var node = this.game.getNode(),
-        variations = node.getMoveVariations();
+      var node = this.game.getNode();
+      var variations = node.getMoveVariations();
 
       //When showing, make sure it's not during the auto solver's move
       if (show && !this.problemSolved && this.solveAutoPlay) {
-        if (this.game.getTurn() != this.playerColor) {
+        if (this.game.getTurn() !== this.playerColor) {
           hideSolutionPaths.call(this, variations);
           return;
         }
@@ -11358,7 +11737,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
        * Set solve auto play delay
        */
       setSolveAutoPlay: function(autoPlay) {
-        if (this.solveAutoPlay != autoPlay) {
+        if (this.solveAutoPlay !== autoPlay) {
           this.solveAutoPlay = autoPlay;
           this.broadcast('settingChange', 'solveAutoPlay');
         }
@@ -11368,7 +11747,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
        * Set solve auto play delay
        */
       setSolveAutoPlayDelay: function(delay) {
-        if (this.solveAutoPlayDelay != delay) {
+        if (this.solveAutoPlayDelay !== delay) {
           this.solveAutoPlayDelay = delay;
           this.broadcast('settingChange', 'solveAutoPlayDelay');
         }
@@ -11378,7 +11757,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
        * Set player color
        */
       setPlayerColor: function(color) {
-        if (this.playerColor != color) {
+        if (this.playerColor !== color) {
           this.playerColor = color;
           this.broadcast('settingChange', 'playerColor');
         }
@@ -11400,12 +11779,12 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       toggleSolutionPaths: function(solutionPaths) {
 
         //Toggle if not given
-        if (typeof solutionPaths == 'undefined') {
+        if (typeof solutionPaths === 'undefined') {
           solutionPaths = !this.solutionPaths;
         }
 
         //Change?
-        if (solutionPaths != this.solutionPaths) {
+        if (solutionPaths !== this.solutionPaths) {
           this.solutionPaths = solutionPaths;
           this.broadcast('settingChange', 'solutionPaths');
         }
@@ -11422,7 +11801,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
         }
 
         //Init vars
-        var children = [], self = this, i;
+        var children = [];
+        var self = this;
+        var i;
 
         //When picking a child node, we always prefer to pick a valid solution
         for (i = 0; i < this.game.node.children.length; i++) {
@@ -11477,7 +11858,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
         this.restrictNode();
 
         //Auto play next move if it's not our turn
-        if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+        if (this.solveAutoPlay && this.game.getTurn() !== this.playerColor) {
           this.autoPlayNext();
         }
       },
@@ -11488,7 +11869,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       restartProblem: function() {
 
         //Must be in solve mode, must have game
-        if (this.mode != PlayerModes.SOLVE || !this.game || !this.game.isLoaded()) {
+        if (this.mode !== PlayerModes.SOLVE || !this.game || !this.game.isLoaded()) {
           return;
         }
 
@@ -11502,7 +11883,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
         }
 
         //Auto play next move if it's not our turn
-        if (this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+        if (this.solveAutoPlay && this.game.getTurn() !== this.playerColor) {
           this.autoPlayNext();
         }
       }
@@ -11534,18 +11915,20 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       settingChange: function(event, setting) {
 
         //Solution paths setting changes?
-        if (setting == 'solutionPaths') {
+        if (setting === 'solutionPaths') {
           drawSolutionPaths.call(this, this.solutionPaths);
         }
 
         //Player color changed?
-        if (setting == 'playerColor') {
+        if (setting === 'playerColor') {
 
           //Draw (or hide) solution paths
           drawSolutionPaths.call(this, this.solutionPaths);
 
           //Make an auto play move if it's not our turn
-          if (!this.problemSolved && this.solveAutoPlay && this.game.getTurn() != this.playerColor) {
+          if (
+            !this.problemSolved && this.solveAutoPlay && this.game.getTurn() !== this.playerColor
+          ) {
             this.autoPlayNext(true);
           }
         }
@@ -11566,7 +11949,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Board update event handler
        */
-      boardUpdate: function(event, node) {
+      boardUpdate: function() {
 
         //Show move variations
         if (this.solutionPaths) {
@@ -11590,7 +11973,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
               keyboardEvent.preventDefault();
 
               //Navigation not blocked?
-              if (!this.solveNavigationBlocked && this.game.node != this.restrictNodeEnd) {
+              if (!this.solveNavigationBlocked && this.game.node !== this.restrictNodeEnd) {
 
                 //Go forward one move if solved
                 if (this.problemSolved) {
@@ -11608,14 +11991,17 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
               keyboardEvent.preventDefault();
 
               //Navigation not blocked and not reached the start?
-              if (!this.solveNavigationBlocked && this.game.node != this.restrictNodeStart) {
+              if (!this.solveNavigationBlocked && this.game.node !== this.restrictNodeStart) {
 
                 //Go back one move
                 this.previous();
 
                 //Go back one more if this is not the player's turn and if
                 //the problem hasn't been solved yet
-                if (!this.problemSolved && this.solveAutoPlay && this.game.getTurn() == -this.playerColor) {
+                if (
+                  !this.problemSolved && this.solveAutoPlay &&
+                  this.game.getTurn() === -this.playerColor
+                ) {
                   this.previous();
                 }
               }
@@ -11627,7 +12013,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Handler for mouse click events
        */
-      click: function(event, mouseEvent) {
+      click: function(event) {
 
         //Falling outside of grid?
         if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
@@ -11672,7 +12058,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Path change event
        */
-      pathChange: function(event, node) {
+      pathChange: function() {
 
         //Update hover mark
         if (this.board) {
@@ -11684,7 +12070,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Handler for mode entry
        */
-      modeEnter: function(event) {
+      modeEnter: function() {
 
         //Set available tools for this mode
         this.setTools([
@@ -11703,7 +12089,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Handler for mode exit
        */
-      modeExit: function(event) {
+      modeExit: function() {
 
         //Hide any solution variations
         if (this.solutionPaths) {
@@ -11717,72 +12103,4 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
   }];
 }]);
 
-/**
- * Utility functions
- */
-
-/**
- * Angular extend deep implementation
- */
-if (typeof angular.extendDeep == 'undefined') {
-  angular.extendDeep = function(dest) {
-    for (var i = 0; i < arguments.length; i++) {
-      if (arguments[i] != dest) {
-        for (var k in arguments[i]) {
-          if (dest[k] && dest[k].constructor && dest[k].constructor === Object) {
-            angular.extendDeep(dest[k], arguments[i][k]);
-          }
-          else {
-            dest[k] = angular.copy(arguments[i][k]);
-          }
-        }
-      }
-    }
-    return dest;
-  };
-}
-
-/**
- * Normalize the mousewheel event
- */
-function normalizeMousewheelEvent(event) {
-
-  //Initialize vars
-  var deltaX = 0, deltaY = 0;
-
-  //Old school scrollwheel delta
-  if ('detail' in event) {
-    deltaY = event.detail * -1;
-  }
-  if ('wheelDelta' in event) {
-    deltaY = event.wheelDelta;
-  }
-  if ('wheelDeltaY' in event) {
-    deltaY = event.wheelDeltaY;
-  }
-  if ('wheelDeltaX' in event) {
-    deltaX = event.wheelDeltaX * -1;
-  }
-
-  // Firefox < 17 horizontal scrolling related to DOMMouseScroll event
-  if ('axis' in event && event.axis === event.HORIZONTAL_AXIS) {
-    deltaX = deltaY * -1;
-    deltaY = 0;
-  }
-
-  //New type wheel delta (WheelEvent)
-  if ('deltaY' in event) {
-    deltaY = event.deltaY * -1;
-  }
-  if ('deltaX' in event) {
-    deltaX = event.deltaX;
-  }
-
-  //Set in event (have to use different property name because of strict mode)
-  event.mouseWheelX = deltaX;
-  event.mouseWheelY = deltaY;
-
-  //Return
-  return event;
-}
 })(window, window.angular);

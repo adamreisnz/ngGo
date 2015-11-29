@@ -16,9 +16,9 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
  * Setup tools
  */
 .constant('SetupTools', {
-  BLACK:    'black',
-  WHITE:    'white',
-  CLEAR:    'clear'
+  BLACK: 'black',
+  WHITE: 'white',
+  CLEAR: 'clear'
 })
 
 /**
@@ -26,15 +26,15 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
  */
 .constant('MarkupTools', {
   TRIANGLE: 'triangle',
-  CIRCLE:   'circle',
-  SQUARE:   'square',
-  MARK:   'mark',
-  SELECT:   'select',
-  SAD:    'sad',
-  HAPPY:    'happy',
-  TEXT:   'text',
-  NUMBER:   'number',
-  CLEAR:    'clear'
+  CIRCLE: 'circle',
+  SQUARE: 'square',
+  MARK: 'mark',
+  SELECT: 'select',
+  SAD: 'sad',
+  HAPPY: 'happy',
+  TEXT: 'text',
+  NUMBER: 'number',
+  CLEAR: 'clear'
 })
 
 /**
@@ -77,11 +77,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
   /**
    * Service getter
    */
-  this.$get = function(Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor) {
+  this.$get = function(
+    Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor
+  ) {
 
     //Character codes
-    var aChar = 'A'.charCodeAt(0),
-      aCharLc = 'a'.charCodeAt(0);
+    var aChar = 'A'.charCodeAt(0);
+    var aCharLc = 'a'.charCodeAt(0);
 
     /**
      * Update hover mark at specific coordinates
@@ -211,7 +213,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
         //Label? Also remove from our labels list
         if (markup.type === MarkupTypes.LABEL && markup.text) {
           var i = this.markupLabels.indexOf(markup.text);
-          if (i !==  -1) {
+          if (i !== -1) {
             this.markupLabels.splice(i, 1);
           }
         }
@@ -307,7 +309,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       //Get all markup from position
       var markup = this.game.position.markup.all('type');
       for (var i = 0; i < markup.length; i++) {
-        if (markup[i].type === MarkupTypes.LABEL && markup[i].text !== = '') {
+        if (markup[i].type === MarkupTypes.LABEL && markup[i].text !== '') {
           this.markupLabels.push(markup[i].text);
         }
       }
@@ -382,7 +384,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
             var i = 0;
 
             //Loop while the label is present
-            while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) !==  -1) {
+            while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) !== -1) {
 
               //A-Z
               if (i < 26) {
@@ -396,7 +398,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
               //AA, AB, AC, etc.
               else {
-                this.markupLabel = String.fromCharCode(aChar + Math.floor(i / 26) - 2) + String.fromCharCode(aChar + (i % 26));
+                this.markupLabel = String.fromCharCode(aChar + Math.floor(i / 26) - 2) +
+                  String.fromCharCode(aChar + (i % 26));
               }
 
               //Keep going
@@ -409,7 +412,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
             this.markupLabel = 0;
 
             //Loop while the label is present
-            while (this.markupLabel === 0 || this.markupLabels.indexOf(this.markupLabel) !==  -1) {
+            while (this.markupLabel === 0 || this.markupLabels.indexOf(this.markupLabel) !== -1) {
               this.markupLabel++;
             }
             break;
@@ -436,7 +439,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
         this.board.removeAll('hover');
 
         //Single coordinate?
-        if (!event.drag || (this.tool !==  PlayerTools.SETUP && this.tool !==  PlayerTools.MARKUP)) {
+        if (!event.drag || (this.tool !== PlayerTools.SETUP && this.tool !== PlayerTools.MARKUP)) {
           updateHoverMark.call(this);
           return;
         }

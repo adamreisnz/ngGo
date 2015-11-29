@@ -71,27 +71,36 @@ angular.module('ngGo.Player.Service', [
       }
 
       //Init
-      var x = 0, y = 0;
+      var x = 0;
+      var y = 0;
 
       //Set x
-      if (typeof mouseEvent.offsetX !==  'undefined') {
+      if (typeof mouseEvent.offsetX !== 'undefined') {
         x = mouseEvent.offsetX;
       }
-      else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetX !==  'undefined') {
+      else if (
+        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetX !== 'undefined'
+      ) {
         x = mouseEvent.originalEvent.offsetX;
       }
-      else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerX !==  'undefined') {
+      else if (
+        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerX !== 'undefined'
+      ) {
         x = mouseEvent.originalEvent.layerX;
       }
 
       //Set y
-      if (typeof mouseEvent.offsetY !==  'undefined') {
+      if (typeof mouseEvent.offsetY !== 'undefined') {
         y = mouseEvent.offsetY;
       }
-      else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetY !==  'undefined') {
+      else if (
+        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetY !== 'undefined'
+      ) {
         y = mouseEvent.originalEvent.offsetY;
       }
-      else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerY !==  'undefined') {
+      else if (
+        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerY !== 'undefined'
+      ) {
         y = mouseEvent.originalEvent.layerY;
       }
 
@@ -189,7 +198,7 @@ angular.module('ngGo.Player.Service', [
         this.registerElementEvent('wheel');
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Configuration
        ***/
 
@@ -225,7 +234,7 @@ angular.module('ngGo.Player.Service', [
        * Set arrow keys navigation
        */
       setArrowKeysNavigation: function(arrowKeys) {
-        if (arrowKeys !==  this.arrowKeysNavigation) {
+        if (arrowKeys !== this.arrowKeysNavigation) {
           this.arrowKeysNavigation = arrowKeys;
           this.broadcast('settingChange', 'arrowKeysNavigation');
         }
@@ -235,7 +244,7 @@ angular.module('ngGo.Player.Service', [
        * Set scroll wheel navigation
        */
       setScrollWheelNavigation: function(scrollWheel) {
-        if (scrollWheel !==  this.scrollWheelNavigation) {
+        if (scrollWheel !== this.scrollWheelNavigation) {
           this.scrollWheelNavigation = scrollWheel;
           this.broadcast('settingChange', 'scrollWheelNavigation');
         }
@@ -245,7 +254,7 @@ angular.module('ngGo.Player.Service', [
        * Set the last move marker
        */
       setLastMoveMarker: function(lastMoveMarker) {
-        if (lastMoveMarker !==  this.lastMoveMarker) {
+        if (lastMoveMarker !== this.lastMoveMarker) {
           this.lastMoveMarker = lastMoveMarker;
           this.broadcast('settingChange', 'lastMoveMarker');
         }
@@ -260,19 +269,23 @@ angular.module('ngGo.Player.Service', [
         var change = false;
 
         //Markup setting change?
-        if (variationMarkup !==  this.variationMarkup) {
+        if (variationMarkup !== this.variationMarkup) {
           this.variationMarkup = variationMarkup;
           change = true;
         }
 
         //Children setting change?
-        if (typeof variationChildren !==  'undefined' && variationChildren !==  this.variationChildren) {
+        if (
+          typeof variationChildren !== 'undefined' && variationChildren !== this.variationChildren
+        ) {
           this.variationChildren = variationChildren;
           change = true;
         }
 
         //Siblings setting change?
-        if (typeof variationSiblings !==  'undefined' && variationSiblings !==  this.variationSiblings) {
+        if (
+          typeof variationSiblings !== 'undefined' && variationSiblings !== this.variationSiblings
+        ) {
           this.variationSiblings = variationSiblings;
           change = true;
         }
@@ -283,7 +296,7 @@ angular.module('ngGo.Player.Service', [
         }
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Mode and tool handling
        ***/
 
@@ -325,7 +338,7 @@ angular.module('ngGo.Player.Service', [
        * Check if we have a player tool
        */
       hasTool: function(tool) {
-        return (this.tools.indexOf(tool) !==  -1);
+        return (this.tools.indexOf(tool) !== -1);
       },
 
       /**
@@ -411,7 +424,7 @@ angular.module('ngGo.Player.Service', [
         this.restoreGameState();
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Game record handling
        ***/
 
@@ -499,7 +512,7 @@ angular.module('ngGo.Player.Service', [
         }
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Navigation
        ***/
 
@@ -507,7 +520,7 @@ angular.module('ngGo.Player.Service', [
        * Go to the next position
        */
       next: function(i) {
-        if (this.game && this.game.node !==  this.restrictNodeEnd) {
+        if (this.game && this.game.node !== this.restrictNodeEnd) {
           this.game.next(i);
           this.processPosition();
         }
@@ -517,7 +530,7 @@ angular.module('ngGo.Player.Service', [
        * Go back to the previous position
        */
       previous: function() {
-        if (this.game && this.game.node !==  this.restrictNodeStart) {
+        if (this.game && this.game.node !== this.restrictNodeStart) {
           this.game.previous();
           this.processPosition();
         }
@@ -583,10 +596,10 @@ angular.module('ngGo.Player.Service', [
         }
 
         //Get current node and game position
-        var node = this.game.getNode(),
-          path = this.game.getPath(),
-          position = this.game.getPosition(),
-          pathChanged = !path.compare(this.path);
+        var node = this.game.getNode();
+        var path = this.game.getPath();
+        var position = this.game.getPosition();
+        var pathChanged = !path.compare(this.path);
 
         //Update board
         this.updateBoard(node, position, pathChanged);
@@ -610,7 +623,7 @@ angular.module('ngGo.Player.Service', [
         }
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Game handling
        ***/
 
@@ -631,9 +644,9 @@ angular.module('ngGo.Player.Service', [
         GameScorer.calculate();
 
         //Get score, points and captures
-        var score = GameScorer.getScore(),
-          points = GameScorer.getPoints(),
-          captures = GameScorer.getCaptures();
+        var score = GameScorer.getScore();
+        var points = GameScorer.getPoints();
+        var captures = GameScorer.getCaptures();
 
         //Remove all markup, and set captures and points
         this.board.layers.markup.removeAll();
@@ -643,7 +656,7 @@ angular.module('ngGo.Player.Service', [
         this.broadcast('scoreCalculated', score);
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Board handling
        ***/
 
@@ -697,7 +710,7 @@ angular.module('ngGo.Player.Service', [
         this.broadcast('boardUpdate', node);
       },
 
-      /***********************************************************************************************
+      /*****************************************************************************
        * Event handling
        ***/
 
@@ -723,7 +736,7 @@ angular.module('ngGo.Player.Service', [
       on: function(type, listener, mode, $scope) {
 
         //Must have valid listener
-        if (typeof listener !==  'function') {
+        if (typeof listener !== 'function') {
           console.warn('Listener is not a function:', listener);
           return;
         }
@@ -735,7 +748,7 @@ angular.module('ngGo.Player.Service', [
         }
 
         //Multiple events?
-        if (type.indexOf(' ') !== = -1) {
+        if (type.indexOf(' ') !== -1) {
           var types = type.split(' ');
           for (var t = 0; t < types.length; t++) {
             this.on(types[t], listener, mode, $scope);
@@ -744,15 +757,18 @@ angular.module('ngGo.Player.Service', [
         }
 
         //Get self and determine scope to use
-        var self = this,
-          scope = $scope || $rootScope;
+        var self = this;
+        var scope = $scope || $rootScope;
 
         //Create listener and return de-registration function
         return scope.$on('ngGo.player.' + type, function() {
 
           //Filter on mode
           if (mode) {
-            if ((typeof mode === 'string' && mode !==  self.mode) || mode.indexOf(self.mode) === -1) {
+            if (
+              (typeof mode === 'string' && mode !== self.mode) ||
+              mode.indexOf(self.mode) === -1
+            ) {
               return;
             }
           }

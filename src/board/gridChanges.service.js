@@ -20,7 +20,8 @@ angular.module('ngGo.Board.GridChanges.Service', [
    * Helper to subtract sets
    */
   var setSubtract = function(a, b) {
-    var n = [], q;
+    var n = [];
+    var q;
     for (var i = 0; i < a.length; i++) {
       q = true;
       for (var j in b) {

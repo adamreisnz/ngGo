@@ -187,7 +187,7 @@ angular.module('ngGo.Board.Theme.Service', [
       variation: {
         type: MarkupTypes.LABEL,
         text: function(i) {
-          return String.fromCharCode(65+i);
+          return String.fromCharCode(65 + i);
         },
         color: 'rgba(86,114,30,0.9)'
       },
@@ -252,26 +252,26 @@ angular.module('ngGo.Board.Theme.Service', [
           //19x19
           if (width === height && width === 19) {
             return [
-              {x:3, y:3}, {x:9, y:3}, {x:15,y:3},
-              {x:3, y:9}, {x:9, y:9}, {x:15,y:9},
-              {x:3, y:15}, {x:9, y:15}, {x:15,y:15}
+              { x: 3, y: 3 }, { x: 9, y: 3 }, { x: 15,y: 3 },
+              { x: 3, y: 9 }, { x: 9, y: 9 }, { x: 15,y: 9 },
+              { x: 3, y: 15 }, { x: 9, y: 15 }, { x: 15,y: 15 }
             ];
           }
 
           //13x13
           if (width === height && width === 13) {
             return [
-              {x:3, y:3}, {x:9, y:3},
-              {x:3, y:9}, {x:9, y:9}
+              { x: 3, y: 3 }, { x: 9, y: 3 },
+              { x: 3, y: 9 }, { x: 9, y: 9 }
             ];
           }
 
           //9x9
           if (width === height && width === 9) {
             return [
-              {x:4, y:4}, {x:2, y:2},
-              {x:2, y:6}, {x:6, y:2},
-              {x:6, y:6}
+              { x: 4, y: 4}, { x: 2, y: 2},
+              { x: 2, y: 6}, { x: 6, y: 2},
+              { x: 6, y: 6}
             ];
           }
 
@@ -321,7 +321,7 @@ angular.module('ngGo.Board.Theme.Service', [
    */
   this.setTheme = function(theme) {
     if (theme) {
-      defaultTheme = angular.extendDeep(defaultTheme, theme);
+      defaultTheme = angular.merge(defaultTheme, theme);
     }
   };
 
@@ -350,7 +350,7 @@ angular.module('ngGo.Board.Theme.Service', [
 
       //Add any instance theme properties
       if (this.instanceTheme) {
-        angular.extendDeep(this.theme, this.instanceTheme);
+        angular.merge(this.theme, this.instanceTheme);
       }
     };
 
@@ -360,8 +360,8 @@ angular.module('ngGo.Board.Theme.Service', [
     BoardTheme.prototype.get = function(property) {
 
       //Determine path to the property
-      var path = property.split('.'),
-        prop = this.theme;
+      var path = property.split('.');
+      var prop = this.theme;
 
       //Loop path
       for (var i = 0; i < path.length; i++) {
@@ -377,7 +377,7 @@ angular.module('ngGo.Board.Theme.Service', [
       }
 
       //Found what we're looking for
-      if (typeof prop !==  'function') {
+      if (typeof prop !== 'function') {
         return prop;
       }
 
@@ -399,8 +399,8 @@ angular.module('ngGo.Board.Theme.Service', [
     BoardTheme.prototype.set = function(property, value) {
 
       //Determine path to the property
-      var path = property.split('.'),
-        prop = this.theme;
+      var path = property.split('.');
+      var prop = this.theme;
 
       //Loop path
       for (var i = 0; i < path.length; i++) {

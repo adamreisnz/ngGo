@@ -19,7 +19,8 @@ angular.module('ngGo.Game.Score.Service', [
    * Helper to calculate the total points
    */
   var calcTotal = function() {
-    return parseInt(this.stones) + parseInt(this.territory) + parseInt(this.captures) + parseInt(this.komi);
+    return parseInt(this.stones) + parseInt(this.territory) +
+      parseInt(this.captures) + parseInt(this.komi);
   };
 
   /**
@@ -67,8 +68,8 @@ angular.module('ngGo.Game.Score.Service', [
   GameScore.prototype.winner = function() {
 
     //Get totals
-    var b = this.black.total(),
-      w = this.white.total();
+    var b = this.black.total();
+    var w = this.white.total();
 
     //Determine winner
     if (w > b) {

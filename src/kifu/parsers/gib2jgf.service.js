@@ -20,12 +20,12 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
   /**
    * Regular expressions
    */
-  var regMove = /STO\s0\s([0-9]+)\s(1|2)\s([0-9]+)\s([0-9]+)/gi,
-    regPlayer = /GAME(BLACK|WHITE)NAME=([A-Za-z0-9]+)\s\(([0-9]+D|K)\)/gi,
-    regKomi = /GAMEGONGJE=([0-9]+)/gi,
-    regDate = /GAMEDATE=([0-9]+)-\s?([0-9]+)-\s?([0-9]+)/g,
-    regResultMargin = /GAMERESULT=(white|black)\s([0-9]+\.?[0-9]?)/gi,
-    regResultOther = /GAMERESULT=(white|black)\s[a-z\s]+(resignation|time)/gi;
+  var regMove = /STO\s0\s([0-9]+)\s(1|2)\s([0-9]+)\s([0-9]+)/gi;
+  var regPlayer = /GAME(BLACK|WHITE)NAME=([A-Za-z0-9]+)\s\(([0-9]+D|K)\)/gi;
+  var regKomi = /GAMEGONGJE=([0-9]+)/gi;
+  var regDate = /GAMEDATE=([0-9]+)-\s?([0-9]+)-\s?([0-9]+)/g;
+  var regResultMargin = /GAMERESULT=(white|black)\s([0-9]+\.?[0-9]?)/gi;
+  var regResultOther = /GAMERESULT=(white|black)\s[a-z\s]+(resignation|time)/gi;
 
   /**
    * Player parser function
@@ -63,7 +63,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
    * Komi parser function
    */
   var parseKomi = function(jgf, match) {
-    jgf.game.komi = parseFloat(match[1]/10);
+    jgf.game.komi = parseFloat(match[1] / 10);
   };
 
   /**
@@ -77,7 +77,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
     }
 
     //Push date
-    jgf.game.dates.push(match[1]+'-'+match[2]+'-'+match[3]);
+    jgf.game.dates.push(match[1] + '-' + match[2] + '-' + match[3]);
   };
 
   /**
@@ -149,7 +149,8 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
       var jgf = KifuBlank.jgf();
 
       //Initialize
-      var match, container = jgf.tree;
+      var match;
+      var container = jgf.tree;
 
       //Create first node for game, which is usually an empty board position, but can
       //contain comments or board setup instructions, which will be added to the node

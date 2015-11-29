@@ -34,13 +34,13 @@ describe('GameScore', function() {
     score = new GameScore();
     for (var c in score.colors) {
       if (score.colors.hasOwnProperty(c)) {
-          var color = score.colors[c];
-          for (var i in score.items) {
-            if (score.items.hasOwnProperty(i)) {
-              var item = score.items[i];
-              expect(score.get(color, item)).toBe(0);
-            }
+        var color = score.colors[c];
+        for (var i in score.items) {
+          if (score.items.hasOwnProperty(i)) {
+            var item = score.items[i];
+            expect(score.get(color, item)).toBe(0);
           }
+        }
       }
     }
   });
@@ -108,9 +108,9 @@ describe('GameScore', function() {
         if (score.colors.hasOwnProperty(c)) {
 
           //Init
-          var color = score.colors[c],
-            totalFromRand = 0,
-            totalFromGet = 0;
+          var color = score.colors[c];
+          var totalFromRand = 0;
+          var totalFromGet = 0;
 
           //Loop items
           for (var i in score.items) {
@@ -133,13 +133,14 @@ describe('GameScore', function() {
      * Winner
      */
     it('should declare the correct winner', function() {
-      var winner = StoneColor.EMPTY, highestScore = 0;
+      var winner = StoneColor.EMPTY;
+      var highestScore = 0;
       for (var c in score.colors) {
         if (score.colors.hasOwnProperty(c)) {
 
           //Init
-          var color = score.colors[c],
-            totalFromRand = 0;
+          var color = score.colors[c];
+          var totalFromRand = 0;
 
           //Get total in rand
           for (var i in score.items) {
@@ -227,9 +228,9 @@ describe('GameScore', function() {
         var prevTotal;
         for (var c in score.colors) {
           if (score.colors.hasOwnProperty(c)) {
-            var color = score.colors[c],
-              total = score.total(color);
-            if (typeof prevTotal !==  'undefined') {
+            var color = score.colors[c];
+            var total = score.total(color);
+            if (typeof prevTotal !== 'undefined') {
               expect(prevTotal).toEqual(total);
             }
             prevTotal = total;

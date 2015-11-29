@@ -33,23 +33,23 @@ angular.module('ngGo', [])
  * ngGo constants
  */
 .constant('ngGo', {
-  name:   'ngGo',
-  version:  '1.1.1',
-  error:    {
+  name: 'ngGo',
+  version: '1.1.1',
+  error: {
 
     //Position errors
-    POSITION_OUT_OF_BOUNDS:   1,
+    POSITION_OUT_OF_BOUNDS: 1,
     POSITION_ALREADY_HAS_STONE: 2,
-    POSITION_IS_SUICIDE:    3,
-    POSITION_IS_REPEATING:    4,
+    POSITION_IS_SUICIDE: 3,
+    POSITION_IS_REPEATING: 4,
 
     //Data loading errors
-    NO_DATA:          5,
-    UNKNOWN_DATA:       6,
-    INVALID_SGF:        7,
-    INVALID_GIB:        8,
-    INVALID_JGF_JSON:     9,
-    INVALID_JGF_TREE_JSON:    10
+    NO_DATA: 5,
+    UNKNOWN_DATA: 6,
+    INVALID_SGF: 7,
+    INVALID_GIB: 8,
+    INVALID_JGF_JSON: 9,
+    INVALID_JGF_TREE_JSON: 10
   }
 })
 
@@ -59,9 +59,9 @@ angular.module('ngGo', [])
 .constant('StoneColor', {
   E: 0,
   EMPTY: 0,
-  B:  1,
+  B: 1,
   BLACK: 1,
-  W:  -1,
+  W: -1,
   WHITE: -1
 })
 
@@ -70,14 +70,14 @@ angular.module('ngGo', [])
  */
 .constant('MarkupTypes', {
   TRIANGLE: 'triangle',
-  CIRCLE:   'circle',
-  SQUARE:   'square',
-  MARK:   'mark',
-  SELECT:   'select',
-  LABEL:    'label',
-  LAST:   'last',
-  SAD:    'sad',
-  HAPPY:    'happy'
+  CIRCLE: 'circle',
+  SQUARE: 'square',
+  MARK: 'mark',
+  SELECT: 'select',
+  LABEL: 'label',
+  LAST: 'last',
+  SAD: 'sad',
+  HAPPY: 'happy'
 })
 
 /**
@@ -87,7 +87,7 @@ angular.module('ngGo', [])
   PLAY: 'play',
   REPLAY: 'replay',
   EDIT: 'edit',
-  SOLVE:  'solve'
+  SOLVE: 'solve'
 })
 
 /**
@@ -96,8 +96,8 @@ angular.module('ngGo', [])
 .constant('PlayerTools', {
   NONE: 'none',
   MOVE: 'move',
-  SCORE:  'score',
-  SETUP:  'setup',
+  SCORE: 'score',
+  SETUP: 'setup',
   MARKUP: 'markup'
 })
 
@@ -105,19 +105,19 @@ angular.module('ngGo', [])
  * Key codes
  */
 .constant('KeyCodes', {
-  LEFT:   37,
-  RIGHT:    39,
-  UP:     38,
-  DOWN:   40,
-  ESC:    27,
-  ENTER:    13,
-  SPACE:    32,
-  TAB:    9,
-  SHIFT:    16,
-  CTRL:   17,
-  ALT:    18,
-  HOME:   36,
-  END:    35,
-  PAGEUP:   33,
+  LEFT: 37,
+  RIGHT: 39,
+  UP: 38,
+  DOWN: 40,
+  ESC: 27,
+  ENTER: 13,
+  SPACE: 32,
+  TAB: 9,
+  SHIFT: 16,
+  CTRL: 17,
+  ALT: 18,
+  HOME: 36,
+  END: 35,
+  PAGEUP: 33,
   PAGEDOWN: 34
 });

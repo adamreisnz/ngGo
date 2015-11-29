@@ -1,6 +1,7 @@
 
 /**
- * StoneMini :: This class extends the Stone class and is used for drawing mini stones (for scoring).
+ * StoneMini :: This class extends the Stone class and is used for drawing mini stones
+ * (for scoring).
  */
 
 /**
