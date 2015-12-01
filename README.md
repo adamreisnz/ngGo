@@ -1,12 +1,12 @@
 # ngGo
 
 ## Version
-Current version is 1.2.2
+Current version is 1.2.3
 
 ## About
 ngGo is an Angular.JS library for reading, parsing, displaying, editing and replaying Go game records.
 
-ngGo has been based on the excellent work of Jan Prokop, who created the original javascript library [WGo.js](http://wgo.waltheri.net/). ngGo is based on WGo version 1.2.2, which was the latest version at the time of conversion.
+ngGo has been based on the excellent work of Jan Prokop, who created the original javascript library [WGo.js](http://wgo.waltheri.net/). ngGo is based on WGo version 1.2.3, which was the latest version at the time of conversion.
 
 All code has been refactored to fit the Angular framework. In addition, the code was reviewed and improved to provide more flexibility and run more efficiently. All files have also been cleaned up in general, linted and extensively commented to provide for easy to read source code with a consistent layout. Lastly, all the source code files have been organized in a logical manner and split up in sensible classes, making it easy to find all the specific modules and functionality of the library.
 

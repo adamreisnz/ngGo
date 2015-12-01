@@ -107,8 +107,8 @@ function clean() {
  * Build css
  */
 function buildCss() {
-  gulp.src('src/ngGo.scss')
-    .pipe(sass().on('error', sass.logError))
+  return gulp.src('src/ngGo.scss')
+    .pipe(sass())
     .pipe(csso())
     .pipe(rename(packageFileName('.css')))
     .pipe(gulp.dest('release'));
@@ -237,8 +237,8 @@ function updateSourceVersion() {
   return gulp.src([
     './src/ngGo.js'
   ]).pipe(replace(
-    /'([0-9]\.[0-9]+\.[0-9]+)'/g, packageJson().version
-  )).pipe(gulp.dest('./'));
+    /'([0-9]\.[0-9]+\.[0-9]+)'/g, '\'' + packageJson().version + '\''
+  )).pipe(gulp.dest('./src'));
 }
 
 /**
@@ -248,7 +248,9 @@ function commitBump() {
   var version = packageJson().version;
   return gulp.src([
     './package.json',
-    './release/*'
+    './release/*',
+    './README.md',
+    './src/ngGo.js'
   ]).pipe(git.commit('Bump version to ' + version));
 }
 
@@ -275,7 +277,7 @@ function tagBump(cb) {
  * Build a release version
  */
 gulp.task('release', gulp.series(
-  clean, gulp.parallel(buildJs, buildCss)
+  clean, gulp.parallel(buildCss, buildJs)
 ));
 
 /**
