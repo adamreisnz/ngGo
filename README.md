@@ -1,7 +1,9 @@
 # ngGo
 
-## Version
-Current version is 1.2.5
+[![npm version](https://img.shields.io/npm/v/ng-go.svg)](https://www.npmjs.com/package/ng-go)
+[![node dependencies](https://david-dm.org/adambuczynski/ngGo.svg)](https://david-dm.org/adambuczynski/ngGo)
+[![github issues](https://img.shields.io/github/issues/adambuczynski/ngGo.svg)](https://github.com/adambuczynski/ngGo/issues)
+[![codacy](https://img.shields.io/codacy/7d72527f76b44256971ece497488fc80.svg)](https://www.codacy.com/app/adambuczynski/ngGo)
 
 ## About
 ngGo is an Angular.JS library for reading, parsing, displaying, editing and replaying Go game records.

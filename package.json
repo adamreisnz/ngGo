@@ -1,5 +1,5 @@
 {
-  "name": "ngGo",
+  "name": "ng-go",
   "description": "An Angular.js library for reading, parsing, displaying, editing and replaying Go game records",
   "version": "1.2.5",
   "homepage": "https://github.com/adambuczynski/ngGo",

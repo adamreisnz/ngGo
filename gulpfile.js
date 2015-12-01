@@ -220,17 +220,6 @@ function majorBump() {
 }
 
 /**
- * Update version in readme
- */
-function updateReadmeVersion() {
-  return gulp.src([
-    './README.md'
-  ]).pipe(replace(
-    /([0-9]\.[0-9]+\.[0-9]+)/g, packageJson().version
-  )).pipe(gulp.dest('./'));
-}
-
-/**
  * Update version in ngGo.js
  */
 function updateSourceVersion() {
@@ -249,7 +238,6 @@ function commitBump() {
   return gulp.src([
     './package.json',
     './release/*',
-    './README.md',
     './src/ngGo.js'
   ]).pipe(git.commit('Bump version to ' + version));
 }
@@ -291,13 +279,13 @@ gulp.task('watch', watch);
  * Bump version numbers
  */
 gulp.task('patch', gulp.series(
-  patchBump, updateReadmeVersion, updateSourceVersion, 'release', commitBump, tagBump
+  patchBump, updateSourceVersion, 'release', commitBump, tagBump
 ));
 gulp.task('minor', gulp.series(
-  minorBump, updateReadmeVersion, updateSourceVersion, 'release', commitBump, tagBump
+  minorBump, updateSourceVersion, 'release', commitBump, tagBump
 ));
 gulp.task('major', gulp.series(
-  majorBump, updateReadmeVersion, updateSourceVersion, 'release', commitBump, tagBump
+  majorBump, updateSourceVersion, 'release', commitBump, tagBump
 ));
 
 /**
