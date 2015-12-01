@@ -47,7 +47,7 @@ function packageJson() {
 function packageFileName(filename, ext) {
   if (!ext) {
     ext = filename;
-    filename = pkg.name;
+    filename = 'ngGo';
   }
   return filename + (ext || '');
 }
