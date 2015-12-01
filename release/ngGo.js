@@ -1,5 +1,5 @@
 /**
- * ngGo - v1.2.1 - 1-11-2015
+ * ngGo - v1.2.2 - 1-11-2015
  * https://github.com/adambuczynski/ngGo
  *
  * Copyright (c) 2015 Adam Buczynski <me@adambuczynski.com>
@@ -6376,6 +6376,16 @@ angular.module('ngGo.Player.Service', [
       goto: function(target) {
         if (this.game && target) {
           this.game.goto(target);
+          this.processPosition();
+        }
+      },
+
+      /**
+       * Go to the last fork
+       */
+      lastFork: function() {
+        if (this.game) {
+          this.game.lastFork();
           this.processPosition();
         }
       },
