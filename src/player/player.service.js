@@ -567,6 +567,16 @@ angular.module('ngGo.Player.Service', [
       },
 
       /**
+       * Go to the last fork
+       */
+      lastFork: function() {
+        if (this.game) {
+          this.game.lastFork();
+          this.processPosition();
+        }
+      },
+
+      /**
        * Restrict navigation to the current node
        */
       restrictNode: function(end) {
