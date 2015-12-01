@@ -698,6 +698,34 @@ angular.module('ngGo.Game.Service', [
     };
 
     /**
+     * Get current move number
+     */
+    Game.prototype.getMove = function() {
+      return this.path.getMove();
+    };
+
+    /**
+     * Get the number of moves in the main branch
+     */
+    Game.prototype.getMoveCount = function() {
+
+      //Initialize node to process
+      var node = this.root;
+      var noMoves = 0;
+
+      //Process children
+      while (node.children.length > 0) {
+        node = node.children[0];
+        if (typeof node.move !== 'undefined') {
+          noMoves++;
+        }
+      }
+
+      //Return move count
+      return noMoves;
+    };
+
+    /**
      * Get an info property
      */
     Game.prototype.get = function(position) {
@@ -797,17 +825,13 @@ angular.module('ngGo.Game.Service', [
      * Wrapper for validateMove() returning a boolean and catching any errors
      */
     Game.prototype.isValidMove = function(x, y, color) {
-
-      //Validate move
       try {
         this.validateMove(x, y, color);
+        return true;
       }
       catch (error) {
         return false;
       }
-
-      //Valid
-      return true;
     };
 
     /**

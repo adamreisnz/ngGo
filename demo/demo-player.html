@@ -21,7 +21,7 @@
     <p>
       <span ng-repeat="Player in Game.get('game.players')">{{Player.name}} ({{Player.rank}})<span ng-show="$first"> vs. </span></span><br>
       {{Game.getTurn() | stoneColor}} to play<br>
-      Move number: {{Game.path.getMove()}}<br>
+      Move number: {{Game.getMove()}} of {{Game.getMoveCount()}}<br>
       Komi: {{Game.get('game.komi')}}<br>
       Result: {{Game.get('game.result')}}
     </p>

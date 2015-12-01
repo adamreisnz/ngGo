@@ -1,5 +1,5 @@
 /**
- * ngGo - v1.2.0 - 30-10-2015
+ * ngGo - v1.2.0 - 1-11-2015
  * https://github.com/adambuczynski/ngGo
  *
  * Copyright (c) 2015 Adam Buczynski <me@adambuczynski.com>
@@ -2307,136 +2307,6 @@ angular.module('ngGo.Board.Theme.Service', [
 (function(window, angular, undefined) {'use strict';
 
 /**
- * InvalidDataError :: Error class to handle invalid data.
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Errors.InvalidDataError.Service', [
-  'ngGo'
-])
-
-/**
- * Factory definition
- */
-.factory('InvalidDataError', ['ngGo', function(ngGo) {
-
-  /**
-   * Define error
-   */
-  var InvalidDataError = function(code) {
-
-    //Set name and message
-    this.code = code;
-    this.name = 'InvalidDataError';
-    this.message = 'Invalid data: ';
-
-    //Append code message
-    switch (code) {
-      case ngGo.error.NO_DATA:
-        this.message += 'no data to process.';
-        break;
-      case ngGo.error.UNKNOWN_DATA:
-        this.message += 'unknown data format.';
-        break;
-      case ngGo.error.INVALID_GIB:
-        this.message += 'unable to parse GIB data.';
-        break;
-      case ngGo.error.INVALID_SGF:
-        this.message += 'unable to parse SGF data.';
-        break;
-      case ngGo.error.INVALID_JGF_JSON:
-        this.message += 'unable to parse JGF data.';
-        break;
-      case ngGo.error.INVALID_JGF_TREE_JSON:
-        this.message += 'unable to parse the JGF tree data.';
-        break;
-      default:
-        this.message += 'unable to parse the data.';
-    }
-  };
-
-  /**
-   * Extend from error class
-   */
-  InvalidDataError.prototype = new Error();
-  InvalidDataError.prototype.constructor = InvalidDataError;
-
-  //Return object
-  return InvalidDataError;
-}]);
-
-})(window, window.angular);
-
-(function(window, angular, undefined) {'use strict';
-
-/**
- * InvalidPositionError :: Error class to handle invalid moves.
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Errors.InvalidPositionError.Service', [
-  'ngGo'
-])
-
-/**
- * Factory definition
- */
-.factory('InvalidPositionError', ['ngGo', 'StoneColor', function(ngGo, StoneColor) {
-
-  /**
-   * Define error
-   */
-  var InvalidPositionError = function(code, x, y, color) {
-
-    //Set name and message
-    this.code = code;
-    this.name = 'InvalidPositionError';
-    this.message = 'Invalid position detected.';
-
-    //Add position data
-    if (typeof x !== 'undefined' && typeof y !== 'undefined' && typeof color !== 'undefined') {
-      this.message += ' Trying to place a ' + (color === StoneColor.W ? 'white' : 'black') +
-        ' stone on (' + x + ', ' + y + ')';
-    }
-
-    //Append code message
-    switch (code) {
-      case ngGo.error.POSTITION_OUT_OF_BOUNDS:
-        this.message += ', but these coordinates are not on the board.';
-        break;
-      case ngGo.error.POSTITION_ALREADY_HAS_STONE:
-        this.message += ', but there is already a stone on those coordinates.';
-        break;
-      case ngGo.error.POSTITION_IS_SUICIDE:
-        this.message += ', but that would be suicide.';
-        break;
-      case ngGo.error.POSTITION_IS_REPEATING:
-        this.message += ', but this position already occured.';
-        break;
-      default:
-        this.message += '.';
-    }
-  };
-
-  /**
-   * Extend from error class
-   */
-  InvalidPositionError.prototype = new Error();
-  InvalidPositionError.prototype.constructor = InvalidPositionError;
-
-  //Return object
-  return InvalidPositionError;
-}]);
-
-})(window, window.angular);
-
-(function(window, angular, undefined) {'use strict';
-
-/**
  * Game :: This class represents a game record or a game that is being played/edited. The class
  * traverses the move tree nodes and keeps track of the changes between the previous and new game
  * positions. These changes can then be fed to the board, to add or remove stones and markup.
@@ -3135,6 +3005,34 @@ angular.module('ngGo.Game.Service', [
     };
 
     /**
+     * Get current move number
+     */
+    Game.prototype.getMove = function() {
+      return this.path.getMove();
+    };
+
+    /**
+     * Get the number of moves in the main branch
+     */
+    Game.prototype.getMoveCount = function() {
+
+      //Initialize node to process
+      var node = this.root;
+      var noMoves = 0;
+
+      //Process children
+      while (node.children.length > 0) {
+        node = node.children[0];
+        if (typeof node.move !== 'undefined') {
+          noMoves++;
+        }
+      }
+
+      //Return move count
+      return noMoves;
+    };
+
+    /**
      * Get an info property
      */
     Game.prototype.get = function(position) {
@@ -3234,17 +3132,13 @@ angular.module('ngGo.Game.Service', [
      * Wrapper for validateMove() returning a boolean and catching any errors
      */
     Game.prototype.isValidMove = function(x, y, color) {
-
-      //Validate move
       try {
         this.validateMove(x, y, color);
+        return true;
       }
       catch (error) {
         return false;
       }
-
-      //Valid
-      return true;
     };
 
     /**
@@ -5493,6 +5387,136 @@ angular.module('ngGo.Game.Scorer.Service', [
 
   //Return
   return GameScorer;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * InvalidDataError :: Error class to handle invalid data.
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Errors.InvalidDataError.Service', [
+  'ngGo'
+])
+
+/**
+ * Factory definition
+ */
+.factory('InvalidDataError', ['ngGo', function(ngGo) {
+
+  /**
+   * Define error
+   */
+  var InvalidDataError = function(code) {
+
+    //Set name and message
+    this.code = code;
+    this.name = 'InvalidDataError';
+    this.message = 'Invalid data: ';
+
+    //Append code message
+    switch (code) {
+      case ngGo.error.NO_DATA:
+        this.message += 'no data to process.';
+        break;
+      case ngGo.error.UNKNOWN_DATA:
+        this.message += 'unknown data format.';
+        break;
+      case ngGo.error.INVALID_GIB:
+        this.message += 'unable to parse GIB data.';
+        break;
+      case ngGo.error.INVALID_SGF:
+        this.message += 'unable to parse SGF data.';
+        break;
+      case ngGo.error.INVALID_JGF_JSON:
+        this.message += 'unable to parse JGF data.';
+        break;
+      case ngGo.error.INVALID_JGF_TREE_JSON:
+        this.message += 'unable to parse the JGF tree data.';
+        break;
+      default:
+        this.message += 'unable to parse the data.';
+    }
+  };
+
+  /**
+   * Extend from error class
+   */
+  InvalidDataError.prototype = new Error();
+  InvalidDataError.prototype.constructor = InvalidDataError;
+
+  //Return object
+  return InvalidDataError;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * InvalidPositionError :: Error class to handle invalid moves.
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Errors.InvalidPositionError.Service', [
+  'ngGo'
+])
+
+/**
+ * Factory definition
+ */
+.factory('InvalidPositionError', ['ngGo', 'StoneColor', function(ngGo, StoneColor) {
+
+  /**
+   * Define error
+   */
+  var InvalidPositionError = function(code, x, y, color) {
+
+    //Set name and message
+    this.code = code;
+    this.name = 'InvalidPositionError';
+    this.message = 'Invalid position detected.';
+
+    //Add position data
+    if (typeof x !== 'undefined' && typeof y !== 'undefined' && typeof color !== 'undefined') {
+      this.message += ' Trying to place a ' + (color === StoneColor.W ? 'white' : 'black') +
+        ' stone on (' + x + ', ' + y + ')';
+    }
+
+    //Append code message
+    switch (code) {
+      case ngGo.error.POSTITION_OUT_OF_BOUNDS:
+        this.message += ', but these coordinates are not on the board.';
+        break;
+      case ngGo.error.POSTITION_ALREADY_HAS_STONE:
+        this.message += ', but there is already a stone on those coordinates.';
+        break;
+      case ngGo.error.POSTITION_IS_SUICIDE:
+        this.message += ', but that would be suicide.';
+        break;
+      case ngGo.error.POSTITION_IS_REPEATING:
+        this.message += ', but this position already occured.';
+        break;
+      default:
+        this.message += '.';
+    }
+  };
+
+  /**
+   * Extend from error class
+   */
+  InvalidPositionError.prototype = new Error();
+  InvalidPositionError.prototype.constructor = InvalidPositionError;
+
+  //Return object
+  return InvalidPositionError;
 }]);
 
 })(window, window.angular);
