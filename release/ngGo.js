@@ -1,5 +1,5 @@
 /**
- * ngGo - v1.2.4 - 1-11-2015
+ * ngGo - v1.2.5 - 2-11-2015
  * https://github.com/adambuczynski/ngGo
  *
  * Copyright (c) 2015 Adam Buczynski <me@adambuczynski.com>
@@ -42,7 +42,7 @@ angular.module('ngGo', [])
  */
 .constant('ngGo', {
   name: 'ngGo',
-  version: '1.2.4',
+  version: '1.2.5',
   error: {
 
     //Position errors
@@ -3742,12 +3742,43 @@ angular.module('ngGo.Game.Service', [
     };
 
     /**
-     * Go to the last fork
+     * Go to the previous fork
      */
-    Game.prototype.lastFork = function() {
+    Game.prototype.previousFork = function() {
 
       //Loop until we find a node with more than one child
-      while (previousNode.call(this) && this.node.children.length === 1) {}
+      while (previousNode.call(this)) {
+        popPosition.call(this);
+
+        //Break when found a node with more than one child
+        if (this.node.children.length > 1) {
+          break;
+        }
+      }
+    };
+
+    /**
+     * Go to the next fork
+     */
+    Game.prototype.nextFork = function() {
+
+      //Keep going to the next node until we reach one with multiple children
+      while (nextNode.call(this)) {
+
+        //If an invalid move is detected, we can't go on
+        try {
+          executeNode.call(this);
+        }
+        catch (error) {
+          previousNode.call(this);
+          throw error;
+        }
+
+        //Have multiple children?
+        if (this.node.children.length > 1) {
+          break;
+        }
+      }
     };
 
     /*****************************************************************************
@@ -6381,11 +6412,21 @@ angular.module('ngGo.Player.Service', [
       },
 
       /**
-       * Go to the last fork
+       * Go to the previous fork
        */
-      lastFork: function() {
+      previousFork: function() {
         if (this.game) {
-          this.game.lastFork();
+          this.game.previousFork();
+          this.processPosition();
+        }
+      },
+
+      /**
+       * Go to the next fork
+       */
+      nextFork: function() {
+        if (this.game) {
+          this.game.nextFork();
           this.processPosition();
         }
       },
