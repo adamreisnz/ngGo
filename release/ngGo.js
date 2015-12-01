@@ -6656,897 +6656,6 @@ angular.module('ngGo.Player.Service', [
 (function(window, angular, undefined) {'use strict';
 
 /**
- * GridLayer :: This class represents the grid layer of the board, and it is responsible for drawing
- * gridlines, starpoints and coordinates via the Coordinates class.
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Layer.GridLayer.Service', [
-  'ngGo',
-  'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Coordinates.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('GridLayer', ['BoardLayer', 'Coordinates', function(BoardLayer, Coordinates) {
-
-  /**
-   * Helper for drawing starpoints
-   */
-  var drawStarPoint = function(gridX, gridY, starRadius, starColor) {
-
-    //Don't draw if it falls outsize of the board grid
-    if (gridX < this.board.grid.xLeft || gridX > this.board.grid.xRight) {
-      return;
-    }
-    if (gridY < this.board.grid.yTop || gridY > this.board.grid.yBot) {
-      return;
-    }
-
-    //Get absolute coordinates and star point radius
-    var x = this.board.getAbsX(gridX);
-    var y = this.board.getAbsY(gridY);
-
-    //Draw star point
-    this.context.beginPath();
-    this.context.fillStyle = starColor;
-    this.context.arc(x, y, starRadius, 0, 2 * Math.PI, true);
-    this.context.fill();
-  };
-
-  /**
-   * Constructor
-   */
-  var GridLayer = function(board, context) {
-
-    //Set coordinates setting
-    this.coordinates = false;
-
-    //Call parent constructor
-    BoardLayer.call(this, board, context);
-  };
-
-  /**
-   * Prototype extension
-   */
-  angular.extend(GridLayer.prototype, BoardLayer.prototype);
-
-  /**
-   * Show or hide the coordinates.
-   */
-  GridLayer.prototype.setCoordinates = function(show) {
-    this.coordinates = show;
-  };
-
-  /*****************************************************************************
-   * Object handling
-   ***/
-
-  /**
-   * Get all has nothing to return
-   */
-  GridLayer.prototype.getAll = function() {
-    return null;
-  };
-
-  /**
-   * Set all has nothing to set
-   */
-  GridLayer.prototype.setAll = function(/*grid*/) {
-    return;
-  };
-
-  /**
-   * Remove all has nothing to remove
-   */
-  GridLayer.prototype.removeAll = function() {
-    return;
-  };
-
-  /*****************************************************************************
-   * Drawing
-   ***/
-
-  /**
-   * Draw method
-   */
-  GridLayer.prototype.draw = function() {
-
-    //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //Determine top x and y margin
-    var tx = this.board.drawMarginHor;
-    var ty = this.board.drawMarginVer;
-
-    //Get theme properties
-    var cellSize = this.board.getCellSize();
-    var lineWidth = this.board.theme.get('grid.lineWidth', cellSize);
-    var lineCap = this.board.theme.get('grid.lineCap');
-    var strokeStyle = this.board.theme.get('grid.lineColor');
-    var starRadius = this.board.theme.get('grid.star.radius', cellSize);
-    var starColor = this.board.theme.get('grid.star.color');
-    var starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height);
-    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.beginPath();
-    this.context.lineWidth = lineWidth;
-    this.context.lineCap = lineCap;
-    this.context.strokeStyle = strokeStyle;
-
-    //Helper vars
-    var i, x, y;
-
-    //Draw vertical lines
-    for (i = this.board.grid.xLeft; i <= this.board.grid.xRight; i++) {
-      x = this.board.getAbsX(i);
-      this.context.moveTo(x, ty);
-      this.context.lineTo(x, ty + this.board.gridDrawHeight);
-    }
-
-    //Draw horizontal lines
-    for (i = this.board.grid.yTop; i <= this.board.grid.yBot; i++) {
-      y = this.board.getAbsY(i);
-      this.context.moveTo(tx, y);
-      this.context.lineTo(tx + this.board.gridDrawWidth, y);
-    }
-
-    //Draw grid lines
-    this.context.stroke();
-
-    //Star points defined?
-    for (i = 0; i < starPoints.length; i++) {
-      drawStarPoint.call(this, starPoints[i].x, starPoints[i].y, starRadius, starColor);
-    }
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-
-    //Draw coordinates
-    if (this.coordinates) {
-      Coordinates.draw.call(this);
-    }
-  };
-
-  /**
-   * Clear a square cell area on the grid
-   */
-  GridLayer.prototype.clearCell = function(gridX, gridY) {
-
-    //Get absolute coordinates and stone radius
-    var x = this.board.getAbsX(gridX);
-    var y = this.board.getAbsY(gridY);
-    var s = this.board.getCellSize();
-    var r = this.board.theme.get('stone.radius', s);
-
-    //Get theme properties
-    var lineWidth = this.board.theme.get('grid.lineWidth', s);
-    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Clear rectangle
-    this.context.clearRect(x - r, y - r, 2 * r, 2 * r);
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  /**
-   * Redraw a square cell area on the grid
-   */
-  GridLayer.prototype.redrawCell = function(gridX, gridY) {
-
-    //Get absolute coordinates and stone radius
-    var x = this.board.getAbsX(gridX);
-    var y = this.board.getAbsY(gridY);
-    var s = this.board.getCellSize();
-    var r = this.board.theme.get('stone.radius', s);
-
-    //Get theme properties
-    var lineWidth = this.board.theme.get('grid.lineWidth', s);
-    var strokeStyle = this.board.theme.get('grid.lineColor');
-    var starRadius = this.board.theme.get('grid.star.radius', s);
-    var starColor = this.board.theme.get('grid.star.color');
-    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
-    var starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height);
-
-    //Determine draw coordinates
-    var x1 = (gridX === 0) ? x : x - r;
-    var x2 = (gridX === this.board.width - 1) ? x : x + r;
-    var y1 = (gridY === 0) ? y : y - r;
-    var y2 = (gridY === this.board.height - 1) ? y : y + r;
-
-    //Translate canvas
-    this.context.translate(canvasTranslate, canvasTranslate);
-
-    //Configure context
-    this.context.beginPath();
-    this.context.lineWidth = lineWidth;
-    this.context.strokeStyle = strokeStyle;
-
-    //Patch up grid lines
-    this.context.moveTo(x1, y);
-    this.context.lineTo(x2, y);
-    this.context.moveTo(x, y1);
-    this.context.lineTo(x, y2);
-    this.context.stroke();
-
-    //Check if we need to draw a star point here
-    for (var i in starPoints) {
-      if (starPoints[i].x === gridX && starPoints[i].y === gridY) {
-        drawStarPoint.call(this, gridX, gridY, starRadius, starColor);
-      }
-    }
-
-    //Undo translation
-    this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
-
-  //Return
-  return GridLayer;
-}]);
-
-})(window, window.angular);
-
-(function(window, angular, undefined) {'use strict';
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Layer.HoverLayer.Service', [
-  'ngGo',
-  'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Markup.Service',
-  'ngGo.Board.Object.StoneFaded.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('HoverLayer', ['BoardLayer', 'Markup', 'StoneFaded', function(BoardLayer, Markup, StoneFaded) {
-
-  /**
-   * Constructor
-   */
-  var HoverLayer = function(board, context) {
-
-    //Container for items to restore
-    this.restore = [];
-
-    //Call parent constructor
-    BoardLayer.call(this, board, context);
-  };
-
-  /**
-   * Prototype extension
-   */
-  angular.extend(HoverLayer.prototype, BoardLayer.prototype);
-
-  /**
-   * Add hover item
-   */
-  HoverLayer.prototype.add = function(x, y, hover) {
-
-    //Validate coordinates
-    if (!this.grid.isOnGrid(x, y)) {
-      return;
-    }
-
-    //Remove any previous item at this position
-    this.remove(x, y);
-
-    //Create hover object
-    hover.object = {
-      x: x,
-      y: y
-    };
-
-    //Stones
-    if (hover.type === 'stones') {
-      hover.objectClass = StoneFaded;
-      hover.object.color = hover.value;
-    }
-
-    //Markup
-    else if (hover.type === 'markup') {
-      hover.objectClass = Markup;
-      if (typeof hover.value === 'object') {
-        hover.object = angular.extend(hover.object, hover.value);
-      }
-      else {
-        hover.object.type = hover.value;
-      }
-    }
-
-    //Unknown
-    else {
-      console.warn('Unknown hover type', hover.type);
-      return;
-    }
-
-    //Check if we need to hide something on layers underneath
-    if (this.board.has(hover.type, x, y)) {
-      this.restore.push({
-        x: x,
-        y: y,
-        layer: hover.type,
-        value: this.board.get(hover.type, x, y)
-      });
-      this.board.remove(hover.type, x, y);
-    }
-
-    //Add to stack
-    this.grid.set(x, y, hover);
-
-    //Draw item
-    if (hover.objectClass && hover.objectClass.draw) {
-      hover.objectClass.draw.call(this, hover.object);
-    }
-  };
-
-  /**
-   * Remove the hover object
-   */
-  HoverLayer.prototype.remove = function(x, y) {
-
-    //Validate coordinates
-    if (!this.grid.has(x, y)) {
-      return;
-    }
-
-    //Get object and clear it
-    var hover = this.grid.get(x, y);
-    if (hover.objectClass && hover.objectClass.clear) {
-      hover.objectClass.clear.call(this, hover.object);
-    }
-
-    //Other objects to restore?
-    for (var i = 0; i < this.restore.length; i++) {
-      if (this.restore[i].x === x && this.restore[i].y === y) {
-        this.board.add(
-          this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
-        );
-        this.restore.splice(i, 1);
-      }
-    }
-  };
-
-  /**
-   * Remove all hover objects
-   */
-  HoverLayer.prototype.removeAll = function() {
-
-    //Anything to do?
-    if (this.grid.isEmpty()) {
-      return;
-    }
-
-    //Get all item as objects
-    var i;
-    var hover = this.grid.all('layer');
-
-    //Clear them
-    for (i = 0; i < hover.length; i++) {
-      if (hover[i].objectClass && hover[i].objectClass.clear) {
-        hover[i].objectClass.clear.call(this, hover[i].object);
-      }
-    }
-
-    //Clear layer and empty grid
-    this.clear();
-    this.grid.empty();
-
-    //Restore objects on other layers
-    for (i = 0; i < this.restore.length; i++) {
-      this.board.add(
-        this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
-      );
-    }
-
-    //Clear restore array
-    this.restore = [];
-  };
-
-  /**
-   * Draw layer
-   */
-  HoverLayer.prototype.draw = function() {
-
-    //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //Loop objects and clear them
-    var hover = this.grid.all('hover');
-    for (var i = 0; i < hover.length; i++) {
-      if (hover.objectClass && hover.objectClass.draw) {
-        hover.objectClass.draw.call(this, hover.object);
-      }
-    }
-  };
-
-  //Return
-  return HoverLayer;
-}]);
-
-})(window, window.angular);
-
-(function(window, angular, undefined) {'use strict';
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
-  'ngGo',
-  'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Markup.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('MarkupLayer', ['BoardLayer', 'Markup', function(BoardLayer, Markup) {
-
-  /**
-   * Constructor
-   */
-  var MarkupLayer = function(board, context) {
-
-    //Call parent constructor
-    BoardLayer.call(this, board, context);
-  };
-
-  /**
-   * Prototype extension
-   */
-  angular.extend(MarkupLayer.prototype, BoardLayer.prototype);
-
-  /*****************************************************************************
-   * Object handling
-   ***/
-
-  /**
-   * Set all markup at once
-   */
-  MarkupLayer.prototype.setAll = function(grid) {
-
-    //Get changes compared to current grid
-    var i;
-    var changes = this.grid.compare(grid, 'type');
-
-    //Clear removed stuff
-    for (i = 0; i < changes.remove.length; i++) {
-      Markup.clear.call(this, changes.remove[i]);
-    }
-
-    //Draw added stuff
-    for (i = 0; i < changes.add.length; i++) {
-      Markup.draw.call(this, changes.add[i]);
-    }
-
-    //Remember new grid
-    this.grid = grid.clone();
-  };
-
-  /**
-   * Remove all (clear layer and empty grid)
-   */
-  MarkupLayer.prototype.removeAll = function() {
-
-    //Get all markup as objects
-    var markup = this.grid.all('type');
-
-    //Clear them
-    for (var i = 0; i < markup.length; i++) {
-      Markup.clear.call(this, markup[i]);
-    }
-
-    //Empty the grid now
-    this.grid.empty();
-  };
-
-  /*****************************************************************************
-   * Drawing
-   ***/
-
-  /**
-   * Draw layer
-   */
-  MarkupLayer.prototype.draw = function() {
-
-    //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //Get all markup as objects
-    var markup = this.grid.all('type');
-
-    //Draw them
-    for (var i = 0; i < markup.length; i++) {
-      Markup.draw.call(this, markup[i]);
-    }
-  };
-
-  /**
-   * Draw cell
-   */
-  MarkupLayer.prototype.drawCell = function(x, y) {
-
-    //Can only draw when we have dimensions
-    if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //On grid?
-    if (this.grid.has(x, y)) {
-      Markup.draw.call(this, this.grid.get(x, y, 'type'));
-    }
-  };
-
-  /**
-   * Clear cell
-   */
-  MarkupLayer.prototype.clearCell = function(x, y) {
-    if (this.grid.has(x, y)) {
-      Markup.clear.call(this, this.grid.get(x, y, 'type'));
-    }
-  };
-
-  //Return
-  return MarkupLayer;
-}]);
-
-})(window, window.angular);
-
-(function(window, angular, undefined) {'use strict';
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
-  'ngGo',
-  'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.StoneMini.Service',
-  'ngGo.Board.Object.StoneFaded.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('ScoreLayer', ['BoardLayer', 'StoneMini', 'StoneFaded', function(BoardLayer, StoneMini, StoneFaded) {
-
-  /**
-   * Constructor
-   */
-  var ScoreLayer = function(board, context) {
-
-    //Points and captures
-    this.points = [];
-    this.captures = [];
-
-    //Call parent constructor
-    BoardLayer.call(this, board, context);
-  };
-
-  /**
-   * Prototype extension
-   */
-  angular.extend(ScoreLayer.prototype, BoardLayer.prototype);
-
-  /*****************************************************************************
-   * Object handling
-   ***/
-
-  /**
-   * Set points and captures
-   */
-  ScoreLayer.prototype.setAll = function(points, captures) {
-
-    //Remove all existing stuff first
-    this.removeAll();
-
-    //Set new stuff
-    this.points = points.all('color');
-    this.captures = captures.all('color');
-
-    //Draw
-    this.draw();
-  };
-
-  /**
-   * Remove all scoring
-   */
-  ScoreLayer.prototype.removeAll = function() {
-
-    //If there are captures, draw them back onto the stones layer
-    for (var i = 0; i < this.captures.length; i++) {
-      this.board.add('stones', this.captures[i].x, this.captures[i].y, this.captures[i].color);
-    }
-
-    //Clear the layer
-    this.clear();
-
-    //Remove all stuff
-    this.points = [];
-    this.captures = [];
-  };
-
-  /*****************************************************************************
-   * Drawing
-   ***/
-
-  /**
-   * Draw layer
-   */
-  ScoreLayer.prototype.draw = function() {
-
-    //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //Init
-    var i;
-
-    //Draw captures first (removing stones from the stones layer)
-    for (i = 0; i < this.captures.length; i++) {
-      this.board.remove('stones', this.captures[i].x, this.captures[i].y);
-      StoneFaded.draw.call(this, this.captures[i]);
-    }
-
-    //Draw points on top of it
-    for (i = 0; i < this.points.length; i++) {
-      StoneMini.draw.call(this, this.points[i]);
-    }
-  };
-
-  //Return
-  return ScoreLayer;
-}]);
-
-})(window, window.angular);
-
-(function(window, angular, undefined) {'use strict';
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
-  'ngGo',
-  'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.StoneShadow.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('ShadowLayer', ['BoardLayer', 'StoneShadow', function(BoardLayer, StoneShadow) {
-
-  /**
-   * Constructor
-   */
-  var ShadowLayer = function(board, context) {
-
-    //Call parent constructor
-    BoardLayer.call(this, board, context);
-  };
-
-  /**
-   * Prototype extension
-   */
-  angular.extend(ShadowLayer.prototype, BoardLayer.prototype);
-
-  /**
-   * Add a stone
-   */
-  ShadowLayer.prototype.add = function(stone) {
-
-    //Don't add if no shadow
-    if (stone.shadow === false || (typeof stone.alpha !== 'undefined' && stone.alpha < 1)) {
-      return;
-    }
-
-    //Already have a stone here?
-    if (this.grid.has(stone.x, stone.y)) {
-      return;
-    }
-
-    //Add to grid
-    this.grid.set(stone.x, stone.y, stone.color);
-
-    //Draw it if there is a context
-    if (this.context && this.board.drawWidth !== 0 && this.board.drawheight !== 0) {
-      StoneShadow.draw.call(this, stone);
-    }
-  };
-
-  /**
-   * Remove a stone
-   */
-  ShadowLayer.prototype.remove = function(stone) {
-
-    //Remove from grid
-    this.grid.unset(stone.x, stone.y);
-
-    //Redraw whole layer
-    this.redraw();
-  };
-
-  /**
-   * Draw layer
-   */
-  ShadowLayer.prototype.draw = function() {
-
-    //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //Get shadowsize from theme
-    var shadowSize = this.board.theme.get('shadow.size', this.board.getCellSize());
-
-    //Apply shadow transformation
-    this.context.setTransform(1, 0, 0, 1, shadowSize, shadowSize);
-
-    //Get all stones as objects
-    var stones = this.grid.all('color');
-
-    //Draw them
-    for (var i = 0; i < stones.length; i++) {
-      StoneShadow.draw.call(this, stones[i]);
-    }
-  };
-
-  //Return
-  return ShadowLayer;
-}]);
-
-})(window, window.angular);
-
-(function(window, angular, undefined) {'use strict';
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Board.Layer.StonesLayer.Service', [
-  'ngGo',
-  'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Stone.Service'
-])
-
-/**
- * Factory definition
- */
-.factory('StonesLayer', ['BoardLayer', 'Stone', 'StoneColor', function(BoardLayer, Stone, StoneColor) {
-
-  /**
-   * Constructor
-   */
-  var StonesLayer = function(board, context) {
-
-    //Call parent constructor
-    BoardLayer.call(this, board, context);
-
-    //Set empty value for grid
-    this.grid.whenEmpty(StoneColor.EMPTY);
-  };
-
-  /**
-   * Prototype extension
-   */
-  angular.extend(StonesLayer.prototype, BoardLayer.prototype);
-
-  /*****************************************************************************
-   * Object handling
-   ***/
-
-  /**
-   * Set all stones at once
-   */
-  StonesLayer.prototype.setAll = function(grid) {
-
-    //Get changes compared to current grid
-    var i;
-    var changes = this.grid.compare(grid, 'color');
-
-    //Clear removed stuff
-    for (i = 0; i < changes.remove.length; i++) {
-      Stone.clear.call(this, changes.remove[i]);
-    }
-
-    //Draw added stuff
-    for (i = 0; i < changes.add.length; i++) {
-      Stone.draw.call(this, changes.add[i]);
-    }
-
-    //Remember new grid
-    this.grid = grid.clone();
-  };
-
-  /*****************************************************************************
-   * Drawing
-   ***/
-
-  /**
-   * Draw layer
-   */
-  StonesLayer.prototype.draw = function() {
-
-    //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //Get all stones as objects
-    var stones = this.grid.all('color');
-
-    //Draw them
-    for (var i = 0; i < stones.length; i++) {
-      Stone.draw.call(this, stones[i]);
-    }
-  };
-
-  /**
-   * Redraw layer
-   */
-  StonesLayer.prototype.redraw = function() {
-
-    //Clear shadows layer
-    this.board.removeAll('shadow');
-
-    //Redraw ourselves
-    this.clear();
-    this.draw();
-  };
-
-  /**
-   * Draw cell
-   */
-  StonesLayer.prototype.drawCell = function(x, y) {
-
-    //Can only draw when we have dimensions
-    if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
-      return;
-    }
-
-    //On grid?
-    if (this.grid.has(x, y)) {
-      Stone.draw.call(this, this.grid.get(x, y, 'color'));
-    }
-  };
-
-  /**
-   * Clear cell
-   */
-  StonesLayer.prototype.clearCell = function(x, y) {
-    if (this.grid.has(x, y)) {
-      Stone.clear.call(this, this.grid.get(x, y, 'color'));
-    }
-  };
-
-  //Return
-  return StonesLayer;
-}]);
-
-})(window, window.angular);
-
-(function(window, angular, undefined) {'use strict';
-
-/**
  * Coordinates :: This class is used for drawing board coordinates
  */
 
@@ -8844,6 +7953,897 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
   //Return
   return StoneShadow;
 });
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * GridLayer :: This class represents the grid layer of the board, and it is responsible for drawing
+ * gridlines, starpoints and coordinates via the Coordinates class.
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Layer.GridLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.Coordinates.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('GridLayer', ['BoardLayer', 'Coordinates', function(BoardLayer, Coordinates) {
+
+  /**
+   * Helper for drawing starpoints
+   */
+  var drawStarPoint = function(gridX, gridY, starRadius, starColor) {
+
+    //Don't draw if it falls outsize of the board grid
+    if (gridX < this.board.grid.xLeft || gridX > this.board.grid.xRight) {
+      return;
+    }
+    if (gridY < this.board.grid.yTop || gridY > this.board.grid.yBot) {
+      return;
+    }
+
+    //Get absolute coordinates and star point radius
+    var x = this.board.getAbsX(gridX);
+    var y = this.board.getAbsY(gridY);
+
+    //Draw star point
+    this.context.beginPath();
+    this.context.fillStyle = starColor;
+    this.context.arc(x, y, starRadius, 0, 2 * Math.PI, true);
+    this.context.fill();
+  };
+
+  /**
+   * Constructor
+   */
+  var GridLayer = function(board, context) {
+
+    //Set coordinates setting
+    this.coordinates = false;
+
+    //Call parent constructor
+    BoardLayer.call(this, board, context);
+  };
+
+  /**
+   * Prototype extension
+   */
+  angular.extend(GridLayer.prototype, BoardLayer.prototype);
+
+  /**
+   * Show or hide the coordinates.
+   */
+  GridLayer.prototype.setCoordinates = function(show) {
+    this.coordinates = show;
+  };
+
+  /*****************************************************************************
+   * Object handling
+   ***/
+
+  /**
+   * Get all has nothing to return
+   */
+  GridLayer.prototype.getAll = function() {
+    return null;
+  };
+
+  /**
+   * Set all has nothing to set
+   */
+  GridLayer.prototype.setAll = function(/*grid*/) {
+    return;
+  };
+
+  /**
+   * Remove all has nothing to remove
+   */
+  GridLayer.prototype.removeAll = function() {
+    return;
+  };
+
+  /*****************************************************************************
+   * Drawing
+   ***/
+
+  /**
+   * Draw method
+   */
+  GridLayer.prototype.draw = function() {
+
+    //Can only draw when we have dimensions and context
+    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //Determine top x and y margin
+    var tx = this.board.drawMarginHor;
+    var ty = this.board.drawMarginVer;
+
+    //Get theme properties
+    var cellSize = this.board.getCellSize();
+    var lineWidth = this.board.theme.get('grid.lineWidth', cellSize);
+    var lineCap = this.board.theme.get('grid.lineCap');
+    var strokeStyle = this.board.theme.get('grid.lineColor');
+    var starRadius = this.board.theme.get('grid.star.radius', cellSize);
+    var starColor = this.board.theme.get('grid.star.color');
+    var starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height);
+    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.beginPath();
+    this.context.lineWidth = lineWidth;
+    this.context.lineCap = lineCap;
+    this.context.strokeStyle = strokeStyle;
+
+    //Helper vars
+    var i, x, y;
+
+    //Draw vertical lines
+    for (i = this.board.grid.xLeft; i <= this.board.grid.xRight; i++) {
+      x = this.board.getAbsX(i);
+      this.context.moveTo(x, ty);
+      this.context.lineTo(x, ty + this.board.gridDrawHeight);
+    }
+
+    //Draw horizontal lines
+    for (i = this.board.grid.yTop; i <= this.board.grid.yBot; i++) {
+      y = this.board.getAbsY(i);
+      this.context.moveTo(tx, y);
+      this.context.lineTo(tx + this.board.gridDrawWidth, y);
+    }
+
+    //Draw grid lines
+    this.context.stroke();
+
+    //Star points defined?
+    for (i = 0; i < starPoints.length; i++) {
+      drawStarPoint.call(this, starPoints[i].x, starPoints[i].y, starRadius, starColor);
+    }
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+
+    //Draw coordinates
+    if (this.coordinates) {
+      Coordinates.draw.call(this);
+    }
+  };
+
+  /**
+   * Clear a square cell area on the grid
+   */
+  GridLayer.prototype.clearCell = function(gridX, gridY) {
+
+    //Get absolute coordinates and stone radius
+    var x = this.board.getAbsX(gridX);
+    var y = this.board.getAbsY(gridY);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
+
+    //Get theme properties
+    var lineWidth = this.board.theme.get('grid.lineWidth', s);
+    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Clear rectangle
+    this.context.clearRect(x - r, y - r, 2 * r, 2 * r);
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  /**
+   * Redraw a square cell area on the grid
+   */
+  GridLayer.prototype.redrawCell = function(gridX, gridY) {
+
+    //Get absolute coordinates and stone radius
+    var x = this.board.getAbsX(gridX);
+    var y = this.board.getAbsY(gridY);
+    var s = this.board.getCellSize();
+    var r = this.board.theme.get('stone.radius', s);
+
+    //Get theme properties
+    var lineWidth = this.board.theme.get('grid.lineWidth', s);
+    var strokeStyle = this.board.theme.get('grid.lineColor');
+    var starRadius = this.board.theme.get('grid.star.radius', s);
+    var starColor = this.board.theme.get('grid.star.color');
+    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+    var starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height);
+
+    //Determine draw coordinates
+    var x1 = (gridX === 0) ? x : x - r;
+    var x2 = (gridX === this.board.width - 1) ? x : x + r;
+    var y1 = (gridY === 0) ? y : y - r;
+    var y2 = (gridY === this.board.height - 1) ? y : y + r;
+
+    //Translate canvas
+    this.context.translate(canvasTranslate, canvasTranslate);
+
+    //Configure context
+    this.context.beginPath();
+    this.context.lineWidth = lineWidth;
+    this.context.strokeStyle = strokeStyle;
+
+    //Patch up grid lines
+    this.context.moveTo(x1, y);
+    this.context.lineTo(x2, y);
+    this.context.moveTo(x, y1);
+    this.context.lineTo(x, y2);
+    this.context.stroke();
+
+    //Check if we need to draw a star point here
+    for (var i in starPoints) {
+      if (starPoints[i].x === gridX && starPoints[i].y === gridY) {
+        drawStarPoint.call(this, gridX, gridY, starRadius, starColor);
+      }
+    }
+
+    //Undo translation
+    this.context.translate(-canvasTranslate, -canvasTranslate);
+  };
+
+  //Return
+  return GridLayer;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Layer.HoverLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.Markup.Service',
+  'ngGo.Board.Object.StoneFaded.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('HoverLayer', ['BoardLayer', 'Markup', 'StoneFaded', function(BoardLayer, Markup, StoneFaded) {
+
+  /**
+   * Constructor
+   */
+  var HoverLayer = function(board, context) {
+
+    //Container for items to restore
+    this.restore = [];
+
+    //Call parent constructor
+    BoardLayer.call(this, board, context);
+  };
+
+  /**
+   * Prototype extension
+   */
+  angular.extend(HoverLayer.prototype, BoardLayer.prototype);
+
+  /**
+   * Add hover item
+   */
+  HoverLayer.prototype.add = function(x, y, hover) {
+
+    //Validate coordinates
+    if (!this.grid.isOnGrid(x, y)) {
+      return;
+    }
+
+    //Remove any previous item at this position
+    this.remove(x, y);
+
+    //Create hover object
+    hover.object = {
+      x: x,
+      y: y
+    };
+
+    //Stones
+    if (hover.type === 'stones') {
+      hover.objectClass = StoneFaded;
+      hover.object.color = hover.value;
+    }
+
+    //Markup
+    else if (hover.type === 'markup') {
+      hover.objectClass = Markup;
+      if (typeof hover.value === 'object') {
+        hover.object = angular.extend(hover.object, hover.value);
+      }
+      else {
+        hover.object.type = hover.value;
+      }
+    }
+
+    //Unknown
+    else {
+      console.warn('Unknown hover type', hover.type);
+      return;
+    }
+
+    //Check if we need to hide something on layers underneath
+    if (this.board.has(hover.type, x, y)) {
+      this.restore.push({
+        x: x,
+        y: y,
+        layer: hover.type,
+        value: this.board.get(hover.type, x, y)
+      });
+      this.board.remove(hover.type, x, y);
+    }
+
+    //Add to stack
+    this.grid.set(x, y, hover);
+
+    //Draw item
+    if (hover.objectClass && hover.objectClass.draw) {
+      hover.objectClass.draw.call(this, hover.object);
+    }
+  };
+
+  /**
+   * Remove the hover object
+   */
+  HoverLayer.prototype.remove = function(x, y) {
+
+    //Validate coordinates
+    if (!this.grid.has(x, y)) {
+      return;
+    }
+
+    //Get object and clear it
+    var hover = this.grid.get(x, y);
+    if (hover.objectClass && hover.objectClass.clear) {
+      hover.objectClass.clear.call(this, hover.object);
+    }
+
+    //Other objects to restore?
+    for (var i = 0; i < this.restore.length; i++) {
+      if (this.restore[i].x === x && this.restore[i].y === y) {
+        this.board.add(
+          this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
+        );
+        this.restore.splice(i, 1);
+      }
+    }
+  };
+
+  /**
+   * Remove all hover objects
+   */
+  HoverLayer.prototype.removeAll = function() {
+
+    //Anything to do?
+    if (this.grid.isEmpty()) {
+      return;
+    }
+
+    //Get all item as objects
+    var i;
+    var hover = this.grid.all('layer');
+
+    //Clear them
+    for (i = 0; i < hover.length; i++) {
+      if (hover[i].objectClass && hover[i].objectClass.clear) {
+        hover[i].objectClass.clear.call(this, hover[i].object);
+      }
+    }
+
+    //Clear layer and empty grid
+    this.clear();
+    this.grid.empty();
+
+    //Restore objects on other layers
+    for (i = 0; i < this.restore.length; i++) {
+      this.board.add(
+        this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
+      );
+    }
+
+    //Clear restore array
+    this.restore = [];
+  };
+
+  /**
+   * Draw layer
+   */
+  HoverLayer.prototype.draw = function() {
+
+    //Can only draw when we have dimensions and context
+    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //Loop objects and clear them
+    var hover = this.grid.all('hover');
+    for (var i = 0; i < hover.length; i++) {
+      if (hover.objectClass && hover.objectClass.draw) {
+        hover.objectClass.draw.call(this, hover.object);
+      }
+    }
+  };
+
+  //Return
+  return HoverLayer;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.Markup.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('MarkupLayer', ['BoardLayer', 'Markup', function(BoardLayer, Markup) {
+
+  /**
+   * Constructor
+   */
+  var MarkupLayer = function(board, context) {
+
+    //Call parent constructor
+    BoardLayer.call(this, board, context);
+  };
+
+  /**
+   * Prototype extension
+   */
+  angular.extend(MarkupLayer.prototype, BoardLayer.prototype);
+
+  /*****************************************************************************
+   * Object handling
+   ***/
+
+  /**
+   * Set all markup at once
+   */
+  MarkupLayer.prototype.setAll = function(grid) {
+
+    //Get changes compared to current grid
+    var i;
+    var changes = this.grid.compare(grid, 'type');
+
+    //Clear removed stuff
+    for (i = 0; i < changes.remove.length; i++) {
+      Markup.clear.call(this, changes.remove[i]);
+    }
+
+    //Draw added stuff
+    for (i = 0; i < changes.add.length; i++) {
+      Markup.draw.call(this, changes.add[i]);
+    }
+
+    //Remember new grid
+    this.grid = grid.clone();
+  };
+
+  /**
+   * Remove all (clear layer and empty grid)
+   */
+  MarkupLayer.prototype.removeAll = function() {
+
+    //Get all markup as objects
+    var markup = this.grid.all('type');
+
+    //Clear them
+    for (var i = 0; i < markup.length; i++) {
+      Markup.clear.call(this, markup[i]);
+    }
+
+    //Empty the grid now
+    this.grid.empty();
+  };
+
+  /*****************************************************************************
+   * Drawing
+   ***/
+
+  /**
+   * Draw layer
+   */
+  MarkupLayer.prototype.draw = function() {
+
+    //Can only draw when we have dimensions and context
+    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //Get all markup as objects
+    var markup = this.grid.all('type');
+
+    //Draw them
+    for (var i = 0; i < markup.length; i++) {
+      Markup.draw.call(this, markup[i]);
+    }
+  };
+
+  /**
+   * Draw cell
+   */
+  MarkupLayer.prototype.drawCell = function(x, y) {
+
+    //Can only draw when we have dimensions
+    if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //On grid?
+    if (this.grid.has(x, y)) {
+      Markup.draw.call(this, this.grid.get(x, y, 'type'));
+    }
+  };
+
+  /**
+   * Clear cell
+   */
+  MarkupLayer.prototype.clearCell = function(x, y) {
+    if (this.grid.has(x, y)) {
+      Markup.clear.call(this, this.grid.get(x, y, 'type'));
+    }
+  };
+
+  //Return
+  return MarkupLayer;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.StoneMini.Service',
+  'ngGo.Board.Object.StoneFaded.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('ScoreLayer', ['BoardLayer', 'StoneMini', 'StoneFaded', function(BoardLayer, StoneMini, StoneFaded) {
+
+  /**
+   * Constructor
+   */
+  var ScoreLayer = function(board, context) {
+
+    //Points and captures
+    this.points = [];
+    this.captures = [];
+
+    //Call parent constructor
+    BoardLayer.call(this, board, context);
+  };
+
+  /**
+   * Prototype extension
+   */
+  angular.extend(ScoreLayer.prototype, BoardLayer.prototype);
+
+  /*****************************************************************************
+   * Object handling
+   ***/
+
+  /**
+   * Set points and captures
+   */
+  ScoreLayer.prototype.setAll = function(points, captures) {
+
+    //Remove all existing stuff first
+    this.removeAll();
+
+    //Set new stuff
+    this.points = points.all('color');
+    this.captures = captures.all('color');
+
+    //Draw
+    this.draw();
+  };
+
+  /**
+   * Remove all scoring
+   */
+  ScoreLayer.prototype.removeAll = function() {
+
+    //If there are captures, draw them back onto the stones layer
+    for (var i = 0; i < this.captures.length; i++) {
+      this.board.add('stones', this.captures[i].x, this.captures[i].y, this.captures[i].color);
+    }
+
+    //Clear the layer
+    this.clear();
+
+    //Remove all stuff
+    this.points = [];
+    this.captures = [];
+  };
+
+  /*****************************************************************************
+   * Drawing
+   ***/
+
+  /**
+   * Draw layer
+   */
+  ScoreLayer.prototype.draw = function() {
+
+    //Can only draw when we have dimensions and context
+    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //Init
+    var i;
+
+    //Draw captures first (removing stones from the stones layer)
+    for (i = 0; i < this.captures.length; i++) {
+      this.board.remove('stones', this.captures[i].x, this.captures[i].y);
+      StoneFaded.draw.call(this, this.captures[i]);
+    }
+
+    //Draw points on top of it
+    for (i = 0; i < this.points.length; i++) {
+      StoneMini.draw.call(this, this.points[i]);
+    }
+  };
+
+  //Return
+  return ScoreLayer;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.StoneShadow.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('ShadowLayer', ['BoardLayer', 'StoneShadow', function(BoardLayer, StoneShadow) {
+
+  /**
+   * Constructor
+   */
+  var ShadowLayer = function(board, context) {
+
+    //Call parent constructor
+    BoardLayer.call(this, board, context);
+  };
+
+  /**
+   * Prototype extension
+   */
+  angular.extend(ShadowLayer.prototype, BoardLayer.prototype);
+
+  /**
+   * Add a stone
+   */
+  ShadowLayer.prototype.add = function(stone) {
+
+    //Don't add if no shadow
+    if (stone.shadow === false || (typeof stone.alpha !== 'undefined' && stone.alpha < 1)) {
+      return;
+    }
+
+    //Already have a stone here?
+    if (this.grid.has(stone.x, stone.y)) {
+      return;
+    }
+
+    //Add to grid
+    this.grid.set(stone.x, stone.y, stone.color);
+
+    //Draw it if there is a context
+    if (this.context && this.board.drawWidth !== 0 && this.board.drawheight !== 0) {
+      StoneShadow.draw.call(this, stone);
+    }
+  };
+
+  /**
+   * Remove a stone
+   */
+  ShadowLayer.prototype.remove = function(stone) {
+
+    //Remove from grid
+    this.grid.unset(stone.x, stone.y);
+
+    //Redraw whole layer
+    this.redraw();
+  };
+
+  /**
+   * Draw layer
+   */
+  ShadowLayer.prototype.draw = function() {
+
+    //Can only draw when we have dimensions and context
+    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //Get shadowsize from theme
+    var shadowSize = this.board.theme.get('shadow.size', this.board.getCellSize());
+
+    //Apply shadow transformation
+    this.context.setTransform(1, 0, 0, 1, shadowSize, shadowSize);
+
+    //Get all stones as objects
+    var stones = this.grid.all('color');
+
+    //Draw them
+    for (var i = 0; i < stones.length; i++) {
+      StoneShadow.draw.call(this, stones[i]);
+    }
+  };
+
+  //Return
+  return ShadowLayer;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Board.Layer.StonesLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.Stone.Service'
+])
+
+/**
+ * Factory definition
+ */
+.factory('StonesLayer', ['BoardLayer', 'Stone', 'StoneColor', function(BoardLayer, Stone, StoneColor) {
+
+  /**
+   * Constructor
+   */
+  var StonesLayer = function(board, context) {
+
+    //Call parent constructor
+    BoardLayer.call(this, board, context);
+
+    //Set empty value for grid
+    this.grid.whenEmpty(StoneColor.EMPTY);
+  };
+
+  /**
+   * Prototype extension
+   */
+  angular.extend(StonesLayer.prototype, BoardLayer.prototype);
+
+  /*****************************************************************************
+   * Object handling
+   ***/
+
+  /**
+   * Set all stones at once
+   */
+  StonesLayer.prototype.setAll = function(grid) {
+
+    //Get changes compared to current grid
+    var i;
+    var changes = this.grid.compare(grid, 'color');
+
+    //Clear removed stuff
+    for (i = 0; i < changes.remove.length; i++) {
+      Stone.clear.call(this, changes.remove[i]);
+    }
+
+    //Draw added stuff
+    for (i = 0; i < changes.add.length; i++) {
+      Stone.draw.call(this, changes.add[i]);
+    }
+
+    //Remember new grid
+    this.grid = grid.clone();
+  };
+
+  /*****************************************************************************
+   * Drawing
+   ***/
+
+  /**
+   * Draw layer
+   */
+  StonesLayer.prototype.draw = function() {
+
+    //Can only draw when we have dimensions and context
+    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //Get all stones as objects
+    var stones = this.grid.all('color');
+
+    //Draw them
+    for (var i = 0; i < stones.length; i++) {
+      Stone.draw.call(this, stones[i]);
+    }
+  };
+
+  /**
+   * Redraw layer
+   */
+  StonesLayer.prototype.redraw = function() {
+
+    //Clear shadows layer
+    this.board.removeAll('shadow');
+
+    //Redraw ourselves
+    this.clear();
+    this.draw();
+  };
+
+  /**
+   * Draw cell
+   */
+  StonesLayer.prototype.drawCell = function(x, y) {
+
+    //Can only draw when we have dimensions
+    if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      return;
+    }
+
+    //On grid?
+    if (this.grid.has(x, y)) {
+      Stone.draw.call(this, this.grid.get(x, y, 'color'));
+    }
+  };
+
+  /**
+   * Clear cell
+   */
+  StonesLayer.prototype.clearCell = function(x, y) {
+    if (this.grid.has(x, y)) {
+      Stone.clear.call(this, this.grid.get(x, y, 'color'));
+    }
+  };
+
+  //Return
+  return StonesLayer;
+}]);
 
 })(window, window.angular);
 
