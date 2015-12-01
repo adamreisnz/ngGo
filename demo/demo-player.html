@@ -65,6 +65,19 @@
     </p>
 
     <p>
+      Variations:
+      <span ng-if="Game.node.children.length > 1">
+        <span ng-repeat="variation in Game.node.children">
+          <br>
+          <button ng-click="Player.next($index)">{{variation.name}}</button>
+        </span>
+      </span>
+      <br>
+      <button ng-click="Player.previousFork()">Previous fork</button>
+      <button ng-click="Player.nextFork()">Next fork</button>
+    </p>
+
+    <p>
       Comments:<br>
       <span ng-repeat="comment in Game.node.comments">{{comment}}<br></span>
     </p>
@@ -103,7 +116,52 @@
       "width": 9,
       "height": 9
     },
-    "tree": [{"root":true,"markup":{"circle":["af","bf","cf"],"label":[["ac","1"],["bc","2"],["cc","3"],["ag","A"],["bg","B"],["cg","C"]],"happy":["ah","ch"],"sad":["bh"],"triangle":["aa","ba","ca"],"square":["ab","bb","cb"],"select":["ae","be","ce"],"mark":["ad","bd","cd"]},"setup":{"W":["ba","bb","bc","bd","be","bf","bg","bh"],"B":["aa","ab","ac","ad","ae","af","ag","ah"]},"comments":["Comment at start of game"]},[[{"move":{"B":"gc"},"comments":["Comment at first variation"],"name":"First variation"},{"move":{"W":"gg"}},{"move":{"B":"cc"}},{"move":{"W":"dc"}},{"move":{"B":"cb"}},{"move":{"W":"db"}},{"move":{"B":"ca"}},{"move":{"W":"cd"}},{"move":{"B":"da"}},{"move":{"W":"ea"}},{"move":{"B":"bi"}},{"move":{"W":"ef"}},{"move":{"B":"ch"}},{"move":{"W":"cg"}},{"move":{"B":"dh"}},{"move":{"W":"dg"}},{"move":{"B":"eh"}},{"move":{"W":"ge"}},{"move":{"B":"fg"}},{"move":{"W":"ff"}},{"move":{"B":"gh"}},{"move":{"W":"hg"}},{"move":{"B":"hh"}},{"move":{"W":"ig"}},{"move":{"B":"ih"}},{"move":{"W":"fd"}},{"move":{"B":"ai"}},{"move":{"W":"hd"}},{"move":{"B":"ci"}},{"move":{"W":"eg"}},{"move":{"B":"fh"}},{"move":{"W":"gi"}},{"move":{"B":"fi"}}],[{"move":{"B":"gg"},"comments":["Comment at second variation"],"name":"Second variation"},[[{"move":{"W":"gc"}},{"mode":"solve","move":{"B":"eg"}},[[{"move":{"W":"ec","solution":true}},{"move":{"B":"fe","solution":true}}],[{"move":{"W":"ge","solution":true}},{"move":{"B":"dh","solution":true}}]]],[{"setup":{"E":["aa","ba","ab","bb","ac","bc","ad","bd","ae","be","af","bf","ag","bg","ah","bh"]},"comments":["Variation where setup stones have been removed"],"name":"Third variation"},{"move":{"W":"cc"}},{"move":{"B":"cg"}},{"move":{"W":"gc"}},{"move":{"B":"ef"}},{"move":{"W":"ed"}}]]]]]
+    "tree": [
+      {"root":true,"markup":{"circle":["af","bf","cf"],"label":[["ac","1"],["bc","2"],["cc","3"],["ag","A"],["bg","B"],["cg","C"]],"happy":["ah","ch"],"sad":["bh"],"triangle":["aa","ba","ca"],"square":["ab","bb","cb"],"select":["ae","be","ce"],"mark":["ad","bd","cd"]},"setup":{"W":["ba","bb","bc","bd","be","bf","bg","bh"],"B":["aa","ab","ac","ad","ae","af","ag","ah"]},"comments":["Comment at start of game"]},
+      [
+        [
+          {"move":{"B":"gc"},"comments":["Comment at first variation"],"name":"First variation"},
+          {"move":{"W":"gg"}},{"move":{"B":"cc"}},{"move":{"W":"dc"}},
+          {"move":{"B":"cb"}},{"move":{"W":"db"}},{"move":{"B":"ca"}},
+          {"move":{"W":"cd"}},{"move":{"B":"da"}},{"move":{"W":"ea"}},
+          {"move":{"B":"bi"}},{"move":{"W":"ef"}},{"move":{"B":"ch"}},
+          {"move":{"W":"cg"}},{"move":{"B":"dh"}},{"move":{"W":"dg"}},
+          {"move":{"B":"eh"}},{"move":{"W":"ge"}},{"move":{"B":"fg"}},
+          {"move":{"W":"ff"}},{"move":{"B":"gh"}},{"move":{"W":"hg"}},
+          {"move":{"B":"hh"}},{"move":{"W":"ig"}},{"move":{"B":"ih"}},
+          {"move":{"W":"fd"}},{"move":{"B":"ai"}},{"move":{"W":"hd"}},
+          {"move":{"B":"ci"}},{"move":{"W":"eg"}},{"move":{"B":"fh"}},
+          {"move":{"W":"gi"}},{"move":{"B":"fi"}}
+        ],
+        [
+          {"move":{"B":"gg"},"comments":["Comment at second variation"],"name":"Second variation"},
+          [
+            [
+              {"move":{"W":"gc"},"name":"Third variation"},
+              {"mode":"solve","move":{"B":"eg"}},
+              [
+                [
+                  {"move":{"W":"ec","solution":true}},
+                  {"move":{"B":"fe","solution":true}}
+                ],
+                [
+                  {"move":{"W":"ge","solution":true}},
+                  {"move":{"B":"dh","solution":true}}
+                ]
+              ]
+            ],
+            [
+              {"setup":{"E":["aa","ba","ab","bb","ac","bc","ad","bd","ae","be","af","bf","ag","bg","ah","bh"]},"comments":["Variation where setup stones have been removed"],"name":"Fourth variation"},
+              {"move":{"W":"cc"}},
+              {"move":{"B":"cg"}},
+              {"move":{"W":"gc"}},
+              {"move":{"B":"ef"}},
+              {"move":{"W":"ed"}}
+            ]
+          ]
+        ]
+      ]
+    ]
   };
 
   /**

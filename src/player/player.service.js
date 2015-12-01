@@ -567,11 +567,21 @@ angular.module('ngGo.Player.Service', [
       },
 
       /**
-       * Go to the last fork
+       * Go to the previous fork
        */
-      lastFork: function() {
+      previousFork: function() {
         if (this.game) {
-          this.game.lastFork();
+          this.game.previousFork();
+          this.processPosition();
+        }
+      },
+
+      /**
+       * Go to the next fork
+       */
+      nextFork: function() {
+        if (this.game) {
+          this.game.nextFork();
           this.processPosition();
         }
       },
