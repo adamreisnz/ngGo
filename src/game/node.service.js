@@ -471,6 +471,13 @@ angular.module('ngGo.Game.Node.Service', [
     return false;
   };
 
+  /**
+   * Check if we have comments
+   */
+  GameNode.prototype.hasComments = function() {
+    return (this.comments && this.comments.length > 0);
+  };
+
   /*****************************************************************************
    * Node manipulation
    ***/

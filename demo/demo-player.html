@@ -80,6 +80,9 @@
     <p>
       Comments:<br>
       <span ng-repeat="comment in Game.node.comments">{{comment}}<br></span>
+      <br>
+      <button ng-click="Player.previousComment()">Previous comment</button>
+      <button ng-click="Player.nextComment()">Next comment</button>
     </p>
   </aside>
 </main>
@@ -127,9 +130,10 @@
           {"move":{"B":"bi"}},{"move":{"W":"ef"}},{"move":{"B":"ch"}},
           {"move":{"W":"cg"}},{"move":{"B":"dh"}},{"move":{"W":"dg"}},
           {"move":{"B":"eh"}},{"move":{"W":"ge"}},{"move":{"B":"fg"}},
-          {"move":{"W":"ff"}},{"move":{"B":"gh"}},{"move":{"W":"hg"}},
-          {"move":{"B":"hh"}},{"move":{"W":"ig"}},{"move":{"B":"ih"}},
-          {"move":{"W":"fd"}},{"move":{"B":"ai"}},{"move":{"W":"hd"}},
+          {"move":{"W":"ff"},"comments":["Some comment"]},
+          {"move":{"B":"gh"}},{"move":{"W":"hg"}},{"move":{"B":"hh"}},
+          {"move":{"W":"ig"}},{"move":{"B":"ih"}},{"move":{"W":"fd"}},
+          {"move":{"B":"ai"}},{"move":{"W":"hd"},"comments":["Some other comment"]},
           {"move":{"B":"ci"}},{"move":{"W":"eg"}},{"move":{"B":"fh"}},
           {"move":{"W":"gi"}},{"move":{"B":"fi"}}
         ],

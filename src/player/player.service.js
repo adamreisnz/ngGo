@@ -587,6 +587,26 @@ angular.module('ngGo.Player.Service', [
       },
 
       /**
+       * Go to the next position with a comment
+       */
+      nextComment: function() {
+        if (this.game && this.game.node !== this.restrictNodeEnd) {
+          this.game.nextComment();
+          this.processPosition();
+        }
+      },
+
+      /**
+       * Go back to the previous position with a comment
+       */
+      previousComment: function() {
+        if (this.game && this.game.node !== this.restrictNodeStart) {
+          this.game.previousComment();
+          this.processPosition();
+        }
+      },
+
+      /**
        * Restrict navigation to the current node
        */
       restrictNode: function(end) {

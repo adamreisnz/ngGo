@@ -164,7 +164,8 @@ angular.module('ngGo.Game.Service', [
       //Set node pointer back to root
       this.node = this.root;
 
-      //Set the initial turn depending on handicap (can be overwritten by game record instructions)
+      //Set the initial turn depending on handicap
+      //Can be overwritten by game record instructions
       this.setTurn((this.info.game.handicap > 1) ? StoneColor.W : StoneColor.B);
     };
 
@@ -1305,22 +1306,6 @@ angular.module('ngGo.Game.Service', [
     };
 
     /**
-     * Go to the previous fork
-     */
-    Game.prototype.previousFork = function() {
-
-      //Loop until we find a node with more than one child
-      while (previousNode.call(this)) {
-        popPosition.call(this);
-
-        //Break when found a node with more than one child
-        if (this.node.children.length > 1) {
-          break;
-        }
-      }
-    };
-
-    /**
      * Go to the next fork
      */
     Game.prototype.nextFork = function() {
@@ -1339,6 +1324,62 @@ angular.module('ngGo.Game.Service', [
 
         //Have multiple children?
         if (this.node.children.length > 1) {
+          break;
+        }
+      }
+    };
+
+    /**
+     * Go to the previous fork
+     */
+    Game.prototype.previousFork = function() {
+
+      //Loop until we find a node with more than one child
+      while (previousNode.call(this)) {
+        popPosition.call(this);
+        if (this.node.children.length > 1) {
+          break;
+        }
+      }
+    };
+
+    /**
+     * Go to the next move with comments
+     */
+    Game.prototype.nextComment = function() {
+
+      //Keep going to the next node until we find one with comments
+      while (nextNode.call(this)) {
+
+        //If an invalid move is detected, we can't go on
+        try {
+          executeNode.call(this);
+        }
+        catch (error) {
+          previousNode.call(this);
+          throw error;
+        }
+
+        //Comments found?
+        if (this.node.hasComments()) {
+          break;
+        }
+      }
+    };
+
+    /**
+     * Go to the previous move with comments
+     */
+    Game.prototype.previousComment = function() {
+
+      //Go back until we find a node with comments
+      while (previousNode.call(this)) {
+
+        //Pop the position
+        popPosition.call(this);
+
+        //Comments found?
+        if (this.node.hasComments()) {
           break;
         }
       }
