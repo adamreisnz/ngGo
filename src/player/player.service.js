@@ -33,17 +33,17 @@ angular.module('ngGo.Player.Service', [
     tool: PlayerTools.MOVE,
 
     //Keys/scrollwheel navigation
-    arrow_keys_navigation: true,
-    scroll_wheel_navigation: true,
+    arrowKeysNavigation: true,
+    scrollWheelNavigation: true,
 
     //Last move marker, leave empty for none
-    last_move_marker: MarkupTypes.LAST,
+    lastMoveMarker: MarkupTypes.LAST,
 
     //Indicate variations with markup on the board, and show
     //successor node variations or current node variations
-    variation_markup: true,
-    variation_children: true,
-    variation_siblings: false
+    variationMarkup: true,
+    variationChildren: true,
+    variationSiblings: false
   };
 
   /**
@@ -213,13 +213,13 @@ angular.module('ngGo.Player.Service', [
         //Process settings
         this.switchMode(this.config.mode);
         this.switchTool(this.config.tool);
-        this.setArrowKeysNavigation(this.config.arrow_keys_navigation);
-        this.setScrollWheelNavigation(this.config.scroll_wheel_navigation);
-        this.setLastMoveMarker(this.config.last_move_marker);
+        this.setArrowKeysNavigation(this.config.arrowKeysNavigation);
+        this.setScrollWheelNavigation(this.config.scrollWheelNavigation);
+        this.setLastMoveMarker(this.config.lastMoveMarker);
         this.setVariationMarkup(
-          this.config.variation_markup,
-          this.config.variation_children,
-          this.config.variation_siblings
+          this.config.variationMarkup,
+          this.config.variationChildren,
+          this.config.variationSiblings
         );
 
         //Let the modes parse their config

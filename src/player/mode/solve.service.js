@@ -41,14 +41,14 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
   var defaultConfig = {
 
     //Player color
-    player_color: StoneColor.B,
+    playerColor: StoneColor.B,
 
     //Show solution paths
-    solution_paths: false,
+    solutionPaths: false,
 
     //Auto play settings
-    solve_auto_play: true,
-    solve_auto_play_delay: 500
+    solveAutoPlay: true,
+    solveAutoPlayDelay: 500
   };
 
   /**
@@ -386,10 +386,10 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
         this.config = angular.extend({}, this.config, defaultConfig, config || {});
 
         //Process settings
-        this.toggleSolutionPaths(this.config.solution_paths);
-        this.setPlayerColor(this.config.player_color);
-        this.setSolveAutoPlay(this.config.solve_auto_play);
-        this.setSolveAutoPlayDelay(this.config.solve_auto_play_delay);
+        this.toggleSolutionPaths(this.config.solutionPaths);
+        this.setPlayerColor(this.config.playerColor);
+        this.setSolveAutoPlay(this.config.solveAutoPlay);
+        this.setSolveAutoPlayDelay(this.config.solveAutoPlayDelay);
       },
 
       /**

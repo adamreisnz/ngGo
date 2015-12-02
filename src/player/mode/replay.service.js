@@ -42,7 +42,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
   var defaultConfig = {
 
     //Auto play delay
-    auto_play_delay: 1000
+    autoPlayDelay: 1000
   };
 
   /**
@@ -270,7 +270,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
         this.config = angular.extend({}, this.config, defaultConfig, config || {});
 
         //Process settings
-        this.setAutoPlayDelay(this.config.auto_play_delay);
+        this.setAutoPlayDelay(this.config.autoPlayDelay);
       },
 
       /**

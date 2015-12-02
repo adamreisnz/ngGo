@@ -141,16 +141,16 @@ JGF = {
 	settings: {
 
 		// Indicate variations with markup on the board or not
-		variation_markup: true,
+		variationMarkup: true,
 
 		// Show variations of successor nodes
-		variation_children: true,
+		variationChildren: true,
 
 		// Show variations of current node
-		variation_siblings: false,
+		variationSiblings: false,
 
 		// Show solution paths for problems
-		solution_paths: false
+		solutionPaths: false
 	},
 
 	// Moves tree

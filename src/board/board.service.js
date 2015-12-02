@@ -49,7 +49,7 @@ angular.module('ngGo.Board.Service', [
     coordinates: false,
 
     //Color multiplier (use -1 to swap colors)
-    color_multiplier: 1
+    colorMultiplier: 1
   };
 
   /**
@@ -176,7 +176,7 @@ angular.module('ngGo.Board.Service', [
 
       //Process settigns
       this.toggleCoordinates(config.coordinates);
-      this.swapColors(config.color_multiplier);
+      this.swapColors(config.colorMultiplier);
       this.setCutoff(config.cutoff);
       this.setSection(config.section);
       this.setSize(config.width, config.height);

@@ -227,10 +227,10 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
     //Variation handling
     var st = 0;
-    if (!player.variation_markup) {
+    if (!player.variationMarkup) {
       st += 2;
     }
-    if (player.variation_siblings) {
+    if (player.variationSiblings) {
       st += 1;
     }
 
