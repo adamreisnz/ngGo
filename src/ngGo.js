@@ -34,7 +34,7 @@ angular.module('ngGo', [])
  */
 .constant('ngGo', {
   name: 'ngGo',
-  version: '1.3.0',
+  version: '1.3.1',
   error: {
 
     //Position errors
