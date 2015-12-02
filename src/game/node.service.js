@@ -385,6 +385,13 @@ angular.module('ngGo.Game.Node.Service', [
   };
 
   /**
+   * Get parent node
+   */
+  GameNode.prototype.getParent = function() {
+    return this.parent;
+  };
+
+  /**
    * Check if the node has more than one move variation
    */
   GameNode.prototype.hasMoveVariations = function() {
@@ -399,7 +406,7 @@ angular.module('ngGo.Game.Node.Service', [
     for (var i = 0; i < this.children.length; i++) {
 
       //Is this a move node?
-      if (this.children[i].move) {
+      if (this.children[i].isMove()) {
         moveVariations++;
       }
 
@@ -430,7 +437,7 @@ angular.module('ngGo.Game.Node.Service', [
     for (var i = 0; i < this.children.length; i++) {
 
       //Is this a move node?
-      if (this.children[i].move) {
+      if (this.children[i].isMove()) {
         moveVariations.push(this.children[i]);
       }
     }
@@ -476,6 +483,35 @@ angular.module('ngGo.Game.Node.Service', [
    */
   GameNode.prototype.hasComments = function() {
     return (this.comments && this.comments.length > 0);
+  };
+
+  /**
+   * Check if this is a move node
+   */
+  GameNode.prototype.isMove = function() {
+    return !!this.move;
+  };
+
+  /**
+   * Get move number
+   */
+  GameNode.prototype.getMoveNumber = function() {
+
+    //Move node?
+    if (this.isMove()) {
+      if (this.parent) {
+        return this.parent.getMoveNumber() + 1;
+      }
+      return 1;
+    }
+
+    //Use parent move number if we have one
+    if (this.parent) {
+      return this.parent.getMoveNumber();
+    }
+
+    //No parent
+    return 0;
   };
 
   /*****************************************************************************

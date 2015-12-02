@@ -2307,6 +2307,136 @@ angular.module('ngGo.Board.Theme.Service', [
 (function(window, angular, undefined) {'use strict';
 
 /**
+ * InvalidDataError :: Error class to handle invalid data.
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Errors.InvalidDataError.Service', [
+  'ngGo'
+])
+
+/**
+ * Factory definition
+ */
+.factory('InvalidDataError', ['ngGo', function(ngGo) {
+
+  /**
+   * Define error
+   */
+  var InvalidDataError = function(code) {
+
+    //Set name and message
+    this.code = code;
+    this.name = 'InvalidDataError';
+    this.message = 'Invalid data: ';
+
+    //Append code message
+    switch (code) {
+      case ngGo.error.NO_DATA:
+        this.message += 'no data to process.';
+        break;
+      case ngGo.error.UNKNOWN_DATA:
+        this.message += 'unknown data format.';
+        break;
+      case ngGo.error.INVALID_GIB:
+        this.message += 'unable to parse GIB data.';
+        break;
+      case ngGo.error.INVALID_SGF:
+        this.message += 'unable to parse SGF data.';
+        break;
+      case ngGo.error.INVALID_JGF_JSON:
+        this.message += 'unable to parse JGF data.';
+        break;
+      case ngGo.error.INVALID_JGF_TREE_JSON:
+        this.message += 'unable to parse the JGF tree data.';
+        break;
+      default:
+        this.message += 'unable to parse the data.';
+    }
+  };
+
+  /**
+   * Extend from error class
+   */
+  InvalidDataError.prototype = new Error();
+  InvalidDataError.prototype.constructor = InvalidDataError;
+
+  //Return object
+  return InvalidDataError;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
+ * InvalidPositionError :: Error class to handle invalid moves.
+ */
+
+/**
+ * Module definition and dependencies
+ */
+angular.module('ngGo.Errors.InvalidPositionError.Service', [
+  'ngGo'
+])
+
+/**
+ * Factory definition
+ */
+.factory('InvalidPositionError', ['ngGo', 'StoneColor', function(ngGo, StoneColor) {
+
+  /**
+   * Define error
+   */
+  var InvalidPositionError = function(code, x, y, color) {
+
+    //Set name and message
+    this.code = code;
+    this.name = 'InvalidPositionError';
+    this.message = 'Invalid position detected.';
+
+    //Add position data
+    if (typeof x !== 'undefined' && typeof y !== 'undefined' && typeof color !== 'undefined') {
+      this.message += ' Trying to place a ' + (color === StoneColor.W ? 'white' : 'black') +
+        ' stone on (' + x + ', ' + y + ')';
+    }
+
+    //Append code message
+    switch (code) {
+      case ngGo.error.POSTITION_OUT_OF_BOUNDS:
+        this.message += ', but these coordinates are not on the board.';
+        break;
+      case ngGo.error.POSTITION_ALREADY_HAS_STONE:
+        this.message += ', but there is already a stone on those coordinates.';
+        break;
+      case ngGo.error.POSTITION_IS_SUICIDE:
+        this.message += ', but that would be suicide.';
+        break;
+      case ngGo.error.POSTITION_IS_REPEATING:
+        this.message += ', but this position already occured.';
+        break;
+      default:
+        this.message += '.';
+    }
+  };
+
+  /**
+   * Extend from error class
+   */
+  InvalidPositionError.prototype = new Error();
+  InvalidPositionError.prototype.constructor = InvalidPositionError;
+
+  //Return object
+  return InvalidPositionError;
+}]);
+
+})(window, window.angular);
+
+(function(window, angular, undefined) {'use strict';
+
+/**
  * Game :: This class represents a game record or a game that is being played/edited. The class
  * traverses the move tree nodes and keeps track of the changes between the previous and new game
  * positions. These changes can then be fed to the board, to add or remove stones and markup.
@@ -2420,7 +2550,7 @@ angular.module('ngGo.Game.Service', [
 
       //Remembered the path we took earlier?
       if (i === undefined) {
-        i = this.node._remembered_path;
+        i = this.node.rememberedPath;
       }
 
       //Determine which child node to process
@@ -2551,7 +2681,7 @@ angular.module('ngGo.Game.Service', [
 
       //Remember last selected node if we have a parent
       if (this.node.parent) {
-        this.node.parent._remembered_path = this.node.parent.children.indexOf(this.node);
+        this.node.parent.rememberedPath = this.node.parent.children.indexOf(this.node);
       }
 
       //Initialize new position
@@ -2559,7 +2689,7 @@ angular.module('ngGo.Game.Service', [
       var newPosition = this.position.clone();
 
       //Handle moves
-      if (this.node.move) {
+      if (this.node.isMove()) {
         if (this.node.move.pass) {
           newPosition.setTurn(-this.node.move.color);
         }
@@ -2900,34 +3030,32 @@ angular.module('ngGo.Game.Service', [
     };
 
     /**
-     * Get node for a certain move
+     * Get nodes array for currently remembered path
      */
-    Game.prototype.getMoveNodeAt = function(move) {
-
-      //Must have a move number
-      move = move || 1;
+    Game.prototype.getNodes = function() {
 
       //Initialize node to process
       var node = this.root;
-      var moveNo = 0;
+      var nodes = [node];
 
       //Process children
       while (node) {
-
-        //Get child node
-        node = node.getChild(node._remembered_path);
-        if (node && node.move) {
-          moveNo++;
-        }
-
-        //Reached move?
-        if (moveNo === move) {
-          return node;
+        node = node.getChild(node.rememberedPath);
+        if (node) {
+          nodes.push(node);
         }
       }
 
-      //No move node found
-      return null;
+      //Return nodes
+      return nodes;
+    };
+
+    /**
+     * Get node for a certain move
+     */
+    Game.prototype.getMoveNode = function(move) {
+      var nodes = this.getMoveNodes(move, move);
+      return nodes.length ? nodes[0] : null;
     };
 
     /**
@@ -2935,36 +3063,49 @@ angular.module('ngGo.Game.Service', [
      */
     Game.prototype.getMoveNodes = function(fromMove, toMove) {
 
+      //Get all nodes for the current path
+      var nodes = this.getNodes();
+
       //Use sensible defaults if no from/to moves given
       fromMove = fromMove || 1;
-      toMove = toMove || this.getMoveCount();
+      toMove = toMove || nodes.length;
 
-      //Get the first node
-      var node = this.getMoveNodeAt(fromMove);
-      if (!node) {
-        return [];
-      }
-
-      //Initialize nodes array and counter
-      var nodes = [node];
-      var move = fromMove;
-
-      //Loop nodes
-      while (node && move < toMove) {
-
-        //Get node child
-        node = node.getChild(node._remembered_path);
-        if (!node || !node.move) {
-          continue;
+      //Filter
+      return nodes.filter(function(node) {
+        if (node.isMove()) {
+          var move = node.getMoveNumber();
+          return (move >= fromMove && move <= toMove);
         }
+        return false;
+      });
+    };
 
-        //Add count and add to array
-        move++;
-        nodes.push(node);
+    /**
+     * Get current move number
+     */
+    Game.prototype.getMove = function() {
+      if (this.node) {
+        return this.node.getMoveNumber();
       }
+      return 0;
+    };
 
-      //Return array of nodes
-      return nodes;
+    /**
+     * Get the number of moves in the main branch
+     */
+    Game.prototype.getMoveCount = function() {
+      var moveNodes = this.getMoveNodes();
+      return moveNodes.length;
+    };
+
+    /**
+     * Get the move variation for given coordinates
+     */
+    Game.prototype.getMoveVariation = function(x, y) {
+      if (this.node) {
+        return this.node.getMoveVariation(x, y);
+      }
+      return -1;
     };
 
     /**
@@ -3076,44 +3217,6 @@ angular.module('ngGo.Game.Service', [
 
       //Return
       return captures;
-    };
-
-    /**
-     * Get the move variation for given coordinates
-     */
-    Game.prototype.getMoveVariation = function(x, y) {
-      if (this.node) {
-        return this.node.getMoveVariation(x, y);
-      }
-      return -1;
-    };
-
-    /**
-     * Get current move number
-     */
-    Game.prototype.getMove = function() {
-      return this.path.getMove();
-    };
-
-    /**
-     * Get the number of moves in the main branch
-     */
-    Game.prototype.getMoveCount = function() {
-
-      //Initialize node to process
-      var node = this.root;
-      var noMoves = 0;
-
-      //Process children
-      while (node) {
-        node = node.getChild(node._remembered_path);
-        if (node && node.move) {
-          noMoves++;
-        }
-      }
-
-      //Return move count
-      return noMoves;
     };
 
     /**
@@ -3341,7 +3444,7 @@ angular.module('ngGo.Game.Service', [
       if (typeof this.node.setup === 'undefined') {
 
         //Is this a move node?
-        if (this.node.move) {
+        if (this.node.isMove()) {
 
           //Clone our position
           pushPosition.call(this);
@@ -3495,7 +3598,7 @@ angular.module('ngGo.Game.Service', [
 
       //Append it to the current node, remember the path, and change the pointer
       var i = node.appendTo(this.node);
-      this.node._remembered_path = i;
+      this.node.rememberedPath = i;
       this.node = node;
 
       //Advance path to the added node index
@@ -3530,7 +3633,7 @@ angular.module('ngGo.Game.Service', [
 
       //Append it to the current node, remember the path, and change the pointer
       var i = node.appendTo(this.node);
-      this.node._remembered_path = i;
+      this.node.rememberedPath = i;
       this.node = node;
 
       //Advance path to the added node index
@@ -4212,6 +4315,13 @@ angular.module('ngGo.Game.Node.Service', [
   };
 
   /**
+   * Get parent node
+   */
+  GameNode.prototype.getParent = function() {
+    return this.parent;
+  };
+
+  /**
    * Check if the node has more than one move variation
    */
   GameNode.prototype.hasMoveVariations = function() {
@@ -4226,7 +4336,7 @@ angular.module('ngGo.Game.Node.Service', [
     for (var i = 0; i < this.children.length; i++) {
 
       //Is this a move node?
-      if (this.children[i].move) {
+      if (this.children[i].isMove()) {
         moveVariations++;
       }
 
@@ -4257,7 +4367,7 @@ angular.module('ngGo.Game.Node.Service', [
     for (var i = 0; i < this.children.length; i++) {
 
       //Is this a move node?
-      if (this.children[i].move) {
+      if (this.children[i].isMove()) {
         moveVariations.push(this.children[i]);
       }
     }
@@ -4303,6 +4413,35 @@ angular.module('ngGo.Game.Node.Service', [
    */
   GameNode.prototype.hasComments = function() {
     return (this.comments && this.comments.length > 0);
+  };
+
+  /**
+   * Check if this is a move node
+   */
+  GameNode.prototype.isMove = function() {
+    return !!this.move;
+  };
+
+  /**
+   * Get move number
+   */
+  GameNode.prototype.getMoveNumber = function() {
+
+    //Move node?
+    if (this.isMove()) {
+      if (this.parent) {
+        return this.parent.getMoveNumber() + 1;
+      }
+      return 1;
+    }
+
+    //Use parent move number if we have one
+    if (this.parent) {
+      return this.parent.getMoveNumber();
+    }
+
+    //No parent
+    return 0;
   };
 
   /*****************************************************************************
@@ -6744,136 +6883,6 @@ angular.module('ngGo.Player.Service', [
     //Return object
     return Player;
   }];
-}]);
-
-})(window, window.angular);
-
-(function(window, angular, undefined) {'use strict';
-
-/**
- * InvalidDataError :: Error class to handle invalid data.
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Errors.InvalidDataError.Service', [
-  'ngGo'
-])
-
-/**
- * Factory definition
- */
-.factory('InvalidDataError', ['ngGo', function(ngGo) {
-
-  /**
-   * Define error
-   */
-  var InvalidDataError = function(code) {
-
-    //Set name and message
-    this.code = code;
-    this.name = 'InvalidDataError';
-    this.message = 'Invalid data: ';
-
-    //Append code message
-    switch (code) {
-      case ngGo.error.NO_DATA:
-        this.message += 'no data to process.';
-        break;
-      case ngGo.error.UNKNOWN_DATA:
-        this.message += 'unknown data format.';
-        break;
-      case ngGo.error.INVALID_GIB:
-        this.message += 'unable to parse GIB data.';
-        break;
-      case ngGo.error.INVALID_SGF:
-        this.message += 'unable to parse SGF data.';
-        break;
-      case ngGo.error.INVALID_JGF_JSON:
-        this.message += 'unable to parse JGF data.';
-        break;
-      case ngGo.error.INVALID_JGF_TREE_JSON:
-        this.message += 'unable to parse the JGF tree data.';
-        break;
-      default:
-        this.message += 'unable to parse the data.';
-    }
-  };
-
-  /**
-   * Extend from error class
-   */
-  InvalidDataError.prototype = new Error();
-  InvalidDataError.prototype.constructor = InvalidDataError;
-
-  //Return object
-  return InvalidDataError;
-}]);
-
-})(window, window.angular);
-
-(function(window, angular, undefined) {'use strict';
-
-/**
- * InvalidPositionError :: Error class to handle invalid moves.
- */
-
-/**
- * Module definition and dependencies
- */
-angular.module('ngGo.Errors.InvalidPositionError.Service', [
-  'ngGo'
-])
-
-/**
- * Factory definition
- */
-.factory('InvalidPositionError', ['ngGo', 'StoneColor', function(ngGo, StoneColor) {
-
-  /**
-   * Define error
-   */
-  var InvalidPositionError = function(code, x, y, color) {
-
-    //Set name and message
-    this.code = code;
-    this.name = 'InvalidPositionError';
-    this.message = 'Invalid position detected.';
-
-    //Add position data
-    if (typeof x !== 'undefined' && typeof y !== 'undefined' && typeof color !== 'undefined') {
-      this.message += ' Trying to place a ' + (color === StoneColor.W ? 'white' : 'black') +
-        ' stone on (' + x + ', ' + y + ')';
-    }
-
-    //Append code message
-    switch (code) {
-      case ngGo.error.POSTITION_OUT_OF_BOUNDS:
-        this.message += ', but these coordinates are not on the board.';
-        break;
-      case ngGo.error.POSTITION_ALREADY_HAS_STONE:
-        this.message += ', but there is already a stone on those coordinates.';
-        break;
-      case ngGo.error.POSTITION_IS_SUICIDE:
-        this.message += ', but that would be suicide.';
-        break;
-      case ngGo.error.POSTITION_IS_REPEATING:
-        this.message += ', but this position already occured.';
-        break;
-      default:
-        this.message += '.';
-    }
-  };
-
-  /**
-   * Extend from error class
-   */
-  InvalidPositionError.prototype = new Error();
-  InvalidPositionError.prototype.constructor = InvalidPositionError;
-
-  //Return object
-  return InvalidPositionError;
 }]);
 
 })(window, window.angular);

@@ -113,7 +113,7 @@ angular.module('ngGo.Game.Service', [
 
       //Remembered the path we took earlier?
       if (i === undefined) {
-        i = this.node._remembered_path;
+        i = this.node.rememberedPath;
       }
 
       //Determine which child node to process
@@ -244,7 +244,7 @@ angular.module('ngGo.Game.Service', [
 
       //Remember last selected node if we have a parent
       if (this.node.parent) {
-        this.node.parent._remembered_path = this.node.parent.children.indexOf(this.node);
+        this.node.parent.rememberedPath = this.node.parent.children.indexOf(this.node);
       }
 
       //Initialize new position
@@ -252,7 +252,7 @@ angular.module('ngGo.Game.Service', [
       var newPosition = this.position.clone();
 
       //Handle moves
-      if (this.node.move) {
+      if (this.node.isMove()) {
         if (this.node.move.pass) {
           newPosition.setTurn(-this.node.move.color);
         }
@@ -593,34 +593,32 @@ angular.module('ngGo.Game.Service', [
     };
 
     /**
-     * Get node for a certain move
+     * Get nodes array for currently remembered path
      */
-    Game.prototype.getMoveNodeAt = function(move) {
-
-      //Must have a move number
-      move = move || 1;
+    Game.prototype.getNodes = function() {
 
       //Initialize node to process
       var node = this.root;
-      var moveNo = 0;
+      var nodes = [node];
 
       //Process children
       while (node) {
-
-        //Get child node
-        node = node.getChild(node._remembered_path);
-        if (node && node.move) {
-          moveNo++;
-        }
-
-        //Reached move?
-        if (moveNo === move) {
-          return node;
+        node = node.getChild(node.rememberedPath);
+        if (node) {
+          nodes.push(node);
         }
       }
 
-      //No move node found
-      return null;
+      //Return nodes
+      return nodes;
+    };
+
+    /**
+     * Get node for a certain move
+     */
+    Game.prototype.getMoveNode = function(move) {
+      var nodes = this.getMoveNodes(move, move);
+      return nodes.length ? nodes[0] : null;
     };
 
     /**
@@ -628,36 +626,49 @@ angular.module('ngGo.Game.Service', [
      */
     Game.prototype.getMoveNodes = function(fromMove, toMove) {
 
+      //Get all nodes for the current path
+      var nodes = this.getNodes();
+
       //Use sensible defaults if no from/to moves given
       fromMove = fromMove || 1;
-      toMove = toMove || this.getMoveCount();
+      toMove = toMove || nodes.length;
 
-      //Get the first node
-      var node = this.getMoveNodeAt(fromMove);
-      if (!node) {
-        return [];
-      }
-
-      //Initialize nodes array and counter
-      var nodes = [node];
-      var move = fromMove;
-
-      //Loop nodes
-      while (node && move < toMove) {
-
-        //Get node child
-        node = node.getChild(node._remembered_path);
-        if (!node || !node.move) {
-          continue;
+      //Filter
+      return nodes.filter(function(node) {
+        if (node.isMove()) {
+          var move = node.getMoveNumber();
+          return (move >= fromMove && move <= toMove);
         }
+        return false;
+      });
+    };
 
-        //Add count and add to array
-        move++;
-        nodes.push(node);
+    /**
+     * Get current move number
+     */
+    Game.prototype.getMove = function() {
+      if (this.node) {
+        return this.node.getMoveNumber();
       }
+      return 0;
+    };
 
-      //Return array of nodes
-      return nodes;
+    /**
+     * Get the number of moves in the main branch
+     */
+    Game.prototype.getMoveCount = function() {
+      var moveNodes = this.getMoveNodes();
+      return moveNodes.length;
+    };
+
+    /**
+     * Get the move variation for given coordinates
+     */
+    Game.prototype.getMoveVariation = function(x, y) {
+      if (this.node) {
+        return this.node.getMoveVariation(x, y);
+      }
+      return -1;
     };
 
     /**
@@ -769,44 +780,6 @@ angular.module('ngGo.Game.Service', [
 
       //Return
       return captures;
-    };
-
-    /**
-     * Get the move variation for given coordinates
-     */
-    Game.prototype.getMoveVariation = function(x, y) {
-      if (this.node) {
-        return this.node.getMoveVariation(x, y);
-      }
-      return -1;
-    };
-
-    /**
-     * Get current move number
-     */
-    Game.prototype.getMove = function() {
-      return this.path.getMove();
-    };
-
-    /**
-     * Get the number of moves in the main branch
-     */
-    Game.prototype.getMoveCount = function() {
-
-      //Initialize node to process
-      var node = this.root;
-      var noMoves = 0;
-
-      //Process children
-      while (node) {
-        node = node.getChild(node._remembered_path);
-        if (node && node.move) {
-          noMoves++;
-        }
-      }
-
-      //Return move count
-      return noMoves;
     };
 
     /**
@@ -1034,7 +1007,7 @@ angular.module('ngGo.Game.Service', [
       if (typeof this.node.setup === 'undefined') {
 
         //Is this a move node?
-        if (this.node.move) {
+        if (this.node.isMove()) {
 
           //Clone our position
           pushPosition.call(this);
@@ -1188,7 +1161,7 @@ angular.module('ngGo.Game.Service', [
 
       //Append it to the current node, remember the path, and change the pointer
       var i = node.appendTo(this.node);
-      this.node._remembered_path = i;
+      this.node.rememberedPath = i;
       this.node = node;
 
       //Advance path to the added node index
@@ -1223,7 +1196,7 @@ angular.module('ngGo.Game.Service', [
 
       //Append it to the current node, remember the path, and change the pointer
       var i = node.appendTo(this.node);
-      this.node._remembered_path = i;
+      this.node.rememberedPath = i;
       this.node = node;
 
       //Advance path to the added node index
