@@ -663,6 +663,36 @@ angular.module('ngGo.Player.Service', [
         }
       },
 
+      /**
+       * Show move numbers
+       */
+      showMoveNumbers: function(fromMove, toMove) {
+
+        //No game?
+        if (!this.game || !this.game.isLoaded()) {
+          return;
+        }
+
+        //Use sensible defaults if no from/to moves given
+        fromMove = fromMove || 1;
+        toMove = toMove || this.game.getMove();
+
+        //Get nodes for these moves
+        var nodes = this.game.getMoveNodes(fromMove, toMove);
+        var move = fromMove;
+
+        //Loop nodes
+        angular.forEach(nodes, function(node) {
+          this.board.add('markup', node.move.x, node.move.y, {
+            type: MarkupTypes.LABEL,
+            text: move++
+          });
+        }, this);
+
+        //Redraw board markup
+        this.board.redraw('markup');
+      },
+
       /*****************************************************************************
        * Game handling
        ***/

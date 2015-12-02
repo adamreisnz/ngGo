@@ -182,7 +182,7 @@ function watch() {
   gulp.watch([
     'src/**/*.js',
     'tests/**/*.spec.js'
-  ], gulp.series(lint, test));
+  ], gulp.series(lint, test, buildJs));
 }
 
 /*****************************************************************************

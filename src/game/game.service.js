@@ -593,6 +593,74 @@ angular.module('ngGo.Game.Service', [
     };
 
     /**
+     * Get node for a certain move
+     */
+    Game.prototype.getMoveNodeAt = function(move) {
+
+      //Must have a move number
+      move = move || 1;
+
+      //Initialize node to process
+      var node = this.root;
+      var moveNo = 0;
+
+      //Process children
+      while (node) {
+
+        //Get child node
+        node = node.getChild(node._remembered_path);
+        if (node && node.move) {
+          moveNo++;
+        }
+
+        //Reached move?
+        if (moveNo === move) {
+          return node;
+        }
+      }
+
+      //No move node found
+      return null;
+    };
+
+    /**
+     * Get move nodes restricted by given move numbers
+     */
+    Game.prototype.getMoveNodes = function(fromMove, toMove) {
+
+      //Use sensible defaults if no from/to moves given
+      fromMove = fromMove || 1;
+      toMove = toMove || this.getMoveCount();
+
+      //Get the first node
+      var node = this.getMoveNodeAt(fromMove);
+      if (!node) {
+        return [];
+      }
+
+      //Initialize nodes array and counter
+      var nodes = [node];
+      var move = fromMove;
+
+      //Loop nodes
+      while (node && move < toMove) {
+
+        //Get node child
+        node = node.getChild(node._remembered_path);
+        if (!node || !node.move) {
+          continue;
+        }
+
+        //Add count and add to array
+        move++;
+        nodes.push(node);
+      }
+
+      //Return array of nodes
+      return nodes;
+    };
+
+    /**
      * Get the current game position
      */
     Game.prototype.getPosition = function() {
@@ -730,9 +798,9 @@ angular.module('ngGo.Game.Service', [
       var noMoves = 0;
 
       //Process children
-      while (node.children.length > 0) {
-        node = node.children[0];
-        if (typeof node.move !== 'undefined') {
+      while (node) {
+        node = node.getChild(node._remembered_path);
+        if (node && node.move) {
           noMoves++;
         }
       }
