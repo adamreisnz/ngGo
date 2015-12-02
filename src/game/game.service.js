@@ -627,17 +627,32 @@ angular.module('ngGo.Game.Service', [
      * Get the game komi
      */
     Game.prototype.getKomi = function() {
-      if (!this.info.game.komi) {
-        return 0;
-      }
-      return parseFloat(this.info.game.komi);
+      var komi = this.get('game.komi', 0);
+      return parseFloat(komi);
     };
 
     /**
      * Set the game komi
      */
     Game.prototype.setKomi = function(komi) {
-      this.info.game.komi = komi ? parseFloat(komi) : this.config.defaultKomi;
+      if (typeof komi === 'undefined') {
+        komi = this.config.defaultKomi;
+      }
+      this.info.game.komi = parseFloat(komi);
+    };
+
+    /**
+     * Get the game name
+     */
+    Game.prototype.getName = function() {
+      return this.get('game.name', '');
+    };
+
+    /**
+     * Get the game result
+     */
+    Game.prototype.getResult = function() {
+      return this.get('game.result', '');
     };
 
     /**
@@ -729,37 +744,40 @@ angular.module('ngGo.Game.Service', [
     /**
      * Get an info property
      */
-    Game.prototype.get = function(position) {
+    Game.prototype.get = function(property, defaultValue) {
 
-      //Must have a position
-      if (!position) {
+      //Must have a property
+      if (!property) {
         return;
       }
 
-      //The item's position in the object is given by dot separated strings
-      if (typeof position === 'string') {
-        position = position.split('.');
+      //The item's property in the object is given by dot separated strings
+      if (typeof property === 'string') {
+        property = property.split('.');
       }
 
       //Initialize object we're getting info from
       var obj = this.info;
       var key;
 
-      //Loop the position
-      for (var p = 0; p < position.length; p++) {
+      //Loop the properties
+      for (var p = 0; p < property.length; p++) {
 
         //Get actual key
-        key = position[p];
+        key = property[p];
 
         //Last key reached? Done, get value
-        if ((p + 1) === position.length) {
+        if ((p + 1) === property.length) {
+          if (typeof obj[key] === 'undefined') {
+            return defaultValue;
+          }
           return obj[key];
         }
 
         //Must be object container
         if (typeof obj[key] !== 'object') {
-          console.warn('Game property', key, 'is not an object');
-          return;
+          console.warn('Game info property', key, 'is not an object');
+          return defaultValue;
         }
 
         //Move up in tree

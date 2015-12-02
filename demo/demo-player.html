@@ -17,13 +17,13 @@
     </player>
   </section>
   <aside class="goban-info">
-    <h3>{{Game.get('game.name')}}</h3>
+    <h3>{{Game.getName()}}</h3>
     <p>
       <span ng-repeat="Player in Game.get('game.players')">{{Player.name}} ({{Player.rank}})<span ng-show="$first"> vs. </span></span><br>
       {{Game.getTurn() | stoneColor}} to play<br>
       Move number: {{Game.getMove()}} of {{Game.getMoveCount()}}<br>
-      Komi: {{Game.get('game.komi')}}<br>
-      Result: {{Game.get('game.result')}}
+      Komi: {{Game.getKomi()}}<br>
+      Result: {{Game.getResult()}}
     </p>
 
     <p>
@@ -113,7 +113,8 @@
         }
       ],
       "rules": "Japanese",
-      "komi": 0.5
+      "komi": 0.5,
+      "result": "B+R"
     },
     "board": {
       "width": 9,
