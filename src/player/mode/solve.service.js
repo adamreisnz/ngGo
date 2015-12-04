@@ -66,7 +66,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
     /**
      * Check if we can make a move
      */
-    var canMakeMove = function() {
+    function canMakeMove() {
 
       //We can make a move when...
 
@@ -92,12 +92,12 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 
       //Otherwise, we can't make a move
       return false;
-    };
+    }
 
     /**
      * Helper to update the hover mark
      */
-    var updateHoverMark = function(x, y) {
+    function updateHoverMark(x, y) {
 
       //If no coordinates specified, use last mouse coordinates
       if (typeof x === 'undefined' || typeof y === 'undefined') {
@@ -125,12 +125,12 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
           }
           break;
       }
-    };
+    }
 
     /**
      * Helper to show solution paths
      */
-    var showSolutionPaths = function(variations) {
+    function showSolutionPaths(variations) {
       for (var i = 0; i < variations.length; i++) {
         if (variations[i].solution === true) {
           this.board.add('markup', variations[i].move.x, variations[i].move.y, {
@@ -149,21 +149,21 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
           });
         }
       }
-    };
+    }
 
     /**
      * Helper to hide solution paths
      */
-    var hideSolutionPaths = function(variations) {
+    function hideSolutionPaths(variations) {
       for (var i = 0; i < variations.length; i++) {
         this.board.remove('markup', variations[i].move.x, variations[i].move.y);
       }
-    };
+    }
 
     /**
      * Draw (or clear) solution paths
      */
-    var drawSolutionPaths = function(show) {
+    function drawSolutionPaths(show) {
 
       //Check if we can do something
       if (!this.board || !this.game || !this.game.isLoaded()) {
@@ -189,7 +189,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       else {
         hideSolutionPaths.call(this, variations);
       }
-    };
+    }
 
     /**
      * Player extension

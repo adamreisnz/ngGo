@@ -25,7 +25,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
   /**
    * Mono colored stones
    */
-  var drawMono = function(stone) {
+  function drawMono(stone) {
 
     //Get coordinates and stone radius
     var x = this.board.getAbsX(stone.x);
@@ -80,12 +80,12 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
+  }
 
   /**
    * Glass stones
    */
-  var drawGlass = function(stone) {
+  function drawGlass(stone) {
 
     //Get coordinates and stone radius
     var x = this.board.getAbsX(stone.x);
@@ -142,12 +142,12 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
+  }
 
   /**
    * Slate and shell stones
    */
-  var drawSlateShell = function(stone) {
+  function drawSlateShell(stone) {
 
     //Get coordinates and stone radius
     var x = this.board.getAbsX(stone.x);
@@ -242,7 +242,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
+  }
 
   /**
    * Constructor

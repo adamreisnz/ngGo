@@ -333,12 +333,12 @@ angular.module('ngGo.Board.Theme.Service', [
     /**
      * Board theme constructor
      */
-    var BoardTheme = function(theme) {
+    function BoardTheme(theme) {
 
       //Remember the given instance theme settings and (re)set the theme
       this.instanceTheme = theme;
       this.reset();
-    };
+    }
 
     /**
      * Reset the theme to defaults

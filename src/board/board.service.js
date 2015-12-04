@@ -67,14 +67,14 @@ angular.module('ngGo.Board.Service', [
     /**
      * Board constructor
      */
-    var Board = function(config) {
+    function Board(config) {
 
       //Initialize board
       this.init();
 
       //Parse config
       this.parseConfig(config || {});
-    };
+    }
 
     /**
      * Initialize board

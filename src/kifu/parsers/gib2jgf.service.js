@@ -30,7 +30,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
   /**
    * Player parser function
    */
-  var parsePlayer = function(jgf, match) {
+  function parsePlayer(jgf, match) {
 
     //Initialize players container
     if (typeof jgf.game.players === 'undefined') {
@@ -57,19 +57,19 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 
     //Player of this color not found, push
     jgf.game.players.push(player);
-  };
+  }
 
   /**
    * Komi parser function
    */
-  var parseKomi = function(jgf, match) {
+  function parseKomi(jgf, match) {
     jgf.game.komi = parseFloat(match[1] / 10);
-  };
+  }
 
   /**
    * Date parser function
    */
-  var parseDate = function(jgf, match) {
+  function parseDate(jgf, match) {
 
     //Initialize dates container
     if (typeof jgf.game.dates === 'undefined') {
@@ -78,12 +78,12 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 
     //Push date
     jgf.game.dates.push(match[1] + '-' + match[2] + '-' + match[3]);
-  };
+  }
 
   /**
    * Result parser function
    */
-  var parseResult = function(jgf, match) {
+  function parseResult(jgf, match) {
 
     //Winner color
     var result = (match[1].toLowerCase() === 'black') ? 'B' : 'W';
@@ -102,12 +102,12 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 
     //Set in JGF
     jgf.game.result = result;
-  };
+  }
 
   /**
    * Move parser function
    */
-  var parseMove = function(jgf, node, match) {
+  function parseMove(jgf, node, match) {
 
     //Determine player color
     var color = match[2];
@@ -133,7 +133,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
     else {
       node.move[color] = [match[3] * 1, match[4] * 1];
     }
-  };
+  }
 
   /**
    * Parser class

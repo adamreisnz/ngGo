@@ -61,7 +61,7 @@ angular.module('ngGo.Player.Service', [
     /**
      * Helper to append board grid coordinatess to the broadcast event object
      */
-    var processMouseEvent = function(broadcastEvent, mouseEvent) {
+    function processMouseEvent(broadcastEvent, mouseEvent) {
 
       //Can only do this with a board and mouse event
       if (!this.board || !mouseEvent) {
@@ -116,7 +116,7 @@ angular.module('ngGo.Player.Service', [
       if (mouseEvent.drag) {
         broadcastEvent.drag = mouseEvent.drag;
       }
-    };
+    }
 
     /**
      * Player class

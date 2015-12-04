@@ -60,7 +60,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
     /**
      * Helper to update the hover mark
      */
-    var updateHoverMark = function(x, y) {
+    function updateHoverMark(x, y) {
 
       //If no coordinates specified, use last mouse coordinates
       if (typeof x === 'undefined' || typeof y === 'undefined') {
@@ -100,12 +100,12 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
           }
           break;
       }
-    };
+    }
 
     /**
      * Helper to show move variations on the board
      */
-    var showMoveVariations = function(variations) {
+    function showMoveVariations(variations) {
       for (var i = 0; i < variations.length; i++) {
 
         //Auto variation markup should never overwrite existing markup
@@ -120,21 +120,21 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
           color: this.board.theme.get('markup.variation.color')
         });
       }
-    };
+    }
 
     /**
      * Helper to hide move variations from the board
      */
-    var hideMoveVariations = function(variations) {
+    function hideMoveVariations(variations) {
       for (var i = 0; i < variations.length; i++) {
         this.board.remove('markup', variations[i].move.x, variations[i].move.y);
       }
-    };
+    }
 
     /**
      * Draw (or clear) move variations on the board
      */
-    var drawMoveVariations = function(show) {
+    function drawMoveVariations(show) {
 
       //Check if we can do something
       if (!this.board || !this.game || !this.game.isLoaded()) {
@@ -169,7 +169,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
           hideMoveVariations.call(this, variations);
         }
       }
-    };
+    }
 
     /**
      * Player extension

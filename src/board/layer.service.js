@@ -21,7 +21,7 @@ angular.module('ngGo.Board.Layer.Service', [
   /**
    * Constructor
    */
-  var BoardLayer = function(board, context) {
+  function BoardLayer(board, context) {
 
     //Remember board reference and 2d canvas context
     this.board = board;
@@ -29,7 +29,7 @@ angular.module('ngGo.Board.Layer.Service', [
 
     //Initialize grid for board objects
     this.grid = new BoardGrid();
-  };
+  }
 
   /*****************************************************************************
    * Generic grid and object handling

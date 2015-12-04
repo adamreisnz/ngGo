@@ -18,15 +18,15 @@ angular.module('ngGo.Game.Score.Service', [
   /**
    * Helper to calculate the total points
    */
-  var calcTotal = function() {
+  function calcTotal() {
     return parseInt(this.stones) + parseInt(this.territory) +
       parseInt(this.captures) + parseInt(this.komi);
-  };
+  }
 
   /**
    * Constructor
    */
-  var GameScore = function() {
+  function GameScore() {
 
     //Get self
     var self = this;
@@ -45,7 +45,7 @@ angular.module('ngGo.Game.Score.Service', [
     this.white.total = function() {
       return calcTotal.call(self.white);
     };
-  };
+  }
 
   /**
    * Reset the game score

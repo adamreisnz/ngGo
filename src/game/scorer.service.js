@@ -33,7 +33,7 @@ angular.module('ngGo.Game.Scorer.Service', [
   /**
    * Helper to set territory
    */
-  var territorySet = function(x, y, candidateColor, boundaryColor) {
+  function territorySet(x, y, candidateColor, boundaryColor) {
 
     //Get color at given position
     var posColor = this.stones.get(x, y);
@@ -60,12 +60,12 @@ angular.module('ngGo.Game.Scorer.Service', [
     territorySet.call(this, x, y - 1, candidateColor, boundaryColor);
     territorySet.call(this, x + 1, y, candidateColor, boundaryColor);
     territorySet.call(this, x, y + 1, candidateColor, boundaryColor);
-  };
+  }
 
   /**
    * Helper to reset territory
    */
-  var territoryReset = function(x, y) {
+  function territoryReset(x, y) {
 
     //Get original color from this position
     var origColor = this.game.position.stones.get(x, y);
@@ -83,12 +83,12 @@ angular.module('ngGo.Game.Scorer.Service', [
     territoryReset.call(this, x, y - 1);
     territoryReset.call(this, x + 1, y);
     territoryReset.call(this, x, y + 1);
-  };
+  }
 
   /**
    * Helper to determine score state
    */
-  var determineScoreState = function() {
+  function determineScoreState() {
 
     //Initialize vars
     var change = true;
@@ -167,7 +167,7 @@ angular.module('ngGo.Game.Scorer.Service', [
         }
       }
     }
-  };
+  }
 
   /**
    * this.game scorer class

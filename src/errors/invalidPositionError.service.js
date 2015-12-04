@@ -18,7 +18,7 @@ angular.module('ngGo.Errors.InvalidPositionError.Service', [
   /**
    * Define error
    */
-  var InvalidPositionError = function(code, x, y, color) {
+  function InvalidPositionError(code, x, y, color) {
 
     //Set name and message
     this.code = code;
@@ -48,7 +48,7 @@ angular.module('ngGo.Errors.InvalidPositionError.Service', [
       default:
         this.message += '.';
     }
-  };
+  }
 
   /**
    * Extend from error class

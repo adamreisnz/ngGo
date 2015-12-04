@@ -22,7 +22,7 @@ angular.module('ngGo.Game.Position.Service', [
   /**
    * Constructor
    */
-  var GamePosition = function(width, height) {
+  function GamePosition(width, height) {
 
     //Initialize
     this.error = 0;
@@ -44,7 +44,7 @@ angular.module('ngGo.Game.Position.Service', [
     if (width || height) {
       this.setSize(width, height);
     }
-  };
+  }
 
   /**
    * Set the grid size

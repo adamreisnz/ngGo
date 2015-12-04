@@ -16,11 +16,11 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
   /**
    * Constructor
    */
-  var ShadowLayer = function(board, context) {
+  function ShadowLayer(board, context) {
 
     //Call parent constructor
     BoardLayer.call(this, board, context);
-  };
+  }
 
   /**
    * Prototype extension

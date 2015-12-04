@@ -16,14 +16,14 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
   /**
    * Constructor
    */
-  var StonesLayer = function(board, context) {
+  function StonesLayer(board, context) {
 
     //Call parent constructor
     BoardLayer.call(this, board, context);
 
     //Set empty value for grid
     this.grid.whenEmpty(StoneColor.EMPTY);
-  };
+  }
 
   /**
    * Prototype extension

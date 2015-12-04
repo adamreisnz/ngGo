@@ -21,7 +21,7 @@ angular.module('ngGo.Board.Grid.Service', [
   /**
    * Helper to convert a value at given coordinates to an object
    */
-  var toObject = function(x, y, valueKey) {
+  function toObject(x, y, valueKey) {
 
     //Create coordinates object
     var obj = {
@@ -37,12 +37,12 @@ angular.module('ngGo.Board.Grid.Service', [
     //Not an object, set value with given value key and return
     obj[valueKey] = this.grid[x][y];
     return obj;
-  };
+  }
 
   /**
    * Constructor
    */
-  var BoardGrid = function(width, height, emptyValue) {
+  function BoardGrid(width, height, emptyValue) {
 
     //Initialize size and grid array
     this.width = 0;
@@ -59,7 +59,7 @@ angular.module('ngGo.Board.Grid.Service', [
     if (width || height) {
       this.setSize(width, height);
     }
-  };
+  }
 
   /**
    * Set a value

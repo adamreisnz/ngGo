@@ -48,7 +48,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
   /**
    * Helper to build drag object
    */
-  var dragObject = function(event) {
+  function dragObject(event) {
 
     //Initialize drag object
     var drag = {
@@ -78,7 +78,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 
     //Return
     return drag;
-  };
+  }
 
   /**
    * Normalize the mousewheel event helper

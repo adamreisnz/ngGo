@@ -32,9 +32,9 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
   /**
    * Helper to convert SGF coordinates
    */
-  var convertCoordinates = function(coords) {
+  function convertCoordinates(coords) {
     return [coords.charCodeAt(0) - aChar, coords.charCodeAt(1) - aChar];
-  };
+  }
 
   /*****************************************************************************
    * Conversion helpers
@@ -43,7 +43,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
   /**
    * Application parser function (doesn't overwrite existing signature)
    */
-  var parseApp = function(jgf, node, key, value) {
+  function parseApp(jgf, node, key, value) {
     if (!jgf.record.application) {
       var app = value[0].split(':');
       if (app.length > 1) {
@@ -53,19 +53,19 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
         jgf.record.application = app[0];
       }
     }
-  };
+  }
 
   /**
    * SGF format parser
    */
-  var parseSgfFormat = function() {
+  function parseSgfFormat() {
     return;
-  };
+  }
 
   /**
    * Game type parser function
    */
-  var parseGame = function(jgf, node, key, value) {
+  function parseGame(jgf, node, key, value) {
     var game = value[0];
     if (typeof sgfGames[game] !== 'undefined') {
       jgf.game.type = sgfGames[game];
@@ -73,12 +73,12 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     else {
       jgf.game.type = value[0];
     }
-  };
+  }
 
   /**
    * Move parser function
    */
-  var parseMove = function(jgf, node, key, value) {
+  function parseMove(jgf, node, key, value) {
 
     //Create move container
     node.move = {};
@@ -92,12 +92,12 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     else {
       node.move[key] = convertCoordinates(value[0]);
     }
-  };
+  }
 
   /**
    * Comment parser function
    */
-  var parseComment = function(jgf, node, key, value) {
+  function parseComment(jgf, node, key, value) {
 
     //Get key alias
     if (typeof sgfAliases[key] !== 'undefined') {
@@ -106,12 +106,12 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
     //Set value
     node[key] = value;
-  };
+  }
 
   /**
    * Node name parser function
    */
-  var parseNodeName = function(jgf, node, key, value) {
+  function parseNodeName(jgf, node, key, value) {
 
     //Get key alias
     if (typeof sgfAliases[key] !== 'undefined') {
@@ -120,12 +120,12 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
     //Set value
     node[key] = value[0];
-  };
+  }
 
   /**
    * Board setup parser function
    */
-  var parseSetup = function(jgf, node, key, value) {
+  function parseSetup(jgf, node, key, value) {
 
     //Initialize setup container on node
     if (typeof node.setup === 'undefined') {
@@ -144,12 +144,12 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     for (var i = 0; i < value.length; i++) {
       node.setup[key].push(convertCoordinates(value[i]));
     }
-  };
+  }
 
   /**
    * Scoring parser function
    */
-  var parseScore = function(jgf, node, key, value) {
+  function parseScore(jgf, node, key, value) {
 
     //Initialize score container on node
     if (typeof node.score === 'undefined') {
@@ -166,19 +166,19 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     for (var i = 0; i < value.length; i++) {
       node.score[key].push(convertCoordinates(value[i]));
     }
-  };
+  }
 
   /**
    * Turn parser function
    */
-  var parseTurn = function(jgf, node, key, value) {
+  function parseTurn(jgf, node, key, value) {
     node.turn = value[0];
-  };
+  }
 
   /**
    * Label parser function
    */
-  var parseLabel = function(jgf, node, key, value) {
+  function parseLabel(jgf, node, key, value) {
 
     //Get key alias
     if (typeof sgfAliases[key] !== 'undefined') {
@@ -205,12 +205,12 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
       //Add to node
       node.markup[key].push(coords);
     }
-  };
+  }
 
   /**
    * Markup parser function
    */
-  var parseMarkup = function(jgf, node, key, value) {
+  function parseMarkup(jgf, node, key, value) {
 
     //Get key alias
     if (typeof sgfAliases[key] !== 'undefined') {
@@ -231,12 +231,12 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     for (var i = 0; i < value.length; i++) {
       node.markup[key].push(convertCoordinates(value[i]));
     }
-  };
+  }
 
   /**
    * Size parser function
    */
-  var parseSize = function(jgf, node, key, value) {
+  function parseSize(jgf, node, key, value) {
 
     //Initialize board container
     if (typeof jgf.board === 'undefined') {
@@ -252,12 +252,12 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     else {
       jgf.board.width = jgf.board.height = parseInt(size[0]);
     }
-  };
+  }
 
   /**
    * Date parser function
    */
-  var parseDate = function(jgf, node, key, value) {
+  function parseDate(jgf, node, key, value) {
 
     //Initialize dates container
     if (typeof jgf.game.dates === 'undefined') {
@@ -269,19 +269,19 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     for (var d = 0; d < dates.length; d++) {
       jgf.game.dates.push(dates[d]);
     }
-  };
+  }
 
   /**
    * Komi parser function
    */
-  var parseKomi = function(jgf, node, key, value) {
+  function parseKomi(jgf, node, key, value) {
     jgf.game.komi = parseFloat(value[0]);
-  };
+  }
 
   /**
    * Variations handling parser function
    */
-  var parseVariations = function(jgf, node, key, value) {
+  function parseVariations(jgf, node, key, value) {
 
     //Initialize display property
     if (typeof jgf.player === 'undefined') {
@@ -313,12 +313,12 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
         jgf.player.variationSiblings = true;
         break;
     }
-  };
+  }
 
   /**
    * Player info parser function
    */
-  var parsePlayer = function(jgf, node, key, value) {
+  function parsePlayer(jgf, node, key, value) {
 
     //Initialize players container
     if (typeof jgf.game.players === 'undefined') {
@@ -345,7 +345,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     var player = {color: color};
     player[key] = value[0];
     jgf.game.players.push(player);
-  };
+  }
 
   /**
    * Parsing function to property mapper
@@ -410,7 +410,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
   /**
    * Set info in the JGF tree at a certain position
    */
-  var setInfo = function(jgf, position, value) {
+  function setInfo(jgf, position, value) {
 
     //Position given must be an array
     if (typeof position !== 'object') {
@@ -443,7 +443,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
     //Set value
     node[key] = value;
-  };
+  }
 
   /**
    * Parser class

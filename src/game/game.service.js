@@ -70,7 +70,7 @@ angular.module('ngGo.Game.Service', [
     /**
      * Validate the info we have to make sure the properties exist
      */
-    var validateInfo = function() {
+    function validateInfo() {
 
       //Set board info if not set
       if (!this.info.board) {
@@ -95,7 +95,7 @@ angular.module('ngGo.Game.Service', [
       if (typeof this.info.game.handicap === 'undefined') {
         this.info.game.handicap = this.config.defaultHandicap;
       }
-    };
+    }
 
     /*****************************************************************************
      * Node navigation helpers
@@ -104,7 +104,7 @@ angular.module('ngGo.Game.Service', [
     /**
      * Navigate to the next node
      */
-    var nextNode = function(i) {
+    function nextNode(i) {
 
       //Check if we have children
       if (this.node.children.length === 0) {
@@ -133,12 +133,12 @@ angular.module('ngGo.Game.Service', [
       //Set pointer of current node
       this.node = this.node.children[i];
       return true;
-    };
+    }
 
     /**
      * Navigate to the previous node
      */
-    var previousNode = function() {
+    function previousNode() {
 
       //No parent node?
       if (!this.node.parent) {
@@ -151,12 +151,12 @@ angular.module('ngGo.Game.Service', [
       //Set pointer of current node
       this.node = this.node.parent;
       return true;
-    };
+    }
 
     /**
      * Navigate to the first node
      */
-    var firstNode = function() {
+    function firstNode() {
 
       //Reset path
       this.path.reset();
@@ -167,7 +167,7 @@ angular.module('ngGo.Game.Service', [
       //Set the initial turn depending on handicap
       //Can be overwritten by game record instructions
       this.setTurn((this.info.game.handicap > 1) ? StoneColor.W : StoneColor.B);
-    };
+    }
 
     /*****************************************************************************
      * Position history helpers
@@ -176,7 +176,7 @@ angular.module('ngGo.Game.Service', [
     /**
      * Clear the position history and initialize with a blank position
      */
-    var initializeHistory = function() {
+    function initializeHistory() {
 
       //Already at beginning?
       if (this.history.length === 1) {
@@ -191,13 +191,13 @@ angular.module('ngGo.Game.Service', [
       if (this.info.board) {
         this.history[0].setSize(this.info.board.width, this.info.board.height);
       }
-    };
+    }
 
     /**
      * Add position to stack. If position isn't specified current position is
      * cloned and stacked. Pointer of actual position is moved to the new position.
      */
-    var pushPosition = function(newPosition) {
+    function pushPosition(newPosition) {
 
       //Position not given?
       if (!newPosition) {
@@ -207,12 +207,12 @@ angular.module('ngGo.Game.Service', [
       //Push
       this.history.push(newPosition);
       return newPosition;
-    };
+    }
 
     /**
      * Remove current position from stack
      */
-    var popPosition = function() {
+    function popPosition() {
 
       //Nothing left?
       if (this.history.length === 0) {
@@ -221,17 +221,17 @@ angular.module('ngGo.Game.Service', [
 
       //Get old position
       return this.history.pop();
-    };
+    }
 
     /**
      * Replace the current position in the stack
      */
-    var replacePosition = function(newPosition) {
+    function replacePosition(newPosition) {
       if (newPosition) {
         this.history.pop();
         this.history.push(newPosition);
       }
-    };
+    }
 
     /*****************************************************************************
      * Execution helpers
@@ -240,7 +240,7 @@ angular.module('ngGo.Game.Service', [
     /**
      * Execute the current node
      */
-    var executeNode = function() {
+    function executeNode() {
 
       //Remember last selected node if we have a parent
       if (this.node.parent) {
@@ -290,7 +290,7 @@ angular.module('ngGo.Game.Service', [
 
       //Push the new position into the history now
       pushPosition.call(this, newPosition);
-    };
+    }
 
     /*****************************************************************************
      * Game class
@@ -299,7 +299,7 @@ angular.module('ngGo.Game.Service', [
     /**
      * Constructor
      */
-    var Game = function(data, config) {
+    function Game(data, config) {
 
       //Extend config
       this.config = angular.extend({}, defaultConfig, config || {});
@@ -325,7 +325,7 @@ angular.module('ngGo.Game.Service', [
       else {
         this.init();
       }
-    };
+    }
 
     /**
      * Initialize

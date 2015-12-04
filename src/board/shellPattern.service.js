@@ -18,7 +18,7 @@ angular.module('ngGo.Board.ShellPattern.Service', [
   /**
    * Helper to draw a shell line
    */
-  var shellLine = function(ctx, x, y, radius, startAngle, endAngle, strokeStyle) {
+  function shellLine(ctx, x, y, radius, startAngle, endAngle, strokeStyle) {
 
     //Initialize
     ctx.shadowBlur = 2;
@@ -64,7 +64,7 @@ angular.module('ngGo.Board.ShellPattern.Service', [
     ctx.moveTo(x1, y1);
     ctx.bezierCurveTo(bx1, by1, bx2, by2, x2, y2);
     ctx.stroke();
-  };
+  }
 
   /**
    * Shell pattern drawer

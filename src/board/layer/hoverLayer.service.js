@@ -17,14 +17,14 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
   /**
    * Constructor
    */
-  var HoverLayer = function(board, context) {
+  function HoverLayer(board, context) {
 
     //Container for items to restore
     this.restore = [];
 
     //Call parent constructor
     BoardLayer.call(this, board, context);
-  };
+  }
 
   /**
    * Prototype extension

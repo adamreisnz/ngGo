@@ -27,14 +27,14 @@ angular.module('ngGo.Game.Node.Service', [
   /**
    * Helper to convert SGF coordinates
    */
-  var convertCoordinates = function(coords) {
+  function convertCoordinates(coords) {
     return [coords.charCodeAt(0) - aChar, coords.charCodeAt(1) - aChar];
-  };
+  }
 
   /**
    * Helper to construct a coordinates base object
    */
-  var coordinatesObject = function(coords, baseObject) {
+  function coordinatesObject(coords, baseObject) {
     baseObject = baseObject || {};
     if (coords === '' || coords === 'pass') {
       baseObject.pass = true;
@@ -51,19 +51,19 @@ angular.module('ngGo.Game.Node.Service', [
       baseObject.y = coords[1] * 1;
     }
     return baseObject;
-  };
+  }
 
   /**
    * Convert a numeric color value (color constant) to a string
    */
-  var toStringColor = function(color) {
+  function toStringColor(color) {
     return (color === StoneColor.B) ? 'B' : (((color === StoneColor.W) ? 'W' : ''));
-  };
+  }
 
   /**
    * Convert a string color value to a numeric color constant
    */
-  var toColorConstant = function(color) {
+  function toColorConstant(color) {
     if (color === 'B') {
       return StoneColor.B;
     }
@@ -71,7 +71,7 @@ angular.module('ngGo.Game.Node.Service', [
       return StoneColor.W;
     }
     return StoneColor.E;
-  };
+  }
 
   /*****************************************************************************
    * Helpers for conversion between JGF / KIFU format
@@ -80,7 +80,7 @@ angular.module('ngGo.Game.Node.Service', [
   /**
    * Convert move object to JGF format
    */
-  var convertMoveToJgf = function(move) {
+  function convertMoveToJgf(move) {
 
     //Initialize JGF move object and determine color
     var jgfMove = angular.copy(move);
@@ -108,12 +108,12 @@ angular.module('ngGo.Game.Node.Service', [
 
     //Return move
     return jgfMove;
-  };
+  }
 
   /**
    * Convert move from JGF format
    */
-  var convertMoveFromJgf = function(move) {
+  function convertMoveFromJgf(move) {
 
     //Prepare color, coordinates
     var color, coords;
@@ -137,12 +137,12 @@ angular.module('ngGo.Game.Node.Service', [
     return coordinatesObject(coords, {
       color: toColorConstant(color)
     });
-  };
+  }
 
   /**
    * Convert setup object to JGF format
    */
-  var convertSetupToJgf = function(setup) {
+  function convertSetupToJgf(setup) {
 
     //Initialize variables
     var i, color;
@@ -167,12 +167,12 @@ angular.module('ngGo.Game.Node.Service', [
 
     //Return
     return jgfSetup;
-  };
+  }
 
   /**
    * Convert setup from JGF format
    */
-  var convertSetupFromJgf = function(setup) {
+  function convertSetupFromJgf(setup) {
 
     //Initialize variables
     var c, key, color;
@@ -198,12 +198,12 @@ angular.module('ngGo.Game.Node.Service', [
 
     //Return
     return gameSetup;
-  };
+  }
 
   /**
    * Convert markup object to JGF format
    */
-  var convertMarkupToJgf = function(markup) {
+  function convertMarkupToJgf(markup) {
 
     //Initialize variables
     var i, type;
@@ -233,12 +233,12 @@ angular.module('ngGo.Game.Node.Service', [
 
     //Return
     return jgfMarkup;
-  };
+  }
 
   /**
    * Convert markup from JGF format
    */
-  var convertMarkupFromJgf = function(markup) {
+  function convertMarkupFromJgf(markup) {
 
     //Initialize variables
     var l, type;
@@ -292,12 +292,12 @@ angular.module('ngGo.Game.Node.Service', [
 
     //Return
     return gameMarkup;
-  };
+  }
 
   /**
    * Convert turn object to JGF format
    */
-  var convertTurnToJgf = function(turn) {
+  function convertTurnToJgf(turn) {
     switch (turn) {
       case StoneColor.W:
         return 'W';
@@ -306,12 +306,12 @@ angular.module('ngGo.Game.Node.Service', [
       default:
         return '';
     }
-  };
+  }
 
   /**
    * Convert turn from JGF format
    */
-  var convertTurnFromJgf = function(turn) {
+  function convertTurnFromJgf(turn) {
     switch (turn) {
       case 'W':
         return StoneColor.W;
@@ -320,7 +320,7 @@ angular.module('ngGo.Game.Node.Service', [
       default:
         return StoneColor.EMPTY;
     }
-  };
+  }
 
   /**
    * Conversions map
@@ -343,7 +343,7 @@ angular.module('ngGo.Game.Node.Service', [
   /**
    * Constructor
    */
-  var GameNode = function(properties, parent) {
+  function GameNode(properties, parent) {
 
     //Set parent and children
     this.parent = parent || null;
@@ -357,7 +357,7 @@ angular.module('ngGo.Game.Node.Service', [
         }
       }
     }
-  };
+  }
 
   /**
    * Get node's child specified by index or null if doesn't exist

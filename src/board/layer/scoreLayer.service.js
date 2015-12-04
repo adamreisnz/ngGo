@@ -17,7 +17,7 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
   /**
    * Constructor
    */
-  var ScoreLayer = function(board, context) {
+  function ScoreLayer(board, context) {
 
     //Points and captures
     this.points = [];
@@ -25,7 +25,7 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
 
     //Call parent constructor
     BoardLayer.call(this, board, context);
-  };
+  }
 
   /**
    * Prototype extension

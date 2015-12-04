@@ -88,7 +88,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
     /**
      * Update hover mark at specific coordinates
      */
-    var updateHoverMark = function(x, y, isDrag) {
+    function updateHoverMark(x, y, isDrag) {
 
       //If no coordinates specified, use last mouse coordinates
       if (typeof x === 'undefined' || typeof y === 'undefined') {
@@ -197,12 +197,12 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
           }
           break;
       }
-    };
+    }
 
     /**
      * Helper to set markup
      */
-    var setMarkup = function(x, y) {
+    function setMarkup(x, y) {
 
       //Already markup in place? Remove it first
       if (this.game.hasMarkup(x, y)) {
@@ -256,12 +256,12 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       else {
         this.game.addMarkup(x, y, this.markupTool);
       }
-    };
+    }
 
     /**
      * Helper to set a stone
      */
-    var setStone = function(x, y, isDrag) {
+    function setStone(x, y, isDrag) {
 
       //Get the stone color
       var color = this.setupToolColor();
@@ -291,12 +291,12 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
       //Redraw markup
       this.board.layers.markup.redrawCell(x, y);
-    };
+    }
 
     /**
      * Find all markup labels in current position
      */
-    var findAllMarkupLabels = function() {
+    function findAllMarkupLabels() {
 
       //Clear
       this.markupLabels = [];
@@ -313,7 +313,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
           this.markupLabels.push(markup[i].text);
         }
       }
-    };
+    }
 
     /**
      * Player extension

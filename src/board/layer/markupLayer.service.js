@@ -16,11 +16,11 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
   /**
    * Constructor
    */
-  var MarkupLayer = function(board, context) {
+  function MarkupLayer(board, context) {
 
     //Call parent constructor
     BoardLayer.call(this, board, context);
-  };
+  }
 
   /**
    * Prototype extension

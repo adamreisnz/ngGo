@@ -21,7 +21,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
   /**
    * Helper for drawing starpoints
    */
-  var drawStarPoint = function(gridX, gridY, starRadius, starColor) {
+  function drawStarPoint(gridX, gridY, starRadius, starColor) {
 
     //Don't draw if it falls outsize of the board grid
     if (gridX < this.board.grid.xLeft || gridX > this.board.grid.xRight) {
@@ -40,19 +40,19 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
     this.context.fillStyle = starColor;
     this.context.arc(x, y, starRadius, 0, 2 * Math.PI, true);
     this.context.fill();
-  };
+  }
 
   /**
    * Constructor
    */
-  var GridLayer = function(board, context) {
+  function GridLayer(board, context) {
 
     //Set coordinates setting
     this.coordinates = false;
 
     //Call parent constructor
     BoardLayer.call(this, board, context);
-  };
+  }
 
   /**
    * Prototype extension

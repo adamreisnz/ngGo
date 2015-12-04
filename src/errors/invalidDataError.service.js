@@ -18,7 +18,7 @@ angular.module('ngGo.Errors.InvalidDataError.Service', [
   /**
    * Define error
    */
-  var InvalidDataError = function(code) {
+  function InvalidDataError(code) {
 
     //Set name and message
     this.code = code;
@@ -48,7 +48,7 @@ angular.module('ngGo.Errors.InvalidDataError.Service', [
       default:
         this.message += 'unable to parse the data.';
     }
-  };
+  }
 
   /**
    * Extend from error class

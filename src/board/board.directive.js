@@ -16,7 +16,7 @@ angular.module('ngGo.Board.Directive', [
   /**
    * Helper to create a layer canvas
    */
-  var createLayerCanvas = function(name) {
+  function createLayerCanvas(name) {
 
     //Create canvas element and get context
     var canvas = document.createElement('canvas');
@@ -37,12 +37,12 @@ angular.module('ngGo.Board.Directive', [
     //Append to element now and return context
     this.appendChild(canvas);
     return context;
-  };
+  }
 
   /**
    * Helper to determine draw size
    */
-  var determineDrawSize = function(scope, availableWidth, availableHeight) {
+  function determineDrawSize(scope, availableWidth, availableHeight) {
 
     //Init vars
     var drawWidth, drawHeight, cellSize;
@@ -78,7 +78,7 @@ angular.module('ngGo.Board.Directive', [
 
     //No change
     return false;
-  };
+  }
 
   /**
    * Directive

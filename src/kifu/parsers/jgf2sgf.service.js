@@ -34,9 +34,9 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   /**
    * Helper to convert to SGF coordinates
    */
-  var convertCoordinates = function(coords) {
+  function convertCoordinates(coords) {
     return String.fromCharCode(aChar + coords[0]) + String.fromCharCode(aChar + coords[1]);
-  };
+  }
 
   /*****************************************************************************
    * Conversion helpers
@@ -45,29 +45,29 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   /**
    * Helper to escape SGF info
    */
-  var escapeSgf = function(text) {
+  function escapeSgf(text) {
     if (typeof text === 'string') {
       return text.replace(/\\/g, '\\\\').replace(/]/g, '\\]');
     }
     return text;
-  };
+  }
 
   /**
    * Helper to write an SGF group
    */
-  var writeGroup = function(prop, values, output, escape) {
+  function writeGroup(prop, values, output, escape) {
     if (values.length) {
       output.sgf += prop;
       for (var i = 0; i < values.length; i++) {
         output.sgf += '[' + (escape ? escapeSgf(values[i]) : values[i]) + ']';
       }
     }
-  };
+  }
 
   /**
    * Move parser
    */
-  var parseMove = function(move, output) {
+  function parseMove(move, output) {
 
     //Determine and validate color
     var color = move.B ? 'B' : (move.W ? 'W' : '');
@@ -80,12 +80,12 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
     //Append to SGF
     output.sgf += color + '[' + convertCoordinates(coords) + ']';
-  };
+  }
 
   /**
    * Setup parser
    */
-  var parseSetup = function(setup, output) {
+  function parseSetup(setup, output) {
 
     //Loop colors
     for (var color in setup) {
@@ -100,12 +100,12 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
         writeGroup('A' + color, setup[color], output);
       }
     }
-  };
+  }
 
   /**
    * Score parser
    */
-  var parseScore = function(score, output) {
+  function parseScore(score, output) {
 
     //Loop colors
     for (var color in score) {
@@ -120,12 +120,12 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
         writeGroup('T' + color, score[color], output);
       }
     }
-  };
+  }
 
   /**
    * Markup parser
    */
-  var parseMarkup = function(markup, output) {
+  function parseMarkup(markup, output) {
 
     //Loop markup types
     for (var type in markup) {
@@ -153,19 +153,19 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
         writeGroup(type, markup[type], output);
       }
     }
-  };
+  }
 
   /**
    * Turn parser
    */
-  var parseTurn = function(turn, output) {
+  function parseTurn(turn, output) {
     output.sgf += 'PL[' + turn + ']';
-  };
+  }
 
   /**
    * Comments parser
    */
-  var parseComments = function(comments, output) {
+  function parseComments(comments, output) {
 
     //Determine key
     var key = (typeof jgfAliases.comments !== 'undefined') ? jgfAliases.comments : 'C';
@@ -183,20 +183,20 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
     //Write as group
     writeGroup(key, flatComments, output, true);
-  };
+  }
 
   /**
    * Node name parser
    */
-  var parseNodeName = function(nodeName, output) {
+  function parseNodeName(nodeName, output) {
     var key = (typeof jgfAliases.name !== 'undefined') ? jgfAliases.name : 'N';
     output.sgf += key + '[' + escapeSgf(nodeName) + ']';
-  };
+  }
 
   /**
    * Game parser
    */
-  var parseGame = function(game) {
+  function parseGame(game) {
 
     //Loop SGF game definitions
     for (var i in sgfGames) {
@@ -207,23 +207,23 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
     //Not found
     return 0;
-  };
+  }
 
   /**
    * Application parser
    */
-  var parseApplication = function(application) {
+  function parseApplication(application) {
     var parts = application.split(' v');
     if (parts.length > 1) {
       return parts[0] + ':' + parts[1];
     }
     return application;
-  };
+  }
 
   /**
    * Player instructions parser
    */
-  var parsePlayer = function(player, rootProperties) {
+  function parsePlayer(player, rootProperties) {
 
     //Variation handling
     var st = 0;
@@ -236,12 +236,12 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
     //Set in root properties
     rootProperties.ST = st;
-  };
+  }
 
   /**
    * Board parser
    */
-  var parseBoard = function(board, rootProperties) {
+  function parseBoard(board, rootProperties) {
 
     //Both width and height should be given
     if (board.width && board.height) {
@@ -270,12 +270,12 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
     else {
       rootProperties.SZ = '';
     }
-  };
+  }
 
   /**
    * Players parser
    */
-  var parsePlayers = function(players, rootProperties) {
+  function parsePlayers(players, rootProperties) {
 
     //Loop players
     for (var p = 0; p < players.length; p++) {
@@ -303,7 +303,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
         rootProperties[color + 'T'] = players[p].team;
       }
     }
-  };
+  }
 
   /**
    * Parse function to property mapper
@@ -334,7 +334,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   /**
    * Helper to write a JGF tree to SGF
    */
-  var writeTree = function(tree, output) {
+  function writeTree(tree, output) {
 
     //Loop nodes in the tree
     for (var i = 0; i < tree.length; i++) {
@@ -377,12 +377,12 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
         output.sgf += '\n;';
       }
     }
-  };
+  }
 
   /**
    * Helper to extract all SGF root properties from a JGF object
    */
-  var extractRootProperties = function(jgf, rootProperties, key) {
+  function extractRootProperties(jgf, rootProperties, key) {
 
     //Initialize key
     if (typeof key === 'undefined') {
@@ -433,7 +433,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
         }
       }
     }
-  };
+  }
 
   /**
    * Parser class

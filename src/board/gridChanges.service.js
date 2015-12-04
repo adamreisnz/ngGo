@@ -19,7 +19,7 @@ angular.module('ngGo.Board.GridChanges.Service', [
   /**
    * Helper to subtract sets
    */
-  var setSubtract = function(a, b) {
+  function setSubtract(a, b) {
     var n = [];
     var q;
     for (var i = 0; i < a.length; i++) {
@@ -35,10 +35,10 @@ angular.module('ngGo.Board.GridChanges.Service', [
       }
     }
     return n;
-  };
+  }
 
   /**
-   * Game position constructor
+   * Grid changes constructor
    */
   return function() {
 

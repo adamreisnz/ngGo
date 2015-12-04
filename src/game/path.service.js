@@ -18,9 +18,9 @@ angular.module('ngGo.Game.Path.Service', [
   /**
    * Constructor
    */
-  var GamePath = function() {
+  function GamePath() {
     this.reset();
-  };
+  }
 
   /**
    * Reset
@@ -149,7 +149,7 @@ angular.module('ngGo.Game.Path.Service', [
   /**
    * Helper to find node name recursively
    */
-  var findNodeName = function(node, nodeName, path) {
+  function findNodeName(node, nodeName, path) {
 
     //Found in this node?
     if (node.name && node.name === nodeName) {
@@ -173,7 +173,7 @@ angular.module('ngGo.Game.Path.Service', [
 
     //Not found
     return false;
-  };
+  }
 
   /**
    * Static helper to create a path object to reach a certain node

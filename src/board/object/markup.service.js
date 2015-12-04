@@ -25,7 +25,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
   /**
    * Triangle draw handler
    */
-  var drawTriangle = function(markup) {
+  function drawTriangle(markup) {
 
     //Get coordinates and stone radius
     var x = this.board.getAbsX(markup.x);
@@ -65,12 +65,12 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
+  }
 
   /**
    * Square draw handler
    */
-  var drawSquare = function(markup) {
+  function drawSquare(markup) {
 
     //Get coordinates and stone radius
     var x = this.board.getAbsX(markup.x);
@@ -110,12 +110,12 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
+  }
 
   /**
    * Draw circle handler
    */
-  var drawCircle = function(markup) {
+  function drawCircle(markup) {
 
     //Get coordinates and stone radius
     var x = this.board.getAbsX(markup.x);
@@ -152,12 +152,12 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
+  }
 
   /**
    * Draw mark handler
    */
-  var drawMark = function(markup) {
+  function drawMark(markup) {
 
     //Get coordinates and stone radius
     var x = this.board.getAbsX(markup.x);
@@ -202,12 +202,12 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
+  }
 
   /**
    * Draw select handler
    */
-  var drawSelect = function(markup) {
+  function drawSelect(markup) {
 
     //Get coordinates and stone radius
     var x = this.board.getAbsX(markup.x);
@@ -244,12 +244,12 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
+  }
 
   /**
    * Last move draw handler
    */
-  var drawLast = function(markup) {
+  function drawLast(markup) {
 
     //Get coordinates and stone radius
     var x = this.board.getAbsX(markup.x);
@@ -287,12 +287,12 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
+  }
 
   /**
    * Draw happy smiley handler
    */
-  var drawHappySmiley = function(markup) {
+  function drawHappySmiley(markup) {
 
     //Get coordinates and stone radius
     var x = this.board.getAbsX(markup.x);
@@ -340,12 +340,12 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
+  }
 
   /**
    * Draw sad smiley handler
    */
-  var drawSadSmiley = function(markup) {
+  function drawSadSmiley(markup) {
 
     //Get coordinates and stone radius
     var x = this.board.getAbsX(markup.x);
@@ -393,12 +393,12 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
+  }
 
   /**
    * Draw label
    */
-  var drawLabel = function(markup) {
+  function drawLabel(markup) {
 
     //Get coordinates and stone radius
     var x = this.board.getAbsX(markup.x);
@@ -454,18 +454,18 @@ angular.module('ngGo.Board.Object.Markup.Service', [
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
-  };
+  }
 
   /**
    * Clear label
    */
-  var clearLabel = function(markup) {
+  function clearLabel(markup) {
 
     //No stone on location? Redraw the grid square, if we cleared it
     if (!this.board.has('stones', markup.x, markup.y)) {
       this.board.layers.grid.redrawCell(markup.x, markup.y);
     }
-  };
+  }
 
   /**
    * Markup class
