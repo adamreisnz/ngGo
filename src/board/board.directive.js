@@ -11,7 +11,7 @@ angular.module('ngGo.Board.Directive', [
 .directive('board', function($window, Board) {
 
   //Get pixel ratio
-  var pixelRatio = window.pixelRatio || 1;
+  var pixelRatio = window.devicePixelRatio || 1;
 
   /**
    * Helper to create a layer canvas
