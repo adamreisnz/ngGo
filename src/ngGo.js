@@ -6,7 +6,7 @@
  * and generally cleaned up.
  *
  * Copyright (c) 2013 Jan Prokop (WGo)
- * Copyright (c) 2014-2015 Adam Buczynski (ngGo)
+ * Copyright (c) 2014-2015 Adam Reis (ngGo)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the Software
