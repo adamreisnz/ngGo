@@ -117,9 +117,10 @@ angular.module('ngGo.Board.Layer.Service', [
    */
   BoardLayer.prototype.clear = function() {
     if (this.context) {
-      this.context.clearRect(
-        0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight
-      );
+      var pixelRatio = window.devicePixelRatio || 1;
+      var width = this.context.canvas.clientWidth * pixelRatio;
+      var height = this.context.canvas.clientHeight * pixelRatio;
+      this.context.clearRect(0, 0, width, height);
     }
   };
 
