@@ -74,7 +74,7 @@ describe('Game', function() {
       gamePath.advance(2);
       // Verify
       var populatedGamePath = getPopulatedPath(gamePath);
-      expect(populatedGamePath.move).toEqual(2);
+      expect(populatedGamePath.move).toEqual(3);
       expect(populatedGamePath.branches).toEqual(2);
       expect(populatedGamePath.path).toEqual({
         0: 0,
