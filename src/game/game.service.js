@@ -845,15 +845,13 @@ angular.module('ngGo.Game.Service', [
       var stop;
 
       //Check for ko only? (Last two positions)
-      if (this.checkRepeat === 'KO' && (this.history.length - 2) >= 0) {
+      if (this.config.checkRepeat === 'KO' && (this.history.length - 2) >= 0) {
         stop = this.history.length - 2;
       }
-
       //Check all history?
-      else if (this.checkRepeat === 'ALL') {
+      else if (this.config.checkRepeat === 'ALL') {
         stop = 0;
       }
-
       //Not repeating
       else {
         return false;
@@ -918,7 +916,7 @@ angular.module('ngGo.Game.Service', [
         if (!newPosition.hasLiberties(x, y)) {
 
           //Capture the group if it's allowed
-          if (this.allowSuicide) {
+          if (this.config.allowSuicide) {
             newPosition.captureGroup(x, y);
           }
 
@@ -930,7 +928,7 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Check history for repeating moves
-      if (this.checkRepeat && this.isRepeatingPosition(newPosition)) {
+      if (this.config.checkRepeat && this.isRepeatingPosition(newPosition)) {
         throw new InvalidPositionError(ngGo.error.POSTITION_IS_REPEATING, x, y, color);
       }
 
