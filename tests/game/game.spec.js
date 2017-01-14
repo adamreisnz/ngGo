@@ -55,7 +55,7 @@ describe('Game', function() {
       goToLastMove.call(this);
       // Verify
       expect(this.gameSimple.play.bind(this.gameSimple, 2, 2, StoneColor.BLACK)).not.toThrow();
-      expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.BLACK)).not.toThrow();
+      expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.WHITE)).not.toThrow();
       expect(this.gameRepeatingAll.play.bind(this.gameRepeatingAll, 2, 2, StoneColor.BLACK)).not.toThrow();
     });
 
@@ -70,7 +70,7 @@ describe('Game', function() {
       goToLastMove.call(this);
       // Verify
       expect(this.gameSimple.play.bind(this.gameSimple, 2, 2, StoneColor.BLACK)).not.toThrow();
-      expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.BLACK))
+      expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.WHITE))
         .toThrowError(InvalidPositionError);
       expect(this.gameRepeatingAll.play.bind(this.gameRepeatingAll, 2, 2, StoneColor.BLACK)).not.toThrow();
     });
@@ -86,7 +86,7 @@ describe('Game', function() {
       goToLastMove.call(this);
       // Verify
       expect(this.gameSimple.play.bind(this.gameSimple, 2, 2, StoneColor.BLACK)).not.toThrow();
-      expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.BLACK))
+      expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.WHITE))
         .toThrowError(InvalidPositionError);
       expect(this.gameRepeatingAll.play.bind(this.gameRepeatingAll, 2, 2, StoneColor.BLACK))
         .toThrowError(InvalidPositionError);
