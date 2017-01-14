@@ -58,7 +58,7 @@ describe('BoardGrid', function() {
       gridDiffStones = new BoardGrid(3, 3);
     });
 
-    // Specify fake stones for base grid
+    // Specify fake stones
     beforeAll(function() {
       gridBase.grid = [
         [0, 1, -1],
