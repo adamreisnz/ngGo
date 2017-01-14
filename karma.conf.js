@@ -8,6 +8,20 @@ module.exports = function(config) {
     //Base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
+    //Files
+    files: [
+      'node_modules/angular/angular.js',
+      'node_modules/angular-mocks/angular-mocks.js',
+      'src/**/*.js',
+      'src/**/*.spec.js',
+    ],
+
+    //Preprocessors
+    preprocessors: {
+      'src/**/*.js': ['babel'],
+      'tests/**/*.spec.js': ['babel'],
+    },
+
     //Frameworks to use (see https://npmjs.org/browse/keyword/karma-adapter)
     frameworks: ['jasmine'],
 
@@ -27,12 +41,15 @@ module.exports = function(config) {
     logLevel: config.LOG_INFO,
 
     //Enable / disable watching file and executing tests whenever any file changes
-    autoWatch: true,
+    autoWatch: false,
 
     //Start these browsers (see https://npmjs.org/browse/keyword/karma-launcher)
     browsers: ['PhantomJS'],
 
     //Continuous integration mode
-    singleRun: true
+    singleRun: true,
+
+    //Don't fail on empty test suite
+    failOnEmptyTestSuite: false,
   });
 };

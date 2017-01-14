@@ -8,7 +8,7 @@
  */
 angular.module('ngGo.Board.Object.Service', [
   'ngGo',
-  'ngGo.Board.DefaultClearHandler.Service'
+  'ngGo.Board.DefaultClearHandler.Service',
 ])
 
 /**
@@ -19,7 +19,7 @@ angular.module('ngGo.Board.Object.Service', [
   /**
    * Constructor
    */
-  var BoardObject = {
+  let BoardObject = {
 
     /**
      * Draw method
@@ -35,7 +35,7 @@ angular.module('ngGo.Board.Object.Service', [
      */
     clear: function(obj) {
       DefaultClearHandler.call(this, this.context, obj);
-    }
+    },
   };
 
   //Return

@@ -7,7 +7,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Errors.InvalidPositionError.Service', [
-  'ngGo'
+  'ngGo',
 ])
 
 /**

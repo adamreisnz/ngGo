@@ -8,7 +8,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.GridChanges.Service', [
-  'ngGo'
+  'ngGo',
 ])
 
 /**
@@ -20,11 +20,11 @@ angular.module('ngGo.Board.GridChanges.Service', [
    * Helper to subtract sets
    */
   function setSubtract(a, b) {
-    var n = [];
-    var q;
-    for (var i = 0; i < a.length; i++) {
+    let n = [];
+    let q;
+    for (let i = 0; i < a.length; i++) {
       q = true;
-      for (var j in b) {
+      for (let j in b) {
         if (a[i].x === b[j].x && a[i].y === b[j].y) {
           q = false;
           break;

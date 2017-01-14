@@ -8,7 +8,7 @@
  */
 angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
   'ngGo',
-  'ngGo.Kifu.Blank.Service'
+  'ngGo.Kifu.Blank.Service',
 ])
 
 /**
@@ -19,15 +19,15 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
   /**
    * Regular expressions for SGF data
    */
-  var regSequence = /\(|\)|(;(\s*[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+)*)/g;
-  var regNode = /[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+/g;
-  var regProperty = /[A-Z]+/;
-  var regValues = /(\[\])|(\[(.|\s)*?([^\\]\]))/g;
+  let regSequence = /\(|\)|(;(\s*[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+)*)/g;
+  let regNode = /[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+/g;
+  let regProperty = /[A-Z]+/;
+  let regValues = /(\[\])|(\[(.|\s)*?([^\\]\]))/g;
 
   /**
    * Character index of "a"
    */
-  var aChar = 'a'.charCodeAt(0);
+  let aChar = 'a'.charCodeAt(0);
 
   /**
    * Helper to convert SGF coordinates
@@ -45,7 +45,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
    */
   function parseApp(jgf, node, key, value) {
     if (!jgf.record.application) {
-      var app = value[0].split(':');
+      let app = value[0].split(':');
       if (app.length > 1) {
         jgf.record.application = app[0] + ' v' + app[1];
       }
@@ -66,7 +66,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
    * Game type parser function
    */
   function parseGame(jgf, node, key, value) {
-    var game = value[0];
+    let game = value[0];
     if (typeof sgfGames[game] !== 'undefined') {
       jgf.game.type = sgfGames[game];
     }
@@ -141,7 +141,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     }
 
     //Add values
-    for (var i = 0; i < value.length; i++) {
+    for (let i = 0; i < value.length; i++) {
       node.setup[key].push(convertCoordinates(value[i]));
     }
   }
@@ -155,7 +155,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     if (typeof node.score === 'undefined') {
       node.score = {
         B: [],
-        W: []
+        W: [],
       };
     }
 
@@ -163,7 +163,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     key = key.charAt(1);
 
     //Add values
-    for (var i = 0; i < value.length; i++) {
+    for (let i = 0; i < value.length; i++) {
       node.score[key].push(convertCoordinates(value[i]));
     }
   }
@@ -196,10 +196,10 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     }
 
     //Add values
-    for (var i = 0; i < value.length; i++) {
+    for (let i = 0; i < value.length; i++) {
 
       //Split off coordinates and add label contents
-      var coords = convertCoordinates(value[i].substr(0, 2));
+      let coords = convertCoordinates(value[i].substr(0, 2));
       coords.push(value[i].substr(3));
 
       //Add to node
@@ -228,7 +228,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     }
 
     //Add values
-    for (var i = 0; i < value.length; i++) {
+    for (let i = 0; i < value.length; i++) {
       node.markup[key].push(convertCoordinates(value[i]));
     }
   }
@@ -244,7 +244,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     }
 
     //Add size property (can be width:height or just a single size)
-    var size = value[0].split(':');
+    let size = value[0].split(':');
     if (size.length > 1) {
       jgf.board.width = parseInt(size[0]);
       jgf.board.height = parseInt(size[1]);
@@ -265,8 +265,8 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     }
 
     //Explode dates
-    var dates = value[0].split(',');
-    for (var d = 0; d < dates.length; d++) {
+    let dates = value[0].split(',');
+    for (let d = 0; d < dates.length; d++) {
       jgf.game.dates.push(dates[d]);
     }
   }
@@ -294,7 +294,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     jgf.player.variationSiblings = false;
 
     //Parse as integer
-    var st = parseInt(value[0]);
+    let st = parseInt(value[0]);
 
     //Determine what we want (see SGF specs for details)
     switch (st) {
@@ -326,7 +326,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     }
 
     //Determine player color
-    var color = (key === 'PB' || key === 'BT' || key === 'BR') ? 'black' : 'white';
+    let color = (key === 'PB' || key === 'BT' || key === 'BR') ? 'black' : 'white';
 
     //Get key alias
     if (typeof sgfAliases[key] !== 'undefined') {
@@ -334,7 +334,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     }
 
     //Check if player of this color already exists
-    for (var p = 0; p < jgf.game.players.length; p++) {
+    for (let p = 0; p < jgf.game.players.length; p++) {
       if (jgf.game.players[p].color === color) {
         jgf.game.players[p][key] = value[0];
         return;
@@ -342,7 +342,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     }
 
     //Player of this color not found, initialize
-    var player = {color: color};
+    let player = {color: color};
     player[key] = value[0];
     jgf.game.players.push(player);
   }
@@ -350,7 +350,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
   /**
    * Parsing function to property mapper
    */
-  var parsingMap = {
+  let parsingMap = {
 
     //Application, game type, board size, komi, date
     'AP': parseApp,
@@ -393,14 +393,14 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     'TR': parseMarkup,
     'MA': parseMarkup,
     'SL': parseMarkup,
-    'LB': parseLabel
+    'LB': parseLabel,
   };
 
   /**
    * These properties need a node object
    */
-  var needsNode = [
-    'B', 'W', 'C', 'N', 'AB', 'AW', 'AE', 'PL', 'LB', 'CR', 'SQ', 'TR', 'MA', 'SL', 'TW', 'TB'
+  let needsNode = [
+    'B', 'W', 'C', 'N', 'AB', 'AW', 'AE', 'PL', 'LB', 'CR', 'SQ', 'TR', 'MA', 'SL', 'TW', 'TB',
   ];
 
   /*****************************************************************************
@@ -418,11 +418,11 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     }
 
     //Initialize node to attach value to
-    var node = jgf;
-    var key;
+    let node = jgf;
+    let key;
 
     //Loop the position
-    for (var p = 0; p < position.length; p++) {
+    for (let p = 0; p < position.length; p++) {
 
       //Get key
       key = position[p];
@@ -448,7 +448,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
   /**
    * Parser class
    */
-  var Parser = {
+  let Parser = {
 
     /**
      * Parse SGF string into a JGF object or string
@@ -456,23 +456,23 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     parse: function(sgf, stringified) {
 
       //Get new JGF object (with SGF node as a base)
-      var jgf = KifuBlank.jgf({record: {sgf: {}}});
+      let jgf = KifuBlank.jgf({record: {sgf: {}}});
 
       //Initialize
-      var stack = [];
-      var container = jgf.tree;
+      let stack = [];
+      let container = jgf.tree;
 
       //Create first node for game, which is usually an empty board position, but can
       //contain comments or board setup instructions, which will be added to the node
       //later if needed.
-      var node = {root: true};
+      let node = {root: true};
       container.push(node);
 
       //Find sequence of elements
-      var sequence = sgf.match(regSequence);
+      let sequence = sgf.match(regSequence);
 
       //Loop sequence items
-      for (var i = 0; i < sequence.length; i++) {
+      for (let i = 0; i < sequence.length; i++) {
 
         //Push stack if new variation found
         if (sequence[i] === '(') {
@@ -508,17 +508,17 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
         }
 
         //Make array of properties within this sequence
-        var properties = sequence[i].match(regNode) || [];
+        let properties = sequence[i].match(regNode) || [];
 
         //Loop them
-        for (var j = 0; j < properties.length; j++) {
+        for (let j = 0; j < properties.length; j++) {
 
           //Get property's key and separate values
-          var key = regProperty.exec(properties[j])[0].toUpperCase();
-          var values = properties[j].match(regValues);
+          let key = regProperty.exec(properties[j])[0].toUpperCase();
+          let values = properties[j].match(regValues);
 
           //Remove additional braces [ and ]
-          for (var k = 0; k < values.length; k++) {
+          for (let k = 0; k < values.length; k++) {
             values[k] = values[k].substring(1, values[k].length - 1).replace(/\\(?!\\)/g, '');
           }
 
@@ -584,7 +584,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
 
       //Return jgf
       return jgf;
-    }
+    },
   };
 
   //Return object

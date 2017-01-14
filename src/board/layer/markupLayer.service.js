@@ -5,7 +5,7 @@
 angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
   'ngGo',
   'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Markup.Service'
+  'ngGo.Board.Object.Markup.Service',
 ])
 
 /**
@@ -37,8 +37,8 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
   MarkupLayer.prototype.setAll = function(grid) {
 
     //Get changes compared to current grid
-    var i;
-    var changes = this.grid.compare(grid, 'type');
+    let i;
+    let changes = this.grid.compare(grid, 'type');
 
     //Clear removed stuff
     for (i = 0; i < changes.remove.length; i++) {
@@ -60,10 +60,10 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
   MarkupLayer.prototype.removeAll = function() {
 
     //Get all markup as objects
-    var markup = this.grid.all('type');
+    let markup = this.grid.all('type');
 
     //Clear them
-    for (var i = 0; i < markup.length; i++) {
+    for (let i = 0; i < markup.length; i++) {
       Markup.clear.call(this, markup[i]);
     }
 
@@ -86,10 +86,10 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
     }
 
     //Get all markup as objects
-    var markup = this.grid.all('type');
+    let markup = this.grid.all('type');
 
     //Draw them
-    for (var i = 0; i < markup.length; i++) {
+    for (let i = 0; i < markup.length; i++) {
       Markup.draw.call(this, markup[i]);
     }
   };

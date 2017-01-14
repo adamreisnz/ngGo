@@ -7,7 +7,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Game.Path.Service', [
-  'ngGo'
+  'ngGo',
 ])
 
 /**
@@ -76,7 +76,7 @@ angular.module('ngGo.Game.Path.Service', [
 
     //Less than our current move? We need to erase any paths above the move number
     if (no < this.move) {
-      for (var i in this.path) {
+      for (let i in this.path) {
         if (i > no) {
           delete this.path[i];
           this.branches--;
@@ -119,7 +119,7 @@ angular.module('ngGo.Game.Path.Service', [
     }
 
     //Check path
-    for (var i in this.path) {
+    for (let i in this.path) {
       if (typeof otherPath.path[i] === 'undefined' || this.path[i] !== otherPath.path[i]) {
         return false;
       }
@@ -135,7 +135,7 @@ angular.module('ngGo.Game.Path.Service', [
   GamePath.prototype.clone = function() {
 
     //Create new instance
-    var newPath = new GamePath();
+    let newPath = new GamePath();
 
     //Set vars
     newPath.move = this.move;
@@ -157,7 +157,7 @@ angular.module('ngGo.Game.Path.Service', [
     }
 
     //Loop children
-    for (var i = 0; i < node.children.length; i++) {
+    for (let i = 0; i < node.children.length; i++) {
 
       //Advance path
       path.advance(i);
@@ -181,7 +181,7 @@ angular.module('ngGo.Game.Path.Service', [
   GamePath.findNode = function(nodeName, rootNode) {
 
     //Create new instance
-    var path = new GamePath();
+    let path = new GamePath();
 
     //Find the node name
     if (findNodeName(rootNode, nodeName, path)) {

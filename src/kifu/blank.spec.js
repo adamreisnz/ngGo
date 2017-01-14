@@ -7,7 +7,7 @@ describe('KifuBlank', function() {
   beforeEach(module('ngGo.Kifu.Blank.Service'));
 
   //Inject KifuBlank
-  var KifuBlank;
+  let KifuBlank;
   beforeEach(inject(function(_KifuBlank_) {
     KifuBlank = _KifuBlank_;
   }));
@@ -18,7 +18,7 @@ describe('KifuBlank', function() {
   describe('JGF blank', function() {
 
     //Create jgf
-    var jgf;
+    let jgf;
     beforeEach(function() {
       jgf = KifuBlank.jgf();
     });
@@ -87,15 +87,15 @@ describe('KifuBlank', function() {
   describe('JGF blank with base', function() {
 
     //Create jgf
-    var jgf;
-    var base = {
+    let jgf;
+    let base = {
       record: {
         application: 'Test app',
-        source: 'Test source'
+        source: 'Test source',
       },
       game: {
-        name: 'Test name'
-      }
+        name: 'Test name',
+      },
     };
     beforeEach(function() {
       jgf = KifuBlank.jgf(base);
@@ -140,7 +140,7 @@ describe('KifuBlank', function() {
   describe('SGF blank', function() {
 
     //Create jgf
-    var sgf;
+    let sgf;
     beforeEach(function() {
       sgf = KifuBlank.sgf();
     });
@@ -207,10 +207,10 @@ describe('KifuBlank', function() {
   describe('SGF blank with base', function() {
 
     //Create jgf
-    var sgf;
-    var base = {
+    let sgf;
+    let base = {
       AP: 'Test app',
-      KM: '6.5'
+      KM: '6.5',
     };
     beforeEach(function() {
       sgf = KifuBlank.sgf(base);

@@ -9,7 +9,7 @@
  */
 angular.module('ngGo.Player.Mode.Common.Service', [
   'ngGo',
-  'ngGo.Game.Scorer.Service'
+  'ngGo.Game.Scorer.Service',
 ])
 
 /**
@@ -21,22 +21,22 @@ angular.module('ngGo.Player.Mode.Common.Service', [
    * Register common event handlers
    */
   Player.on('keydown', PlayerModeCommon.keyDown, [
-    PlayerModes.REPLAY, PlayerModes.EDIT
+    PlayerModes.REPLAY, PlayerModes.EDIT,
   ]);
   Player.on('mousewheel wheel', PlayerModeCommon.mouseWheel, [
-    PlayerModes.REPLAY, PlayerModes.EDIT
+    PlayerModes.REPLAY, PlayerModes.EDIT,
   ]);
   Player.on('mousemove', PlayerModeCommon.mouseMove, [
-    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE,
   ]);
   Player.on('mouseout', PlayerModeCommon.mouseOut, [
-    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE,
   ]);
   Player.on('mousedown', PlayerModeCommon.mouseDown, [
-    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE,
   ]);
   Player.on('mouseup', PlayerModeCommon.mouseUp, [
-    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE,
   ]);
 })
 
@@ -51,15 +51,15 @@ angular.module('ngGo.Player.Mode.Common.Service', [
   function dragObject(event) {
 
     //Initialize drag object
-    var drag = {
+    let drag = {
       start: {
         x: (this.mouse.dragStart.x > event.x) ? event.x : this.mouse.dragStart.x,
-        y: (this.mouse.dragStart.y > event.y) ? event.y : this.mouse.dragStart.y
+        y: (this.mouse.dragStart.y > event.y) ? event.y : this.mouse.dragStart.y,
       },
       stop: {
         x: (this.mouse.dragStart.x > event.x) ? this.mouse.dragStart.x : event.x,
-        y: (this.mouse.dragStart.y > event.y) ? this.mouse.dragStart.y : event.y
-      }
+        y: (this.mouse.dragStart.y > event.y) ? this.mouse.dragStart.y : event.y,
+      },
     };
 
     //Fix boundaries
@@ -86,8 +86,8 @@ angular.module('ngGo.Player.Mode.Common.Service', [
   function normalizeMousewheelEvent(event) {
 
     //Initialize vars
-    var deltaX = 0;
-    var deltaY = 0;
+    let deltaX = 0;
+    let deltaY = 0;
 
     //Old school scrollwheel delta
     if ('detail' in event) {
@@ -140,14 +140,14 @@ angular.module('ngGo.Player.Mode.Common.Service', [
 
       //Last grid coordinates
       lastX: -1,
-      lastY: -1
-    }
+      lastY: -1,
+    },
   });
 
   /**
    * Player mode definition
    */
-  var PlayerMode = {
+  let PlayerMode = {
 
     /**
      * Handler for keydown events
@@ -227,7 +227,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
       mouseEvent = normalizeMousewheelEvent(mouseEvent);
 
       //Find delta
-      var delta = mouseEvent.mouseWheelY || mouseEvent.deltaY;
+      let delta = mouseEvent.mouseWheelY || mouseEvent.deltaY;
 
       //Next move
       if (delta < 0) {
@@ -297,7 +297,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     mouseDown: function(event) {
       this.mouse.dragStart = {
         x: event.x,
-        y: event.y
+        y: event.y,
       };
     },
 
@@ -313,7 +313,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
         this.broadcast('mousedrag', mouseEvent);
       }
       this.mouse.dragStart = null;
-    }
+    },
   };
 
   //Return

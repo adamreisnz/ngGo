@@ -2,7 +2,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Directive', [
-  'ngGo.Board.Service'
+  'ngGo.Board.Service',
 ])
 
 /**
@@ -11,7 +11,7 @@ angular.module('ngGo.Board.Directive', [
 .directive('board', function($window, Board) {
 
   //Get pixel ratio
-  var pixelRatio = window.devicePixelRatio || 1;
+  let pixelRatio = window.devicePixelRatio || 1;
 
   /**
    * Helper to create a layer canvas
@@ -19,8 +19,8 @@ angular.module('ngGo.Board.Directive', [
   function createLayerCanvas(name) {
 
     //Create canvas element and get context
-    var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
+    let canvas = document.createElement('canvas');
+    let context = canvas.getContext('2d');
 
     //Scale context depending on pixel ratio
     if (pixelRatio > 1) {
@@ -45,7 +45,7 @@ angular.module('ngGo.Board.Directive', [
   function determineDrawSize(scope, availableWidth, availableHeight) {
 
     //Init vars
-    var drawWidth, drawHeight, cellSize;
+    let drawWidth, drawHeight, cellSize;
 
     //Stretch available height to width if zero
     if (availableHeight === 0 && availableWidth > 0) {
@@ -86,7 +86,7 @@ angular.module('ngGo.Board.Directive', [
   return {
     restrict: 'E',
     scope: {
-      instance: '&'
+      instance: '&',
     },
 
     /**
@@ -95,10 +95,10 @@ angular.module('ngGo.Board.Directive', [
     link: function(scope, element, attrs) {
 
       //Init vars
-      var i, context, layer, playerElement;
-      var parent = element.parent();
-      var sizingElement = element[0];
-      var existingInstance = true;
+      let i, context, layer, playerElement;
+      let parent = element.parent();
+      let sizingElement = element[0];
+      let existingInstance = true;
 
       //Remember last draw width/height
       scope.lastDrawWidth = 0;
@@ -131,7 +131,7 @@ angular.module('ngGo.Board.Directive', [
       scope.$on('ngGo.board.drawSizeChanged', function(event, width, height) {
 
         //First set the new dimensions on the canvas elements
-        var canvas = element.find('canvas');
+        let canvas = element.find('canvas');
         for (i = 0; i < canvas.length; i++) {
           canvas[i].width = width * pixelRatio;
           canvas[i].height = height * pixelRatio;
@@ -241,6 +241,6 @@ angular.module('ngGo.Board.Directive', [
       if (existingInstance) {
         scope.Board.redraw();
       }
-    }
+    },
   };
 });

@@ -8,7 +8,7 @@
  */
 angular.module('ngGo.Board.Object.Markup.Service', [
   'ngGo',
-  'ngGo.Board.Object.Service'
+  'ngGo.Board.Object.Service',
 ])
 
 /**
@@ -19,8 +19,8 @@ angular.module('ngGo.Board.Object.Markup.Service', [
   /**
    * Math constants
    */
-  var cosPi4 = Math.cos(Math.PI / 4);
-  var cosPi6 = Math.cos(Math.PI / 6);
+  let cosPi4 = Math.cos(Math.PI / 4);
+  let cosPi6 = Math.cos(Math.PI / 6);
 
   /**
    * Triangle draw handler
@@ -28,10 +28,10 @@ angular.module('ngGo.Board.Object.Markup.Service', [
   function drawTriangle(markup) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x);
-    var y = this.board.getAbsY(markup.y);
-    var s = this.board.getCellSize();
-    var r = Math.round(
+    let x = this.board.getAbsX(markup.x);
+    let y = this.board.getAbsY(markup.y);
+    let s = this.board.getCellSize();
+    let r = Math.round(
       this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.triangle.scale')
     );
 
@@ -41,12 +41,12 @@ angular.module('ngGo.Board.Object.Markup.Service', [
     }
 
     //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+    let stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
     //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
-    var strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
-    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+    let lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    let strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    let canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -73,10 +73,10 @@ angular.module('ngGo.Board.Object.Markup.Service', [
   function drawSquare(markup) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x);
-    var y = this.board.getAbsY(markup.y);
-    var s = this.board.getCellSize();
-    var r = Math.round(
+    let x = this.board.getAbsX(markup.x);
+    let y = this.board.getAbsY(markup.y);
+    let s = this.board.getCellSize();
+    let r = Math.round(
       this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.square.scale')
     );
 
@@ -86,15 +86,15 @@ angular.module('ngGo.Board.Object.Markup.Service', [
     }
 
     //Determine cos
-    var rcos = Math.round(r * cosPi4);
+    let rcos = Math.round(r * cosPi4);
 
     //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+    let stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
     //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
-    var strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
-    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+    let lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    let strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    let canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -118,10 +118,10 @@ angular.module('ngGo.Board.Object.Markup.Service', [
   function drawCircle(markup) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x);
-    var y = this.board.getAbsY(markup.y);
-    var s = this.board.getCellSize();
-    var r = Math.round(
+    let x = this.board.getAbsX(markup.x);
+    let y = this.board.getAbsY(markup.y);
+    let s = this.board.getCellSize();
+    let r = Math.round(
       this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.circle.scale')
     );
 
@@ -131,12 +131,12 @@ angular.module('ngGo.Board.Object.Markup.Service', [
     }
 
     //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+    let stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
     //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
-    var strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
-    var canvasTranslate = this.board.theme.canvasTranslate();
+    let lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    let strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    let canvasTranslate = this.board.theme.canvasTranslate();
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -160,10 +160,10 @@ angular.module('ngGo.Board.Object.Markup.Service', [
   function drawMark(markup) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x);
-    var y = this.board.getAbsY(markup.y);
-    var s = this.board.getCellSize();
-    var r = Math.round(
+    let x = this.board.getAbsX(markup.x);
+    let y = this.board.getAbsY(markup.y);
+    let s = this.board.getCellSize();
+    let r = Math.round(
       this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.mark.scale')
     );
 
@@ -173,16 +173,16 @@ angular.module('ngGo.Board.Object.Markup.Service', [
     }
 
     //Determine cos
-    var rcos = Math.round(r * cosPi4);
+    let rcos = Math.round(r * cosPi4);
 
     //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+    let stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
     //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
-    var lineCap = markup.lineCap || this.board.theme.get('markup.mark.lineCap');
-    var strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
-    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+    let lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    let lineCap = markup.lineCap || this.board.theme.get('markup.mark.lineCap');
+    let strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    let canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -210,10 +210,10 @@ angular.module('ngGo.Board.Object.Markup.Service', [
   function drawSelect(markup) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x);
-    var y = this.board.getAbsY(markup.y);
-    var s = this.board.getCellSize();
-    var r = Math.round(
+    let x = this.board.getAbsX(markup.x);
+    let y = this.board.getAbsY(markup.y);
+    let s = this.board.getCellSize();
+    let r = Math.round(
       this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.circle.scale')
     );
 
@@ -223,12 +223,12 @@ angular.module('ngGo.Board.Object.Markup.Service', [
     }
 
     //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+    let stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
     //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
-    var fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
-    var canvasTranslate = this.board.theme.canvasTranslate();
+    let lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    let fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    let canvasTranslate = this.board.theme.canvasTranslate();
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -252,10 +252,10 @@ angular.module('ngGo.Board.Object.Markup.Service', [
   function drawLast(markup) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x);
-    var y = this.board.getAbsY(markup.y);
-    var s = this.board.getCellSize();
-    var r = Math.round(
+    let x = this.board.getAbsX(markup.x);
+    let y = this.board.getAbsY(markup.y);
+    let s = this.board.getCellSize();
+    let r = Math.round(
       this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.last.scale')
     );
 
@@ -265,11 +265,11 @@ angular.module('ngGo.Board.Object.Markup.Service', [
     }
 
     //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+    let stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
     //Get theme properties
-    var fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
-    var canvasTranslate = this.board.theme.canvasTranslate(s);
+    let fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    let canvasTranslate = this.board.theme.canvasTranslate(s);
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -295,10 +295,10 @@ angular.module('ngGo.Board.Object.Markup.Service', [
   function drawHappySmiley(markup) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x);
-    var y = this.board.getAbsY(markup.y);
-    var s = this.board.getCellSize();
-    var r = Math.round(
+    let x = this.board.getAbsX(markup.x);
+    let y = this.board.getAbsY(markup.y);
+    let s = this.board.getCellSize();
+    let r = Math.round(
       this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.smiley.scale')
     );
 
@@ -308,13 +308,13 @@ angular.module('ngGo.Board.Object.Markup.Service', [
     }
 
     //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+    let stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
     //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
-    var lineCap = markup.lineCap || this.board.theme.get('markup.smiley.lineCap');
-    var strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
-    var canvasTranslate = this.board.theme.canvasTranslate();
+    let lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    let lineCap = markup.lineCap || this.board.theme.get('markup.smiley.lineCap');
+    let strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    let canvasTranslate = this.board.theme.canvasTranslate();
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -348,10 +348,10 @@ angular.module('ngGo.Board.Object.Markup.Service', [
   function drawSadSmiley(markup) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x);
-    var y = this.board.getAbsY(markup.y);
-    var s = this.board.getCellSize();
-    var r = Math.round(
+    let x = this.board.getAbsX(markup.x);
+    let y = this.board.getAbsY(markup.y);
+    let s = this.board.getCellSize();
+    let r = Math.round(
       this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.smiley.scale')
     );
 
@@ -361,13 +361,13 @@ angular.module('ngGo.Board.Object.Markup.Service', [
     }
 
     //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+    let stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
     //Get theme properties
-    var lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
-    var lineCap = markup.lineCap || this.board.theme.get('markup.smiley.lineCap');
-    var strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
-    var canvasTranslate = this.board.theme.canvasTranslate();
+    let lineWidth = markup.lineWidth || this.board.theme.get('markup.lineWidth', s) || 1;
+    let lineCap = markup.lineCap || this.board.theme.get('markup.smiley.lineCap');
+    let strokeStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    let canvasTranslate = this.board.theme.canvasTranslate();
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -401,10 +401,10 @@ angular.module('ngGo.Board.Object.Markup.Service', [
   function drawLabel(markup) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(markup.x);
-    var y = this.board.getAbsY(markup.y);
-    var s = this.board.getCellSize();
-    var r = this.board.theme.get('stone.radius', s);
+    let x = this.board.getAbsX(markup.x);
+    let y = this.board.getAbsY(markup.y);
+    let s = this.board.getCellSize();
+    let r = this.board.theme.get('stone.radius', s);
 
     //Apply scaling factor?
     if (markup.scale) {
@@ -412,12 +412,12 @@ angular.module('ngGo.Board.Object.Markup.Service', [
     }
 
     //Get stone color
-    var stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
+    let stoneColor = this.board.get('stones', markup.x, markup.y) * this.board.colorMultiplier;
 
     //Get theme properties
-    var font = markup.font || this.board.theme.get('markup.label.font') || '';
-    var fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
-    var canvasTranslate = this.board.theme.canvasTranslate();
+    let font = markup.font || this.board.theme.get('markup.label.font') || '';
+    let fillStyle = markup.color || this.board.theme.get('markup.color', stoneColor);
+    let canvasTranslate = this.board.theme.canvasTranslate();
 
     //First, clear grid square below for clarity
     if (!this.board.has('stones', markup.x, markup.y)) {
@@ -470,7 +470,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
   /**
    * Markup class
    */
-  var Markup = {
+  let Markup = {
 
     /**
      * Draw
@@ -550,7 +550,7 @@ angular.module('ngGo.Board.Object.Markup.Service', [
       if (markup.type === MarkupTypes.LABEL) {
         clearLabel.call(this, markup);
       }
-    }
+    },
   };
 
   //Return

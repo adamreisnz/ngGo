@@ -7,7 +7,7 @@ describe('KifuParser', function() {
   beforeEach(module('ngGo.Kifu.Parser.Service'));
 
   //Inject KifuParser
-  var KifuParser;
+  let KifuParser;
   beforeEach(inject(function(_KifuParser_) {
     KifuParser = _KifuParser_;
   }));

@@ -8,7 +8,7 @@ describe('GameScore', function() {
   beforeEach(module('ngGo.Game.Score.Service'));
 
   //Inject StoneColor and GameScore
-  var StoneColor, GameScore, score;
+  let StoneColor, GameScore, score;
   beforeEach(inject(function(_StoneColor_, _GameScore_) {
     StoneColor = _StoneColor_;
     GameScore = _GameScore_;
@@ -19,9 +19,9 @@ describe('GameScore', function() {
    */
   it('should have score objects for all colors', function() {
     score = new GameScore();
-    for (var c in score.colors) {
+    for (let c in score.colors) {
       if (score.colors.hasOwnProperty(c)) {
-        var color = score.colors[c];
+        let color = score.colors[c];
         expect(typeof score.get(color)).toBe('object');
       }
     }
@@ -32,12 +32,12 @@ describe('GameScore', function() {
    */
   it('should have all scoring properties at 0 initially', function() {
     score = new GameScore();
-    for (var c in score.colors) {
+    for (let c in score.colors) {
       if (score.colors.hasOwnProperty(c)) {
-        var color = score.colors[c];
-        for (var i in score.items) {
+        let color = score.colors[c];
+        for (let i in score.items) {
           if (score.items.hasOwnProperty(i)) {
-            var item = score.items[i];
+            let item = score.items[i];
             expect(score.get(color, item)).toBe(0);
           }
         }
@@ -60,17 +60,17 @@ describe('GameScore', function() {
     /**
      * Create some random values for each property
      */
-    var rand;
+    let rand;
     beforeAll(function() {
       rand = {};
       score = new GameScore();
-      for (var c in score.colors) {
+      for (let c in score.colors) {
         if (score.colors.hasOwnProperty(c)) {
-          var color = score.colors[c];
+          let color = score.colors[c];
           rand[color] = {};
-          for (var i in score.items) {
+          for (let i in score.items) {
             if (score.items.hasOwnProperty(i)) {
-              var item = score.items[i];
+              let item = score.items[i];
               rand[color][item] = Math.floor(Math.random() * 100);
             }
           }
@@ -82,12 +82,12 @@ describe('GameScore', function() {
      * Setting and getting
      */
     it('should remember the set score values', function() {
-      for (var c in score.colors) {
+      for (let c in score.colors) {
         if (score.colors.hasOwnProperty(c)) {
-          var color = score.colors[c];
-          for (var i in score.items) {
+          let color = score.colors[c];
+          for (let i in score.items) {
             if (score.items.hasOwnProperty(i)) {
-              var item = score.items[i];
+              let item = score.items[i];
 
               //Set property in score
               score.set(color, item, rand[color][item]);
@@ -104,18 +104,18 @@ describe('GameScore', function() {
      * Total
      */
     it('should have matching score totals', function() {
-      for (var c in score.colors) {
+      for (let c in score.colors) {
         if (score.colors.hasOwnProperty(c)) {
 
           //Init
-          var color = score.colors[c];
-          var totalFromRand = 0;
-          var totalFromGet = 0;
+          let color = score.colors[c];
+          let totalFromRand = 0;
+          let totalFromGet = 0;
 
           //Loop items
-          for (var i in score.items) {
+          for (let i in score.items) {
             if (score.items.hasOwnProperty(i)) {
-              var item = score.items[i];
+              let item = score.items[i];
               totalFromRand += rand[color][item];
               totalFromGet += score.get(color, item);
             }
@@ -133,19 +133,19 @@ describe('GameScore', function() {
      * Winner
      */
     it('should declare the correct winner', function() {
-      var winner = StoneColor.EMPTY;
-      var highestScore = 0;
-      for (var c in score.colors) {
+      let winner = StoneColor.EMPTY;
+      let highestScore = 0;
+      for (let c in score.colors) {
         if (score.colors.hasOwnProperty(c)) {
 
           //Init
-          var color = score.colors[c];
-          var totalFromRand = 0;
+          let color = score.colors[c];
+          let totalFromRand = 0;
 
           //Get total in rand
-          for (var i in score.items) {
+          for (let i in score.items) {
             if (score.items.hasOwnProperty(i)) {
-              var item = score.items[i];
+              let item = score.items[i];
               totalFromRand += rand[color][item];
             }
           }
@@ -179,12 +179,12 @@ describe('GameScore', function() {
        * No scores
        */
       it('should have no scores', function() {
-        for (var c in score.colors) {
+        for (let c in score.colors) {
           if (score.colors.hasOwnProperty(c)) {
-            var color = score.colors[c];
-            for (var i in score.items) {
+            let color = score.colors[c];
+            for (let i in score.items) {
               if (score.items.hasOwnProperty(i)) {
-                var item = score.items[i];
+                let item = score.items[i];
                 expect(score.get(color, item)).toBe(0);
               }
             }
@@ -208,12 +208,12 @@ describe('GameScore', function() {
       //Reset score and create draw
       beforeAll(function() {
         score.reset();
-        for (var c in score.colors) {
+        for (let c in score.colors) {
           if (score.colors.hasOwnProperty(c)) {
-            var color = score.colors[c];
-            for (var i in score.items) {
+            let color = score.colors[c];
+            for (let i in score.items) {
               if (score.items.hasOwnProperty(i)) {
-                var item = score.items[i];
+                let item = score.items[i];
                 score.set(color, item, 1);
               }
             }
@@ -225,11 +225,11 @@ describe('GameScore', function() {
        * Matching totals
        */
       it('should have matching totals', function() {
-        var prevTotal;
-        for (var c in score.colors) {
+        let prevTotal;
+        for (let c in score.colors) {
           if (score.colors.hasOwnProperty(c)) {
-            var color = score.colors[c];
-            var total = score.total(color);
+            let color = score.colors[c];
+            let total = score.total(color);
             if (typeof prevTotal !== 'undefined') {
               expect(prevTotal).toEqual(total);
             }

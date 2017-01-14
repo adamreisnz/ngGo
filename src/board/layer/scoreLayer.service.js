@@ -6,7 +6,7 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
   'ngGo',
   'ngGo.Board.Layer.Service',
   'ngGo.Board.Object.StoneMini.Service',
-  'ngGo.Board.Object.StoneFaded.Service'
+  'ngGo.Board.Object.StoneFaded.Service',
 ])
 
 /**
@@ -58,7 +58,7 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
   ScoreLayer.prototype.removeAll = function() {
 
     //If there are captures, draw them back onto the stones layer
-    for (var i = 0; i < this.captures.length; i++) {
+    for (let i = 0; i < this.captures.length; i++) {
       this.board.add('stones', this.captures[i].x, this.captures[i].y, this.captures[i].color);
     }
 
@@ -85,7 +85,7 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
     }
 
     //Init
-    var i;
+    let i;
 
     //Draw captures first (removing stones from the stones layer)
     for (i = 0; i < this.captures.length; i++) {

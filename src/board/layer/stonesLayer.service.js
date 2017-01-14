@@ -5,7 +5,7 @@
 angular.module('ngGo.Board.Layer.StonesLayer.Service', [
   'ngGo',
   'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Stone.Service'
+  'ngGo.Board.Object.Stone.Service',
 ])
 
 /**
@@ -40,8 +40,8 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
   StonesLayer.prototype.setAll = function(grid) {
 
     //Get changes compared to current grid
-    var i;
-    var changes = this.grid.compare(grid, 'color');
+    let i;
+    let changes = this.grid.compare(grid, 'color');
 
     //Clear removed stuff
     for (i = 0; i < changes.remove.length; i++) {
@@ -72,10 +72,10 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
     }
 
     //Get all stones as objects
-    var stones = this.grid.all('color');
+    let stones = this.grid.all('color');
 
     //Draw them
-    for (var i = 0; i < stones.length; i++) {
+    for (let i = 0; i < stones.length; i++) {
       Stone.draw.call(this, stones[i]);
     }
   };

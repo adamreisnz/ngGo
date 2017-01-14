@@ -9,7 +9,7 @@
  */
 angular.module('ngGo.Board.Object.StoneMini.Service', [
   'ngGo',
-  'ngGo.Board.Object.Stone.Service'
+  'ngGo.Board.Object.Stone.Service',
 ])
 
 /**
@@ -20,7 +20,7 @@ angular.module('ngGo.Board.Object.StoneMini.Service', [
   /**
    * Class
    */
-  var StoneMini = {
+  let StoneMini = {
 
     /**
      * Draw stone
@@ -48,7 +48,7 @@ angular.module('ngGo.Board.Object.StoneMini.Service', [
 
       //Call parent method
       Stone.clear.call(this, stone);
-    }
+    },
   };
 
   //Return

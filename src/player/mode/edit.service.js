@@ -9,7 +9,7 @@
  */
 angular.module('ngGo.Player.Mode.Edit.Service', [
   'ngGo',
-  'ngGo.Game.Scorer.Service'
+  'ngGo.Game.Scorer.Service',
 ])
 
 /**
@@ -18,7 +18,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 .constant('SetupTools', {
   BLACK: 'black',
   WHITE: 'white',
-  CLEAR: 'clear'
+  CLEAR: 'clear',
 })
 
 /**
@@ -34,7 +34,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
   HAPPY: 'happy',
   TEXT: 'text',
   NUMBER: 'number',
-  CLEAR: 'clear'
+  CLEAR: 'clear',
 })
 
 /**
@@ -63,7 +63,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
   /**
    * Default configuration
    */
-  var defaultConfig = {
+  let defaultConfig = {
 
   };
 
@@ -82,8 +82,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
   ) {
 
     //Character codes
-    var aChar = 'A'.charCodeAt(0);
-    var aCharLc = 'a'.charCodeAt(0);
+    let aChar = 'A'.charCodeAt(0);
+    let aCharLc = 'a'.charCodeAt(0);
 
     /**
      * Update hover mark at specific coordinates
@@ -114,29 +114,26 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
             if (this.game.hasStone(x, y)) {
               this.board.add('hover', x, y, {
                 type: 'markup',
-                value: MarkupTypes.MARK
+                value: MarkupTypes.MARK,
               });
             }
           }
 
-          //Stone color tool
-          else {
+          //Stone color tool;
+          //Add or overwrite stone if no stone present of the given color
+          else if (!this.game.hasStone(x, y, this.setupToolColor())) {
+            this.board.add('hover', x, y, {
+              type: 'stones',
+              value: this.setupToolColor(),
+            });
+          }
 
-            //Add or overwrite stone if no stone present of the given color
-            if (!this.game.hasStone(x, y, this.setupToolColor())) {
-              this.board.add('hover', x, y, {
-                type: 'stones',
-                value: this.setupToolColor()
-              });
-            }
-
-            //Stone present of same color? Can remove it if we're not dragging
-            else if (!isDrag) {
-              this.board.add('hover', x, y, {
-                type: 'markup',
-                value: MarkupTypes.MARK
-              });
-            }
+          //Stone present of same color? Can remove it if we're not dragging
+          else if (!isDrag) {
+            this.board.add('hover', x, y, {
+              type: 'markup',
+              value: MarkupTypes.MARK,
+            });
           }
           break;
 
@@ -148,7 +145,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
             if (this.game.hasMarkup(x, y)) {
               this.board.add('hover', x, y, {
                 type: 'markup',
-                value: MarkupTypes.MARK
+                value: MarkupTypes.MARK,
               });
             }
           }
@@ -159,8 +156,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
               type: 'markup',
               value: {
                 type: MarkupTypes.LABEL,
-                text: this.markupLabel
-              }
+                text: this.markupLabel,
+              },
             });
           }
 
@@ -168,7 +165,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
           else {
             this.board.add('hover', x, y, {
               type: 'markup',
-              value: this.markupTool
+              value: this.markupTool,
             });
           }
           break;
@@ -180,7 +177,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
           if (!this.game.hasStone(x, y) && this.game.isValidMove(x, y)) {
             this.board.add('hover', x, y, {
               type: 'stones',
-              value: this.game.getTurn()
+              value: this.game.getTurn(),
             });
           }
           break;
@@ -192,7 +189,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
           if (this.game.hasStone(x, y)) {
             this.board.add('hover', x, y, {
               type: 'markup',
-              value: MarkupTypes.MARK
+              value: MarkupTypes.MARK,
             });
           }
           break;
@@ -208,11 +205,11 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       if (this.game.hasMarkup(x, y)) {
 
         //Check what markup there is
-        var markup = this.game.getMarkup(x, y);
+        let markup = this.game.getMarkup(x, y);
 
         //Label? Also remove from our labels list
         if (markup.type === MarkupTypes.LABEL && markup.text) {
-          var i = this.markupLabels.indexOf(markup.text);
+          let i = this.markupLabels.indexOf(markup.text);
           if (i !== -1) {
             this.markupLabels.splice(i, 1);
           }
@@ -232,7 +229,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       else if (this.markupTool === MarkupTools.TEXT) {
         this.game.addMarkup(x, y, {
           type: MarkupTypes.LABEL,
-          text: this.markupLabel
+          text: this.markupLabel,
         });
 
         //Determine next text label
@@ -244,7 +241,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       else if (this.markupTool === MarkupTools.NUMBER) {
         this.game.addMarkup(x, y, {
           type: MarkupTypes.LABEL,
-          text: this.markupLabel
+          text: this.markupLabel,
         });
 
         //Determine next number label
@@ -264,7 +261,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
     function setStone(x, y, isDrag) {
 
       //Get the stone color
-      var color = this.setupToolColor();
+      let color = this.setupToolColor();
 
       //Trying to remove a stone
       if (color === StoneColor.EMPTY) {
@@ -307,8 +304,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       }
 
       //Get all markup from position
-      var markup = this.game.position.markup.all('type');
-      for (var i = 0; i < markup.length; i++) {
+      let markup = this.game.position.markup.all('type');
+      for (let i = 0; i < markup.length; i++) {
         if (markup[i].type === MarkupTypes.LABEL && markup[i].text !== '') {
           this.markupLabels.push(markup[i].text);
         }
@@ -381,7 +378,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
 
           //Text tool?
           case MarkupTools.TEXT:
-            var i = 0;
+            let i = 0;
 
             //Loop while the label is present
             while (!this.markupLabel || this.markupLabels.indexOf(this.markupLabel) !== -1) {
@@ -417,13 +414,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
             }
             break;
         }
-      }
+      },
     });
 
     /**
      * Player mode definition
      */
-    var PlayerModeEdit = {
+    let PlayerModeEdit = {
 
       /**
        * Hover handler
@@ -451,8 +448,8 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
         }
 
         //Loop area
-        for (var x = event.drag.start.x; x <= event.drag.stop.x; x++) {
-          for (var y = event.drag.start.y; y <= event.drag.stop.y; y++) {
+        for (let x = event.drag.start.x; x <= event.drag.stop.x; x++) {
+          for (let y = event.drag.start.y; y <= event.drag.stop.y; y++) {
             updateHoverMark.call(this, x, y, true);
           }
         }
@@ -461,13 +458,13 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Keydown handler
        */
-      keyDown: function(event, keyboardEvent) {
+      keyDown: function(/*event, keyboardEvent*/) {
 
+        //TODO: tool switching via keyboard input
         //Switch key code
-        switch (keyboardEvent.keyCode) {
-
-          //TODO: tool switching via keyboard input
-        }
+        // switch (keyboardEvent.keyCode) {
+        //
+        // }
       },
 
       /**
@@ -532,7 +529,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       mouseDrag: function(event) {
 
         //Initialize vars
-        var x, y;
+        let x, y;
 
         //Remove all hover items now to restore actual stones and markup to the board,
         //otherwise it will conflict when updating the board
@@ -598,7 +595,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
           PlayerTools.MOVE,
           PlayerTools.SETUP,
           PlayerTools.MARKUP,
-          PlayerTools.SCORE
+          PlayerTools.SCORE,
         ]);
 
         //Set default tool
@@ -625,13 +622,11 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
         }
 
         //Back to another state?
-        else {
-          if (this.statePreScoring) {
-            this.board.restoreState(this.statePreScoring);
-            delete this.statePreScoring;
-          }
+        else if (this.statePreScoring) {
+          this.board.restoreState(this.statePreScoring);
+          delete this.statePreScoring;
         }
-      }
+      },
     };
 
     //Return

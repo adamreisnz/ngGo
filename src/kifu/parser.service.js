@@ -11,7 +11,7 @@ angular.module('ngGo.Kifu.Parser.Service', [
   'ngGo',
   'ngGo.Kifu.Parsers.Gib2Jgf.Service',
   'ngGo.Kifu.Parsers.Sgf2Jgf.Service',
-  'ngGo.Kifu.Parsers.Jgf2Sgf.Service'
+  'ngGo.Kifu.Parsers.Jgf2Sgf.Service',
 ])
 
 /**
@@ -61,7 +61,7 @@ angular.module('ngGo.Kifu.Parser.Service', [
   'SQ': 'square',
   'MA': 'mark',
   'SL': 'select',
-  'LB': 'label'
+  'LB': 'label',
 })
 
 /**
@@ -74,7 +74,7 @@ angular.module('ngGo.Kifu.Parser.Service', [
   4: 'renju',
   6: 'backgammon',
   7: 'chinese chess',
-  8: 'shogi'
+  8: 'shogi',
 })
 
 /**
@@ -85,7 +85,7 @@ angular.module('ngGo.Kifu.Parser.Service', [
   /**
    * Parser wrapper class
    */
-  var KifuParser = {
+  let KifuParser = {
 
     /**
      * Parse GIB string into a JGF object or string
@@ -106,7 +106,7 @@ angular.module('ngGo.Kifu.Parser.Service', [
      */
     jgf2sgf: function(jgf) {
       return Jgf2Sgf.parse(jgf);
-    }
+    },
   };
 
   //Return object

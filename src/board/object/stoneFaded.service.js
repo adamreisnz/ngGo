@@ -8,7 +8,7 @@
  */
 angular.module('ngGo.Board.Object.StoneFaded.Service', [
   'ngGo',
-  'ngGo.Board.Object.Stone.Service'
+  'ngGo.Board.Object.Stone.Service',
 ])
 
 /**
@@ -19,7 +19,7 @@ angular.module('ngGo.Board.Object.StoneFaded.Service', [
   /**
    * Class
    */
-  var StoneFaded = {
+  let StoneFaded = {
 
     /**
      * Draw stone
@@ -47,7 +47,7 @@ angular.module('ngGo.Board.Object.StoneFaded.Service', [
 
       //Call parent method
       Stone.clear.call(this, stone);
-    }
+    },
   };
 
   //Return

@@ -8,7 +8,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Player.Mode.Solve.Service', [
-  'ngGo'
+  'ngGo',
 ])
 
 /**
@@ -38,7 +38,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
   /**
    * Default configuration
    */
-  var defaultConfig = {
+  let defaultConfig = {
 
     //Player color
     playerColor: StoneColor.B,
@@ -48,7 +48,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 
     //Auto play settings
     solveAutoPlay: true,
-    solveAutoPlayDelay: 500
+    solveAutoPlayDelay: 500,
   };
 
   /**
@@ -120,7 +120,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
           if (canMakeMove.call(this) && this.game.isValidMove(x, y)) {
             this.board.add('hover', x, y, {
               type: 'stones',
-              value: this.game.getTurn()
+              value: this.game.getTurn(),
             });
           }
           break;
@@ -131,13 +131,13 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
      * Helper to show solution paths
      */
     function showSolutionPaths(variations) {
-      for (var i = 0; i < variations.length; i++) {
+      for (let i = 0; i < variations.length; i++) {
         if (variations[i].solution === true) {
           this.board.add('markup', variations[i].move.x, variations[i].move.y, {
             type: this.board.theme.get('markup.solution.valid.type'),
             text: this.board.theme.get('markup.solution.valid.text', i),
             scale: this.board.theme.get('markup.solution.valid.scale'),
-            color: this.board.theme.get('markup.solution.valid.color')
+            color: this.board.theme.get('markup.solution.valid.color'),
           });
         }
         else {
@@ -145,7 +145,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
             type: this.board.theme.get('markup.solution.invalid.type'),
             text: this.board.theme.get('markup.solution.invalid.text', i),
             scale: this.board.theme.get('markup.solution.invalid.scale'),
-            color: this.board.theme.get('markup.solution.invalid.color')
+            color: this.board.theme.get('markup.solution.invalid.color'),
           });
         }
       }
@@ -155,7 +155,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
      * Helper to hide solution paths
      */
     function hideSolutionPaths(variations) {
-      for (var i = 0; i < variations.length; i++) {
+      for (let i = 0; i < variations.length; i++) {
         this.board.remove('markup', variations[i].move.x, variations[i].move.y);
       }
     }
@@ -171,8 +171,8 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       }
 
       //Get node and variations
-      var node = this.game.getNode();
-      var variations = node.getMoveVariations();
+      let node = this.game.getNode();
+      let variations = node.getMoveVariations();
 
       //When showing, make sure it's not during the auto solver's move
       if (show && !this.problemSolved && this.solveAutoPlay) {
@@ -284,9 +284,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
         }
 
         //Init vars
-        var children = [];
-        var self = this;
-        var i;
+        let children = [];
+        let self = this;
+        let i;
 
         //When picking a child node, we always prefer to pick a valid solution
         for (i = 0; i < this.game.node.children.length; i++) {
@@ -369,13 +369,13 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
         if (this.solveAutoPlay && this.game.getTurn() !== this.playerColor) {
           this.autoPlayNext();
         }
-      }
+      },
     });
 
     /**
      * Player mode definition
      */
-    var PlayerModeSolve = {
+    let PlayerModeSolve = {
 
       /**
        * Parse config instructions
@@ -507,11 +507,11 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
         if (this.game.isMoveVariation(event.x, event.y)) {
 
           //Get the node
-          var i = this.game.getMoveVariation(event.x, event.y);
+          let i = this.game.getMoveVariation(event.x, event.y);
 
           //Advance to the next position and get the next node
           this.next(i);
-          var node = this.game.getNode();
+          let node = this.game.getNode();
 
           //No children left? Check if we solved it or not
           if (node.children.length === 0) {
@@ -557,7 +557,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
 
         //Set available tools for this mode
         this.setTools([
-          PlayerTools.MOVE
+          PlayerTools.MOVE,
         ]);
 
         //Set default tool
@@ -578,7 +578,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
         if (this.solutionPaths) {
           drawSolutionPaths.call(this, false);
         }
-      }
+      },
     };
 
     //Return

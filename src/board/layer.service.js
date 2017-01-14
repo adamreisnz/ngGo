@@ -10,7 +10,7 @@
  */
 angular.module('ngGo.Board.Layer.Service', [
   'ngGo',
-  'ngGo.Board.Grid.Service'
+  'ngGo.Board.Grid.Service',
 ])
 
 /**

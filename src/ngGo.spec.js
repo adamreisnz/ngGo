@@ -19,7 +19,7 @@ describe('ngGo', function() {
   describe('constant', function() {
 
     //Inject ngGo constant
-    var ngGo;
+    let ngGo;
     beforeEach(inject(function(_ngGo_) {
       ngGo = _ngGo_;
     }));
@@ -49,7 +49,7 @@ describe('ngGo', function() {
   describe('StoneColor constant', function() {
 
     //Inject StoneColor constant
-    var StoneColor;
+    let StoneColor;
     beforeEach(inject(function(_StoneColor_) {
       StoneColor = _StoneColor_;
     }));

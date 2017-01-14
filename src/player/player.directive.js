@@ -2,7 +2,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Player.Directive', [
-  'ngGo.Board.Directive'
+  'ngGo.Board.Directive',
 ])
 
 /**
@@ -49,6 +49,6 @@ angular.module('ngGo.Player.Directive', [
       attrs.$observe('lastMoveMarker', function(attr) {
         Player.setLastMoveMarker(attr);
       });
-    }
+    },
   };
 });

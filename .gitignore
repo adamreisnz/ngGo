@@ -1,8 +1,5 @@
-# OS & editors
 .DS_Store
 Thumbs.db
 *.sublime-*
-
-# Node
-node_modules/
-npm-debug.log
+*.log
+node_modules

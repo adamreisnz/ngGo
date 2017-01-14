@@ -6,7 +6,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
   'ngGo',
   'ngGo.Board.Layer.Service',
   'ngGo.Board.Object.Markup.Service',
-  'ngGo.Board.Object.StoneFaded.Service'
+  'ngGo.Board.Object.StoneFaded.Service',
 ])
 
 /**
@@ -47,7 +47,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
     //Create hover object
     hover.object = {
       x: x,
-      y: y
+      y: y,
     };
 
     //Stones
@@ -69,8 +69,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
 
     //Unknown
     else {
-      console.warn('Unknown hover type', hover.type);
-      return;
+      throw new Error('Unknown hover type ' + hover.type);
     }
 
     //Check if we need to hide something on layers underneath
@@ -79,7 +78,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
         x: x,
         y: y,
         layer: hover.type,
-        value: this.board.get(hover.type, x, y)
+        value: this.board.get(hover.type, x, y),
       });
       this.board.remove(hover.type, x, y);
     }
@@ -104,13 +103,13 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
     }
 
     //Get object and clear it
-    var hover = this.grid.get(x, y);
+    let hover = this.grid.get(x, y);
     if (hover.objectClass && hover.objectClass.clear) {
       hover.objectClass.clear.call(this, hover.object);
     }
 
     //Other objects to restore?
-    for (var i = 0; i < this.restore.length; i++) {
+    for (let i = 0; i < this.restore.length; i++) {
       if (this.restore[i].x === x && this.restore[i].y === y) {
         this.board.add(
           this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
@@ -131,8 +130,8 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
     }
 
     //Get all item as objects
-    var i;
-    var hover = this.grid.all('layer');
+    let i;
+    let hover = this.grid.all('layer');
 
     //Clear them
     for (i = 0; i < hover.length; i++) {
@@ -167,8 +166,8 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
     }
 
     //Loop objects and clear them
-    var hover = this.grid.all('hover');
-    for (var i = 0; i < hover.length; i++) {
+    let hover = this.grid.all('hover');
+    for (let i = 0; i < hover.length; i++) {
       if (hover.objectClass && hover.objectClass.draw) {
         hover.objectClass.draw.call(this, hover.object);
       }

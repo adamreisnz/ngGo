@@ -7,7 +7,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.ShellPattern.Service', [
-  'ngGo'
+  'ngGo',
 ])
 
 /**
@@ -30,13 +30,13 @@ angular.module('ngGo.Board.ShellPattern.Service', [
     radius -= Math.max(1, ctx.lineWidth);
 
     //Determine coordinates
-    var x1 = x + radius * Math.cos(startAngle * Math.PI);
-    var y1 = y + radius * Math.sin(startAngle * Math.PI);
-    var x2 = x + radius * Math.cos(endAngle * Math.PI);
-    var y2 = y + radius * Math.sin(endAngle * Math.PI);
+    let x1 = x + radius * Math.cos(startAngle * Math.PI);
+    let y1 = y + radius * Math.sin(startAngle * Math.PI);
+    let x2 = x + radius * Math.cos(endAngle * Math.PI);
+    let y2 = y + radius * Math.sin(endAngle * Math.PI);
 
     //Math magic
-    var m, angle;
+    let m, angle;
     if (x2 > x1) {
       m = (y2 - y1) / (x2 - x1);
       angle = Math.atan(m);
@@ -50,15 +50,15 @@ angular.module('ngGo.Board.ShellPattern.Service', [
     }
 
     //Curvature factor
-    var c = this.factor * radius;
-    var dx = Math.sin(angle) * c;
-    var dy = Math.cos(angle) * c;
+    let c = this.factor * radius;
+    let dx = Math.sin(angle) * c;
+    let dy = Math.cos(angle) * c;
 
     //Curvature coordinates
-    var bx1 = x1 + dx;
-    var by1 = y1 - dy;
-    var bx2 = x2 + dx;
-    var by2 = y2 - dy;
+    let bx1 = x1 + dx;
+    let by1 = y1 - dy;
+    let bx2 = x2 + dx;
+    let by2 = y2 - dy;
 
     //Draw shell stroke
     ctx.moveTo(x1, y1);
@@ -72,11 +72,11 @@ angular.module('ngGo.Board.ShellPattern.Service', [
   return function(ctx, x, y, radius, angle, strokeStyle) {
 
     //Initialize start and end angle
-    var startAngle = angle;
-    var endAngle = angle;
+    let startAngle = angle;
+    let endAngle = angle;
 
     //Loop lines
-    for (var i = 0; i < this.lines.length; i++) {
+    for (let i = 0; i < this.lines.length; i++) {
       startAngle += this.lines[i];
       endAngle -= this.lines[i];
       shellLine.call(this, ctx, x, y, radius, startAngle, endAngle, strokeStyle);

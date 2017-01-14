@@ -7,7 +7,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Game.Score.Service', [
-  'ngGo'
+  'ngGo',
 ])
 
 /**
@@ -29,7 +29,7 @@ angular.module('ngGo.Game.Score.Service', [
   function GameScore() {
 
     //Get self
-    var self = this;
+    let self = this;
 
     //Setup score containers
     this.black = {};
@@ -53,10 +53,10 @@ angular.module('ngGo.Game.Score.Service', [
   GameScore.prototype.reset = function() {
 
     //Get properties to loop
-    var props = ['stones', 'territory', 'captures', 'komi'];
+    let props = ['stones', 'territory', 'captures', 'komi'];
 
     //Score for black player
-    for (var i = 0; i < props.length; i++) {
+    for (let i = 0; i < props.length; i++) {
       this.black[props[i]] = 0;
       this.white[props[i]] = 0;
     }
@@ -68,8 +68,8 @@ angular.module('ngGo.Game.Score.Service', [
   GameScore.prototype.winner = function() {
 
     //Get totals
-    var b = this.black.total();
-    var w = this.white.total();
+    let b = this.black.total();
+    let w = this.white.total();
 
     //Determine winner
     if (w > b) {

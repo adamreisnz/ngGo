@@ -22,7 +22,7 @@ angular.module('ngGo.Board.Service', [
   'ngGo.Board.Object.Markup.Service',
   'ngGo.Board.Object.Stone.Service',
   'ngGo.Board.Object.StoneMini.Service',
-  'ngGo.Board.Object.StoneFaded.Service'
+  'ngGo.Board.Object.StoneFaded.Service',
 ])
 
 /**
@@ -33,7 +33,7 @@ angular.module('ngGo.Board.Service', [
   /**
    * Default configuration
    */
-  var defaultConfig = {
+  let defaultConfig = {
 
     //Width and height
     width: 0,
@@ -49,7 +49,7 @@ angular.module('ngGo.Board.Service', [
     coordinates: false,
 
     //Color multiplier (use -1 to swap colors)
-    colorMultiplier: 1
+    colorMultiplier: 1,
   };
 
   /**
@@ -101,10 +101,10 @@ angular.module('ngGo.Board.Service', [
 
       //Initialize layers
       this.layers = {};
-      for (var l = 0; l < this.layerOrder.length; l++) {
-        var layer = this.layerOrder[l];
-        var layerClass = layer[0].toUpperCase() + layer.substr(1) + 'Layer';
-        var LayerClass = $injector.get(layerClass);
+      for (let l = 0; l < this.layerOrder.length; l++) {
+        let layer = this.layerOrder[l];
+        let layerClass = layer[0].toUpperCase() + layer.substr(1) + 'Layer';
+        let LayerClass = $injector.get(layerClass);
         this.layers[layer] = new LayerClass(this);
       }
 
@@ -130,7 +130,7 @@ angular.module('ngGo.Board.Service', [
         top: false,
         left: false,
         right: false,
-        bottom: false
+        bottom: false,
       };
 
       //Initialize section
@@ -138,7 +138,7 @@ angular.module('ngGo.Board.Service', [
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0
+        bottom: 0,
       };
     };
 
@@ -213,10 +213,10 @@ angular.module('ngGo.Board.Service', [
       }
 
       //Init
-      var changes = false;
+      let changes = false;
 
       //Check if there's a change
-      for (var side in this.cutoff) {
+      for (let side in this.cutoff) {
         if (this.cutoff.hasOwnProperty(side)) {
           if (cutoff.indexOf(side) !== -1) {
             if (!this.cutoff[side]) {
@@ -224,11 +224,9 @@ angular.module('ngGo.Board.Service', [
               changes = true;
             }
           }
-          else {
-            if (this.cutoff[side]) {
-              this.cutoff[side] = false;
-              changes = true;
-            }
+          else if (this.cutoff[side]) {
+            this.cutoff[side] = false;
+            changes = true;
           }
         }
       }
@@ -257,7 +255,7 @@ angular.module('ngGo.Board.Service', [
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0
+        bottom: 0,
       }, section);
 
       //No changes?
@@ -298,7 +296,7 @@ angular.module('ngGo.Board.Service', [
         this.height = height;
 
         //Set size in layers
-        for (var layer in this.layers) {
+        for (let layer in this.layers) {
           if (this.layers.hasOwnProperty(layer)) {
             this.layers[layer].setSize(width, height);
           }
@@ -508,10 +506,10 @@ angular.module('ngGo.Board.Service', [
       }
 
       //All layers
-      var state = {};
+      let state = {};
       for (layer in this.layers) {
         if (this.layers.hasOwnProperty(layer)) {
-          var grid = this.layers[layer].getAll();
+          let grid = this.layers[layer].getAll();
           if (grid && !grid.isEmpty()) {
             state[layer] = grid;
           }
@@ -607,7 +605,7 @@ angular.module('ngGo.Board.Service', [
       this.clear();
 
       //Now draw all layers again in the correct order
-      for (var i = 0; i < this.layerOrder.length; i++) {
+      for (let i = 0; i < this.layerOrder.length; i++) {
         layer = this.layerOrder[i];
         this.layers[layer].draw();
       }
@@ -627,7 +625,7 @@ angular.module('ngGo.Board.Service', [
         xLeft: 0 + this.section.left,
         xRight: this.width - 1 - this.section.right,
         yTop: 0 + this.section.top,
-        yBot: this.height - 1 - this.section.bottom
+        yBot: this.height - 1 - this.section.bottom,
       };
 
       //Only redraw when there is sensible data
@@ -637,11 +635,11 @@ angular.module('ngGo.Board.Service', [
 
       //Determine number of cells horizontall and vertically
       //The margin is a factor of the cell size, so let's add it to the number of cells
-      var noCellsHor = this.width + this.margin;
-      var noCellsVer = this.height + this.margin;
+      let noCellsHor = this.width + this.margin;
+      let noCellsVer = this.height + this.margin;
 
       //Are we cutting off parts of the grid? Add half a cell of draw size
-      for (var side in this.cutoff) {
+      for (let side in this.cutoff) {
         if (this.cutoff[side]) {
           if (side === 'top' || side === 'bottom') {
             noCellsVer += 0.5;
@@ -681,7 +679,7 @@ angular.module('ngGo.Board.Service', [
      * Convert grid coordinate to pixel coordinate
      */
     Board.prototype.getAbsX = function(gridX) {
-      var offset = this.cutoff.left ? 0.5 : 0;
+      let offset = this.cutoff.left ? 0.5 : 0;
       return this.drawMarginHor + Math.round((gridX + offset) * this.cellSize);
     };
 
@@ -689,7 +687,7 @@ angular.module('ngGo.Board.Service', [
      * Convert grid coordinate to pixel coordinate
      */
     Board.prototype.getAbsY = function(gridY) {
-      var offset = this.cutoff.top ? 0.5 : 0;
+      let offset = this.cutoff.top ? 0.5 : 0;
       return this.drawMarginVer + Math.round((gridY + offset) * this.cellSize);
     };
 
@@ -697,7 +695,7 @@ angular.module('ngGo.Board.Service', [
      * Convert pixel coordinate to grid coordinate
      */
     Board.prototype.getGridX = function(absX) {
-      var offset = this.cutoff.left ? 0.5 : 0;
+      let offset = this.cutoff.left ? 0.5 : 0;
       return Math.round((absX - this.drawMarginHor) / this.cellSize - offset);
     };
 
@@ -705,7 +703,7 @@ angular.module('ngGo.Board.Service', [
      * Convert pixel coordinate to grid coordinate
      */
     Board.prototype.getGridY = function(absY) {
-      var offset = this.cutoff.top ? 0.5 : 0;
+      let offset = this.cutoff.top ? 0.5 : 0;
       return Math.round((absY - this.drawMarginVer) / this.cellSize - offset);
     };
 

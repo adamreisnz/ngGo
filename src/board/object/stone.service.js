@@ -9,7 +9,7 @@
 angular.module('ngGo.Board.Object.Stone.Service', [
   'ngGo',
   'ngGo.Board.Object.Service',
-  'ngGo.Board.ShellPattern.Service'
+  'ngGo.Board.ShellPattern.Service',
 ])
 
 /**
@@ -20,7 +20,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
   /**
    * Shell random seed
    */
-  var shellSeed;
+  let shellSeed;
 
   /**
    * Mono colored stones
@@ -28,10 +28,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
   function drawMono(stone) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(stone.x);
-    var y = this.board.getAbsY(stone.y);
-    var s = this.board.getCellSize();
-    var r = this.board.theme.get('stone.radius', s);
+    let x = this.board.getAbsX(stone.x);
+    let y = this.board.getAbsY(stone.y);
+    let s = this.board.getCellSize();
+    let r = this.board.theme.get('stone.radius', s);
 
     //Apply scaling factor?
     if (stone.scale) {
@@ -42,13 +42,13 @@ angular.module('ngGo.Board.Object.Stone.Service', [
     stone.shadow = false;
 
     //Apply color multiplier
-    var color = stone.color * this.board.colorMultiplier;
+    let color = stone.color * this.board.colorMultiplier;
 
     //Get theme properties
-    var lineWidth = this.board.theme.get('stone.mono.lineWidth', s) || 1;
-    var fillStyle = this.board.theme.get('stone.mono.color', color);
-    var strokeStyle = this.board.theme.get('stone.mono.lineColor', color);
-    var canvasTranslate = this.board.theme.canvasTranslate();
+    let lineWidth = this.board.theme.get('stone.mono.lineWidth', s) || 1;
+    let fillStyle = this.board.theme.get('stone.mono.color', color);
+    let strokeStyle = this.board.theme.get('stone.mono.lineColor', color);
+    let canvasTranslate = this.board.theme.canvasTranslate();
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -88,10 +88,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
   function drawGlass(stone) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(stone.x);
-    var y = this.board.getAbsY(stone.y);
-    var s = this.board.getCellSize();
-    var r = this.board.theme.get('stone.radius', s);
+    let x = this.board.getAbsX(stone.x);
+    let y = this.board.getAbsY(stone.y);
+    let s = this.board.getCellSize();
+    let r = this.board.theme.get('stone.radius', s);
 
     //Apply scaling factor?
     if (stone.scale) {
@@ -99,10 +99,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
     }
 
     //Apply color multiplier
-    var color = stone.color * this.board.colorMultiplier;
+    let color = stone.color * this.board.colorMultiplier;
 
     //Get theme variables
-    var canvasTranslate = this.board.theme.canvasTranslate();
+    let canvasTranslate = this.board.theme.canvasTranslate();
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -150,10 +150,10 @@ angular.module('ngGo.Board.Object.Stone.Service', [
   function drawSlateShell(stone) {
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(stone.x);
-    var y = this.board.getAbsY(stone.y);
-    var s = this.board.getCellSize();
-    var r = this.board.theme.get('stone.radius', s);
+    let x = this.board.getAbsX(stone.x);
+    let y = this.board.getAbsY(stone.y);
+    let s = this.board.getCellSize();
+    let r = this.board.theme.get('stone.radius', s);
 
     //Apply scaling factor?
     if (stone.scale) {
@@ -164,13 +164,13 @@ angular.module('ngGo.Board.Object.Stone.Service', [
     shellSeed = shellSeed || Math.ceil(Math.random() * 9999999);
 
     //Apply color multiplier
-    var color = stone.color * this.board.colorMultiplier;
+    let color = stone.color * this.board.colorMultiplier;
 
     //Get theme variables
-    var shellTypes = this.board.theme.get('stone.shell.types');
-    var fillStyle = this.board.theme.get('stone.shell.color', color);
-    var strokeStyle = this.board.theme.get('stone.shell.stroke');
-    var canvasTranslate = this.board.theme.canvasTranslate();
+    let shellTypes = this.board.theme.get('stone.shell.types');
+    let fillStyle = this.board.theme.get('stone.shell.color', color);
+    let strokeStyle = this.board.theme.get('stone.shell.stroke');
+    let canvasTranslate = this.board.theme.canvasTranslate();
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -190,12 +190,12 @@ angular.module('ngGo.Board.Object.Stone.Service', [
     if (color === StoneColor.W) {
 
       //Get random shell type
-      var type =
+      let type =
         shellSeed % (shellTypes.length + stone.x * this.board.width + stone.y) % shellTypes.length;
 
       //Determine random angle
-      var z = this.board.width * this.board.height + stone.x * this.board.width + stone.y;
-      var angle = (2 / z) * (shellSeed % z);
+      let z = this.board.width * this.board.height + stone.x * this.board.width + stone.y;
+      let angle = (2 / z) * (shellSeed % z);
 
       //Draw shell pattern
       ShellPattern.call(shellTypes[type], this.context, x, y, r, angle, strokeStyle);
@@ -247,7 +247,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
   /**
    * Constructor
    */
-  var Stone = {
+  let Stone = {
 
     /**
      * Draw a stone
@@ -260,7 +260,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
       }
 
       //Determine style of stone
-      var style = this.board.theme.get('stone.style');
+      let style = this.board.theme.get('stone.style');
 
       //Draw using the appropriate handler
       switch (style) {
@@ -282,7 +282,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
 
         //Custom type
         default:
-          var handler = $injector.get(style);
+          let handler = $injector.get(style);
           if (handler) {
             handler.call(this, stone);
           }
@@ -311,7 +311,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
       if (!this.board.static && stone.shadow !== false && this.board.theme.get('stone.shadow')) {
         this.board.layers.shadow.remove(stone);
       }
-    }
+    },
   };
 
   //Return

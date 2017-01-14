@@ -11,7 +11,7 @@
  */
 angular.module('ngGo.Game.Position.Service', [
   'ngGo',
-  'ngGo.Board.Grid.Service'
+  'ngGo.Board.Grid.Service',
 ])
 
 /**
@@ -107,7 +107,7 @@ angular.module('ngGo.Game.Position.Service', [
     tested = tested || new BoardGrid(this.width, this.height);
 
     //See what color is present on the coordinates
-    var color = this.stones.get(x, y);
+    let color = this.stones.get(x, y);
 
     //If no group color was given, use what's on the position
     groupColor = groupColor || color;
@@ -152,7 +152,7 @@ angular.module('ngGo.Game.Position.Service', [
     }
 
     //Flag to see if we captured stuff
-    var captured = false;
+    let captured = false;
 
     //Check adjacent positions now, capturing stones in the process if possible
     if (this.canCapture(x, y - 1, -friendlyColor, true)) {
@@ -251,7 +251,7 @@ angular.module('ngGo.Game.Position.Service', [
     }
 
     //Get color
-    var color = this.stones.get(x, y);
+    let color = this.stones.get(x, y);
 
     //Empty?
     if (color === StoneColor.EMPTY) {
@@ -319,7 +319,7 @@ angular.module('ngGo.Game.Position.Service', [
   GamePosition.prototype.clone = function() {
 
     //Create a new position
-    var newPosition = new GamePosition();
+    let newPosition = new GamePosition();
 
     //Set vars manually for maximum efficiency
     newPosition.turn = this.turn;

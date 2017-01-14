@@ -11,7 +11,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Game.Node.Service', [
-  'ngGo'
+  'ngGo',
 ])
 
 /**
@@ -22,7 +22,7 @@ angular.module('ngGo.Game.Node.Service', [
   /**
    * Character index of "a"
    */
-  var aChar = 'a'.charCodeAt(0);
+  let aChar = 'a'.charCodeAt(0);
 
   /**
    * Helper to convert SGF coordinates
@@ -47,8 +47,8 @@ angular.module('ngGo.Game.Node.Service', [
       }
 
       //Append coordinates
-      baseObject.x = coords[0] * 1;
-      baseObject.y = coords[1] * 1;
+      baseObject.x = Number(coords[0]);
+      baseObject.y = Number(coords[1]);
     }
     return baseObject;
   }
@@ -83,8 +83,8 @@ angular.module('ngGo.Game.Node.Service', [
   function convertMoveToJgf(move) {
 
     //Initialize JGF move object and determine color
-    var jgfMove = angular.copy(move);
-    var color = toStringColor(move.color);
+    let jgfMove = angular.copy(move);
+    let color = toStringColor(move.color);
 
     //No color?
     if (color === '') {
@@ -116,7 +116,7 @@ angular.module('ngGo.Game.Node.Service', [
   function convertMoveFromJgf(move) {
 
     //Prepare color, coordinates
-    var color, coords;
+    let color, coords;
 
     //Check whose move it was
     if (move.W) {
@@ -135,7 +135,7 @@ angular.module('ngGo.Game.Node.Service', [
 
     //Return coordinates object
     return coordinatesObject(coords, {
-      color: toColorConstant(color)
+      color: toColorConstant(color),
     });
   }
 
@@ -145,8 +145,8 @@ angular.module('ngGo.Game.Node.Service', [
   function convertSetupToJgf(setup) {
 
     //Initialize variables
-    var i, color;
-    var jgfSetup = {};
+    let i, color;
+    let jgfSetup = {};
 
     //Loop setup objects
     for (i in setup) {
@@ -175,8 +175,8 @@ angular.module('ngGo.Game.Node.Service', [
   function convertSetupFromJgf(setup) {
 
     //Initialize variables
-    var c, key, color;
-    var gameSetup = [];
+    let c, key, color;
+    let gameSetup = [];
 
     //Loop setup
     for (key in setup) {
@@ -189,7 +189,7 @@ angular.module('ngGo.Game.Node.Service', [
         for (c in setup[key]) {
           if (setup[key].hasOwnProperty(c)) {
             gameSetup.push(coordinatesObject(setup[key][c], {
-              color: color
+              color: color,
             }));
           }
         }
@@ -206,8 +206,8 @@ angular.module('ngGo.Game.Node.Service', [
   function convertMarkupToJgf(markup) {
 
     //Initialize variables
-    var i, type;
-    var jgfMarkup = {};
+    let i, type;
+    let jgfMarkup = {};
 
     //Loop setup objects
     for (i in markup) {
@@ -241,8 +241,8 @@ angular.module('ngGo.Game.Node.Service', [
   function convertMarkupFromJgf(markup) {
 
     //Initialize variables
-    var l, type;
-    var gameMarkup = [];
+    let l, type;
+    let gameMarkup = [];
 
     //Loop markup types
     for (type in markup) {
@@ -259,7 +259,7 @@ angular.module('ngGo.Game.Node.Service', [
 
             //SGF type coordinates?
             if (markup[type][l].length === 2 && typeof markup[type][l][0] === 'string') {
-              var text = markup[type][l][1];
+              let text = markup[type][l][1];
               markup[type][l] = convertCoordinates(markup[type][l][0]);
               markup[type][l].push(text);
             }
@@ -272,7 +272,7 @@ angular.module('ngGo.Game.Node.Service', [
             //Add to stack
             gameMarkup.push(coordinatesObject(markup[type][l], {
               type: type,
-              text: markup[type][l][2]
+              text: markup[type][l][2],
             }));
           }
         }
@@ -282,7 +282,7 @@ angular.module('ngGo.Game.Node.Service', [
           for (l in markup[type]) {
             if (markup[type].hasOwnProperty(l)) {
               gameMarkup.push(coordinatesObject(markup[type][l], {
-                type: type
+                type: type,
               }));
             }
           }
@@ -325,19 +325,19 @@ angular.module('ngGo.Game.Node.Service', [
   /**
    * Conversions map
    */
-  var conversionMap = {
+  let conversionMap = {
     toJgf: {
       move: convertMoveToJgf,
       setup: convertSetupToJgf,
       markup: convertMarkupToJgf,
-      turn: convertTurnToJgf
+      turn: convertTurnToJgf,
     },
     fromJgf: {
       move: convertMoveFromJgf,
       setup: convertSetupFromJgf,
       markup: convertMarkupFromJgf,
-      turn: convertTurnFromJgf
-    }
+      turn: convertTurnFromJgf,
+    },
   };
 
   /**
@@ -351,7 +351,7 @@ angular.module('ngGo.Game.Node.Service', [
 
     //Save properties
     if (properties) {
-      for (var key in properties) {
+      for (let key in properties) {
         if (properties.hasOwnProperty(key)) {
           this[key] = properties[key];
         }
@@ -402,8 +402,8 @@ angular.module('ngGo.Game.Node.Service', [
     }
 
     //Loop children
-    var moveVariations = 0;
-    for (var i = 0; i < this.children.length; i++) {
+    let moveVariations = 0;
+    for (let i = 0; i < this.children.length; i++) {
 
       //Is this a move node?
       if (this.children[i].isMove()) {
@@ -431,10 +431,10 @@ angular.module('ngGo.Game.Node.Service', [
     }
 
     //Initialize
-    var moveVariations = [];
+    let moveVariations = [];
 
     //Loop child nodes
-    for (var i = 0; i < this.children.length; i++) {
+    for (let i = 0; i < this.children.length; i++) {
 
       //Is this a move node?
       if (this.children[i].isMove()) {
@@ -452,7 +452,7 @@ angular.module('ngGo.Game.Node.Service', [
   GameNode.prototype.getMoveVariation = function(x, y) {
 
     //Loop the child nodes
-    for (var i = 0; i < this.children.length; i++) {
+    for (let i = 0; i < this.children.length; i++) {
       if (this.children[i].move && this.children[i].move.x === x && this.children[i].move.y === y) {
         return i;
       }
@@ -468,7 +468,7 @@ angular.module('ngGo.Game.Node.Service', [
   GameNode.prototype.isMoveVariation = function(x, y) {
 
     //Loop the child nodes
-    for (var i = 0; i < this.children.length; i++) {
+    for (let i = 0; i < this.children.length; i++) {
       if (this.children[i].move && this.children[i].move.x === x && this.children[i].move.y === y) {
         return true;
       }
@@ -529,7 +529,7 @@ angular.module('ngGo.Game.Node.Service', [
     }
 
     //Find the index of this node, and if found remove it
-    var i = this.parent.children.indexOf(this);
+    let i = this.parent.children.indexOf(this);
     if (i !== -1) {
       this.parent.children.splice(i, 1);
     }
@@ -549,9 +549,9 @@ angular.module('ngGo.Game.Node.Service', [
     }
 
     //Find the index of this node, and if found swap the nodes from position
-    var i = this.parent.children.indexOf(this);
+    let i = this.parent.children.indexOf(this);
     if (i > 0) {
-      var temp = this.parent.children[i - 1];
+      let temp = this.parent.children[i - 1];
       this.parent.children[i - 1] = this;
       this.parent.children[i] = temp;
     }
@@ -568,9 +568,9 @@ angular.module('ngGo.Game.Node.Service', [
     }
 
     //Find the index of this node, and if found swap the nodes from position
-    var i = this.parent.children.indexOf(this);
+    let i = this.parent.children.indexOf(this);
     if (i !== -1 && i < (this.parent.children.length - 1)) {
-      var temp = this.parent.children[i + 1];
+      let temp = this.parent.children[i + 1];
       this.parent.children[i + 1] = this;
       this.parent.children[i] = temp;
     }
@@ -605,7 +605,7 @@ angular.module('ngGo.Game.Node.Service', [
   GameNode.prototype.insertNode = function(node) {
 
     //Loop our children and change parent node
-    for (var i = 0; i < this.children.length; i++) {
+    for (let i = 0; i < this.children.length; i++) {
       this.children[i].parent = node;
     }
 
@@ -632,7 +632,7 @@ angular.module('ngGo.Game.Node.Service', [
     }
 
     //Initialize helper vars
-    var variationNode, nextNode, i, j;
+    let variationNode, nextNode, i, j;
 
     //Node to work with given? Otherwise, work with ourselves
     gameNode = gameNode || this;
@@ -659,12 +659,12 @@ angular.module('ngGo.Game.Node.Service', [
       else {
 
         //Get properties to copy
-        var properties = Object.getOwnPropertyNames(jgf[i]);
+        let properties = Object.getOwnPropertyNames(jgf[i]);
 
         //Copy node properties
-        for (var key in properties) {
+        for (let key in properties) {
           if (properties.hasOwnProperty(key)) {
-            var prop = properties[key];
+            let prop = properties[key];
 
             //Conversion function present?
             if (typeof conversionMap.fromJgf[prop] !== 'undefined') {
@@ -700,13 +700,13 @@ angular.module('ngGo.Game.Node.Service', [
     container = container || [];
 
     //Initialize node and get properties
-    var node = {};
-    var properties = Object.getOwnPropertyNames(this);
+    let node = {};
+    let properties = Object.getOwnPropertyNames(this);
 
     //Copy node properties
-    for (var key in properties) {
+    for (let key in properties) {
       if (properties.hasOwnProperty(key)) {
-        var prop = properties[key];
+        let prop = properties[key];
 
         //Skip some properties
         if (prop === 'parent' || prop === 'children') {
@@ -733,14 +733,14 @@ angular.module('ngGo.Game.Node.Service', [
     if (this.children.length > 1) {
 
       //Create variations container
-      var variationsContainer = [];
+      let variationsContainer = [];
       container.push(variationsContainer);
 
       //Loop child (variation) nodes
-      for (var i = 0; i < this.children.length; i++) {
+      for (let i = 0; i < this.children.length; i++) {
 
         //Create container for this variation
-        var variationContainer = [];
+        let variationContainer = [];
         variationsContainer.push(variationContainer);
 
         //Call child node converter

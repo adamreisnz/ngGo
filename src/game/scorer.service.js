@@ -10,7 +10,7 @@
 angular.module('ngGo.Game.Scorer.Service', [
   'ngGo',
   'ngGo.Game.Score.Service',
-  'ngGo.Board.Grid.Service'
+  'ngGo.Board.Grid.Service',
 ])
 
 /**
@@ -21,13 +21,13 @@ angular.module('ngGo.Game.Scorer.Service', [
   /**
    * Possible score states
    */
-  var scoreState = {
+  let scoreState = {
     UNKNOWN: StoneColor.EMPTY,
     BLACK_STONE: StoneColor.B,
     WHITE_STONE: StoneColor.W,
     BLACK_CANDIDATE: StoneColor.B * 2,
     WHITE_CANDIDATE: StoneColor.W * 2,
-    NEUTRAL: StoneColor.B * 3
+    NEUTRAL: StoneColor.B * 3,
   };
 
   /**
@@ -36,8 +36,8 @@ angular.module('ngGo.Game.Scorer.Service', [
   function territorySet(x, y, candidateColor, boundaryColor) {
 
     //Get color at given position
-    var posColor = this.stones.get(x, y);
-    var origColor = this.game.position.stones.get(x, y);
+    let posColor = this.stones.get(x, y);
+    let origColor = this.game.position.stones.get(x, y);
 
     //If border reached, or a position which is already this color, or boundary color, can't set
     if (!this.stones.isOnGrid(x, y) || posColor === candidateColor || posColor === boundaryColor) {
@@ -68,7 +68,7 @@ angular.module('ngGo.Game.Scorer.Service', [
   function territoryReset(x, y) {
 
     //Get original color from this position
-    var origColor = this.game.position.stones.get(x, y);
+    let origColor = this.game.position.stones.get(x, y);
 
     //Not on grid, or already this color?
     if (!this.stones.isOnGrid(x, y) || this.stones.get(x, y) === origColor) {
@@ -91,8 +91,8 @@ angular.module('ngGo.Game.Scorer.Service', [
   function determineScoreState() {
 
     //Initialize vars
-    var change = true;
-    var curState, newState, adjacent, b, w, a, x, y;
+    let change = true;
+    let curState, newState, adjacent, b, w, a, x, y;
 
     //Loop while there is change
     while (change) {
@@ -119,7 +119,7 @@ angular.module('ngGo.Game.Scorer.Service', [
               this.stones.get(x - 1, y),
               this.stones.get(x, y - 1),
               this.stones.get(x + 1, y),
-              this.stones.get(x, y + 1)
+              this.stones.get(x, y + 1),
             ];
 
             //Reset
@@ -172,7 +172,7 @@ angular.module('ngGo.Game.Scorer.Service', [
   /**
    * this.game scorer class
    */
-  var GameScorer = {
+  let GameScorer = {
 
     //Game to score
     game: null,
@@ -232,8 +232,9 @@ angular.module('ngGo.Game.Scorer.Service', [
 
       //No game?
       if (!this.game) {
-        console.warn('No game loaded in game scorer, can\'t calutlate score.');
-        return;
+        throw new Error(
+          'No game loaded in game scorer, can\'t calculate score.'
+        );
       }
 
       //Empty grids
@@ -244,8 +245,8 @@ angular.module('ngGo.Game.Scorer.Service', [
       determineScoreState.call(this);
 
       //Get komi and captures
-      var komi = this.game.get('game.komi');
-      var captures = this.game.getCaptureCount();
+      let komi = this.game.get('game.komi');
+      let captures = this.game.getCaptureCount();
 
       //Reset score
       this.score.reset();
@@ -257,7 +258,7 @@ angular.module('ngGo.Game.Scorer.Service', [
       this.score.white.komi = komi > 0 ? komi : 0;
 
       //Init helper vars
-      var x, y, state, color;
+      let x, y, state, color;
 
       //Loop position
       for (x = 0; x < this.stones.width; x++) {
@@ -314,8 +315,8 @@ angular.module('ngGo.Game.Scorer.Service', [
     mark: function(x, y) {
 
       //Get color of original position and state of the count position
-      var color = this.game.position.stones.get(x, y);
-      var state = this.stones.get(x, y);
+      let color = this.game.position.stones.get(x, y);
+      let state = this.stones.get(x, y);
 
       //White stone
       if (color === StoneColor.W) {
@@ -344,7 +345,7 @@ angular.module('ngGo.Game.Scorer.Service', [
           territoryReset.call(this, x, y);
         }
       }
-    }
+    },
   };
 
   //Return

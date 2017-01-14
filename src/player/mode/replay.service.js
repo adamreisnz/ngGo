@@ -9,7 +9,7 @@
  */
 angular.module('ngGo.Player.Mode.Replay.Service', [
   'ngGo',
-  'ngGo.Game.Scorer.Service'
+  'ngGo.Game.Scorer.Service',
 ])
 
 /**
@@ -39,10 +39,10 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
   /**
    * Default configuration
    */
-  var defaultConfig = {
+  let defaultConfig = {
 
     //Auto play delay
-    autoPlayDelay: 1000
+    autoPlayDelay: 1000,
   };
 
   /**
@@ -83,7 +83,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
           if (!this.game.hasStone(x, y) && this.game.isMoveVariation(x, y)) {
             this.board.add('hover', x, y, {
               type: 'stones',
-              value: this.game.getTurn()
+              value: this.game.getTurn(),
             });
           }
           break;
@@ -95,7 +95,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
           if (this.game.hasStone(x, y)) {
             this.board.add('hover', x, y, {
               type: 'markup',
-              value: MarkupTypes.MARK
+              value: MarkupTypes.MARK,
             });
           }
           break;
@@ -106,7 +106,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
      * Helper to show move variations on the board
      */
     function showMoveVariations(variations) {
-      for (var i = 0; i < variations.length; i++) {
+      for (let i = 0; i < variations.length; i++) {
 
         //Auto variation markup should never overwrite existing markup
         if (this.board.has('markup', variations[i].move.x, variations[i].move.y)) {
@@ -117,7 +117,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
         this.board.add('markup', variations[i].move.x, variations[i].move.y, {
           type: this.board.theme.get('markup.variation.type'),
           text: this.board.theme.get('markup.variation.text', i),
-          color: this.board.theme.get('markup.variation.color')
+          color: this.board.theme.get('markup.variation.color'),
         });
       }
     }
@@ -126,7 +126,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
      * Helper to hide move variations from the board
      */
     function hideMoveVariations(variations) {
-      for (var i = 0; i < variations.length; i++) {
+      for (let i = 0; i < variations.length; i++) {
         this.board.remove('markup', variations[i].move.x, variations[i].move.y);
       }
     }
@@ -142,8 +142,8 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
       }
 
       //Get the current node
-      var node = this.game.getNode();
-      var variations;
+      let node = this.game.getNode();
+      let variations;
       if (!node) {
         return;
       }
@@ -207,7 +207,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
         }
 
         //Get self
-        var self = this;
+        let self = this;
 
         //Determine delay
         delay = (typeof delay === 'number') ? delay : this.autoPlayDelay;
@@ -253,13 +253,13 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
 
         //Broadcast event
         this.broadcast('autoPlayStopped', this.game.node);
-      }
+      },
     });
 
     /**
      * Player mode definition
      */
-    var PlayerModeReplay = {
+    let PlayerModeReplay = {
 
       /**
        * Parse config instructions
@@ -363,7 +363,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
         this.setTools([
           PlayerTools.MOVE,
           PlayerTools.SCORE,
-          PlayerTools.NONE
+          PlayerTools.NONE,
         ]);
 
         //Set default tool
@@ -408,13 +408,11 @@ angular.module('ngGo.Player.Mode.Replay.Service', [
         }
 
         //Back to another state?
-        else {
-          if (this.statePreScoring) {
-            this.board.restoreState(this.statePreScoring);
-            delete this.statePreScoring;
-          }
+        else if (this.statePreScoring) {
+          this.board.restoreState(this.statePreScoring);
+          delete this.statePreScoring;
         }
-      }
+      },
     };
 
     //Return

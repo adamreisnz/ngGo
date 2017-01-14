@@ -7,7 +7,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Kifu.Blank.Service', [
-  'ngGo'
+  'ngGo',
 ])
 
 /**
@@ -18,49 +18,49 @@ angular.module('ngGo.Kifu.Blank.Service', [
   /**
    * Blank JGF
    */
-  var blankJgf = {
+  let blankJgf = {
     record: {
       application: ngGo.name + ' v' + ngGo.version,
       version: 1,
-      charset: 'UTF-8'
+      charset: 'UTF-8',
     },
     game: {
       type: 'go',
       players: [
         {
           color: 'black',
-          name: 'Black'
+          name: 'Black',
         },
         {
           color: 'white',
-          name: 'White'
-        }
-      ]
+          name: 'White',
+        },
+      ],
     },
     board: {
       width: 19,
-      height: 19
+      height: 19,
     },
-    tree: []
+    tree: [],
   };
 
   /**
    * Blank SGF
    */
-  var blankSgf = {
+  let blankSgf = {
     AP: ngGo.name + ':' + ngGo.version,
     CA: 'UTF-8',
     FF: '4',
     GM: '1',
     SZ: '19',
     PB: 'Black',
-    PW: 'White'
+    PW: 'White',
   };
 
   /**
    * Blank JGF/SGF container
    */
-  var KifuBlank = {
+  let KifuBlank = {
 
     /**
      * Get blank JGF
@@ -68,11 +68,11 @@ angular.module('ngGo.Kifu.Blank.Service', [
     jgf: function(base) {
 
       //Initialize blank
-      var blank = angular.copy(blankJgf);
+      let blank = angular.copy(blankJgf);
 
       //Base given?
       if (base) {
-        for (var p in base) {
+        for (let p in base) {
           if (base.hasOwnProperty(p)) {
             blank[p] = angular.extend(blank[p] || {}, base[p]);
           }
@@ -89,11 +89,11 @@ angular.module('ngGo.Kifu.Blank.Service', [
     sgf: function(base) {
 
       //Initialize blank
-      var blank = angular.copy(blankSgf);
+      let blank = angular.copy(blankSgf);
 
       //Base given?
       if (base) {
-        for (var p in base) {
+        for (let p in base) {
           if (base.hasOwnProperty(p)) {
             blank[p] = base[p];
           }
@@ -102,7 +102,7 @@ angular.module('ngGo.Kifu.Blank.Service', [
 
       //Return
       return blank;
-    }
+    },
   };
 
   //Return object

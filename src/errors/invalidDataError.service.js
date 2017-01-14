@@ -7,7 +7,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Errors.InvalidDataError.Service', [
-  'ngGo'
+  'ngGo',
 ])
 
 /**

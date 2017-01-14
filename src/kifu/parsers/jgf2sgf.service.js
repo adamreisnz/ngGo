@@ -8,7 +8,7 @@
  */
 angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   'ngGo',
-  'ngGo.Kifu.Blank.Service'
+  'ngGo.Kifu.Blank.Service',
 ])
 
 /**
@@ -19,8 +19,8 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   /**
    * Flip SGF alias map and create JGF alias map
    */
-  var jgfAliases = {};
-  for (var sgfProp in sgfAliases) {
+  let jgfAliases = {};
+  for (let sgfProp in sgfAliases) {
     if (sgfAliases.hasOwnProperty(sgfProp)) {
       jgfAliases[sgfAliases[sgfProp]] = sgfProp;
     }
@@ -29,7 +29,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   /**
    * Character index of "a"
    */
-  var aChar = 'a'.charCodeAt(0);
+  let aChar = 'a'.charCodeAt(0);
 
   /**
    * Helper to convert to SGF coordinates
@@ -58,7 +58,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   function writeGroup(prop, values, output, escape) {
     if (values.length) {
       output.sgf += prop;
-      for (var i = 0; i < values.length; i++) {
+      for (let i = 0; i < values.length; i++) {
         output.sgf += '[' + (escape ? escapeSgf(values[i]) : values[i]) + ']';
       }
     }
@@ -70,13 +70,13 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   function parseMove(move, output) {
 
     //Determine and validate color
-    var color = move.B ? 'B' : (move.W ? 'W' : '');
+    let color = move.B ? 'B' : (move.W ? 'W' : '');
     if (color === '') {
       return;
     }
 
     //Determine move
-    var coords = (move[color] === 'pass') ? '' : move[color];
+    let coords = (move[color] === 'pass') ? '' : move[color];
 
     //Append to SGF
     output.sgf += color + '[' + convertCoordinates(coords) + ']';
@@ -88,11 +88,11 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   function parseSetup(setup, output) {
 
     //Loop colors
-    for (var color in setup) {
+    for (let color in setup) {
       if (setup.hasOwnProperty(color)) {
 
         //Convert coordinates
-        for (var i = 0; i < setup[color].length; i++) {
+        for (let i = 0; i < setup[color].length; i++) {
           setup[color][i] = convertCoordinates(setup[color][i]);
         }
 
@@ -108,11 +108,11 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   function parseScore(score, output) {
 
     //Loop colors
-    for (var color in score) {
+    for (let color in score) {
       if (score.hasOwnProperty(color)) {
 
         //Convert coordinates
-        for (var i = 0; i < score[color].length; i++) {
+        for (let i = 0; i < score[color].length; i++) {
           score[color][i] = convertCoordinates(score[color][i]);
         }
 
@@ -128,9 +128,9 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   function parseMarkup(markup, output) {
 
     //Loop markup types
-    for (var type in markup) {
+    for (let type in markup) {
       if (markup.hasOwnProperty(type)) {
-        var i;
+        let i;
 
         //Label type has the label text appended to the coords
         if (type === 'label') {
@@ -168,11 +168,11 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   function parseComments(comments, output) {
 
     //Determine key
-    var key = (typeof jgfAliases.comments !== 'undefined') ? jgfAliases.comments : 'C';
+    let key = (typeof jgfAliases.comments !== 'undefined') ? jgfAliases.comments : 'C';
 
     //Flatten comment objects
-    var flatComments = [];
-    for (var c = 0; c < comments.length; c++) {
+    let flatComments = [];
+    for (let c = 0; c < comments.length; c++) {
       if (typeof comments[c] === 'string') {
         flatComments.push(comments[c]);
       }
@@ -189,7 +189,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
    * Node name parser
    */
   function parseNodeName(nodeName, output) {
-    var key = (typeof jgfAliases.name !== 'undefined') ? jgfAliases.name : 'N';
+    let key = (typeof jgfAliases.name !== 'undefined') ? jgfAliases.name : 'N';
     output.sgf += key + '[' + escapeSgf(nodeName) + ']';
   }
 
@@ -199,7 +199,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   function parseGame(game) {
 
     //Loop SGF game definitions
-    for (var i in sgfGames) {
+    for (let i in sgfGames) {
       if (sgfGames.hasOwnProperty(i) && sgfGames[i] === game) {
         return i;
       }
@@ -213,7 +213,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
    * Application parser
    */
   function parseApplication(application) {
-    var parts = application.split(' v');
+    let parts = application.split(' v');
     if (parts.length > 1) {
       return parts[0] + ':' + parts[1];
     }
@@ -226,7 +226,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   function parsePlayer(player, rootProperties) {
 
     //Variation handling
-    var st = 0;
+    let st = 0;
     if (!player.variationMarkup) {
       st += 2;
     }
@@ -278,7 +278,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   function parsePlayers(players, rootProperties) {
 
     //Loop players
-    for (var p = 0; p < players.length; p++) {
+    for (let p = 0; p < players.length; p++) {
 
       //Validate color
       if (!players[p].color || (players[p].color !== 'black' && players[p].color !== 'white')) {
@@ -286,7 +286,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
       }
 
       //Get SGF color
-      var color = (players[p].color === 'black') ? 'B' : 'W';
+      let color = (players[p].color === 'black') ? 'B' : 'W';
 
       //Name given?
       if (players[p].name) {
@@ -308,7 +308,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   /**
    * Parse function to property mapper
    */
-  var parsingMap = {
+  let parsingMap = {
 
     //Node properties
     'move': parseMove,
@@ -324,7 +324,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
     'player': parsePlayer,
     'board': parseBoard,
     'game.type': parseGame,
-    'game.players': parsePlayers
+    'game.players': parsePlayers,
   };
 
   /*****************************************************************************
@@ -337,12 +337,12 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   function writeTree(tree, output) {
 
     //Loop nodes in the tree
-    for (var i = 0; i < tree.length; i++) {
-      var node = tree[i];
+    for (let i = 0; i < tree.length; i++) {
+      let node = tree[i];
 
       //Array? That means a variation
       if (angular.isArray(node)) {
-        for (var j = 0; j < node.length; j++) {
+        for (let j = 0; j < node.length; j++) {
           output.sgf += '(\n;';
           writeTree(node[j], output);
           output.sgf += '\n)';
@@ -353,7 +353,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
       }
 
       //Loop node properties
-      for (var key in node) {
+      for (let key in node) {
         if (node.hasOwnProperty(key)) {
 
           //Handler present in parsing map?
@@ -390,7 +390,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
     }
 
     //Loop properties of jgf node
-    for (var subKey in jgf) {
+    for (let subKey in jgf) {
       if (jgf.hasOwnProperty(subKey)) {
 
         //Skip SGF signature (as we keep our own)
@@ -399,7 +399,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
         }
 
         //Build jgf key
-        var jgfKey = (key === '') ? subKey : key + '.' + subKey;
+        let jgfKey = (key === '') ? subKey : key + '.' + subKey;
 
         //If the item is an object, handle separately
         if (typeof jgf[subKey] === 'object') {
@@ -417,7 +417,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
         }
 
         //Check if it's a known key, if so, append the value to the root
-        var value;
+        let value;
         if (typeof jgfAliases[jgfKey] !== 'undefined') {
 
           //Handler present in parsing map?
@@ -438,7 +438,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
   /**
    * Parser class
    */
-  var Parser = {
+  let Parser = {
 
     /**
      * Parse JGF object or string into an SGF string
@@ -452,14 +452,13 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
 
       //Must have moves tree
       if (!jgf.tree) {
-        console.error('No moves tree in JGF object');
-        return;
+        throw new Error('No moves tree in JGF object');
       }
 
       //Initialize output (as object, so it remains a reference) and root properties container
-      var output = {sgf: '(\n;'};
-      var root = angular.copy(jgf);
-      var rootProperties = KifuBlank.sgf();
+      let output = {sgf: '(\n;'};
+      let root = angular.copy(jgf);
+      let rootProperties = KifuBlank.sgf();
 
       //The first node of the JGF tree is the root node, and it can contain comments,
       //board setup parameters, etc. It doesn't contain moves. We handle it separately here
@@ -475,7 +474,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
       extractRootProperties(root, rootProperties);
 
       //Write root properties
-      for (var key in rootProperties) {
+      for (let key in rootProperties) {
         if (rootProperties[key]) {
           output.sgf += key + '[' + escapeSgf(rootProperties[key]) + ']';
         }
@@ -487,7 +486,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
       //Close SGF and return
       output.sgf += ')';
       return output.sgf;
-    }
+    },
   };
 
   //Return object

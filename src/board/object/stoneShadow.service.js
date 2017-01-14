@@ -8,7 +8,7 @@
  */
 angular.module('ngGo.Board.Object.StoneShadow.Service', [
   'ngGo',
-  'ngGo.Board.Object.Service'
+  'ngGo.Board.Object.Service',
 ])
 
 /**
@@ -19,7 +19,7 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
   /**
    * Constructor
    */
-  var StoneShadow = {
+  let StoneShadow = {
 
     /**
      * Draw a stone shadow
@@ -37,10 +37,10 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
       }
 
       //Get coordinates and stone radius
-      var x = this.board.getAbsX(stone.x);
-      var y = this.board.getAbsY(stone.y);
-      var s = this.board.getCellSize();
-      var r = Math.max(0, this.board.theme.get('stone.radius', s) - 0.5);
+      let x = this.board.getAbsX(stone.x);
+      let y = this.board.getAbsY(stone.y);
+      let s = this.board.getCellSize();
+      let r = Math.max(0, this.board.theme.get('stone.radius', s) - 0.5);
 
       //Apply scaling factor?
       if (stone.scale) {
@@ -48,10 +48,10 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
       }
 
       //Get theme properties
-      var blur = this.board.theme.get('shadow.blur', s);
-      var offsetX = this.board.theme.get('shadow.offsetX', s);
-      var offsetY = this.board.theme.get('shadow.offsetY', s);
-      var shadowColor = this.board.theme.get('shadow.color');
+      let blur = this.board.theme.get('shadow.blur', s);
+      let offsetX = this.board.theme.get('shadow.offsetX', s);
+      let offsetY = this.board.theme.get('shadow.offsetY', s);
+      let shadowColor = this.board.theme.get('shadow.color');
 
       //Configure context
       this.context.fillStyle = this.context.createRadialGradient(
@@ -87,14 +87,14 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
       }
 
       //Get coordinates and stone radius
-      var x = this.board.getAbsX(stone.x);
-      var y = this.board.getAbsY(stone.y);
-      var s = this.board.getCellSize();
-      var r = this.board.theme.get('stone.radius', s);
+      let x = this.board.getAbsX(stone.x);
+      let y = this.board.getAbsY(stone.y);
+      let s = this.board.getCellSize();
+      let r = this.board.theme.get('stone.radius', s);
 
       //Clear a generous rectangle
       this.context.clearRect(x - 1.2 * r, y - 1.2 * r, 2.4 * r, 2.4 * r);
-    }
+    },
   };
 
   //Return

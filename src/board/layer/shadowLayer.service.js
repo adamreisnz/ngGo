@@ -5,7 +5,7 @@
 angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
   'ngGo',
   'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.StoneShadow.Service'
+  'ngGo.Board.Object.StoneShadow.Service',
 ])
 
 /**
@@ -74,16 +74,16 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
     }
 
     //Get shadowsize from theme
-    var shadowSize = this.board.theme.get('shadow.size', this.board.getCellSize());
+    let shadowSize = this.board.theme.get('shadow.size', this.board.getCellSize());
 
     //Apply shadow transformation
     this.context.setTransform(1, 0, 0, 1, shadowSize, shadowSize);
 
     //Get all stones as objects
-    var stones = this.grid.all('color');
+    let stones = this.grid.all('color');
 
     //Draw them
-    for (var i = 0; i < stones.length; i++) {
+    for (let i = 0; i < stones.length; i++) {
       StoneShadow.draw.call(this, stones[i]);
     }
   };
