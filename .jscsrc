@@ -7,7 +7,7 @@
   ],
   "requireParenthesesAroundIIFE": true,
   "requireCamelCaseOrUpperCaseIdentifiers": "ignoreProperties",
-  "maximumLineLength": 100,
+  "maximumLineLength": 120,
   "validateIndentation": 2,
   "disallowTrailingComma": true,
   "disallowMultipleSpaces": true,
