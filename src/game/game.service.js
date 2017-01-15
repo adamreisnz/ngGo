@@ -398,7 +398,17 @@ angular.module('ngGo.Game.Service', [
      * Clone this game
      */
     Game.prototype.clone = function() {
-      return angular.copy(this);
+      // Create a new object and get properties
+      var clone = new Game();
+      var props = Object.getOwnPropertyNames(this);
+
+      // Copy all properties
+      for (var p = 0; p < props.length; p++) {
+        var prop = props[p];
+        clone[prop] = angular.copy(this[prop]);
+      }
+
+      return clone;
     };
 
     /**
