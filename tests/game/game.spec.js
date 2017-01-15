@@ -92,5 +92,19 @@ describe('Game', function() {
       expect(this.gameRepeatingAll.play.bind(this.gameRepeatingAll, 2, 2, StoneColor.BLACK))
         .toThrowError(InvalidPositionError);
     });
+
+    it('should not create new node if the move has existed in the children', function() {
+      // Create a new game
+      this.gameSimple = new Game(this.sgfSimple);
+      // Go to some move number in the middle of the main line
+      this.gameSimple.goto(1);
+      console.log(this.gameSimple.node);
+      // Play the move
+      this.gameSimple.play(6, 2, StoneColor.WHITE);
+      // Verify
+      var parentNode = this.gameSimple.node.parent;
+      expect(parentNode.rememberedPath).toEqual(0);
+      expect(parentNode.children.length).toEqual(1);
+    });
   });
 });
