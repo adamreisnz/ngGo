@@ -169,6 +169,28 @@ angular.module('ngGo.Game.Service', [
       this.setTurn((this.info.game.handicap > 1) ? StoneColor.W : StoneColor.B);
     }
 
+    /**
+     * Validate the move is not in the existed children nodes.
+     * @param x X position.
+     * @param y Y position.
+     * @param color Stone color.
+     * @returns {(null|Number)} If the move exists, return the index of the children; otherwise, return null.
+     */
+    function validateMoveNotInChildrenNode(x, y, color) {
+      if (this.node.hasChildren()) {
+        for (var i = 0; i < this.node.children.length; ++i) {
+          var childNode = this.node.children[i];
+          if (childNode.isMove()) {
+            var nodeMove = childNode.move;
+            if (nodeMove.x === x && nodeMove.y === y && nodeMove.color === color) {
+              return i;
+            }
+          }
+        }
+      }
+      return null;
+    }
+
     /*****************************************************************************
      * Position history helpers
      ***/
@@ -1143,6 +1165,20 @@ angular.module('ngGo.Game.Service', [
 
       //Validate move and get new position
       var newPosition = this.validateMove(x, y, color);
+
+      // Validate the move is not in the existed children node
+      var existedIndex = validateMoveNotInChildrenNode.call(this, x, y, color);
+      if (existedIndex !== null) {
+        // Push new position
+        pushPosition.call(this, newPosition);
+        // Remember the path
+        this.node.rememberedPath = existedIndex;
+        // Change the current node pointer
+        this.node = this.node.children[existedIndex];
+        // Advance the path
+        this.path.advance(existedIndex);
+        return true;
+      }
 
       //Push new position
       pushPosition.call(this, newPosition);

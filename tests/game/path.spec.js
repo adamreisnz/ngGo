@@ -115,10 +115,6 @@ describe('Game', function() {
       gamePath.setMove(-1);
       // Verify
       verifyInitialState(gamePath);
-      // Set too large move number
-      gamePath.setMove(10);
-      // Verify
-      verifyInitialState(gamePath);
     });
 
     it('should be back to initial state', function() {
