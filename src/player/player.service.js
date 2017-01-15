@@ -513,6 +513,23 @@ angular.module('ngGo.Player.Service', [
       },
 
       /*****************************************************************************
+       * Move handling
+       ***/
+
+      /**
+       * Undo the positions.
+       */
+      undo: function() {
+        if (this.game) {
+          if (this.game.undo()) {
+            this.processPosition();
+            return true;
+          }
+          return false;
+        }
+      },
+
+      /*****************************************************************************
        * Navigation
        ***/
 

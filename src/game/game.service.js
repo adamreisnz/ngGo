@@ -1190,6 +1190,31 @@ angular.module('ngGo.Game.Service', [
       this.path.advance(i);
     };
 
+    /**
+     * Undo the placed stones.
+     */
+    Game.prototype.undo = function() {
+      // Forbid undoing when the current node is not the last node
+      if (this.node.hasChildren()) {
+        return false;
+      }
+      // Get the parent node
+      var parentNode = this.node.parent;
+      // Exit when there is no parent node
+      if (!parentNode) {
+        return false;
+      }
+      // Remove the current node
+      this.node.remove();
+      // Set the pointer to the parent node
+      this.node = parentNode;
+      // Retreat the path
+      this.path.retreat();
+      // Pop the last position
+      popPosition.call(this);
+      return true;
+    };
+
     /*****************************************************************************
      * Game tree navigation
      ***/
