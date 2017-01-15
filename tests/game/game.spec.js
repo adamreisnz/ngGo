@@ -98,7 +98,6 @@ describe('Game', function() {
       this.gameSimple = new Game(this.sgfSimple);
       // Go to some move number in the middle of the main line
       this.gameSimple.goto(1);
-      console.log(this.gameSimple.node);
       // Play the move
       this.gameSimple.play(6, 2, StoneColor.WHITE);
       // Verify
