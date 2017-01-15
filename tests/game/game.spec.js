@@ -29,6 +29,7 @@ describe('Game', function() {
     var game = new Game(this.sgfSimple);
     var clonedGame = game.clone();
     expect(game).toEqual(clonedGame);
+    expect(clonedGame.position).toBeDefined();
   });
 
   describe('#play', function() {
