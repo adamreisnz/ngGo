@@ -1249,18 +1249,13 @@ angular.module('ngGo.Game.Service', [
      */
     Game.prototype.undo = function() {
 
-      //Forbid undoing when the current node is not the last node
-      if (this.node.hasChildren()) {
+      //Validate if we can undo
+      if (!this.node.parent || this.node.hasChildren()) {
         return false;
       }
 
       //Get the parent node
       var parentNode = this.node.parent;
-
-      //Exit when there is no parent node
-      if (!parentNode) {
-        return false;
-      }
 
       //Remove the current node
       this.node.remove();
