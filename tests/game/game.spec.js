@@ -142,7 +142,7 @@ describe('Game', function() {
       expect(this.gameSimple.node.children.length).toEqual(0);
     });
 
-    it('should return false if it is not currently the last move', function() {
+    it('should have no effect if it is not currently the last move', function() {
 
       //Create a new game
       this.gameSimple = new Game(this.sgfSimple);

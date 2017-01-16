@@ -1254,14 +1254,17 @@ angular.module('ngGo.Game.Service', [
         return false;
       }
 
-      //Get the parent node
+      //Remove the node, set the pointer to its parent
       var parentNode = this.node.parent;
-
-      //Remove the current node
       this.node.remove();
-
-      //Set the pointer to the parent node
       this.node = parentNode;
+
+      //Reset the remembered path index if the index doesn't exist
+      if (typeof this.node.rememberedPath !== 'undefined') {
+        if (this.node.rememberedPath >= this.node.children.length) {
+          delete this.node.rememberedPath;
+        }
+      }
 
       //Retreat the path
       this.path.retreat();
