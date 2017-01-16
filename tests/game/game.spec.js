@@ -123,17 +123,60 @@ describe('Game', function() {
     });
   });
 
-  describe('#undo', function() { //TODO
+  describe('#undo', function() {
     it('should have no children node if the last move is undoed', function() {
 
+      //Create a new game
+      this.gameSimple = new Game(this.sgfSimple);
+
+      //Go to the last move
+      this.gameSimple.last();
+
+      //Undo
+      var result = this.gameSimple.undo();
+
+      //Verify
+      expect(result).toBe(true);
+      expect(this.gameSimple.path.move).toEqual(1);
+      expect(this.gameSimple.node.rememberedPath || 0).toEqual(0);
+      expect(this.gameSimple.node.children.length).toEqual(0);
     });
 
     it('should return false if it is not currently the last move', function() {
 
+      //Create a new game
+      this.gameSimple = new Game(this.sgfSimple);
+
+      //Go to some move instead of the last move
+      this.gameSimple.goto(1);
+
+      //Undo
+      var result = this.gameSimple.undo();
+
+      //Verify
+      expect(result).toBe(false);
+      expect(this.gameSimple.path.move).toEqual(1);
+      expect(this.gameSimple.node.rememberedPath || 0).toEqual(0);
+      expect(this.gameSimple.node.children.length).toEqual(1);
     });
 
     it('should change the remembered path index if some path is removed', function() {
 
+      //Create a new game
+      this.gameSimple = new Game(this.sgfSimple);
+
+      //Create a new branch
+      this.gameSimple.goto(1);
+      this.gameSimple.play(2, 2, StoneColor.WHITE);
+
+      //Undo
+      var result = this.gameSimple.undo();
+
+      //Verify
+      expect(result).toBe(true);
+      expect(this.gameSimple.path.move).toEqual(1);
+      expect(this.gameSimple.node.rememberedPath || 0).toEqual(0);
+      expect(this.gameSimple.node.children.length).toEqual(1);
     });
   });
 });
