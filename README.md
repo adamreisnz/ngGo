@@ -33,3 +33,5 @@ For the proposed JGF specification, please see [JGF.md](JGF.md).
 + Improve game scoring algorithm
 + Add support for board animations
 + Create unit tests
++ Update codebase to leverage ES6 features
++ Upgrade directives to components
