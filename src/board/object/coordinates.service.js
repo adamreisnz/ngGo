@@ -16,34 +16,37 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
 .factory('Coordinates', function() {
 
   //Kanji
-  let kanji = [
-    '一', '二', '三', '四', '五', '六', '七', '八', '九', '十',
-    '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
-    '二十一', '二十二', '二十三', '二十四', '二十五', '二十六', '二十七', '二十八', '二十九', '三十',
-    '三十一', '三十二', '三十三', '三十四', '三十五', '三十六', '三十七', '三十八', '三十九', '四十',
+  const kanji = [
+    '一', '二', '三', '四', '五', '六', '七',
+    '八', '九', '十', '十一', '十二', '十三', '十四',
+    '十五', '十六', '十七', '十八', '十九', '二十',
+    '二十一', '二十二', '二十三', '二十四', '二十五',
+    '二十六', '二十七', '二十八', '二十九', '三十',
+    '三十一', '三十二', '三十三', '三十四', '三十五',
+    '三十六', '三十七', '三十八', '三十九', '四十',
   ];
 
   //Character codes
-  let aChar = 'A'.charCodeAt(0);
-  let aCharLc = 'a'.charCodeAt(0);
+  const aChar = 'A'.charCodeAt(0);
+  const aCharLc = 'a'.charCodeAt(0);
 
   /**
    * Coordinate generators
    */
-  let coordinates = {
+  const coordinates = {
 
     //Kanji coordinates
-    kanji: function(i) {
+    kanji(i) {
       return kanji[i] || '';
     },
 
     //Numbers from 1
-    numbers: function(i) {
+    numbers(i) {
       return i + 1;
     },
 
     //Capital letters from A
-    letters: function(i) {
+    letters(i) {
 
       //Initialize
       let ch = '';
@@ -64,12 +67,12 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
     },
 
     //JGF coordinates (e.g. 0, 1, ...)
-    jgf: function(i) {
+    jgf(i) {
       return i;
     },
 
     //SGF coordinates (e.g. a, b, ...)
-    sgf: function(i) {
+    sgf(i) {
       let ch;
       if (i < 26) {
         ch = aCharLc + i;
@@ -84,40 +87,41 @@ angular.module('ngGo.Board.Object.Coordinates.Service', [
   /**
    * Coordinates object
    */
-  let Coordinates = {
+  const Coordinates = {
 
     /**
      * Draw
      */
-    draw: function() {
+    draw() {
 
       //Can only draw when we have context and dimensions
-      if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+      if (!this.context || !this.board.hasDrawSize()) {
         return;
       }
 
       //Get cell size
-      let cellSize = this.board.getCellSize();
+      const cellSize = this.board.getCellSize();
 
       //Get boundary coordinates
-      let xl = Math.ceil((this.board.drawMarginHor - cellSize / 2) / 2);
-      let xr = this.board.drawWidth - xl;
-      let yt = Math.ceil((this.board.drawMarginVer - cellSize / 2) / 2);
-      let yb = this.board.drawHeight - yt;
+      const xl = Math.ceil((this.board.drawMarginHor - cellSize / 2) / 2);
+      const xr = this.board.drawWidth - xl;
+      const yt = Math.ceil((this.board.drawMarginVer - cellSize / 2) / 2);
+      const yb = this.board.drawHeight - yt;
 
       //Get theme properties
-      let fillStyle = this.board.theme.get('coordinates.color');
-      let vertical = {
-        font: this.board.theme.get('coordinates.vertical.font'),
-        size: this.board.theme.get('coordinates.vertical.size'),
-        style: this.board.theme.get('coordinates.vertical.style'),
-        inverse: this.board.theme.get('coordinates.vertical.inverse'),
+      const theme = this.board.theme;
+      const fillStyle = theme.get('coordinates.color');
+      const vertical = {
+        font: theme.get('coordinates.vertical.font'),
+        size: theme.get('coordinates.vertical.size'),
+        style: theme.get('coordinates.vertical.style'),
+        inverse: theme.get('coordinates.vertical.inverse'),
       };
-      let horizontal = {
-        font: this.board.theme.get('coordinates.horizontal.font'),
-        size: this.board.theme.get('coordinates.horizontal.size'),
-        style: this.board.theme.get('coordinates.horizontal.style'),
-        inverse: this.board.theme.get('coordinates.horizontal.inverse'),
+      const horizontal = {
+        font: theme.get('coordinates.horizontal.font'),
+        size: theme.get('coordinates.horizontal.size'),
+        style: theme.get('coordinates.horizontal.style'),
+        inverse: theme.get('coordinates.horizontal.inverse'),
       };
 
       //Configure context

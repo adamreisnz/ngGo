@@ -20,12 +20,12 @@ angular.module('ngGo.Board.Object.StoneMini.Service', [
   /**
    * Class
    */
-  let StoneMini = {
+  const StoneMini = {
 
     /**
      * Draw stone
      */
-    draw: function(stone) {
+    draw(stone) {
 
       //Set scale and alpha
       stone.scale = this.board.theme.get('stone.mini.scale');
@@ -41,7 +41,7 @@ angular.module('ngGo.Board.Object.StoneMini.Service', [
     /**
      * Clear stone
      */
-    clear: function(stone) {
+    clear(stone) {
 
       //Don't show shadow
       stone.shadow = false;

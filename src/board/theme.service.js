@@ -36,13 +36,13 @@ angular.module('ngGo.Board.Theme.Service', [
       //Stone style can be shell, glass, mono, or specify a custom handler service
       style: 'shell',
       shadow: true,
-      radius: function(cellSize) {
-        return Math.floor(cellSize / 2);
+      radius(cellSize, scale = 1) {
+        return Math.round(Math.floor(cellSize / 2) * scale);
       },
 
       //Shell stones
       shell: {
-        color: function(stoneColor) {
+        color(stoneColor) {
           if (stoneColor === StoneColor.B) {
             return '#111';
           }

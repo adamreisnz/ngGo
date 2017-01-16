@@ -19,12 +19,12 @@ angular.module('ngGo.Board.Object.StoneFaded.Service', [
   /**
    * Class
    */
-  let StoneFaded = {
+  const StoneFaded = {
 
     /**
      * Draw stone
      */
-    draw: function(stone) {
+    draw(stone) {
 
       //Set scale and alpha
       stone.scale = this.board.theme.get('stone.faded.scale');
@@ -40,7 +40,7 @@ angular.module('ngGo.Board.Object.StoneFaded.Service', [
     /**
      * Clear stone
      */
-    clear: function(stone) {
+    clear(stone) {
 
       //Don't show shadow
       stone.shadow = false;

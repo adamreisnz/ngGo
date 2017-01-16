@@ -19,12 +19,12 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
   /**
    * Constructor
    */
-  let StoneShadow = {
+  const StoneShadow = {
 
     /**
      * Draw a stone shadow
      */
-    draw: function(stone) {
+    draw(stone) {
 
       //No context?
       if (!this.context) {
@@ -37,21 +37,18 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
       }
 
       //Get coordinates and stone radius
-      let x = this.board.getAbsX(stone.x);
-      let y = this.board.getAbsY(stone.y);
-      let s = this.board.getCellSize();
-      let r = Math.max(0, this.board.theme.get('stone.radius', s) - 0.5);
-
-      //Apply scaling factor?
-      if (stone.scale) {
-        r = Math.round(r * stone.scale);
-      }
+      const x = this.board.getAbsX(stone.x);
+      const y = this.board.getAbsY(stone.y);
+      const s = this.board.getCellSize();
+      const r = Math.max(
+        0, this.board.theme.get('stone.radius', s, stone.scale) - 0.5
+      );
 
       //Get theme properties
-      let blur = this.board.theme.get('shadow.blur', s);
-      let offsetX = this.board.theme.get('shadow.offsetX', s);
-      let offsetY = this.board.theme.get('shadow.offsetY', s);
-      let shadowColor = this.board.theme.get('shadow.color');
+      const blur = this.board.theme.get('shadow.blur', s);
+      const offsetX = this.board.theme.get('shadow.offsetX', s);
+      const offsetY = this.board.theme.get('shadow.offsetY', s);
+      const shadowColor = this.board.theme.get('shadow.color');
 
       //Configure context
       this.context.fillStyle = this.context.createRadialGradient(
@@ -69,12 +66,12 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
     /**
      * Clear a stone shadow
      */
-    clear: function(stone) {
+    clear(stone) {
 
-      //Note: this method is currently not in use due to the overlapping shadows
+      //NOTE: this method is currently not in use due to the overlapping shadows
       //problem. Instead, the entire shadow layer is simply cleared and redrawn
-      //when removing stones. The multiple canvasses solution from WGo didn't seem
-      //appropriate either, so for now we will leave it at this.
+      //when removing stones. The multiple canvasses solution from WGo didn't
+      //seem appropriate either, so for now we will leave it at this.
 
       //No context?
       if (!this.context) {
@@ -87,10 +84,10 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', [
       }
 
       //Get coordinates and stone radius
-      let x = this.board.getAbsX(stone.x);
-      let y = this.board.getAbsY(stone.y);
-      let s = this.board.getCellSize();
-      let r = this.board.theme.get('stone.radius', s);
+      const x = this.board.getAbsX(stone.x);
+      const y = this.board.getAbsY(stone.y);
+      const s = this.board.getCellSize();
+      const r = this.board.theme.get('stone.radius', s);
 
       //Clear a generous rectangle
       this.context.clearRect(x - 1.2 * r, y - 1.2 * r, 2.4 * r, 2.4 * r);

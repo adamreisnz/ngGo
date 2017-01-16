@@ -322,6 +322,13 @@ angular.module('ngGo.Board.Service', [
     };
 
     /**
+     * Check if the board has a draw size
+     */
+    Board.prototype.hasDrawSize = function() {
+      return (this.drawWidth > 0 && this.drawheight > 0);
+    };
+
+    /**
      * Toggle the coordinates
      */
     Board.prototype.toggleCoordinates = function(show) {

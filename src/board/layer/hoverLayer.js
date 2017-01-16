@@ -151,8 +151,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
   HoverLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
-    if (!this.context ||
-      this.board.drawWidth === 0 || this.board.drawheight === 0) {
+    if (!this.context || !this.board.hasDrawSize()) {
       return;
     }
 
