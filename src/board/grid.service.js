@@ -24,7 +24,7 @@ angular.module('ngGo.Board.Grid.Service', [
   function toObject(x, y, valueKey) {
 
     //Create coordinates object
-    let obj = {x, y};
+    const obj = {x, y};
 
     //Already an object?
     if (typeof this.grid[x][y] === 'object') {
@@ -109,7 +109,7 @@ angular.module('ngGo.Board.Grid.Service', [
     return toObject.call(this, x, y, valueKey);
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Mass operations
    ***/
 
@@ -194,7 +194,7 @@ angular.module('ngGo.Board.Grid.Service', [
     return newGrid;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Comparison
    ***/
 
@@ -254,7 +254,7 @@ angular.module('ngGo.Board.Grid.Service', [
     return changes;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Helpers
    ***/
 

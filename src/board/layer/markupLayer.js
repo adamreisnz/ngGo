@@ -27,7 +27,7 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
    */
   angular.extend(MarkupLayer.prototype, BoardLayer.prototype);
 
-  /*****************************************************************************
+  /**************************************************************************
    * Object handling
    ***/
 
@@ -59,7 +59,7 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
     this.grid.empty();
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Drawing
    ***/
 

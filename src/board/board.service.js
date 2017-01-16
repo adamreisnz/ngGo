@@ -102,9 +102,9 @@ angular.module('ngGo.Board.Service', [
       //Initialize layers
       this.layers = {};
       for (let l = 0; l < this.layerOrder.length; l++) {
-        let layer = this.layerOrder[l];
-        let layerClass = layer[0].toUpperCase() + layer.substr(1) + 'Layer';
-        let LayerClass = $injector.get(layerClass);
+        const layer = this.layerOrder[l];
+        const layerClass = layer[0].toUpperCase() + layer.substr(1) + 'Layer';
+        const LayerClass = $injector.get(layerClass);
         this.layers[layer] = new LayerClass(this);
       }
 
@@ -157,7 +157,7 @@ angular.module('ngGo.Board.Service', [
       this.layerOrder = ['grid', 'stones', 'markup'];
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Configuration
      ***/
 
@@ -260,8 +260,10 @@ angular.module('ngGo.Board.Service', [
 
       //No changes?
       if (
-        this.section.top === section.top && this.section.bottom === section.bottom &&
-        this.section.left === section.left && this.section.right === section.right
+        this.section.top === section.top &&
+        this.section.bottom === section.bottom &&
+        this.section.left === section.left &&
+        this.section.right === section.right
       ) {
         return this;
       }
@@ -302,7 +304,8 @@ angular.module('ngGo.Board.Service', [
           }
         }
 
-        //Broadcast event (no call to resized, as that is handled in the directive)
+        //Broadcast event (no call to resized, as that is
+        //handled in the directive)
         $rootScope.$broadcast('ngGo.board.resize', this, width, height);
       }
 
@@ -389,7 +392,7 @@ angular.module('ngGo.Board.Service', [
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Theme handling
      ***/
 
@@ -408,7 +411,7 @@ angular.module('ngGo.Board.Service', [
       return this;
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Object handling
      ***/
 
@@ -471,7 +474,7 @@ angular.module('ngGo.Board.Service', [
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Position handling
      ***/
 
@@ -495,7 +498,7 @@ angular.module('ngGo.Board.Service', [
       this.setAll('markup', position.markup);
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * State handling
      ***/
 
@@ -549,7 +552,7 @@ angular.module('ngGo.Board.Service', [
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Drawing control
      ***/
 
@@ -618,7 +621,7 @@ angular.module('ngGo.Board.Service', [
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Drawing helpers
      ***/
 
@@ -668,8 +671,12 @@ angular.module('ngGo.Board.Service', [
       this.gridDrawHeight = this.cellSize * (noCellsVer - this.margin - 1);
 
       //Determine draw margins
-      this.drawMarginHor = Math.floor((this.drawWidth - this.gridDrawWidth) / 2);
-      this.drawMarginVer = Math.floor((this.drawHeight - this.gridDrawHeight) / 2);
+      this.drawMarginHor = Math.floor(
+        (this.drawWidth - this.gridDrawWidth) / 2
+      );
+      this.drawMarginVer = Math.floor(
+        (this.drawHeight - this.gridDrawHeight) / 2
+      );
 
       //Redraw
       this.redraw();
@@ -686,7 +693,7 @@ angular.module('ngGo.Board.Service', [
      * Convert grid coordinate to pixel coordinate
      */
     Board.prototype.getAbsX = function(gridX) {
-      let offset = this.cutoff.left ? 0.5 : 0;
+      const offset = this.cutoff.left ? 0.5 : 0;
       return this.drawMarginHor + Math.round((gridX + offset) * this.cellSize);
     };
 
@@ -694,7 +701,7 @@ angular.module('ngGo.Board.Service', [
      * Convert grid coordinate to pixel coordinate
      */
     Board.prototype.getAbsY = function(gridY) {
-      let offset = this.cutoff.top ? 0.5 : 0;
+      const offset = this.cutoff.top ? 0.5 : 0;
       return this.drawMarginVer + Math.round((gridY + offset) * this.cellSize);
     };
 
@@ -702,7 +709,7 @@ angular.module('ngGo.Board.Service', [
      * Convert pixel coordinate to grid coordinate
      */
     Board.prototype.getGridX = function(absX) {
-      let offset = this.cutoff.left ? 0.5 : 0;
+      const offset = this.cutoff.left ? 0.5 : 0;
       return Math.round((absX - this.drawMarginHor) / this.cellSize - offset);
     };
 
@@ -710,7 +717,7 @@ angular.module('ngGo.Board.Service', [
      * Convert pixel coordinate to grid coordinate
      */
     Board.prototype.getGridY = function(absY) {
-      let offset = this.cutoff.top ? 0.5 : 0;
+      const offset = this.cutoff.top ? 0.5 : 0;
       return Math.round((absY - this.drawMarginVer) / this.cellSize - offset);
     };
 

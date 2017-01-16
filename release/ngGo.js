@@ -531,7 +531,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
       this.layerOrder = ['grid', 'stones', 'markup'];
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Configuration
      ***/
 
@@ -749,7 +749,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
         }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Theme handling
      ***/
 
@@ -768,7 +768,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
       return this;
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Object handling
      ***/
 
@@ -830,7 +830,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Position handling
      ***/
 
@@ -854,7 +854,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
       this.setAll('markup', position.markup);
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * State handling
      ***/
 
@@ -908,7 +908,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Drawing control
      ***/
 
@@ -977,7 +977,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Drawing helpers
      ***/
 
@@ -1240,7 +1240,7 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
     return toObject.call(this, x, y, valueKey);
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Mass operations
    ***/
 
@@ -1325,7 +1325,7 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
     return newGrid;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Comparison
    ***/
 
@@ -1385,7 +1385,7 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
     return changes;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Helpers
    ***/
 
@@ -1540,7 +1540,7 @@ angular.module('ngGo.Board.Layer.Service', ['ngGo', 'ngGo.Board.Grid.Service'])
     this.grid = new BoardGrid();
   }
 
-  /*****************************************************************************
+  /**************************************************************************
    * Generic grid and object handling
    ***/
 
@@ -1610,7 +1610,7 @@ angular.module('ngGo.Board.Layer.Service', ['ngGo', 'ngGo.Board.Grid.Service'])
     return this.grid.has(x, y);
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Generic drawing methods
    ***/
 
@@ -2424,7 +2424,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
    */
   this.$get = ["ngGo", "StoneColor", "GamePath", "GameNode", "GamePosition", "KifuParser", "KifuBlank", "InvalidDataError", "InvalidPositionError", function (ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser, KifuBlank, InvalidDataError, InvalidPositionError) {
 
-    /*****************************************************************************
+    /**************************************************************************
      * General helpers
      ***/
 
@@ -2458,7 +2458,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       }
     }
 
-    /*****************************************************************************
+    /**************************************************************************
      * Node navigation helpers
      ***/
 
@@ -2530,7 +2530,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       this.setTurn(this.info.game.handicap > 1 ? StoneColor.W : StoneColor.B);
     }
 
-    /*****************************************************************************
+    /**************************************************************************
      * Position history helpers
      ***/
 
@@ -2594,7 +2594,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       }
     }
 
-    /*****************************************************************************
+    /**************************************************************************
      * Execution helpers
      ***/
 
@@ -2648,7 +2648,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       pushPosition.call(this, newPosition);
     }
 
-    /*****************************************************************************
+    /**************************************************************************
      * Game class
      ***/
 
@@ -2744,7 +2744,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       return this.root !== null;
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Game cloning and conversion
      ***/
 
@@ -2929,7 +2929,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       return stringify ? angular.toJson(jgf) : jgf;
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Getters
      ***/
 
@@ -3173,7 +3173,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Checkers
      ***/
 
@@ -3329,7 +3329,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Stone and markup handling
      ***/
 
@@ -3478,7 +3478,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       return this.position.markup.get(x, y);
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Move handling
      ***/
 
@@ -3549,7 +3549,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       this.path.advance(i);
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Game tree navigation
      ***/
 
@@ -3785,7 +3785,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * State handling
      ***/
 
@@ -3906,7 +3906,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
     return StoneColor.E;
   }
 
-  /*****************************************************************************
+  /**************************************************************************
    * Helpers for conversion between JGF / KIFU format
    ***/
 
@@ -4350,7 +4350,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
     return 0;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Node manipulation
    ***/
 
@@ -4453,7 +4453,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
     this.children = [node];
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * JGF conversion
    ***/
 
@@ -4890,7 +4890,7 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
     this.markup.set(x, y, markup);
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Liberties and capturing
    ***/
 
@@ -5082,7 +5082,7 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
     return this.captures[-color].length;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Turn control
    ***/
 
@@ -5107,7 +5107,7 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
     this.turn = -this.turn;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Cloning and comparison
    ***/
 
@@ -6044,7 +6044,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         this.registerElementEvent('wheel');
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Configuration
        ***/
 
@@ -6134,7 +6134,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         }
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Mode and tool handling
        ***/
 
@@ -6262,7 +6262,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         this.restoreGameState();
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Game record handling
        ***/
 
@@ -6349,7 +6349,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         }
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Navigation
        ***/
 
@@ -6529,7 +6529,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         this.board.redraw('markup');
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Game handling
        ***/
 
@@ -6562,7 +6562,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         this.broadcast('scoreCalculated', score);
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Board handling
        ***/
 
@@ -6616,7 +6616,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         this.broadcast('boardUpdate', node);
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Event handling
        ***/
 
@@ -6795,7 +6795,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', ['ngGo', 'ngGo.Board.Layer.
     this.coordinates = show;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Object handling
    ***/
 
@@ -6820,7 +6820,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', ['ngGo', 'ngGo.Board.Layer.
     return;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Drawing
    ***/
 
@@ -7178,7 +7178,7 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', ['ngGo', 'ngGo.Board.Laye
    */
   angular.extend(MarkupLayer.prototype, BoardLayer.prototype);
 
-  /*****************************************************************************
+  /**************************************************************************
    * Object handling
    ***/
 
@@ -7222,7 +7222,7 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', ['ngGo', 'ngGo.Board.Laye
     this.grid.empty();
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Drawing
    ***/
 
@@ -7307,7 +7307,7 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', ['ngGo', 'ngGo.Board.Layer
    */
   angular.extend(ScoreLayer.prototype, BoardLayer.prototype);
 
-  /*****************************************************************************
+  /**************************************************************************
    * Object handling
    ***/
 
@@ -7345,7 +7345,7 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', ['ngGo', 'ngGo.Board.Layer
     this.captures = [];
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Drawing
    ***/
 
@@ -7504,7 +7504,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', ['ngGo', 'ngGo.Board.Laye
    */
   angular.extend(StonesLayer.prototype, BoardLayer.prototype);
 
-  /*****************************************************************************
+  /**************************************************************************
    * Object handling
    ***/
 
@@ -7531,7 +7531,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', ['ngGo', 'ngGo.Board.Laye
     this.grid = grid.clone();
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Drawing
    ***/
 
@@ -9083,7 +9083,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     return String.fromCharCode(aChar + coords[0]) + String.fromCharCode(aChar + coords[1]);
   }
 
-  /*****************************************************************************
+  /**************************************************************************
    * Conversion helpers
    ***/
 
@@ -9369,7 +9369,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     'game.players': parsePlayers
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Parser functions
    ***/
 
@@ -9575,7 +9575,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     return [coords.charCodeAt(0) - aChar, coords.charCodeAt(1) - aChar];
   }
 
-  /*****************************************************************************
+  /**************************************************************************
    * Conversion helpers
    ***/
 
@@ -9937,7 +9937,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
    */
   var needsNode = ['B', 'W', 'C', 'N', 'AB', 'AW', 'AE', 'PL', 'LB', 'CR', 'SQ', 'TR', 'MA', 'SL', 'TW', 'TB'];
 
-  /*****************************************************************************
+  /**************************************************************************
    * Parser helpers
    ***/
 

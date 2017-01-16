@@ -30,7 +30,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
    */
   angular.extend(StonesLayer.prototype, BoardLayer.prototype);
 
-  /*****************************************************************************
+  /**************************************************************************
    * Object handling
    ***/
 
@@ -50,7 +50,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
     this.grid = grid.clone();
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Drawing
    ***/
 

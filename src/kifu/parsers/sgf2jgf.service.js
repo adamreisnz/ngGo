@@ -36,7 +36,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     return [coords.charCodeAt(0) - aChar, coords.charCodeAt(1) - aChar];
   }
 
-  /*****************************************************************************
+  /**************************************************************************
    * Conversion helpers
    ***/
 
@@ -403,7 +403,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     'B', 'W', 'C', 'N', 'AB', 'AW', 'AE', 'PL', 'LB', 'CR', 'SQ', 'TR', 'MA', 'SL', 'TW', 'TB',
   ];
 
-  /*****************************************************************************
+  /**************************************************************************
    * Parser helpers
    ***/
 

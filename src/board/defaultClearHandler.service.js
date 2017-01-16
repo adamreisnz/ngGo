@@ -31,10 +31,10 @@ angular.module('ngGo.Board.DefaultClearHandler.Service', [
     }
 
     //Get coordinates and stone radius
-    let x = this.board.getAbsX(obj.x);
-    let y = this.board.getAbsY(obj.y);
-    let s = this.board.getCellSize();
-    let r = this.board.theme.get('stone.radius', s);
+    const x = this.board.getAbsX(obj.x);
+    const y = this.board.getAbsY(obj.y);
+    const s = this.board.getCellSize();
+    const r = this.board.theme.get('stone.radius', s);
 
     //Clear rectangle the size of the stone radius
     context.clearRect(x - r, y - r, 2 * r, 2 * r);

@@ -20,7 +20,7 @@ angular.module('ngGo.Board.GridChanges.Service', [
    * Helper to subtract sets
    */
   function setSubtract(a, b) {
-    let n = [];
+    const n = [];
     let q;
     for (let i = 0; i < a.length; i++) {
       q = true;
@@ -52,8 +52,10 @@ angular.module('ngGo.Board.GridChanges.Service', [
      * Concatenation helper
      */
     this.concat = function(newChanges) {
-      this.add = setSubtract(this.add, newChanges.remove).concat(newChanges.add);
-      this.remove = setSubtract(this.remove, newChanges.add).concat(newChanges.remove);
+      this.add = setSubtract(this.add, newChanges.remove)
+        .concat(newChanges.add);
+      this.remove = setSubtract(this.remove, newChanges.add)
+        .concat(newChanges.remove);
     };
 
     /**

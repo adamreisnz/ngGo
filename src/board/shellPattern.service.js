@@ -30,10 +30,10 @@ angular.module('ngGo.Board.ShellPattern.Service', [
     radius -= Math.max(1, ctx.lineWidth);
 
     //Determine coordinates
-    let x1 = x + radius * Math.cos(startAngle * Math.PI);
-    let y1 = y + radius * Math.sin(startAngle * Math.PI);
-    let x2 = x + radius * Math.cos(endAngle * Math.PI);
-    let y2 = y + radius * Math.sin(endAngle * Math.PI);
+    const x1 = x + radius * Math.cos(startAngle * Math.PI);
+    const y1 = y + radius * Math.sin(startAngle * Math.PI);
+    const x2 = x + radius * Math.cos(endAngle * Math.PI);
+    const y2 = y + radius * Math.sin(endAngle * Math.PI);
 
     //Math magic
     let m, angle;
@@ -50,15 +50,15 @@ angular.module('ngGo.Board.ShellPattern.Service', [
     }
 
     //Curvature factor
-    let c = this.factor * radius;
-    let dx = Math.sin(angle) * c;
-    let dy = Math.cos(angle) * c;
+    const c = this.factor * radius;
+    const dx = Math.sin(angle) * c;
+    const dy = Math.cos(angle) * c;
 
     //Curvature coordinates
-    let bx1 = x1 + dx;
-    let by1 = y1 - dy;
-    let bx2 = x2 + dx;
-    let by2 = y2 - dy;
+    const bx1 = x1 + dx;
+    const by1 = y1 - dy;
+    const bx2 = x2 + dx;
+    const by2 = y2 - dy;
 
     //Draw shell stroke
     ctx.moveTo(x1, y1);

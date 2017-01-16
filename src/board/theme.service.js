@@ -76,10 +76,10 @@ angular.module('ngGo.Board.Theme.Service', [
       //Mono stones
       mono: {
         lineWidth: 1,
-        lineColor: function() {
+        lineColor() {
           return '#000';
         },
-        color: function(stoneColor) {
+        color(stoneColor) {
           if (stoneColor === StoneColor.B) {
             return '#000';
           }
@@ -96,7 +96,7 @@ angular.module('ngGo.Board.Theme.Service', [
       //Faded stones
       faded: {
         scale: 1,
-        alpha: function(stoneColor) {
+        alpha(stoneColor) {
           if (stoneColor === StoneColor.B) {
             return 0.3;
           }
@@ -112,20 +112,20 @@ angular.module('ngGo.Board.Theme.Service', [
       color: 'rgba(40,30,20,0.5)',
 
       //Shadow size
-      size: function(cellSize) {
+      size(cellSize) {
         return Math.floor(cellSize / 20);
       },
 
       //Shadow blur size
-      blur: function(cellSize) {
+      blur(cellSize) {
         return cellSize / 20;
       },
 
       //Shadow offset
-      offsetX: function(cellSize) {
+      offsetX(cellSize) {
         return Math.ceil(cellSize / 20);
       },
-      offsetY: function(cellSize) {
+      offsetY(cellSize) {
         return Math.ceil(cellSize / 20);
       },
     },
@@ -134,7 +134,7 @@ angular.module('ngGo.Board.Theme.Service', [
     markup: {
 
       //Standard color
-      color: function(stoneColor) {
+      color(stoneColor) {
         if (stoneColor === StoneColor.B) {
           return 'rgba(255,255,255,0.9)';
         }
@@ -142,7 +142,7 @@ angular.module('ngGo.Board.Theme.Service', [
       },
 
       //Line width
-      lineWidth: function(cellSize) {
+      lineWidth(cellSize) {
         return Math.max(1, Math.floor(cellSize / 16));
       },
 
@@ -186,7 +186,7 @@ angular.module('ngGo.Board.Theme.Service', [
       //Variation markup
       variation: {
         type: MarkupTypes.LABEL,
-        text: function(i) {
+        text(i) {
           return String.fromCharCode(65 + i);
         },
         color: 'rgba(86,114,30,0.9)',
@@ -214,7 +214,7 @@ angular.module('ngGo.Board.Theme.Service', [
 
       //Line properties
       lineColor: 'rgba(60,40,15,1)',
-      lineWidth: function(cellSize) {
+      lineWidth(cellSize) {
         if (cellSize > 60) {
           return 2;
         }
@@ -230,7 +230,7 @@ angular.module('ngGo.Board.Theme.Service', [
 
         //Color and radius
         color: 'rgba(60,40,15,1)',
-        radius: function(cellSize) {
+        radius(cellSize) {
           if (cellSize > 50) {
             return Math.floor((cellSize / 16) + 1);
           }
@@ -247,7 +247,7 @@ angular.module('ngGo.Board.Theme.Service', [
         },
 
         //Locations
-        points: function(width, height) {
+        points(width, height) {
 
           //19x19
           if (width === height && width === 19) {
@@ -295,7 +295,7 @@ angular.module('ngGo.Board.Theme.Service', [
         font: 'Arial',
         style: 'numbers',
         inverse: true,
-        size: function() {
+        size() {
           return function(ch, cellSize) {
             return Math.floor((cellSize * 0.3) + 1) + 'px';
           };
@@ -307,7 +307,7 @@ angular.module('ngGo.Board.Theme.Service', [
         font: 'Arial',
         style: 'letters',
         inverse: false,
-        size: function() {
+        size() {
           return function(ch, cellSize) {
             return Math.floor((cellSize * 0.3) + 1) + 'px';
           };
@@ -357,10 +357,10 @@ angular.module('ngGo.Board.Theme.Service', [
     /**
      * Get a theme property
      */
-    BoardTheme.prototype.get = function(property) {
+    BoardTheme.prototype.get = function(property, ...args) {
 
       //Determine path to the property
-      let path = property.split('.');
+      const path = property.split('.');
       let prop = this.theme;
 
       //Loop path
@@ -380,14 +380,6 @@ angular.module('ngGo.Board.Theme.Service', [
         return prop;
       }
 
-      //Prepare arguments
-      let args = [];
-      if (arguments.length > 1) {
-        for (let a = 1; a < arguments.length; a++) {
-          args.push(arguments[a]);
-        }
-      }
-
       //Call function
       return prop.apply(this, args);
     };
@@ -398,7 +390,7 @@ angular.module('ngGo.Board.Theme.Service', [
     BoardTheme.prototype.set = function(property, value) {
 
       //Determine path to the property
-      let path = property.split('.');
+      const path = property.split('.');
       let prop = this.theme;
 
       //Loop path

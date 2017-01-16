@@ -38,7 +38,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
     return String.fromCharCode(aChar + coords[0]) + String.fromCharCode(aChar + coords[1]);
   }
 
-  /*****************************************************************************
+  /**************************************************************************
    * Conversion helpers
    ***/
 
@@ -327,7 +327,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
     'game.players': parsePlayers,
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Parser functions
    ***/
 

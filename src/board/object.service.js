@@ -19,13 +19,13 @@ angular.module('ngGo.Board.Object.Service', [
   /**
    * Constructor
    */
-  let BoardObject = {
+  const BoardObject = {
 
     /**
      * Draw method
      */
-    draw: function(/*obj*/) {
-      if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+    draw() {
+      if (!this.board.hasDrawSize()) {
         return;
       }
     },
@@ -33,7 +33,7 @@ angular.module('ngGo.Board.Object.Service', [
     /**
      * Clear method
      */
-    clear: function(obj) {
+    clear(obj) {
       DefaultClearHandler.call(this, this.context, obj);
     },
   };
