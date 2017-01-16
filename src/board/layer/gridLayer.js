@@ -32,8 +32,8 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
     }
 
     //Get absolute coordinates and star point radius
-    let x = this.board.getAbsX(gridX);
-    let y = this.board.getAbsY(gridY);
+    const x = this.board.getAbsX(gridX);
+    const y = this.board.getAbsY(gridY);
 
     //Draw star point
     this.context.beginPath();
@@ -101,23 +101,26 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
   GridLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+    if (!this.context ||
+      this.board.drawWidth === 0 || this.board.drawheight === 0) {
       return;
     }
 
-    //Determine top x and y margin
-    let tx = this.board.drawMarginHor;
-    let ty = this.board.drawMarginVer;
+    //Get board properties
+    const {
+      width, height, theme,
+      drawMarginHor: tx, drawMarginVer: ty,
+    } = this.board;
 
     //Get theme properties
-    let cellSize = this.board.getCellSize();
-    let lineWidth = this.board.theme.get('grid.lineWidth', cellSize);
-    let lineCap = this.board.theme.get('grid.lineCap');
-    let strokeStyle = this.board.theme.get('grid.lineColor');
-    let starRadius = this.board.theme.get('grid.star.radius', cellSize);
-    let starColor = this.board.theme.get('grid.star.color');
-    let starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height);
-    let canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+    const cellSize = this.board.getCellSize();
+    const lineWidth = theme.get('grid.lineWidth', cellSize);
+    const lineCap = theme.get('grid.lineCap');
+    const strokeStyle = theme.get('grid.lineColor');
+    const starRadius = theme.get('grid.star.radius', cellSize);
+    const starColor = theme.get('grid.star.color');
+    const starPoints = theme.get('grid.star.points', width, height);
+    const canvasTranslate = theme.canvasTranslate(lineWidth);
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -148,10 +151,10 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
     //Draw grid lines
     this.context.stroke();
 
-    //Star points defined?
-    for (i = 0; i < starPoints.length; i++) {
-      drawStarPoint.call(this, starPoints[i].x, starPoints[i].y, starRadius, starColor);
-    }
+    //Draw star points
+    starPoints.forEach(point => {
+      drawStarPoint.call(this, point.x, point.y, starRadius, starColor);
+    });
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
@@ -168,14 +171,14 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
   GridLayer.prototype.clearCell = function(gridX, gridY) {
 
     //Get absolute coordinates and stone radius
-    let x = this.board.getAbsX(gridX);
-    let y = this.board.getAbsY(gridY);
-    let s = this.board.getCellSize();
-    let r = this.board.theme.get('stone.radius', s);
+    const x = this.board.getAbsX(gridX);
+    const y = this.board.getAbsY(gridY);
+    const s = this.board.getCellSize();
+    const r = this.board.theme.get('stone.radius', s);
 
     //Get theme properties
-    let lineWidth = this.board.theme.get('grid.lineWidth', s);
-    let canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+    const lineWidth = this.board.theme.get('grid.lineWidth', s);
+    const canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -193,24 +196,27 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
   GridLayer.prototype.redrawCell = function(gridX, gridY) {
 
     //Get absolute coordinates and stone radius
-    let x = this.board.getAbsX(gridX);
-    let y = this.board.getAbsY(gridY);
-    let s = this.board.getCellSize();
-    let r = this.board.theme.get('stone.radius', s);
+    const x = this.board.getAbsX(gridX);
+    const y = this.board.getAbsY(gridY);
+    const s = this.board.getCellSize();
+    const r = this.board.theme.get('stone.radius', s);
+
+    //Get board properties
+    const {theme, width, height} = this.board;
 
     //Get theme properties
-    let lineWidth = this.board.theme.get('grid.lineWidth', s);
-    let strokeStyle = this.board.theme.get('grid.lineColor');
-    let starRadius = this.board.theme.get('grid.star.radius', s);
-    let starColor = this.board.theme.get('grid.star.color');
-    let canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
-    let starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height);
+    const lineWidth = theme.get('grid.lineWidth', s);
+    const strokeStyle = theme.get('grid.lineColor');
+    const starRadius = theme.get('grid.star.radius', s);
+    const starColor = theme.get('grid.star.color');
+    const canvasTranslate = theme.canvasTranslate(lineWidth);
+    const starPoints = theme.get('grid.star.points', width, height);
 
     //Determine draw coordinates
-    let x1 = (gridX === 0) ? x : x - r;
-    let x2 = (gridX === this.board.width - 1) ? x : x + r;
-    let y1 = (gridY === 0) ? y : y - r;
-    let y2 = (gridY === this.board.height - 1) ? y : y + r;
+    const x1 = (gridX === 0) ? x : x - r;
+    const x2 = (gridX === width - 1) ? x : x + r;
+    const y1 = (gridY === 0) ? y : y - r;
+    const y2 = (gridY === height - 1) ? y : y + r;
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -228,10 +234,13 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
     this.context.stroke();
 
     //Check if we need to draw a star point here
-    for (let i in starPoints) {
-      if (starPoints[i].x === gridX && starPoints[i].y === gridY) {
-        drawStarPoint.call(this, gridX, gridY, starRadius, starColor);
-      }
+    const starPoint = starPoints.find(point => {
+      return (point.x === gridX && point.y === gridY);
+    });
+
+    //Draw if found
+    if (starPoint) {
+      drawStarPoint.call(this, gridX, gridY, starRadius, starColor);
     }
 
     //Undo translation

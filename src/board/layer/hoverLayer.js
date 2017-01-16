@@ -45,10 +45,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
     this.remove(x, y);
 
     //Create hover object
-    hover.object = {
-      x: x,
-      y: y,
-    };
+    hover.object = {x, y};
 
     //Stones
     if (hover.type === 'stones') {
@@ -75,8 +72,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
     //Check if we need to hide something on layers underneath
     if (this.board.has(hover.type, x, y)) {
       this.restore.push({
-        x: x,
-        y: y,
+        x, y,
         layer: hover.type,
         value: this.board.get(hover.type, x, y),
       });
@@ -103,20 +99,19 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
     }
 
     //Get object and clear it
-    let hover = this.grid.get(x, y);
+    const hover = this.grid.get(x, y);
     if (hover.objectClass && hover.objectClass.clear) {
       hover.objectClass.clear.call(this, hover.object);
     }
 
     //Other objects to restore?
-    for (let i = 0; i < this.restore.length; i++) {
-      if (this.restore[i].x === x && this.restore[i].y === y) {
-        this.board.add(
-          this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
-        );
-        this.restore.splice(i, 1);
-      }
-    }
+    this.restore
+      .forEach((item, i) => {
+        if (item.x === x && item.y === y) {
+          this.board.add(item.layer, item.x, item.y, item.value);
+          this.restore.splice(i, 1);
+        }
+      });
   };
 
   /**
@@ -130,26 +125,21 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
     }
 
     //Get all item as objects
-    let i;
-    let hover = this.grid.all('layer');
+    const hover = this.grid.all('layer');
 
     //Clear them
-    for (i = 0; i < hover.length; i++) {
-      if (hover[i].objectClass && hover[i].objectClass.clear) {
-        hover[i].objectClass.clear.call(this, hover[i].object);
-      }
-    }
+    hover
+      .filter(item => item.objectClass && item.objectClass.clear)
+      .forEach(item => item.objectClass.clear.call(this, item.object));
 
     //Clear layer and empty grid
     this.clear();
     this.grid.empty();
 
     //Restore objects on other layers
-    for (i = 0; i < this.restore.length; i++) {
-      this.board.add(
-        this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
-      );
-    }
+    this.restore.forEach(item => {
+      this.board.add(item.layer, item.x, item.y, item.value);
+    });
 
     //Clear restore array
     this.restore = [];
@@ -161,17 +151,15 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', [
   HoverLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+    if (!this.context ||
+      this.board.drawWidth === 0 || this.board.drawheight === 0) {
       return;
     }
 
-    //Loop objects and clear them
-    let hover = this.grid.all('hover');
-    for (let i = 0; i < hover.length; i++) {
-      if (hover.objectClass && hover.objectClass.draw) {
-        hover.objectClass.draw.call(this, hover.object);
-      }
-    }
+    //Loop objects and draw them
+    this.grid.all('hover')
+      .filter(item => item.objectClass && item.objectClass.draw)
+      .forEach(item => item.objectClass.draw.call(this, item.object));
   };
 
   //Return

@@ -58,9 +58,9 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
   ScoreLayer.prototype.removeAll = function() {
 
     //If there are captures, draw them back onto the stones layer
-    for (let i = 0; i < this.captures.length; i++) {
-      this.board.add('stones', this.captures[i].x, this.captures[i].y, this.captures[i].color);
-    }
+    this.captures.forEach(cap => {
+      this.board.add('stones', cap.x, cap.y, cap.color);
+    });
 
     //Clear the layer
     this.clear();
@@ -80,23 +80,21 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
   ScoreLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+    if (!this.context ||
+      this.board.drawWidth === 0 || this.board.drawheight === 0) {
       return;
     }
 
-    //Init
-    let i;
-
     //Draw captures first (removing stones from the stones layer)
-    for (i = 0; i < this.captures.length; i++) {
-      this.board.remove('stones', this.captures[i].x, this.captures[i].y);
-      StoneFaded.draw.call(this, this.captures[i]);
-    }
+    this.captures.forEach(cap => {
+      this.board.remove('stones', cap.x, cap.y);
+      StoneFaded.draw.call(this, cap);
+    });
 
     //Draw points on top of it
-    for (i = 0; i < this.points.length; i++) {
-      StoneMini.draw.call(this, this.points[i]);
-    }
+    this.points.forEach(point => {
+      StoneMini.draw.call(this, point);
+    });
   };
 
   //Return
