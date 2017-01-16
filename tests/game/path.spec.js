@@ -18,10 +18,10 @@ describe('Game', function() {
     expect(populatedGamePath.path).toEqual({});
   }
 
-  // Load modules
+  //Load modules
   beforeEach(module('ngGo.Game.Path.Service'));
 
-  // Get injectable functions
+  //Get injectable functions
   beforeEach(inject(function(_GamePath_) {
     GamePath = _GamePath_;
   }));
@@ -29,9 +29,11 @@ describe('Game', function() {
   describe('#advance', function() {
     it('advances on the main line', function() {
       var gamePath = new GamePath();
-      // Exercise
+
+      //Exercise
       gamePath.advance(0);
-      // Verify
+
+      //Verify
       var populatedGamePath = getPopulatedPath(gamePath);
       expect(populatedGamePath.move).toEqual(1);
       expect(populatedGamePath.branches).toEqual(0);
@@ -42,9 +44,11 @@ describe('Game', function() {
 
     it('advances on the 1st branch line', function() {
       var gamePath = new GamePath();
-      // Exercise
+
+      //Exercise
       gamePath.advance(1);
-      // Verify
+
+      //Verify
       var populatedGamePath = getPopulatedPath(gamePath);
       expect(populatedGamePath.move).toEqual(1);
       expect(populatedGamePath.branches).toEqual(1);
@@ -55,9 +59,11 @@ describe('Game', function() {
 
     it('advances on the 2nd branch line', function() {
       var gamePath = new GamePath();
-      // Exercise
+
+      //Exercise
       gamePath.advance(2);
-      // Verify
+
+      //Verify
       var populatedGamePath = getPopulatedPath(gamePath);
       expect(populatedGamePath.move).toEqual(1);
       expect(populatedGamePath.branches).toEqual(1);
@@ -68,11 +74,13 @@ describe('Game', function() {
 
     it('advances on the main line, then on the branches line', function() {
       var gamePath = new GamePath();
-      // Exercise
+
+      //Exercise
       gamePath.advance(0);
       gamePath.advance(1);
       gamePath.advance(2);
-      // Verify
+
+      //Verify
       var populatedGamePath = getPopulatedPath(gamePath);
       expect(populatedGamePath.move).toEqual(3);
       expect(populatedGamePath.branches).toEqual(2);
@@ -87,23 +95,27 @@ describe('Game', function() {
   describe('#retreat', function() {
     it('should be initial state when retreating on the main line', function() {
       var gamePath = new GamePath();
-      // Exercise
+
+      //Exercise
       gamePath.advance(0);
       gamePath.retreat();
-      // Verify
+
+      //Verify
       verifyInitialState(gamePath);
     });
 
     it('should be initial state when retreating on the branch line', function() {
       var gamePath = new GamePath();
-      // Exercise
+
+      //Exercise
       gamePath.advance(2);
       gamePath.advance(1);
       gamePath.advance(0);
       gamePath.retreat();
       gamePath.retreat();
       gamePath.retreat();
-      // Verify
+
+      //Verify
       verifyInitialState(gamePath);
     });
   });
@@ -111,20 +123,24 @@ describe('Game', function() {
   describe('#setMove', function() {
     it('should have no effect when setting invalid move number', function() {
       var gamePath = new GamePath();
-      // Set negative low move number
+
+      //Set negative low move number
       gamePath.setMove(-1);
-      // Verify
+
+      //Verify
       verifyInitialState(gamePath);
     });
 
     it('should be back to initial state', function() {
       var gamePath = new GamePath();
-      // Exercise
+
+      //Exercise
       gamePath.advance(2);
       gamePath.advance(1);
       gamePath.advance(0);
       gamePath.setMove(0);
-      // Verify
+
+      //Verify
       verifyInitialState(gamePath);
     });
   });

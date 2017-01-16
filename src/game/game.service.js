@@ -170,16 +170,16 @@ angular.module('ngGo.Game.Service', [
     }
 
     /**
-     * Validate the move is not in the existed children nodes.
-     * @param x X position.
-     * @param y Y position.
-     * @param color Stone color.
-     * @returns {(null|Number)} If the move exists, return the index of the children; otherwise, return null.
+     * Find the move index in the child nodes.
      */
-    function validateMoveNotInChildrenNode(x, y, color) {
+    function findMoveIndexInChildNodes(x, y, color) {
+
+      //Only iterate when there are children
       if (this.node.hasChildren()) {
         for (var i = 0; i < this.node.children.length; ++i) {
           var childNode = this.node.children[i];
+
+          //Only check if the child node is a move node
           if (childNode.isMove()) {
             var nodeMove = childNode.move;
             if (nodeMove.x === x && nodeMove.y === y && nodeMove.color === color) {
@@ -188,6 +188,8 @@ angular.module('ngGo.Game.Service', [
           }
         }
       }
+
+      //The move doesn't exist
       return null;
     }
 
@@ -420,11 +422,12 @@ angular.module('ngGo.Game.Service', [
      * Clone this game
      */
     Game.prototype.clone = function() {
-      // Create a new object and get properties
+
+      //Create a new object and get properties
       var clone = new Game();
       var props = Object.getOwnPropertyNames(this);
 
-      // Copy all properties
+      //Copy all properties
       for (var p = 0; p < props.length; p++) {
         var prop = props[p];
         clone[prop] = angular.copy(this[prop]);
@@ -1166,16 +1169,21 @@ angular.module('ngGo.Game.Service', [
       //Validate move and get new position
       var newPosition = this.validateMove(x, y, color);
 
-      // Validate the move is not in the existed children node
-      var existedIndex = validateMoveNotInChildrenNode.call(this, x, y, color);
+      //Check whether the move is in the existed child nodes
+      //If so, simply move to the existed node
+      var existedIndex = findMoveIndexInChildNodes.call(this, x, y, color);
       if (existedIndex !== null) {
-        // Push new position
+
+        //Push the new position
         pushPosition.call(this, newPosition);
-        // Remember the path
+
+        //Remember the path
         this.node.rememberedPath = existedIndex;
-        // Change the current node pointer
+
+        //Change the current node pointer
         this.node = this.node.children[existedIndex];
-        // Advance the path
+
+        //Advance the path
         this.path.advance(existedIndex);
         return true;
       }
@@ -1240,24 +1248,33 @@ angular.module('ngGo.Game.Service', [
      * Undo the placed stones.
      */
     Game.prototype.undo = function() {
-      // Forbid undoing when the current node is not the last node
+
+      //Forbid undoing when the current node is not the last node
       if (this.node.hasChildren()) {
         return false;
       }
-      // Get the parent node
+
+      //Get the parent node
       var parentNode = this.node.parent;
-      // Exit when there is no parent node
+
+      //Exit when there is no parent node
       if (!parentNode) {
         return false;
       }
-      // Remove the current node
+
+      //Remove the current node
       this.node.remove();
-      // Set the pointer to the parent node
+
+      //Set the pointer to the parent node
       this.node = parentNode;
-      // Retreat the path
+
+      //Retreat the path
       this.path.retreat();
-      // Pop the last position
+
+      //Pop the last position
       popPosition.call(this);
+
+      //Valid operation
       return true;
     };
 

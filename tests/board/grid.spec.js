@@ -1,10 +1,10 @@
 describe('BoardGrid', function() {
   var BoardGrid;
 
-  // Load modules
+  //Load modules
   beforeEach(module('ngGo.Board.Grid.Service'));
 
-  // Get injectable functions
+  //Get injectable functions
   beforeEach(inject(function(_BoardGrid_) {
     BoardGrid = _BoardGrid_;
   }));
@@ -50,7 +50,7 @@ describe('BoardGrid', function() {
     var gridEmpty;
     var gridDiffStones;
 
-    // Initialize board grids
+    //Initialize board grids
     beforeAll(function() {
       gridBase = new BoardGrid(3, 3);
       gridDiffSize = new BoardGrid(5, 5);
@@ -58,7 +58,7 @@ describe('BoardGrid', function() {
       gridDiffStones = new BoardGrid(3, 3);
     });
 
-    // Specify fake stones
+    //Specify fake stones
     beforeAll(function() {
       gridBase.grid = [
         [0, 1, -1],

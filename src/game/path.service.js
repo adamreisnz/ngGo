@@ -77,7 +77,8 @@ angular.module('ngGo.Game.Path.Service', [
    * Go to a specific move number
    */
   GamePath.prototype.setMove = function(no) {
-    // Do nothing if the move number is invalid
+
+    //Do nothing if the move number is invalid
     if (no < 0) {
       return this;
     }

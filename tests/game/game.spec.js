@@ -3,19 +3,19 @@ describe('Game', function() {
   var InvalidPositionError;
   var Game;
 
-  // Load modules
+  //Load modules
   beforeEach(module('ngGo'));
   beforeEach(module('ngGo.Errors.InvalidPositionError.Service'));
   beforeEach(module('ngGo.Game.Service'));
 
-  // Get injectable functions
+  //Get injectable functions
   beforeEach(inject(function(_StoneColor_, _InvalidPositionError_, _Game_) {
     StoneColor = _StoneColor_;
     InvalidPositionError = _InvalidPositionError_;
     Game = _Game_;
   }));
 
-  // Specify SGF files
+  //Specify SGF files
   beforeEach(function() {
     this.sgfSimple = '(;SZ[9];B[cg];W[gc])';
     this.sgfRepeatingKo = '(;SZ[9]' +
@@ -46,30 +46,38 @@ describe('Game', function() {
     }
 
     it('with checking disabled', function() {
-      // Set config
+
+      //Set config
       this.config = {
         checkRepeat: null
       };
-      // Create games
+
+      //Create games
       createGames.call(this);
-      // Go to last move
+
+      //Go to last move
       goToLastMove.call(this);
-      // Verify
+
+      //Verify
       expect(this.gameSimple.play.bind(this.gameSimple, 2, 2, StoneColor.BLACK)).not.toThrow();
       expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.WHITE)).not.toThrow();
       expect(this.gameRepeatingAll.play.bind(this.gameRepeatingAll, 2, 2, StoneColor.BLACK)).not.toThrow();
     });
 
     it('with Ko checking enabled', function() {
-      // Set config
+
+      //Set config
       this.config = {
         checkRepeat: 'KO'
       };
-      // Create games
+
+      //Create games
       createGames.call(this);
-      // Go to last move
+
+      //Go to last move
       goToLastMove.call(this);
-      // Verify
+
+      //Verify
       expect(this.gameSimple.play.bind(this.gameSimple, 2, 2, StoneColor.BLACK)).not.toThrow();
       expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.WHITE))
         .toThrowError(InvalidPositionError);
@@ -77,15 +85,19 @@ describe('Game', function() {
     });
 
     it('with all checking enabled', function() {
-      // Set config
+
+      //Set config
       this.config = {
         checkRepeat: 'ALL'
       };
-      // Create games
+
+      //Create games
       createGames.call(this);
-      // Go to last move
+
+      //Go to last move
       goToLastMove.call(this);
-      // Verify
+
+      //Verify
       expect(this.gameSimple.play.bind(this.gameSimple, 2, 2, StoneColor.BLACK)).not.toThrow();
       expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.WHITE))
         .toThrowError(InvalidPositionError);
@@ -94,16 +106,34 @@ describe('Game', function() {
     });
 
     it('should not create new node if the move has existed in the children', function() {
-      // Create a new game
+
+      //Create a new game
       this.gameSimple = new Game(this.sgfSimple);
-      // Go to some move number in the middle of the main line
+
+      //Go to some move number in the middle of the main line
       this.gameSimple.goto(1);
-      // Play the move
+
+      //Play the move
       this.gameSimple.play(6, 2, StoneColor.WHITE);
-      // Verify
+
+      //Verify
       var parentNode = this.gameSimple.node.parent;
       expect(parentNode.rememberedPath).toEqual(0);
       expect(parentNode.children.length).toEqual(1);
+    });
+  });
+
+  describe('#undo', function() { //TODO
+    it('should have no children node if the last move is undoed', function() {
+
+    });
+
+    it('should return false if it is not currently the last move', function() {
+
+    });
+
+    it('should change the remembered path index if some path is removed', function() {
+
     });
   });
 });
