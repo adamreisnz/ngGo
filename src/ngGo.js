@@ -6,7 +6,7 @@
  * and generally cleaned up.
  *
  * Copyright (c) 2013 Jan Prokop (WGo)
- * Copyright (c) 2014-2015 Adam Reis (ngGo)
+ * Copyright (c) 2014-2017 Adam Reis (ngGo)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the Software
@@ -34,7 +34,7 @@ angular.module('ngGo', [])
  */
 .constant('ngGo', {
   name: 'ngGo',
-  version: '1.3.1',
+  version: '2.0.0',
   error: {
 
     //Position errors
@@ -49,8 +49,8 @@ angular.module('ngGo', [])
     INVALID_SGF: 7,
     INVALID_GIB: 8,
     INVALID_JGF_JSON: 9,
-    INVALID_JGF_TREE_JSON: 10
-  }
+    INVALID_JGF_TREE_JSON: 10,
+  },
 })
 
 /**
@@ -62,7 +62,7 @@ angular.module('ngGo', [])
   B: 1,
   BLACK: 1,
   W: -1,
-  WHITE: -1
+  WHITE: -1,
 })
 
 /**
@@ -77,7 +77,7 @@ angular.module('ngGo', [])
   LABEL: 'label',
   LAST: 'last',
   SAD: 'sad',
-  HAPPY: 'happy'
+  HAPPY: 'happy',
 })
 
 /**
@@ -87,7 +87,7 @@ angular.module('ngGo', [])
   PLAY: 'play',
   REPLAY: 'replay',
   EDIT: 'edit',
-  SOLVE: 'solve'
+  SOLVE: 'solve',
 })
 
 /**
@@ -98,7 +98,7 @@ angular.module('ngGo', [])
   MOVE: 'move',
   SCORE: 'score',
   SETUP: 'setup',
-  MARKUP: 'markup'
+  MARKUP: 'markup',
 })
 
 /**
@@ -119,5 +119,5 @@ angular.module('ngGo', [])
   HOME: 36,
   END: 35,
   PAGEUP: 33,
-  PAGEDOWN: 34
+  PAGEDOWN: 34,
 });

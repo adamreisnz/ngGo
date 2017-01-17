@@ -7,7 +7,7 @@ describe('ngGo', function() {
   beforeEach(module('ngGo'));
 
   /**
-   * Main test
+   * Smoke test
    */
   it('should run this test', function() {
     expect(true).toBe(true);
@@ -19,7 +19,7 @@ describe('ngGo', function() {
   describe('constant', function() {
 
     //Inject ngGo constant
-    var ngGo;
+    let ngGo;
     beforeEach(inject(function(_ngGo_) {
       ngGo = _ngGo_;
     }));
@@ -28,7 +28,6 @@ describe('ngGo', function() {
      * Name and version
      */
     it('should contain our name and version', function() {
-      expect(ngGo.name).toBeDefined();
       expect(ngGo.name).toEqual('ngGo');
       expect(ngGo.version).toBeDefined();
       expect(ngGo.version).toMatch(/[0-9]\.[0-9]+\.[0-9]+/);
@@ -38,7 +37,6 @@ describe('ngGo', function() {
      * Error definitions
      */
     it('should contain error definitions', function() {
-      expect(ngGo.error).toBeDefined();
       expect(typeof ngGo.error).toEqual('object');
     });
   });
@@ -49,7 +47,7 @@ describe('ngGo', function() {
   describe('StoneColor constant', function() {
 
     //Inject StoneColor constant
-    var StoneColor;
+    let StoneColor;
     beforeEach(inject(function(_StoneColor_) {
       StoneColor = _StoneColor_;
     }));

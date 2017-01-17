@@ -9,7 +9,7 @@
  */
 angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
   'ngGo',
-  'ngGo.Kifu.Blank.Service'
+  'ngGo.Kifu.Blank.Service',
 ])
 
 /**
@@ -20,12 +20,12 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
   /**
    * Regular expressions
    */
-  var regMove = /STO\s0\s([0-9]+)\s(1|2)\s([0-9]+)\s([0-9]+)/gi;
-  var regPlayer = /GAME(BLACK|WHITE)NAME=([A-Za-z0-9]+)\s\(([0-9]+D|K)\)/gi;
-  var regKomi = /GAMEGONGJE=([0-9]+)/gi;
-  var regDate = /GAMEDATE=([0-9]+)-\s?([0-9]+)-\s?([0-9]+)/g;
-  var regResultMargin = /GAMERESULT=(white|black)\s([0-9]+\.?[0-9]?)/gi;
-  var regResultOther = /GAMERESULT=(white|black)\s[a-z\s]+(resignation|time)/gi;
+  let regMove = /STO\s0\s([0-9]+)\s(1|2)\s([0-9]+)\s([0-9]+)/gi;
+  let regPlayer = /GAME(BLACK|WHITE)NAME=([A-Za-z0-9]+)\s\(([0-9]+D|K)\)/gi;
+  let regKomi = /GAMEGONGJE=([0-9]+)/gi;
+  let regDate = /GAMEDATE=([0-9]+)-\s?([0-9]+)-\s?([0-9]+)/g;
+  let regResultMargin = /GAMERESULT=(white|black)\s([0-9]+\.?[0-9]?)/gi;
+  let regResultOther = /GAMERESULT=(white|black)\s[a-z\s]+(resignation|time)/gi;
 
   /**
    * Player parser function
@@ -38,17 +38,17 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
     }
 
     //Determine player color
-    var color = (match[1].toUpperCase() === 'BLACK') ? 'black' : 'white';
+    let color = (match[1].toUpperCase() === 'BLACK') ? 'black' : 'white';
 
     //Create player object
-    var player = {
+    let player = {
       color: color,
       name: match[2],
-      rank: match[3].toLowerCase()
+      rank: match[3].toLowerCase(),
     };
 
     //Check if player of this color already exists, if so, overwrite
-    for (var p = 0; p < jgf.game.players.length; p++) {
+    for (let p = 0; p < jgf.game.players.length; p++) {
       if (jgf.game.players[p].color === color) {
         jgf.game.players[p] = player;
         return;
@@ -86,7 +86,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
   function parseResult(jgf, match) {
 
     //Winner color
-    var result = (match[1].toLowerCase() === 'black') ? 'B' : 'W';
+    let result = (match[1].toLowerCase() === 'black') ? 'B' : 'W';
     result += '+';
 
     //Win condition
@@ -110,7 +110,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
   function parseMove(jgf, node, match) {
 
     //Determine player color
-    var color = match[2];
+    let color = match[2];
     if (color === 1) {
       color = 'B';
     }
@@ -123,22 +123,13 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 
     //Create move container
     node.move = {};
-
-    //Pass
-    if (false) {
-
-    }
-
-    //Regular move
-    else {
-      node.move[color] = [match[3] * 1, match[4] * 1];
-    }
+    node.move[color] = [Number(match[3]), Number(match[4])];
   }
 
   /**
    * Parser class
    */
-  var Parser = {
+  let Parser = {
 
     /**
      * Parse GIB string into a JGF object or string
@@ -146,16 +137,16 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
     parse: function(gib, stringified) {
 
       //Get new JGF object
-      var jgf = KifuBlank.jgf();
+      let jgf = KifuBlank.jgf();
 
       //Initialize
-      var match;
-      var container = jgf.tree;
+      let match;
+      let container = jgf.tree;
 
       //Create first node for game, which is usually an empty board position, but can
       //contain comments or board setup instructions, which will be added to the node
       //later if needed.
-      var node = {root: true};
+      let node = {root: true};
       container.push(node);
 
       //Find player information
@@ -198,7 +189,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
 
       //Return jgf
       return jgf;
-    }
+    },
   };
 
   //Return object

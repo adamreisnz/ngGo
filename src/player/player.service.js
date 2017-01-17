@@ -15,7 +15,7 @@ angular.module('ngGo.Player.Service', [
   'ngGo.Player.Mode.Common.Service',
   'ngGo.Board.Service',
   'ngGo.Game.Service',
-  'ngGo.Game.Scorer.Service'
+  'ngGo.Game.Scorer.Service',
 ])
 
 /**
@@ -26,7 +26,7 @@ angular.module('ngGo.Player.Service', [
   /**
    * Default configuration
    */
-  var defaultConfig = {
+  let defaultConfig = {
 
     //Default mode/tool
     mode: PlayerModes.REPLAY,
@@ -43,7 +43,7 @@ angular.module('ngGo.Player.Service', [
     //successor node variations or current node variations
     variationMarkup: true,
     variationChildren: true,
-    variationSiblings: false
+    variationSiblings: false,
   };
 
   /**
@@ -71,8 +71,8 @@ angular.module('ngGo.Player.Service', [
       }
 
       //Init
-      var x = 0;
-      var y = 0;
+      let x = 0;
+      let y = 0;
 
       //Set x
       if (typeof mouseEvent.offsetX !== 'undefined') {
@@ -121,7 +121,7 @@ angular.module('ngGo.Player.Service', [
     /**
      * Player class
      */
-    var Player = {
+    let Player = {
 
       //Player configuration
       config: {},
@@ -198,7 +198,7 @@ angular.module('ngGo.Player.Service', [
         this.registerElementEvent('wheel');
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Configuration
        ***/
 
@@ -223,7 +223,7 @@ angular.module('ngGo.Player.Service', [
         );
 
         //Let the modes parse their config
-        for (var mode in this.modes) {
+        for (let mode in this.modes) {
           if (this.modes[mode].parseConfig) {
             this.modes[mode].parseConfig.call(this, this.config);
           }
@@ -266,7 +266,7 @@ angular.module('ngGo.Player.Service', [
       setVariationMarkup: function(variationMarkup, variationChildren, variationSiblings) {
 
         //One change event for these three settings
-        var change = false;
+        let change = false;
 
         //Markup setting change?
         if (variationMarkup !== this.variationMarkup) {
@@ -296,7 +296,7 @@ angular.module('ngGo.Player.Service', [
         }
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Mode and tool handling
        ***/
 
@@ -397,7 +397,7 @@ angular.module('ngGo.Player.Service', [
           mode: this.mode,
           tool: this.tool,
           restrictNodeStart: this.restrictNodeStart,
-          restrictNodeEnd: this.restrictNodeEnd
+          restrictNodeEnd: this.restrictNodeEnd,
         };
 
         //Save game state
@@ -424,7 +424,7 @@ angular.module('ngGo.Player.Service', [
         this.restoreGameState();
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Game record handling
        ***/
 
@@ -512,7 +512,7 @@ angular.module('ngGo.Player.Service', [
         }
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Move handling
        ***/
 
@@ -529,7 +529,7 @@ angular.module('ngGo.Player.Service', [
         }
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Navigation
        ***/
 
@@ -653,10 +653,10 @@ angular.module('ngGo.Player.Service', [
         }
 
         //Get current node and game position
-        var node = this.game.getNode();
-        var path = this.game.getPath();
-        var position = this.game.getPosition();
-        var pathChanged = !path.compare(this.path);
+        let node = this.game.getNode();
+        let path = this.game.getPath();
+        let position = this.game.getPosition();
+        let pathChanged = !path.compare(this.path);
 
         //Update board
         this.updateBoard(node, position, pathChanged);
@@ -695,14 +695,14 @@ angular.module('ngGo.Player.Service', [
         toMove = toMove || this.game.getMove();
 
         //Get nodes for these moves
-        var nodes = this.game.getMoveNodes(fromMove, toMove);
-        var move = fromMove;
+        let nodes = this.game.getMoveNodes(fromMove, toMove);
+        let move = fromMove;
 
         //Loop nodes
         angular.forEach(nodes, function(node) {
           this.board.add('markup', node.move.x, node.move.y, {
             type: MarkupTypes.LABEL,
-            text: move++
+            text: move++,
           });
         }, this);
 
@@ -713,7 +713,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Show move numbers in branch lines.
        */
-      showBranchMoveNumbers: function() {
+      showBranchMoveNumbers() {
 
         //Exit when there is no game
         if (!this.game || !this.game.isLoaded()) {
@@ -721,18 +721,18 @@ angular.module('ngGo.Player.Service', [
         }
 
         //Get the move move number range in which the variant branch is
-        var endMoveNum = this.game.getMove();
-        var curGamePath = this.game.clonePath();
-        var path = curGamePath.path;
-        var startMoveNum;
+        const endMoveNum = this.game.getMove();
+        const curGamePath = this.game.clonePath();
+        const path = curGamePath.path;
+        let startMoveNum;
         for (startMoveNum = 0; startMoveNum <= endMoveNum; ++startMoveNum) {
-          var rememberedPath = path[startMoveNum];
+          const rememberedPath = path[startMoveNum];
           if (rememberedPath > 0) {
             break;
           }
         }
         startMoveNum += 1;
-        var moveNum = 1;
+        let moveNum = 1;
 
         //Exit when the current game path doesn't contain a variant branch
         if (startMoveNum > endMoveNum) {
@@ -740,16 +740,16 @@ angular.module('ngGo.Player.Service', [
         }
 
         //Get nodes of the moves in the range
-        var nodes = this.game.getMoveNodes(startMoveNum, endMoveNum);
+        const nodes = this.game.getMoveNodes(startMoveNum, endMoveNum);
 
         //Clear previously added markups
         this.board.layers.markup.removeAll();
 
         //Draw markups
-        angular.forEach(nodes, function(node) {
+        nodes.forEach(nodes, (node) => {
           this.board.add('markup', node.move.x, node.move.y, {
             type: MarkupTypes.LABEL,
-            text: moveNum.toString()
+            text: moveNum.toString(),
           });
           moveNum += 1;
         }, this);
@@ -758,7 +758,7 @@ angular.module('ngGo.Player.Service', [
         this.board.redraw('markup');
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Game handling
        ***/
 
@@ -779,9 +779,9 @@ angular.module('ngGo.Player.Service', [
         GameScorer.calculate();
 
         //Get score, points and captures
-        var score = GameScorer.getScore();
-        var points = GameScorer.getPoints();
-        var captures = GameScorer.getCaptures();
+        let score = GameScorer.getScore();
+        let points = GameScorer.getPoints();
+        let captures = GameScorer.getCaptures();
 
         //Remove all markup, and set captures and points
         this.board.layers.markup.removeAll();
@@ -791,7 +791,7 @@ angular.module('ngGo.Player.Service', [
         this.broadcast('scoreCalculated', score);
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Board handling
        ***/
 
@@ -845,7 +845,7 @@ angular.module('ngGo.Player.Service', [
         this.broadcast('boardUpdate', node);
       },
 
-      /*****************************************************************************
+      /**************************************************************************
        * Event handling
        ***/
 
@@ -872,8 +872,7 @@ angular.module('ngGo.Player.Service', [
 
         //Must have valid listener
         if (typeof listener !== 'function') {
-          console.warn('Listener is not a function:', listener);
-          return;
+          throw new Error('Listener is not a function: ' + listener);
         }
 
         //Scope given as 3rd parameter?
@@ -884,16 +883,16 @@ angular.module('ngGo.Player.Service', [
 
         //Multiple events?
         if (type.indexOf(' ') !== -1) {
-          var types = type.split(' ');
-          for (var t = 0; t < types.length; t++) {
+          let types = type.split(' ');
+          for (let t = 0; t < types.length; t++) {
             this.on(types[t], listener, mode, $scope);
           }
           return;
         }
 
         //Get self and determine scope to use
-        var self = this;
-        var scope = $scope || $rootScope;
+        let self = this;
+        let scope = $scope || $rootScope;
 
         //Create listener and return de-registration function
         return scope.$on('ngGo.player.' + type, function() {
@@ -951,7 +950,7 @@ angular.module('ngGo.Player.Service', [
         else {
           $rootScope.$broadcast('ngGo.player.' + type, args);
         }
-      }
+      },
     };
 
     //Initialize
