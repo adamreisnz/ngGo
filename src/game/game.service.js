@@ -18,7 +18,7 @@ angular.module('ngGo.Game.Service', [
   'ngGo.Kifu.Blank.Service',
   'ngGo.Kifu.Parser.Service',
   'ngGo.Errors.InvalidDataError.Service',
-  'ngGo.Errors.InvalidPositionError.Service'
+  'ngGo.Errors.InvalidPositionError.Service',
 ])
 
 /**
@@ -29,7 +29,7 @@ angular.module('ngGo.Game.Service', [
   /**
    * Default configuration
    */
-  var defaultConfig = {
+  let defaultConfig = {
 
     //Default size of board
     defaultSize: 0,
@@ -45,7 +45,7 @@ angular.module('ngGo.Game.Service', [
     checkRepeat: 'KO',
 
     //Allow suicide?
-    allowSuicide: false
+    allowSuicide: false,
   };
 
   /**
@@ -63,7 +63,7 @@ angular.module('ngGo.Game.Service', [
     KifuBlank, InvalidDataError, InvalidPositionError
   ) {
 
-    /*****************************************************************************
+    /**************************************************************************
      * General helpers
      ***/
 
@@ -97,7 +97,7 @@ angular.module('ngGo.Game.Service', [
       }
     }
 
-    /*****************************************************************************
+    /**************************************************************************
      * Node navigation helpers
      ***/
 
@@ -176,12 +176,12 @@ angular.module('ngGo.Game.Service', [
 
       //Only iterate when there are children
       if (this.node.hasChildren()) {
-        for (var i = 0; i < this.node.children.length; ++i) {
-          var childNode = this.node.children[i];
+        for (let i = 0; i < this.node.children.length; ++i) {
+          const childNode = this.node.children[i];
 
           //Only check if the child node is a move node
           if (childNode.isMove()) {
-            var nodeMove = childNode.move;
+            const nodeMove = childNode.move;
             if (nodeMove.x === x && nodeMove.y === y && nodeMove.color === color) {
               return i;
             }
@@ -193,7 +193,7 @@ angular.module('ngGo.Game.Service', [
       return null;
     }
 
-    /*****************************************************************************
+    /**************************************************************************
      * Position history helpers
      ***/
 
@@ -257,7 +257,7 @@ angular.module('ngGo.Game.Service', [
       }
     }
 
-    /*****************************************************************************
+    /**************************************************************************
      * Execution helpers
      ***/
 
@@ -272,8 +272,8 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Initialize new position
-      var i;
-      var newPosition = this.position.clone();
+      let i;
+      let newPosition = this.position.clone();
 
       //Handle moves
       if (this.node.isMove()) {
@@ -316,7 +316,7 @@ angular.module('ngGo.Game.Service', [
       pushPosition.call(this, newPosition);
     }
 
-    /*****************************************************************************
+    /**************************************************************************
      * Game class
      ***/
 
@@ -339,7 +339,7 @@ angular.module('ngGo.Game.Service', [
         //Setter adds a new position to the stack
         set: function(newPosition) {
           this.history[this.history.length] = newPosition;
-        }
+        },
       });
 
       //Load data
@@ -414,7 +414,7 @@ angular.module('ngGo.Game.Service', [
       return this.root !== null;
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Game cloning and conversion
      ***/
 
@@ -424,12 +424,12 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.clone = function() {
 
       //Create a new object and get properties
-      var clone = new Game();
-      var props = Object.getOwnPropertyNames(this);
+      const clone = new Game();
+      const props = Object.getOwnPropertyNames(this);
 
-      //Copy all properties
-      for (var p = 0; p < props.length; p++) {
-        var prop = props[p];
+      //Deep copy all properties
+      for (let p = 0; p < props.length; p++) {
+        const prop = props[p];
         clone[prop] = angular.copy(this[prop]);
       }
 
@@ -448,7 +448,7 @@ angular.module('ngGo.Game.Service', [
 
       //String given, could be stringified JGF, an SGF or GIB file
       if (typeof data === 'string') {
-        var c = data.charAt(0);
+        let c = data.charAt(0);
         if (c === '(') {
           return this.fromSgf(data);
         }
@@ -480,7 +480,7 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.fromGib = function(gib) {
 
       //Use the kifu parser
-      var jgf = KifuParser.gib2jgf(gib);
+      let jgf = KifuParser.gib2jgf(gib);
       if (!jgf) {
         throw ngGo.error.INVALID_GIB;
       }
@@ -495,7 +495,7 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.fromSgf = function(sgf) {
 
       //Use the kifu parser
-      var jgf = KifuParser.sgf2jgf(sgf);
+      let jgf = KifuParser.sgf2jgf(sgf);
       if (!jgf) {
         throw ngGo.error.INVALID_SGF;
       }
@@ -522,7 +522,7 @@ angular.module('ngGo.Game.Service', [
       //If array given, convert to object with only tree
       if (angular.isArray(jgf)) {
         jgf = {
-          tree: jgf
+          tree: jgf,
         };
       }
 
@@ -542,7 +542,7 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Copy all properties except moves tree
-      for (var i in jgf) {
+      for (let i in jgf) {
         if (jgf.hasOwnProperty(i) && i !== 'tree') {
           this.info[i] = angular.copy(jgf[i]);
         }
@@ -576,11 +576,11 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.toJgf = function(stringify) {
 
       //Initialize JGF and get properties
-      var jgf = KifuBlank.jgf();
-      var props = Object.getOwnPropertyNames(this);
+      let jgf = KifuBlank.jgf();
+      let props = Object.getOwnPropertyNames(this);
 
       //Copy properties
-      for (var p = 0; p < props.length; p++) {
+      for (let p = 0; p < props.length; p++) {
 
         //Skip root
         if (p === 'root') {
@@ -605,7 +605,7 @@ angular.module('ngGo.Game.Service', [
       return stringify ? angular.toJson(jgf) : jgf;
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Getters
      ***/
 
@@ -622,8 +622,8 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.getNodes = function() {
 
       //Initialize node to process
-      var node = this.root;
-      var nodes = [node];
+      let node = this.root;
+      let nodes = [node];
 
       //Process children
       while (node) {
@@ -641,7 +641,7 @@ angular.module('ngGo.Game.Service', [
      * Get node for a certain move
      */
     Game.prototype.getMoveNode = function(move) {
-      var nodes = this.getMoveNodes(move, move);
+      let nodes = this.getMoveNodes(move, move);
       return nodes.length ? nodes[0] : null;
     };
 
@@ -651,7 +651,7 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.getMoveNodes = function(fromMove, toMove) {
 
       //Get all nodes for the current path
-      var nodes = this.getNodes();
+      let nodes = this.getNodes();
 
       //Use sensible defaults if no from/to moves given
       fromMove = fromMove || 1;
@@ -660,7 +660,7 @@ angular.module('ngGo.Game.Service', [
       //Filter
       return nodes.filter(function(node) {
         if (node.isMove()) {
-          var move = node.getMoveNumber();
+          let move = node.getMoveNumber();
           return (move >= fromMove && move <= toMove);
         }
         return false;
@@ -681,7 +681,7 @@ angular.module('ngGo.Game.Service', [
      * Get the number of moves in the main branch
      */
     Game.prototype.getMoveCount = function() {
-      var moveNodes = this.getMoveNodes();
+      let moveNodes = this.getMoveNodes();
       return moveNodes.length;
     };
 
@@ -730,7 +730,7 @@ angular.module('ngGo.Game.Service', [
      * Get the game komi
      */
     Game.prototype.getKomi = function() {
-      var komi = this.get('game.komi', 0);
+      let komi = this.get('game.komi', 0);
       return parseFloat(komi);
     };
 
@@ -792,12 +792,12 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.getCaptureCount = function() {
 
       //Initialize
-      var captures = {};
+      let captures = {};
       captures[StoneColor.B] = 0;
       captures[StoneColor.W] = 0;
 
       //Loop all positions and increment capture count
-      for (var i = 0; i < this.history.length; i++) {
+      for (let i = 0; i < this.history.length; i++) {
         captures[StoneColor.B] += this.history[i].getCaptureCount(StoneColor.B);
         captures[StoneColor.W] += this.history[i].getCaptureCount(StoneColor.W);
       }
@@ -822,11 +822,11 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Initialize object we're getting info from
-      var obj = this.info;
-      var key;
+      let obj = this.info;
+      let key;
 
       //Loop the properties
-      for (var p = 0; p < property.length; p++) {
+      for (let p = 0; p < property.length; p++) {
 
         //Get actual key
         key = property[p];
@@ -841,8 +841,7 @@ angular.module('ngGo.Game.Service', [
 
         //Must be object container
         if (typeof obj[key] !== 'object') {
-          console.warn('Game info property', key, 'is not an object');
-          return defaultValue;
+          throw new Error('Game info property ' + key + ' is not an object');
         }
 
         //Move up in tree
@@ -850,7 +849,7 @@ angular.module('ngGo.Game.Service', [
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Checkers
      ***/
 
@@ -877,7 +876,7 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.isRepeatingPosition = function(checkPosition) {
 
       //Init
-      var stop;
+      let stop;
 
       //Check for ko only? (Last two positions)
       if (this.config.checkRepeat === 'KO' && (this.history.length - 2) >= 0) {
@@ -893,7 +892,7 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Loop history of positions to check
-      for (var i = this.history.length - 2; i >= stop; i--) {
+      for (let i = this.history.length - 2; i >= stop; i--) {
         if (checkPosition.isSameAs(this.history[i])) {
           return true;
         }
@@ -942,7 +941,7 @@ angular.module('ngGo.Game.Service', [
       newPosition.stones.set(x, y, color);
 
       //Capture adjacent stones if possible
-      var captures = newPosition.captureAdjacent(x, y);
+      let captures = newPosition.captureAdjacent(x, y);
 
       //No captures occurred? Check if the move we're making is a suicide move
       if (!captures) {
@@ -993,7 +992,7 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Capture adjacent stones if possible
-      var captures = position.captureAdjacent(x, y);
+      let captures = position.captureAdjacent(x, y);
 
       //No captures occurred? Check if the move we're making is a suicide move
       if (!captures) {
@@ -1005,7 +1004,7 @@ angular.module('ngGo.Game.Service', [
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Stone and markup handling
      ***/
 
@@ -1020,7 +1019,7 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Create temporary position
-      var tempPosition = this.position.clone();
+      let tempPosition = this.position.clone();
 
       //Validate placement on temp position
       this.validatePlacement(x, y, color, tempPosition);
@@ -1035,10 +1034,10 @@ angular.module('ngGo.Game.Service', [
           pushPosition.call(this);
 
           //Create new node
-          var node = new GameNode();
+          let node = new GameNode();
 
           //Append it to the current node and change the pointer
-          var i = node.appendTo(this.node);
+          let i = node.appendTo(this.node);
           this.node = node;
 
           //Advance path to the added node index
@@ -1079,11 +1078,11 @@ angular.module('ngGo.Game.Service', [
     Game.prototype.removeStone = function(x, y) {
 
       //Check if the stone is found in setup instructions
-      var foundInSetup = false;
+      let foundInSetup = false;
 
       //Remove from node setup instruction
       if (typeof this.node.setup !== 'undefined') {
-        for (var i = 0; i < this.node.setup.length; i++) {
+        for (let i = 0; i < this.node.setup.length; i++) {
           if (x === this.node.setup[i].x && y === this.node.setup[i].y) {
 
             //Remove from node and unset in position
@@ -1110,7 +1109,7 @@ angular.module('ngGo.Game.Service', [
 
       //Remove from node
       if (typeof this.node.markup !== 'undefined') {
-        for (var i = 0; i < this.node.markup.length; i++) {
+        for (let i = 0; i < this.node.markup.length; i++) {
           if (x === this.node.markup[i].x && y === this.node.markup[i].y) {
             this.node.markup.splice(i, 1);
             this.position.markup.unset(x, y);
@@ -1154,7 +1153,7 @@ angular.module('ngGo.Game.Service', [
       return this.position.markup.get(x, y);
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Move handling
      ***/
 
@@ -1167,11 +1166,11 @@ angular.module('ngGo.Game.Service', [
       color = color || this.position.getTurn();
 
       //Validate move and get new position
-      var newPosition = this.validateMove(x, y, color);
+      let newPosition = this.validateMove(x, y, color);
 
       //Check whether the move is in the existed child nodes
       //If so, simply move to the existed node
-      var existedIndex = findMoveIndexInChildNodes.call(this, x, y, color);
+      const existedIndex = findMoveIndexInChildNodes.call(this, x, y, color);
       if (existedIndex !== null) {
 
         //Push the new position
@@ -1192,16 +1191,16 @@ angular.module('ngGo.Game.Service', [
       pushPosition.call(this, newPosition);
 
       //Create new move node
-      var node = new GameNode({
+      let node = new GameNode({
         move: {
           x: x,
           y: y,
-          color: color
-        }
+          color: color,
+        },
       });
 
       //Append it to the current node, remember the path, and change the pointer
-      var i = node.appendTo(this.node);
+      let i = node.appendTo(this.node);
       this.node.rememberedPath = i;
       this.node = node;
 
@@ -1221,22 +1220,22 @@ angular.module('ngGo.Game.Service', [
       color = color || this.position.getTurn();
 
       //Initialize new position and switch the turn
-      var newPosition = this.position.clone();
+      let newPosition = this.position.clone();
       newPosition.setTurn(-color);
 
       //Push new position
       pushPosition.call(this, newPosition);
 
       //Create new move node
-      var node = new GameNode({
+      let node = new GameNode({
         move: {
           pass: true,
-          color: color
-        }
+          color: color,
+        },
       });
 
       //Append it to the current node, remember the path, and change the pointer
-      var i = node.appendTo(this.node);
+      let i = node.appendTo(this.node);
       this.node.rememberedPath = i;
       this.node = node;
 
@@ -1255,7 +1254,7 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Remove the node, set the pointer to its parent
-      var parentNode = this.node.parent;
+      const parentNode = this.node.parent;
       this.node.remove();
       this.node = parentNode;
 
@@ -1276,7 +1275,7 @@ angular.module('ngGo.Game.Service', [
       return true;
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * Game tree navigation
      ***/
 
@@ -1376,7 +1375,7 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Initialize path
-      var path;
+      let path;
 
       //Simple move number? Convert to path object
       if (typeof target === 'number') {
@@ -1418,8 +1417,8 @@ angular.module('ngGo.Game.Service', [
       executeNode.call(this);
 
       //Loop path
-      var n = path.getMove();
-      for (var i = 0; i < n; i++) {
+      let n = path.getMove();
+      for (let i = 0; i < n; i++) {
 
         //Try going to the next node
         if (!nextNode.call(this, path.nodeAt(i))) {
@@ -1517,7 +1516,7 @@ angular.module('ngGo.Game.Service', [
       }
     };
 
-    /*****************************************************************************
+    /**************************************************************************
      * State handling
      ***/
 
@@ -1532,9 +1531,9 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Create state
-      var state = {
+      let state = {
         jgf: this.jgf,
-        path: this.path.clone()
+        path: this.path.clone(),
       };
 
       //Return

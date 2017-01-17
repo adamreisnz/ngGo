@@ -10,7 +10,7 @@
  */
 angular.module('ngGo.Board.Grid.Service', [
   'ngGo',
-  'ngGo.Board.GridChanges.Service'
+  'ngGo.Board.GridChanges.Service',
 ])
 
 /**
@@ -24,10 +24,7 @@ angular.module('ngGo.Board.Grid.Service', [
   function toObject(x, y, valueKey) {
 
     //Create coordinates object
-    var obj = {
-      x: x,
-      y: y
-    };
+    const obj = {x, y};
 
     //Already an object?
     if (typeof this.grid[x][y] === 'object') {
@@ -112,7 +109,7 @@ angular.module('ngGo.Board.Grid.Service', [
     return toObject.call(this, x, y, valueKey);
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Mass operations
    ***/
 
@@ -128,11 +125,11 @@ angular.module('ngGo.Board.Grid.Service', [
     }
 
     //Initialize objects list
-    var objects = [];
+    let objects = [];
 
     //Loop coordinates
-    for (var x = 0; x < this.width; x++) {
-      for (var y = 0; y < this.height; y++) {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
         if (this.grid[x][y] !== this.emptyValue) {
           objects.push(toObject.call(this, x, y, valueKey));
         }
@@ -147,8 +144,8 @@ angular.module('ngGo.Board.Grid.Service', [
    * Check if there is anything
    */
   BoardGrid.prototype.isEmpty = function() {
-    for (var x = 0; x < this.width; x++) {
-      for (var y = 0; y < this.height; y++) {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
         if (this.grid[x][y] !== this.emptyValue) {
           return false;
         }
@@ -161,8 +158,8 @@ angular.module('ngGo.Board.Grid.Service', [
    * Populate the whole grid with a given value
    */
   BoardGrid.prototype.populate = function(value) {
-    for (var x = 0; x < this.width; x++) {
-      for (var y = 0; y < this.height; y++) {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
         this.grid[x][y] = value;
       }
     }
@@ -172,8 +169,8 @@ angular.module('ngGo.Board.Grid.Service', [
    * Empty the grid
    */
   BoardGrid.prototype.empty = function() {
-    for (var x = 0; x < this.width; x++) {
-      for (var y = 0; y < this.height; y++) {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
         this.grid[x][y] = this.emptyValue;
       }
     }
@@ -185,7 +182,7 @@ angular.module('ngGo.Board.Grid.Service', [
   BoardGrid.prototype.clone = function() {
 
     //Create new instance
-    var newGrid = new BoardGrid();
+    let newGrid = new BoardGrid();
 
     //Manually set vars for maximum efficiency
     newGrid.grid = angular.copy(this.grid);
@@ -197,7 +194,7 @@ angular.module('ngGo.Board.Grid.Service', [
     return newGrid;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Comparison
    ***/
 
@@ -212,8 +209,8 @@ angular.module('ngGo.Board.Grid.Service', [
     }
 
     //Loop all coordinates
-    for (var x = 0; x < this.width; x++) {
-      for (var y = 0; y < this.height; y++) {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
         if (this.grid[x][y] !== grid.grid[x][y]) {
           return false;
         }
@@ -230,17 +227,16 @@ angular.module('ngGo.Board.Grid.Service', [
   BoardGrid.prototype.compare = function(newGrid, valueKey) {
 
     //Initialize board grid changes object
-    var changes = new BoardGridChanges();
+    let changes = new BoardGridChanges();
 
     //Must have the same size
     if (this.width !== newGrid.width || this.height !== newGrid.height) {
-      console.warn('Trying to compare grids of a different size');
-      return changes;
+      throw new Error('Trying to compare grids of a different size');
     }
 
     //Loop all coordinates
-    for (var x = 0; x < this.width; x++) {
-      for (var y = 0; y < this.height; y++) {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
 
         //Something to add?
         if (newGrid.grid[x][y] !== this.emptyValue && newGrid.grid[x][y] !== this.grid[x][y]) {
@@ -258,7 +254,7 @@ angular.module('ngGo.Board.Grid.Service', [
     return changes;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Helpers
    ***/
 
@@ -291,9 +287,9 @@ angular.module('ngGo.Board.Grid.Service', [
 
     //Create grid array
     this.grid = [];
-    for (var x = 0; x < this.width; x++) {
+    for (let x = 0; x < this.width; x++) {
       this.grid[x] = [];
-      for (var y = 0; y < this.height; y++) {
+      for (let y = 0; y < this.height; y++) {
         this.grid[x][y] = this.emptyValue;
       }
     }

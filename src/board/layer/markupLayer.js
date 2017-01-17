@@ -5,7 +5,7 @@
 angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
   'ngGo',
   'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Markup.Service'
+  'ngGo.Board.Object.Markup.Service',
 ])
 
 /**
@@ -27,7 +27,7 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
    */
   angular.extend(MarkupLayer.prototype, BoardLayer.prototype);
 
-  /*****************************************************************************
+  /**************************************************************************
    * Object handling
    ***/
 
@@ -37,18 +37,11 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
   MarkupLayer.prototype.setAll = function(grid) {
 
     //Get changes compared to current grid
-    var i;
-    var changes = this.grid.compare(grid, 'type');
+    const changes = this.grid.compare(grid, 'type');
 
     //Clear removed stuff
-    for (i = 0; i < changes.remove.length; i++) {
-      Markup.clear.call(this, changes.remove[i]);
-    }
-
-    //Draw added stuff
-    for (i = 0; i < changes.add.length; i++) {
-      Markup.draw.call(this, changes.add[i]);
-    }
+    changes.remove.forEach(change => Markup.clear.call(this, change));
+    changes.add.forEach(change => Markup.draw.call(this, change));
 
     //Remember new grid
     this.grid = grid.clone();
@@ -59,19 +52,14 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
    */
   MarkupLayer.prototype.removeAll = function() {
 
-    //Get all markup as objects
-    var markup = this.grid.all('type');
-
-    //Clear them
-    for (var i = 0; i < markup.length; i++) {
-      Markup.clear.call(this, markup[i]);
-    }
+    //Clear all markup items
+    this.grid.all('type').forEach(item => Markup.clear.call(this, item));
 
     //Empty the grid now
     this.grid.empty();
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Drawing
    ***/
 
@@ -81,17 +69,12 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
   MarkupLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+    if (!this.context || !this.board.hasDrawSize()) {
       return;
     }
 
-    //Get all markup as objects
-    var markup = this.grid.all('type');
-
-    //Draw them
-    for (var i = 0; i < markup.length; i++) {
-      Markup.draw.call(this, markup[i]);
-    }
+    //Draw all markup
+    this.grid.all('type').forEach(item => Markup.draw.call(this, item));
   };
 
   /**
@@ -99,8 +82,8 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
    */
   MarkupLayer.prototype.drawCell = function(x, y) {
 
-    //Can only draw when we have dimensions
-    if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+    //Can only draw when we have dimensions and context
+    if (!this.context || !this.board.hasDrawSize()) {
       return;
     }
 

@@ -10,7 +10,7 @@
  */
 angular.module('ngGo.Board.Layer.Service', [
   'ngGo',
-  'ngGo.Board.Grid.Service'
+  'ngGo.Board.Grid.Service',
 ])
 
 /**
@@ -31,7 +31,7 @@ angular.module('ngGo.Board.Layer.Service', [
     this.grid = new BoardGrid();
   }
 
-  /*****************************************************************************
+  /**************************************************************************
    * Generic grid and object handling
    ***/
 
@@ -101,7 +101,7 @@ angular.module('ngGo.Board.Layer.Service', [
     return this.grid.has(x, y);
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Generic drawing methods
    ***/
 

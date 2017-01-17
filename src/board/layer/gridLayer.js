@@ -10,7 +10,7 @@
 angular.module('ngGo.Board.Layer.GridLayer.Service', [
   'ngGo',
   'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Coordinates.Service'
+  'ngGo.Board.Object.Coordinates.Service',
 ])
 
 /**
@@ -32,8 +32,8 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
     }
 
     //Get absolute coordinates and star point radius
-    var x = this.board.getAbsX(gridX);
-    var y = this.board.getAbsY(gridY);
+    const x = this.board.getAbsX(gridX);
+    const y = this.board.getAbsY(gridY);
 
     //Draw star point
     this.context.beginPath();
@@ -66,7 +66,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
     this.coordinates = show;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Object handling
    ***/
 
@@ -91,7 +91,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
     return;
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Drawing
    ***/
 
@@ -101,23 +101,25 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
   GridLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+    if (!this.context || !this.board.hasDrawSize()) {
       return;
     }
 
-    //Determine top x and y margin
-    var tx = this.board.drawMarginHor;
-    var ty = this.board.drawMarginVer;
+    //Get board properties
+    const {
+      width, height, theme,
+      drawMarginHor: tx, drawMarginVer: ty,
+    } = this.board;
 
     //Get theme properties
-    var cellSize = this.board.getCellSize();
-    var lineWidth = this.board.theme.get('grid.lineWidth', cellSize);
-    var lineCap = this.board.theme.get('grid.lineCap');
-    var strokeStyle = this.board.theme.get('grid.lineColor');
-    var starRadius = this.board.theme.get('grid.star.radius', cellSize);
-    var starColor = this.board.theme.get('grid.star.color');
-    var starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height);
-    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+    const cellSize = this.board.getCellSize();
+    const lineWidth = theme.get('grid.lineWidth', cellSize);
+    const lineCap = theme.get('grid.lineCap');
+    const strokeStyle = theme.get('grid.lineColor');
+    const starRadius = theme.get('grid.star.radius', cellSize);
+    const starColor = theme.get('grid.star.color');
+    const starPoints = theme.get('grid.star.points', width, height);
+    const canvasTranslate = theme.canvasTranslate(lineWidth);
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -129,7 +131,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
     this.context.strokeStyle = strokeStyle;
 
     //Helper vars
-    var i, x, y;
+    let i, x, y;
 
     //Draw vertical lines
     for (i = this.board.grid.xLeft; i <= this.board.grid.xRight; i++) {
@@ -148,10 +150,10 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
     //Draw grid lines
     this.context.stroke();
 
-    //Star points defined?
-    for (i = 0; i < starPoints.length; i++) {
-      drawStarPoint.call(this, starPoints[i].x, starPoints[i].y, starRadius, starColor);
-    }
+    //Draw star points
+    starPoints.forEach(point => {
+      drawStarPoint.call(this, point.x, point.y, starRadius, starColor);
+    });
 
     //Undo translation
     this.context.translate(-canvasTranslate, -canvasTranslate);
@@ -168,14 +170,14 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
   GridLayer.prototype.clearCell = function(gridX, gridY) {
 
     //Get absolute coordinates and stone radius
-    var x = this.board.getAbsX(gridX);
-    var y = this.board.getAbsY(gridY);
-    var s = this.board.getCellSize();
-    var r = this.board.theme.get('stone.radius', s);
+    const x = this.board.getAbsX(gridX);
+    const y = this.board.getAbsY(gridY);
+    const s = this.board.getCellSize();
+    const r = this.board.theme.get('stone.radius', s);
 
     //Get theme properties
-    var lineWidth = this.board.theme.get('grid.lineWidth', s);
-    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
+    const lineWidth = this.board.theme.get('grid.lineWidth', s);
+    const canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -193,24 +195,27 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
   GridLayer.prototype.redrawCell = function(gridX, gridY) {
 
     //Get absolute coordinates and stone radius
-    var x = this.board.getAbsX(gridX);
-    var y = this.board.getAbsY(gridY);
-    var s = this.board.getCellSize();
-    var r = this.board.theme.get('stone.radius', s);
+    const x = this.board.getAbsX(gridX);
+    const y = this.board.getAbsY(gridY);
+    const s = this.board.getCellSize();
+    const r = this.board.theme.get('stone.radius', s);
+
+    //Get board properties
+    const {theme, width, height} = this.board;
 
     //Get theme properties
-    var lineWidth = this.board.theme.get('grid.lineWidth', s);
-    var strokeStyle = this.board.theme.get('grid.lineColor');
-    var starRadius = this.board.theme.get('grid.star.radius', s);
-    var starColor = this.board.theme.get('grid.star.color');
-    var canvasTranslate = this.board.theme.canvasTranslate(lineWidth);
-    var starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height);
+    const lineWidth = theme.get('grid.lineWidth', s);
+    const strokeStyle = theme.get('grid.lineColor');
+    const starRadius = theme.get('grid.star.radius', s);
+    const starColor = theme.get('grid.star.color');
+    const canvasTranslate = theme.canvasTranslate(lineWidth);
+    const starPoints = theme.get('grid.star.points', width, height);
 
     //Determine draw coordinates
-    var x1 = (gridX === 0) ? x : x - r;
-    var x2 = (gridX === this.board.width - 1) ? x : x + r;
-    var y1 = (gridY === 0) ? y : y - r;
-    var y2 = (gridY === this.board.height - 1) ? y : y + r;
+    const x1 = (gridX === 0) ? x : x - r;
+    const x2 = (gridX === width - 1) ? x : x + r;
+    const y1 = (gridY === 0) ? y : y - r;
+    const y2 = (gridY === height - 1) ? y : y + r;
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -228,10 +233,13 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', [
     this.context.stroke();
 
     //Check if we need to draw a star point here
-    for (var i in starPoints) {
-      if (starPoints[i].x === gridX && starPoints[i].y === gridY) {
-        drawStarPoint.call(this, gridX, gridY, starRadius, starColor);
-      }
+    const starPoint = starPoints.find(point => {
+      return (point.x === gridX && point.y === gridY);
+    });
+
+    //Draw if found
+    if (starPoint) {
+      drawStarPoint.call(this, gridX, gridY, starRadius, starColor);
     }
 
     //Undo translation

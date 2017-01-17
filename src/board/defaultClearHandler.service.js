@@ -9,7 +9,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.DefaultClearHandler.Service', [
-  'ngGo'
+  'ngGo',
 ])
 
 /**
@@ -31,10 +31,10 @@ angular.module('ngGo.Board.DefaultClearHandler.Service', [
     }
 
     //Get coordinates and stone radius
-    var x = this.board.getAbsX(obj.x);
-    var y = this.board.getAbsY(obj.y);
-    var s = this.board.getCellSize();
-    var r = this.board.theme.get('stone.radius', s);
+    const x = this.board.getAbsX(obj.x);
+    const y = this.board.getAbsY(obj.y);
+    const s = this.board.getCellSize();
+    const r = this.board.theme.get('stone.radius', s);
 
     //Clear rectangle the size of the stone radius
     context.clearRect(x - r, y - r, 2 * r, 2 * r);

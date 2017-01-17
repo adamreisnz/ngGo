@@ -5,7 +5,7 @@
 angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
   'ngGo',
   'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.StoneShadow.Service'
+  'ngGo.Board.Object.StoneShadow.Service',
 ])
 
 /**
@@ -33,7 +33,8 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
   ShadowLayer.prototype.add = function(stone) {
 
     //Don't add if no shadow
-    if (stone.shadow === false || (typeof stone.alpha !== 'undefined' && stone.alpha < 1)) {
+    if (stone.shadow === false ||
+      (typeof stone.alpha !== 'undefined' && stone.alpha < 1)) {
       return;
     }
 
@@ -46,7 +47,8 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
     this.grid.set(stone.x, stone.y, stone.color);
 
     //Draw it if there is a context
-    if (this.context && this.board.drawWidth !== 0 && this.board.drawheight !== 0) {
+    if (this.context &&
+      this.board.drawWidth !== 0 && this.board.drawheight !== 0) {
       StoneShadow.draw.call(this, stone);
     }
   };
@@ -69,23 +71,19 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
   ShadowLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+    if (!this.context || !this.board.hasDrawSize()) {
       return;
     }
 
     //Get shadowsize from theme
-    var shadowSize = this.board.theme.get('shadow.size', this.board.getCellSize());
+    const cellSize = this.board.getCellSize();
+    const shadowSize = this.board.theme.get('shadow.size', cellSize);
 
     //Apply shadow transformation
     this.context.setTransform(1, 0, 0, 1, shadowSize, shadowSize);
 
-    //Get all stones as objects
-    var stones = this.grid.all('color');
-
-    //Draw them
-    for (var i = 0; i < stones.length; i++) {
-      StoneShadow.draw.call(this, stones[i]);
-    }
+    //Draw all stones
+    this.grid.all('color').forEach(stone => StoneShadow.draw.call(this, stone));
   };
 
   //Return

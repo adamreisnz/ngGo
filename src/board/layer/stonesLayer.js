@@ -5,7 +5,7 @@
 angular.module('ngGo.Board.Layer.StonesLayer.Service', [
   'ngGo',
   'ngGo.Board.Layer.Service',
-  'ngGo.Board.Object.Stone.Service'
+  'ngGo.Board.Object.Stone.Service',
 ])
 
 /**
@@ -30,7 +30,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
    */
   angular.extend(StonesLayer.prototype, BoardLayer.prototype);
 
-  /*****************************************************************************
+  /**************************************************************************
    * Object handling
    ***/
 
@@ -40,24 +40,17 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
   StonesLayer.prototype.setAll = function(grid) {
 
     //Get changes compared to current grid
-    var i;
-    var changes = this.grid.compare(grid, 'color');
+    const changes = this.grid.compare(grid, 'color');
 
-    //Clear removed stuff
-    for (i = 0; i < changes.remove.length; i++) {
-      Stone.clear.call(this, changes.remove[i]);
-    }
-
-    //Draw added stuff
-    for (i = 0; i < changes.add.length; i++) {
-      Stone.draw.call(this, changes.add[i]);
-    }
+    //Clear removed stuff and draw added stuff
+    changes.remove.forEach(change => Stone.clear.call(this, change));
+    changes.add.forEach(change => Stone.draw.call(this, change));
 
     //Remember new grid
     this.grid = grid.clone();
   };
 
-  /*****************************************************************************
+  /**************************************************************************
    * Drawing
    ***/
 
@@ -67,17 +60,15 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
   StonesLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
-    if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
+    if (!this.context || !this.board.hasDrawSize()) {
       return;
     }
 
     //Get all stones as objects
-    var stones = this.grid.all('color');
+    const stones = this.grid.all('color');
 
     //Draw them
-    for (var i = 0; i < stones.length; i++) {
-      Stone.draw.call(this, stones[i]);
-    }
+    stones.forEach(stone => Stone.draw.call(this, stone));
   };
 
   /**
@@ -98,8 +89,8 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', [
    */
   StonesLayer.prototype.drawCell = function(x, y) {
 
-    //Can only draw when we have dimensions
-    if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
+    //Can only draw when we have dimensions and context
+    if (!this.context || !this.board.hasDrawSize()) {
       return;
     }
 

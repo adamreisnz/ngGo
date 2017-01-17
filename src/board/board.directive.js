@@ -2,7 +2,7 @@
  * Module definition and dependencies
  */
 angular.module('ngGo.Board.Directive', [
-  'ngGo.Board.Service'
+  'ngGo.Board.Service',
 ])
 
 /**
@@ -11,7 +11,7 @@ angular.module('ngGo.Board.Directive', [
 .directive('board', function($window, Board) {
 
   //Get pixel ratio
-  var pixelRatio = window.devicePixelRatio || 1;
+  const pixelRatio = window.devicePixelRatio || 1;
 
   /**
    * Helper to create a layer canvas
@@ -19,8 +19,8 @@ angular.module('ngGo.Board.Directive', [
   function createLayerCanvas(name) {
 
     //Create canvas element and get context
-    var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
 
     //Scale context depending on pixel ratio
     if (pixelRatio > 1) {
@@ -45,7 +45,7 @@ angular.module('ngGo.Board.Directive', [
   function determineDrawSize(scope, availableWidth, availableHeight) {
 
     //Init vars
-    var drawWidth, drawHeight, cellSize;
+    let drawWidth, drawHeight, cellSize;
 
     //Stretch available height to width if zero
     if (availableHeight === 0 && availableWidth > 0) {
@@ -56,7 +56,10 @@ angular.module('ngGo.Board.Directive', [
     if (scope.Board.width && scope.Board.height) {
 
       //Determine smallest cell size
-      cellSize = Math.min(availableWidth / scope.Board.width, availableHeight / scope.Board.height);
+      cellSize = Math.min(
+        availableWidth / scope.Board.width,
+        availableHeight / scope.Board.height
+      );
 
       //Set draw size
       drawWidth = Math.floor(cellSize * scope.Board.width);
@@ -69,7 +72,10 @@ angular.module('ngGo.Board.Directive', [
     }
 
     //Broadcast new size if changed
-    if (scope.lastDrawWidth !== drawWidth || scope.lastDrawHeight !== drawHeight) {
+    if (
+      scope.lastDrawWidth !== drawWidth ||
+      scope.lastDrawHeight !== drawHeight
+    ) {
       scope.lastDrawWidth = drawWidth;
       scope.lastDrawHeight = drawHeight;
       scope.$broadcast('ngGo.board.drawSizeChanged', drawWidth, drawHeight);
@@ -86,19 +92,19 @@ angular.module('ngGo.Board.Directive', [
   return {
     restrict: 'E',
     scope: {
-      instance: '&'
+      instance: '&',
     },
 
     /**
      * Linking function
      */
-    link: function(scope, element, attrs) {
+    link(scope, element, attrs) {
 
       //Init vars
-      var i, context, layer, playerElement;
-      var parent = element.parent();
-      var sizingElement = element[0];
-      var existingInstance = true;
+      let i, context, layer, playerElement;
+      let existingInstance = true;
+      let sizingElement = element[0];
+      const parent = element.parent();
 
       //Remember last draw width/height
       scope.lastDrawWidth = 0;
@@ -128,10 +134,10 @@ angular.module('ngGo.Board.Directive', [
       }
 
       //Listen for board drawsize events
-      scope.$on('ngGo.board.drawSizeChanged', function(event, width, height) {
+      scope.$on('ngGo.board.drawSizeChanged', (event, width, height) => {
 
         //First set the new dimensions on the canvas elements
-        var canvas = element.find('canvas');
+        let canvas = element.find('canvas');
         for (i = 0; i < canvas.length; i++) {
           canvas[i].width = width * pixelRatio;
           canvas[i].height = height * pixelRatio;
@@ -150,28 +156,32 @@ angular.module('ngGo.Board.Directive', [
       determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
 
       //On window resize, determine the draw size again
-      angular.element($window).on('resize', function() {
+      angular.element($window).on('resize', () => {
         determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
       });
 
       //On manual resize, determine draw size again
-      scope.$on('ngGo.board.determineDrawSize', function() {
+      scope.$on('ngGo.board.determineDrawSize', () => {
         determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
       });
 
       //On board grid resize, determine the draw size again
-      scope.$on('ngGo.board.resize', function(event, board) {
+      scope.$on('ngGo.board.resize', (event, board) => {
 
         //Only relevent if this was our own board
         if (board !== scope.Board) {
           return;
         }
 
+        //Get width and height
+        const width = sizingElement.clientWidth;
+        const height = sizingElement.clientHeight;
+
         //If the draw size didn't change, the draw size event won't be triggered.
         //However, that means we should call the resized() method now manually because
         //it won't be called with the setDrawSize() call.
         //This may seem a bit "off", but it's the best way to prevent redundant redraws.
-        if (!determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight)) {
+        if (!determineDrawSize(scope, width, height)) {
           scope.Board.resized();
         }
       });
@@ -194,7 +204,8 @@ angular.module('ngGo.Board.Directive', [
       //Dynamic board
       else {
 
-        //Create individual layer canvasses and link the canvas context to the layer service class
+        //Create individual layer canvasses and link the canvas
+        //context to the layer service class
         for (i = 0; i < scope.Board.layerOrder.length; i++) {
           layer = scope.Board.layerOrder[i];
           context = createLayerCanvas.call(element[0], layer);
@@ -203,8 +214,8 @@ angular.module('ngGo.Board.Directive', [
       }
 
       //Observe the board size attribute
-      attrs.$observe('size', function(size) {
-        if (typeof size === 'string' && size.toLowerCase().indexOf('x') !== -1) {
+      attrs.$observe('size', size => {
+        if (typeof size === 'string' && size.toLowerCase().indexOf('x') > -1) {
           size = size.split('x');
           scope.Board.setSize(size[0], size[1]);
         }
@@ -214,19 +225,19 @@ angular.module('ngGo.Board.Directive', [
       });
 
       //Observe the coordinates attribute
-      attrs.$observe('coordinates', function(attr) {
+      attrs.$observe('coordinates', attr => {
         scope.Board.toggleCoordinates(attr === 'true');
       });
 
       //Observe the cutoff attribute
-      attrs.$observe('cutoff', function(attr) {
+      attrs.$observe('cutoff', attr => {
         if (angular.isDefined(attr)) {
           scope.Board.setCutoff(attr.split(','));
         }
       });
 
       //Observe color multiplier
-      attrs.$observe('colorMultiplier', function(attr) {
+      attrs.$observe('colorMultiplier', attr => {
         if (angular.isDefined(attr)) {
           scope.Board.swapColors(attr);
         }
@@ -241,6 +252,6 @@ angular.module('ngGo.Board.Directive', [
       if (existingInstance) {
         scope.Board.redraw();
       }
-    }
+    },
   };
 });
