@@ -519,7 +519,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Undo the positions.
        */
-      undo: function() {
+      undo() {
         if (this.game) {
           if (this.game.undo()) {
             this.processPosition();
