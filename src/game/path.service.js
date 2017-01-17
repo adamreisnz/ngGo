@@ -39,9 +39,9 @@ angular.module('ngGo.Game.Path.Service', [
 
     //Different child variation chosen? Remember
     if (i > 0) {
+      this.path[this.move] = i;
       this.branches++;
     }
-    this.path[this.move] = i;
 
     //Increment move
     this.move++;
