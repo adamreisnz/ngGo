@@ -52,6 +52,7 @@
       <button ng-click="Player.board.toggleCoordinates()">Toggle coordinates</button>
       <button ng-click="Player.setVariationMarkup(!Player.variationMarkup)">Toggle variation markup</button>
       <button ng-click="Player.showMoveNumbers()">Show move numbers</button>
+      <button ng-click="Player.showBranchMoveNumbers()">Show move numbers on branch lines</button>
     </p>
 
     <p>
@@ -230,6 +231,9 @@
 
     //Load local data
     Player.load(jgf);
+
+    //Expose player for debugging
+    window.Player = Player;
   })
 
   /**

@@ -1,7 +1,11 @@
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
-
+/**
+ * ng-go - v1.3.1 - 9-11-2016
+ * https://github.com/adamreisnz/ngGo
+ *
+ * Copyright (c) 2016 Adam Reis <adam@reis.nz>
+ * License: MIT
+ */
+(function(window, angular, undefined) {'use strict';
 /**
  * ngGo
  *
@@ -10,7 +14,7 @@
  * and generally cleaned up.
  *
  * Copyright (c) 2013 Jan Prokop (WGo)
- * Copyright (c) 2014-2017 Adam Reis (ngGo)
+ * Copyright (c) 2014-2015 Adam Reis (ngGo)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the Software
@@ -125,24 +129,24 @@ angular.module('ngGo', [])
   PAGEUP: 33,
   PAGEDOWN: 34
 });
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
-
+(function(window, angular, undefined) {'use strict';
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Directive', ['ngGo.Board.Service'])
+angular.module('ngGo.Board.Directive', [
+  'ngGo.Board.Service'
+])
 
 /**
  * Directive definition
  */
-.directive('board', ["$window", "Board", function ($window, Board) {
+.directive('board', ['$window', 'Board', function($window, Board) {
 
   //Get pixel ratio
-  var pixelRatio = window.devicePixelRatio || 1;
+  var pixelRatio = window.pixelRatio || 1;
 
   /**
    * Helper to create a layer canvas
@@ -176,9 +180,7 @@ angular.module('ngGo.Board.Directive', ['ngGo.Board.Service'])
   function determineDrawSize(scope, availableWidth, availableHeight) {
 
     //Init vars
-    var drawWidth = void 0,
-        drawHeight = void 0,
-        cellSize = void 0;
+    var drawWidth, drawHeight, cellSize;
 
     //Stretch available height to width if zero
     if (availableHeight === 0 && availableWidth > 0) {
@@ -198,8 +200,8 @@ angular.module('ngGo.Board.Directive', ['ngGo.Board.Service'])
 
     //Otherwise, use the lesser of the available width/height
     else {
-        drawWidth = drawHeight = Math.min(availableWidth, availableHeight);
-      }
+      drawWidth = drawHeight = Math.min(availableWidth, availableHeight);
+    }
 
     //Broadcast new size if changed
     if (scope.lastDrawWidth !== drawWidth || scope.lastDrawHeight !== drawHeight) {
@@ -225,13 +227,10 @@ angular.module('ngGo.Board.Directive', ['ngGo.Board.Service'])
     /**
      * Linking function
      */
-    link: function link(scope, element, attrs) {
+    link: function(scope, element, attrs) {
 
       //Init vars
-      var i = void 0,
-          context = void 0,
-          layer = void 0,
-          playerElement = void 0;
+      var i, context, layer, playerElement;
       var parent = element.parent();
       var sizingElement = element[0];
       var existingInstance = true;
@@ -264,7 +263,7 @@ angular.module('ngGo.Board.Directive', ['ngGo.Board.Service'])
       }
 
       //Listen for board drawsize events
-      scope.$on('ngGo.board.drawSizeChanged', function (event, width, height) {
+      scope.$on('ngGo.board.drawSizeChanged', function(event, width, height) {
 
         //First set the new dimensions on the canvas elements
         var canvas = element.find('canvas');
@@ -275,7 +274,7 @@ angular.module('ngGo.Board.Directive', ['ngGo.Board.Service'])
 
         //Set on the element if we're using a player element and if there is a size
         if (playerElement || attrs.forceSize === 'true') {
-          element.css({ width: width + 'px', height: height + 'px' });
+          element.css({width: width + 'px', height: height + 'px'});
         }
 
         //Next set it on the board itself
@@ -286,17 +285,17 @@ angular.module('ngGo.Board.Directive', ['ngGo.Board.Service'])
       determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
 
       //On window resize, determine the draw size again
-      angular.element($window).on('resize', function () {
+      angular.element($window).on('resize', function() {
         determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
       });
 
       //On manual resize, determine draw size again
-      scope.$on('ngGo.board.determineDrawSize', function () {
+      scope.$on('ngGo.board.determineDrawSize', function() {
         determineDrawSize(scope, sizingElement.clientWidth, sizingElement.clientHeight);
       });
 
       //On board grid resize, determine the draw size again
-      scope.$on('ngGo.board.resize', function (event, board) {
+      scope.$on('ngGo.board.resize', function(event, board) {
 
         //Only relevent if this was our own board
         if (board !== scope.Board) {
@@ -330,38 +329,39 @@ angular.module('ngGo.Board.Directive', ['ngGo.Board.Service'])
       //Dynamic board
       else {
 
-          //Create individual layer canvasses and link the canvas context to the layer service class
-          for (i = 0; i < scope.Board.layerOrder.length; i++) {
-            layer = scope.Board.layerOrder[i];
-            context = createLayerCanvas.call(element[0], layer);
-            scope.Board.layers[layer].setContext(context);
-          }
+        //Create individual layer canvasses and link the canvas context to the layer service class
+        for (i = 0; i < scope.Board.layerOrder.length; i++) {
+          layer = scope.Board.layerOrder[i];
+          context = createLayerCanvas.call(element[0], layer);
+          scope.Board.layers[layer].setContext(context);
         }
+      }
 
       //Observe the board size attribute
-      attrs.$observe('size', function (size) {
+      attrs.$observe('size', function(size) {
         if (typeof size === 'string' && size.toLowerCase().indexOf('x') !== -1) {
           size = size.split('x');
           scope.Board.setSize(size[0], size[1]);
-        } else {
+        }
+        else {
           scope.Board.setSize(size, size);
         }
       });
 
       //Observe the coordinates attribute
-      attrs.$observe('coordinates', function (attr) {
+      attrs.$observe('coordinates', function(attr) {
         scope.Board.toggleCoordinates(attr === 'true');
       });
 
       //Observe the cutoff attribute
-      attrs.$observe('cutoff', function (attr) {
+      attrs.$observe('cutoff', function(attr) {
         if (angular.isDefined(attr)) {
           scope.Board.setCutoff(attr.split(','));
         }
       });
 
       //Observe color multiplier
-      attrs.$observe('colorMultiplier', function (attr) {
+      attrs.$observe('colorMultiplier', function(attr) {
         if (angular.isDefined(attr)) {
           scope.Board.swapColors(attr);
         }
@@ -379,13 +379,10 @@ angular.module('ngGo.Board.Directive', ['ngGo.Board.Service'])
     }
   };
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Board :: This class represents the Go board. It is a placeholder for all the various board layers
@@ -397,12 +394,26 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Board.Theme.Service', 'ngGo.Board.Layer.GridLayer.Service', 'ngGo.Board.Layer.ShadowLayer.Service', 'ngGo.Board.Layer.StonesLayer.Service', 'ngGo.Board.Layer.MarkupLayer.Service', 'ngGo.Board.Layer.ScoreLayer.Service', 'ngGo.Board.Layer.HoverLayer.Service', 'ngGo.Board.Object.Markup.Service', 'ngGo.Board.Object.Stone.Service', 'ngGo.Board.Object.StoneMini.Service', 'ngGo.Board.Object.StoneFaded.Service'])
+angular.module('ngGo.Board.Service', [
+  'ngGo',
+  'ngGo.Board.Directive',
+  'ngGo.Board.Theme.Service',
+  'ngGo.Board.Layer.GridLayer.Service',
+  'ngGo.Board.Layer.ShadowLayer.Service',
+  'ngGo.Board.Layer.StonesLayer.Service',
+  'ngGo.Board.Layer.MarkupLayer.Service',
+  'ngGo.Board.Layer.ScoreLayer.Service',
+  'ngGo.Board.Layer.HoverLayer.Service',
+  'ngGo.Board.Object.Markup.Service',
+  'ngGo.Board.Object.Stone.Service',
+  'ngGo.Board.Object.StoneMini.Service',
+  'ngGo.Board.Object.StoneFaded.Service'
+])
 
 /**
  * Provider definition
  */
-.provider('Board', function () {
+.provider('Board', function() {
 
   /**
    * Default configuration
@@ -417,7 +428,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     cutoff: [],
 
     //Section of board to display
-    section: { top: 0, right: 0, bottom: 0, left: 0 },
+    section: {top: 0, right: 0, bottom: 0, left: 0},
 
     //Show coordinates?
     coordinates: false,
@@ -429,14 +440,14 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
   /**
    * Set global default configuration for players
    */
-  this.setConfig = function (config) {
+  this.setConfig = function(config) {
     defaultConfig = angular.extend(defaultConfig, config);
   };
 
   /**
    * Service getter
    */
-  this.$get = ["$rootScope", "$injector", "BoardTheme", function ($rootScope, $injector, BoardTheme) {
+  this.$get = ['$rootScope', '$injector', 'BoardTheme', function($rootScope, $injector, BoardTheme) {
 
     /**
      * Board constructor
@@ -453,7 +464,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Initialize board
      */
-    Board.prototype.init = function () {
+    Board.prototype.init = function() {
 
       //Remove everything
       this.removeAll();
@@ -519,29 +530,29 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Link the board to a HTML element
      */
-    Board.prototype.linkElement = function (element) {
+    Board.prototype.linkElement = function(element) {
       this.element = element;
     };
 
     /**
      * Make this board static (one canvas layer, only grid, stones and markup)
      */
-    Board.prototype.makeStatic = function () {
+    Board.prototype.makeStatic = function() {
       this.static = true;
       this.layerOrder = ['grid', 'stones', 'markup'];
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * Configuration
      ***/
 
     /**
      * Parse config instructions
      */
-    Board.prototype.parseConfig = function (config) {
+    Board.prototype.parseConfig = function(config) {
 
       //Validate
-      if ((typeof config === 'undefined' ? 'undefined' : _typeof(config)) !== 'object') {
+      if (typeof config !== 'object') {
         return;
       }
 
@@ -559,7 +570,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Set margin
      */
-    Board.prototype.setMargin = function (margin) {
+    Board.prototype.setMargin = function(margin) {
 
       //Reset when not defined
       if (typeof margin === 'undefined') {
@@ -579,7 +590,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Set grid cut-off
      */
-    Board.prototype.setCutoff = function (cutoff) {
+    Board.prototype.setCutoff = function(cutoff) {
 
       //Nothing given? Reset cutoff
       if (!cutoff || !angular.isArray(cutoff)) {
@@ -597,9 +608,12 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
               this.cutoff[side] = true;
               changes = true;
             }
-          } else if (this.cutoff[side]) {
-            this.cutoff[side] = false;
-            changes = true;
+          }
+          else {
+            if (this.cutoff[side]) {
+              this.cutoff[side] = false;
+              changes = true;
+            }
           }
         }
       }
@@ -616,10 +630,10 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Set section of the board to be displayed
      */
-    Board.prototype.setSection = function (section) {
+    Board.prototype.setSection = function(section) {
 
       //Nothing given?
-      if (!section || (typeof section === 'undefined' ? 'undefined' : _typeof(section)) !== 'object') {
+      if (!section || typeof section !== 'object') {
         return this;
       }
 
@@ -632,7 +646,10 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
       }, section);
 
       //No changes?
-      if (this.section.top === section.top && this.section.bottom === section.bottom && this.section.left === section.left && this.section.right === section.right) {
+      if (
+        this.section.top === section.top && this.section.bottom === section.bottom &&
+        this.section.left === section.left && this.section.right === section.right
+      ) {
         return this;
       }
 
@@ -647,7 +664,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Set board size. This will clear the board objects.
      */
-    Board.prototype.setSize = function (width, height) {
+    Board.prototype.setSize = function(width, height) {
 
       //Check what's given
       width = parseInt(width || height || 0);
@@ -683,7 +700,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Set new draw size
      */
-    Board.prototype.setDrawSize = function (width, height) {
+    Board.prototype.setDrawSize = function(width, height) {
       if (width !== this.drawWidth || height !== this.drawHeight) {
         this.drawWidth = width;
         this.drawHeight = height;
@@ -694,12 +711,13 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Toggle the coordinates
      */
-    Board.prototype.toggleCoordinates = function (show) {
+    Board.prototype.toggleCoordinates = function(show) {
 
       //Set or toggle
       if (typeof show !== 'undefined') {
         this.coordinates = show;
-      } else {
+      }
+      else {
         this.coordinates = !this.coordinates;
       }
 
@@ -709,7 +727,8 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
       //Set the proper board margin
       if (this.coordinates) {
         this.setMargin(this.theme.get('coordinates.margin'));
-      } else {
+      }
+      else {
         this.setMargin(this.theme.get('board.margin'));
       }
     };
@@ -717,12 +736,13 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Swap colors on the board
      */
-    Board.prototype.swapColors = function (multiplier) {
+    Board.prototype.swapColors = function(multiplier) {
 
       //Multiplier not given? Set to inverse of current value
       if (typeof multiplier === 'undefined') {
         multiplier = -this.colorMultiplier;
-      } else {
+      }
+      else {
         multiplier = parseInt(multiplier);
         if (isNaN(multiplier)) {
           return;
@@ -744,38 +764,38 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
 
       //For a dynamic board, only these layers
       else {
-          this.redraw('stones');
-          this.redraw('markup');
-        }
+        this.redraw('stones');
+        this.redraw('markup');
+      }
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * Theme handling
      ***/
 
     /**
      * Get the current theme object
      */
-    Board.prototype.getTheme = function () {
+    Board.prototype.getTheme = function() {
       return this.theme;
     };
 
     /**
      * Set the theme object
      */
-    Board.prototype.setTheme = function (theme) {
+    Board.prototype.setTheme = function(theme) {
       this.theme = theme;
       return this;
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * Object handling
      ***/
 
     /**
      * Add an object to a board layer
      */
-    Board.prototype.add = function (layer, x, y, value) {
+    Board.prototype.add = function(layer, x, y, value) {
       if (typeof this.layers[layer] !== 'undefined') {
         this.layers[layer].add(x, y, value);
       }
@@ -784,7 +804,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Remove an object from a board layer
      */
-    Board.prototype.remove = function (layer, x, y) {
+    Board.prototype.remove = function(layer, x, y) {
       if (typeof this.layers[layer] !== 'undefined') {
         this.layers[layer].remove(x, y);
       }
@@ -793,21 +813,21 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Get something from a board layer
      */
-    Board.prototype.get = function (layer, x, y) {
-      return this.layers[layer] && this.layers[layer].get(x, y);
+    Board.prototype.get = function(layer, x, y) {
+      return (this.layers[layer] && this.layers[layer].get(x, y));
     };
 
     /**
      * Check if we have something at given coordinates for a given layer
      */
-    Board.prototype.has = function (layer, x, y) {
-      return this.layers[layer] && this.layers[layer].has(x, y);
+    Board.prototype.has = function(layer, x, y) {
+      return (this.layers[layer] && this.layers[layer].has(x, y));
     };
 
     /**
      * Set all objects (grid) for a given layer
      */
-    Board.prototype.setAll = function (layer, grid) {
+    Board.prototype.setAll = function(layer, grid) {
       if (typeof this.layers[layer] !== 'undefined') {
         this.layers[layer].setAll(grid);
       }
@@ -816,12 +836,13 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Remove all objects from the board, optionally for a given layer
      */
-    Board.prototype.removeAll = function (layer) {
+    Board.prototype.removeAll = function(layer) {
       if (layer) {
         if (typeof this.layers[layer] !== 'undefined') {
           this.layers[layer].removeAll();
         }
-      } else {
+      }
+      else {
         for (layer in this.layers) {
           if (this.layers.hasOwnProperty(layer)) {
             this.layers[layer].removeAll();
@@ -830,14 +851,14 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
       }
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * Position handling
      ***/
 
     /**
      * Update the board with a new position
      */
-    Board.prototype.updatePosition = function (position, pathChanged) {
+    Board.prototype.updatePosition = function(position, pathChanged) {
 
       //If we have no grid size yet, use what's in the position
       if (!this.width || !this.height) {
@@ -854,14 +875,14 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
       this.setAll('markup', position.markup);
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * State handling
      ***/
 
     /**
      * Get the board state (list of objects per layer)
      */
-    Board.prototype.getState = function (layer) {
+    Board.prototype.getState = function(layer) {
 
       //Only specific layer?
       if (layer) {
@@ -887,7 +908,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Restore the board state from given state object
      */
-    Board.prototype.restoreState = function (state, layer) {
+    Board.prototype.restoreState = function(state, layer) {
 
       //Only specific layer?
       if (layer) {
@@ -908,14 +929,14 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
       }
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * Drawing control
      ***/
 
     /**
      * Clear the whole board
      */
-    Board.prototype.clear = function (layer) {
+    Board.prototype.clear = function(layer) {
 
       //Just clearing one layer?
       if (layer) {
@@ -947,7 +968,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Redraw everything or just a single layer
      */
-    Board.prototype.redraw = function (layer) {
+    Board.prototype.redraw = function(layer) {
 
       //The board can only be redrawn when there is a grid size and a draw size
       if (!this.width || !this.height || !this.drawWidth || !this.drawHeight) {
@@ -977,14 +998,14 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
       }
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * Drawing helpers
      ***/
 
     /**
      * Called after a board size change, draw size change, section change or margin change
      */
-    Board.prototype.resized = function () {
+    Board.prototype.resized = function() {
 
       //Determine the new grid
       this.grid = {
@@ -1009,14 +1030,18 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
         if (this.cutoff[side]) {
           if (side === 'top' || side === 'bottom') {
             noCellsVer += 0.5;
-          } else {
+          }
+          else {
             noCellsHor += 0.5;
           }
         }
       }
 
       //Determine cell size now
-      this.cellSize = Math.floor(Math.min(this.drawWidth / noCellsHor, this.drawHeight / noCellsVer));
+      this.cellSize = Math.floor(Math.min(
+        this.drawWidth / noCellsHor,
+        this.drawHeight / noCellsVer
+      ));
 
       //Determine actual grid draw size (taking off the margin again)
       this.gridDrawWidth = this.cellSize * (noCellsHor - this.margin - 1);
@@ -1033,14 +1058,14 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Get the current cell size
      */
-    Board.prototype.getCellSize = function () {
+    Board.prototype.getCellSize = function() {
       return this.cellSize;
     };
 
     /**
      * Convert grid coordinate to pixel coordinate
      */
-    Board.prototype.getAbsX = function (gridX) {
+    Board.prototype.getAbsX = function(gridX) {
       var offset = this.cutoff.left ? 0.5 : 0;
       return this.drawMarginHor + Math.round((gridX + offset) * this.cellSize);
     };
@@ -1048,7 +1073,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Convert grid coordinate to pixel coordinate
      */
-    Board.prototype.getAbsY = function (gridY) {
+    Board.prototype.getAbsY = function(gridY) {
       var offset = this.cutoff.top ? 0.5 : 0;
       return this.drawMarginVer + Math.round((gridY + offset) * this.cellSize);
     };
@@ -1056,7 +1081,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Convert pixel coordinate to grid coordinate
      */
-    Board.prototype.getGridX = function (absX) {
+    Board.prototype.getGridX = function(absX) {
       var offset = this.cutoff.left ? 0.5 : 0;
       return Math.round((absX - this.drawMarginHor) / this.cellSize - offset);
     };
@@ -1064,7 +1089,7 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Convert pixel coordinate to grid coordinate
      */
-    Board.prototype.getGridY = function (absY) {
+    Board.prototype.getGridY = function(absY) {
       var offset = this.cutoff.top ? 0.5 : 0;
       return Math.round((absY - this.drawMarginVer) / this.cellSize - offset);
     };
@@ -1072,19 +1097,21 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
     /**
      * Check if given grid coordinates are on board
      */
-    Board.prototype.isOnBoard = function (gridX, gridY) {
-      return gridX >= this.grid.xLeft && gridY >= this.grid.yTop && gridX <= this.grid.xRight && gridY <= this.grid.yBot;
+    Board.prototype.isOnBoard = function(gridX, gridY) {
+      return (
+        gridX >= this.grid.xLeft && gridY >= this.grid.yTop &&
+        gridX <= this.grid.xRight && gridY <= this.grid.yBot
+      );
     };
 
     //Return object
     return Board;
   }];
 });
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * DefaultClearHandler :: This is the default clear handler for clearing a cell of the board grid.
@@ -1095,12 +1122,14 @@ angular.module('ngGo.Board.Service', ['ngGo', 'ngGo.Board.Directive', 'ngGo.Boar
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.DefaultClearHandler.Service', ['ngGo'])
+angular.module('ngGo.Board.DefaultClearHandler.Service', [
+  'ngGo'
+])
 
 /**
  * Factory definition
  */
-.factory('DefaultClearHandler', function () {
+.factory('DefaultClearHandler', function() {
 
   /**
    * Clear handler definition
@@ -1108,7 +1137,7 @@ angular.module('ngGo.Board.DefaultClearHandler.Service', ['ngGo'])
    * All external handlers are called from the context of the layer that contains the object.
    * First parameter is the canvas2d context, second parameter is the object itself.
    */
-  return function (context, obj) {
+  return function(context, obj) {
 
     //No context?
     if (!context) {
@@ -1125,13 +1154,10 @@ angular.module('ngGo.Board.DefaultClearHandler.Service', ['ngGo'])
     context.clearRect(x - r, y - r, 2 * r, 2 * r);
   };
 });
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+(function(window, angular, undefined) {'use strict';
 
 /**
  * BoardGrid :: This class represents a board grid of a given size. It acts as a container for
@@ -1142,12 +1168,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Service'])
+angular.module('ngGo.Board.Grid.Service', [
+  'ngGo',
+  'ngGo.Board.GridChanges.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('BoardGrid', ["BoardGridChanges", function (BoardGridChanges) {
+.factory('BoardGrid', ['BoardGridChanges', function(BoardGridChanges) {
 
   /**
    * Helper to convert a value at given coordinates to an object
@@ -1155,10 +1184,13 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
   function toObject(x, y, valueKey) {
 
     //Create coordinates object
-    var obj = { x: x, y: y };
+    var obj = {
+      x: x,
+      y: y
+    };
 
     //Already an object?
-    if (_typeof(this.grid[x][y]) === 'object') {
+    if (typeof this.grid[x][y] === 'object') {
       return angular.extend(obj, this.grid[x][y]);
     }
 
@@ -1192,7 +1224,7 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
   /**
    * Set a value
    */
-  BoardGrid.prototype.set = function (x, y, value) {
+  BoardGrid.prototype.set = function(x, y, value) {
     if (this.isOnGrid(x, y)) {
       this.grid[x][y] = value;
     }
@@ -1201,7 +1233,7 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
   /**
    * Unset a value
    */
-  BoardGrid.prototype.unset = function (x, y) {
+  BoardGrid.prototype.unset = function(x, y) {
     if (this.isOnGrid(x, y)) {
       this.grid[x][y] = this.emptyValue;
     }
@@ -1210,21 +1242,21 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
   /**
    * Check if we have a non null value on the coordinates
    */
-  BoardGrid.prototype.has = function (x, y) {
-    return this.isOnGrid(x, y) && this.grid[x][y] !== this.emptyValue;
+  BoardGrid.prototype.has = function(x, y) {
+    return (this.isOnGrid(x, y) && this.grid[x][y] !== this.emptyValue);
   };
 
   /**
    * Check if we have a specific value on the coordinates
    */
-  BoardGrid.prototype.is = function (x, y, value) {
-    return this.isOnGrid(x, y) && this.grid[x][y] === value;
+  BoardGrid.prototype.is = function(x, y, value) {
+    return (this.isOnGrid(x, y) && this.grid[x][y] === value);
   };
 
   /**
    * Get a value, or an object with coordinates and the value in the given value key
    */
-  BoardGrid.prototype.get = function (x, y, valueKey) {
+  BoardGrid.prototype.get = function(x, y, valueKey) {
 
     //Validate
     if (!this.isOnGrid(x, y) || this.grid[x][y] === this.emptyValue) {
@@ -1240,7 +1272,7 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
     return toObject.call(this, x, y, valueKey);
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Mass operations
    ***/
 
@@ -1248,7 +1280,7 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
    * Get all items in the grid. If you specify a value key, a list of objects with coordinates
    * and the value in the given value key will be returned.
    */
-  BoardGrid.prototype.all = function (valueKey) {
+  BoardGrid.prototype.all = function(valueKey) {
 
     //Just get the grid?
     if (!valueKey) {
@@ -1274,7 +1306,7 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
   /**
    * Check if there is anything
    */
-  BoardGrid.prototype.isEmpty = function () {
+  BoardGrid.prototype.isEmpty = function() {
     for (var x = 0; x < this.width; x++) {
       for (var y = 0; y < this.height; y++) {
         if (this.grid[x][y] !== this.emptyValue) {
@@ -1288,7 +1320,7 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
   /**
    * Populate the whole grid with a given value
    */
-  BoardGrid.prototype.populate = function (value) {
+  BoardGrid.prototype.populate = function(value) {
     for (var x = 0; x < this.width; x++) {
       for (var y = 0; y < this.height; y++) {
         this.grid[x][y] = value;
@@ -1299,7 +1331,7 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
   /**
    * Empty the grid
    */
-  BoardGrid.prototype.empty = function () {
+  BoardGrid.prototype.empty = function() {
     for (var x = 0; x < this.width; x++) {
       for (var y = 0; y < this.height; y++) {
         this.grid[x][y] = this.emptyValue;
@@ -1310,7 +1342,7 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
   /**
    * Clone ourselves
    */
-  BoardGrid.prototype.clone = function () {
+  BoardGrid.prototype.clone = function() {
 
     //Create new instance
     var newGrid = new BoardGrid();
@@ -1325,14 +1357,14 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
     return newGrid;
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Comparison
    ***/
 
   /**
    * Checks if a given grid is the same as the current grid
    */
-  BoardGrid.prototype.isSameAs = function (grid) {
+  BoardGrid.prototype.isSameAs = function(grid) {
 
     //Must have the same size
     if (this.width !== grid.width || this.height !== grid.height) {
@@ -1355,14 +1387,15 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
   /**
    * Compares this position with another position and return change object
    */
-  BoardGrid.prototype.compare = function (newGrid, valueKey) {
+  BoardGrid.prototype.compare = function(newGrid, valueKey) {
 
     //Initialize board grid changes object
     var changes = new BoardGridChanges();
 
     //Must have the same size
     if (this.width !== newGrid.width || this.height !== newGrid.height) {
-      throw new Error('Trying to compare grids of a different size');
+      console.warn('Trying to compare grids of a different size');
+      return changes;
     }
 
     //Loop all coordinates
@@ -1385,28 +1418,28 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
     return changes;
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Helpers
    ***/
 
   /**
    * Helper to validate coordinates (first param can be an object)
    */
-  BoardGrid.prototype.isOnGrid = function (x, y) {
-    return x >= 0 && y >= 0 && x < this.width && y < this.height;
+  BoardGrid.prototype.isOnGrid = function(x, y) {
+    return (x >= 0 && y >= 0 && x < this.width && y < this.height);
   };
 
   /**
    * Helper to set the empty value
    */
-  BoardGrid.prototype.whenEmpty = function (emptyValue) {
+  BoardGrid.prototype.whenEmpty = function(emptyValue) {
     this.emptyValue = emptyValue;
   };
 
   /**
    * Set the grid size
    */
-  BoardGrid.prototype.setSize = function (width, height) {
+  BoardGrid.prototype.setSize = function(width, height) {
 
     //Check what's given
     width = width || height || 0;
@@ -1429,18 +1462,17 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
   /**
    * Get the grid size object
    */
-  BoardGrid.prototype.getSize = function () {
-    return { width: this.width, height: this.height };
+  BoardGrid.prototype.getSize = function() {
+    return {width: this.width, height: this.height};
   };
 
   //Return
   return BoardGrid;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * BoardGridChanges :: This is a simple class which acts as a wrapper for changes between two board
@@ -1450,19 +1482,21 @@ angular.module('ngGo.Board.Grid.Service', ['ngGo', 'ngGo.Board.GridChanges.Servi
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.GridChanges.Service', ['ngGo'])
+angular.module('ngGo.Board.GridChanges.Service', [
+  'ngGo'
+])
 
 /**
  * Factory definition
  */
-.factory('BoardGridChanges', function () {
+.factory('BoardGridChanges', function() {
 
   /**
    * Helper to subtract sets
    */
   function setSubtract(a, b) {
     var n = [];
-    var q = void 0;
+    var q;
     for (var i = 0; i < a.length; i++) {
       q = true;
       for (var j in b) {
@@ -1481,7 +1515,7 @@ angular.module('ngGo.Board.GridChanges.Service', ['ngGo'])
   /**
    * Grid changes constructor
    */
-  return function () {
+  return function() {
 
     /**
      * Containers
@@ -1492,7 +1526,7 @@ angular.module('ngGo.Board.GridChanges.Service', ['ngGo'])
     /**
      * Concatenation helper
      */
-    this.concat = function (newChanges) {
+    this.concat = function(newChanges) {
       this.add = setSubtract(this.add, newChanges.remove).concat(newChanges.add);
       this.remove = setSubtract(this.remove, newChanges.add).concat(newChanges.remove);
     };
@@ -1500,16 +1534,15 @@ angular.module('ngGo.Board.GridChanges.Service', ['ngGo'])
     /**
      * Check if there are changes
      */
-    this.has = function () {
+    this.has = function() {
       return !!(this.add.length || this.remove.length);
     };
   };
 });
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * BoardLayer :: This class represents a layer on the board and is the base class for all board
@@ -1520,12 +1553,15 @@ angular.module('ngGo.Board.GridChanges.Service', ['ngGo'])
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Layer.Service', ['ngGo', 'ngGo.Board.Grid.Service'])
+angular.module('ngGo.Board.Layer.Service', [
+  'ngGo',
+  'ngGo.Board.Grid.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('BoardLayer', ["BoardGrid", function (BoardGrid) {
+.factory('BoardLayer', ['BoardGrid', function(BoardGrid) {
 
   /**
    * Constructor
@@ -1540,14 +1576,14 @@ angular.module('ngGo.Board.Layer.Service', ['ngGo', 'ngGo.Board.Grid.Service'])
     this.grid = new BoardGrid();
   }
 
-  /**************************************************************************
+  /*****************************************************************************
    * Generic grid and object handling
    ***/
 
   /**
    * Set grid size
    */
-  BoardLayer.prototype.setSize = function (width, height) {
+  BoardLayer.prototype.setSize = function(width, height) {
 
     //Note: since this method is usually only called upon a global board resize,
     //which also triggers the redraw method for layers, the layer is not cleared
@@ -1560,21 +1596,21 @@ angular.module('ngGo.Board.Layer.Service', ['ngGo', 'ngGo.Board.Grid.Service'])
   /**
    * Get all items
    */
-  BoardLayer.prototype.getAll = function () {
+  BoardLayer.prototype.getAll = function() {
     return this.grid.clone();
   };
 
   /**
    * Set all items at once
    */
-  BoardLayer.prototype.setAll = function (grid) {
+  BoardLayer.prototype.setAll = function(grid) {
     this.grid = grid.clone();
   };
 
   /**
    * Remove all (clear layer and empty grid)
    */
-  BoardLayer.prototype.removeAll = function () {
+  BoardLayer.prototype.removeAll = function() {
     this.clear();
     this.grid.empty();
   };
@@ -1582,7 +1618,7 @@ angular.module('ngGo.Board.Layer.Service', ['ngGo', 'ngGo.Board.Grid.Service'])
   /**
    * Add a single item
    */
-  BoardLayer.prototype.add = function (x, y, value) {
+  BoardLayer.prototype.add = function(x, y, value) {
     this.clearCell(x, y);
     this.grid.set(x, y, value);
     this.drawCell(x, y);
@@ -1591,7 +1627,7 @@ angular.module('ngGo.Board.Layer.Service', ['ngGo', 'ngGo.Board.Grid.Service'])
   /**
    * Remove a single item
    */
-  BoardLayer.prototype.remove = function (x, y) {
+  BoardLayer.prototype.remove = function(x, y) {
     this.clearCell(x, y);
     this.grid.unset(x, y);
   };
@@ -1599,41 +1635,43 @@ angular.module('ngGo.Board.Layer.Service', ['ngGo', 'ngGo.Board.Grid.Service'])
   /**
    * Get an item
    */
-  BoardLayer.prototype.get = function (x, y) {
+  BoardLayer.prototype.get = function(x, y) {
     return this.grid.get(x, y);
   };
 
   /**
    * Check if there is an item
    */
-  BoardLayer.prototype.has = function (x, y) {
+  BoardLayer.prototype.has = function(x, y) {
     return this.grid.has(x, y);
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Generic drawing methods
    ***/
 
   /**
    * Draw layer
    */
-  BoardLayer.prototype.draw = function () {
+  BoardLayer.prototype.draw = function() {
     //Drawing method to be implemented in specific layer class
   };
 
   /**
    * Clear layer (this method doesn't clear objects, as the canvas wipe clears the entire canvas)
    */
-  BoardLayer.prototype.clear = function () {
+  BoardLayer.prototype.clear = function() {
     if (this.context) {
-      this.context.clearRect(0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight);
+      this.context.clearRect(
+        0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight
+      );
     }
   };
 
   /**
    * Redraw layer
    */
-  BoardLayer.prototype.redraw = function () {
+  BoardLayer.prototype.redraw = function() {
     this.clear();
     this.draw();
   };
@@ -1641,21 +1679,21 @@ angular.module('ngGo.Board.Layer.Service', ['ngGo', 'ngGo.Board.Grid.Service'])
   /**
    * Draw cell
    */
-  BoardLayer.prototype.drawCell = function () /*x, y*/{
+  BoardLayer.prototype.drawCell = function(/*x, y*/) {
     //Drawing method to be implemented in specific layer class
   };
 
   /**
    * Clear cell
    */
-  BoardLayer.prototype.clearCell = function () /*x, y*/{
+  BoardLayer.prototype.clearCell = function(/*x, y*/) {
     //Clearing method to be implemented in specific layer class
   };
 
   /**
    * Redraw cell
    */
-  BoardLayer.prototype.redrawCell = function (x, y) {
+  BoardLayer.prototype.redrawCell = function(x, y) {
     this.clearCell(x, y);
     this.drawCell(x, y);
   };
@@ -1663,25 +1701,24 @@ angular.module('ngGo.Board.Layer.Service', ['ngGo', 'ngGo.Board.Grid.Service'])
   /**
    * Set the canvas2d context
    */
-  BoardLayer.prototype.setContext = function (context) {
+  BoardLayer.prototype.setContext = function(context) {
     this.context = context;
   };
 
   /**
    * Get the canvas2d context
    */
-  BoardLayer.prototype.getContext = function () {
+  BoardLayer.prototype.getContext = function() {
     return this.context;
   };
 
   //Return
   return BoardLayer;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * BoardObject :: Base class for drawing board objects
@@ -1690,12 +1727,15 @@ angular.module('ngGo.Board.Layer.Service', ['ngGo', 'ngGo.Board.Grid.Service'])
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Object.Service', ['ngGo', 'ngGo.Board.DefaultClearHandler.Service'])
+angular.module('ngGo.Board.Object.Service', [
+  'ngGo',
+  'ngGo.Board.DefaultClearHandler.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('BoardObject', ["DefaultClearHandler", function (DefaultClearHandler) {
+.factory('BoardObject', ['DefaultClearHandler', function(DefaultClearHandler) {
 
   /**
    * Constructor
@@ -1705,7 +1745,7 @@ angular.module('ngGo.Board.Object.Service', ['ngGo', 'ngGo.Board.DefaultClearHan
     /**
      * Draw method
      */
-    draw: function draw() /*obj*/{
+    draw: function(/*obj*/) {
       if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
         return;
       }
@@ -1714,7 +1754,7 @@ angular.module('ngGo.Board.Object.Service', ['ngGo', 'ngGo.Board.DefaultClearHan
     /**
      * Clear method
      */
-    clear: function clear(obj) {
+    clear: function(obj) {
       DefaultClearHandler.call(this, this.context, obj);
     }
   };
@@ -1722,11 +1762,10 @@ angular.module('ngGo.Board.Object.Service', ['ngGo', 'ngGo.Board.DefaultClearHan
   //Return
   return BoardObject;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * ShellPattern :: This is a helper class to draw shell patterned white stones.
@@ -1735,12 +1774,14 @@ angular.module('ngGo.Board.Object.Service', ['ngGo', 'ngGo.Board.DefaultClearHan
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.ShellPattern.Service', ['ngGo'])
+angular.module('ngGo.Board.ShellPattern.Service', [
+  'ngGo'
+])
 
 /**
  * Factory definition
  */
-.factory('ShellPattern', function () {
+.factory('ShellPattern', function() {
 
   /**
    * Helper to draw a shell line
@@ -1750,7 +1791,7 @@ angular.module('ngGo.Board.ShellPattern.Service', ['ngGo'])
     //Initialize
     ctx.shadowBlur = 2;
     ctx.strokeStyle = strokeStyle;
-    ctx.lineWidth = radius / 30 * this.thickness;
+    ctx.lineWidth = (radius / 30) * this.thickness;
     ctx.beginPath();
 
     //Lower radius
@@ -1763,14 +1804,15 @@ angular.module('ngGo.Board.ShellPattern.Service', ['ngGo'])
     var y2 = y + radius * Math.sin(endAngle * Math.PI);
 
     //Math magic
-    var m = void 0,
-        angle = void 0;
+    var m, angle;
     if (x2 > x1) {
       m = (y2 - y1) / (x2 - x1);
       angle = Math.atan(m);
-    } else if (x2 === x1) {
+    }
+    else if (x2 === x1) {
       angle = Math.PI / 2;
-    } else {
+    }
+    else {
       m = (y2 - y1) / (x2 - x1);
       angle = Math.atan(m) - Math.PI;
     }
@@ -1795,7 +1837,7 @@ angular.module('ngGo.Board.ShellPattern.Service', ['ngGo'])
   /**
    * Shell pattern drawer
    */
-  return function (ctx, x, y, radius, angle, strokeStyle) {
+  return function(ctx, x, y, radius, angle, strokeStyle) {
 
     //Initialize start and end angle
     var startAngle = angle;
@@ -1809,11 +1851,10 @@ angular.module('ngGo.Board.ShellPattern.Service', ['ngGo'])
     }
   };
 });
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * BoardTheme :: This class representes the theme of a Go board. It contains all tweakable visual
@@ -1825,12 +1866,14 @@ angular.module('ngGo.Board.ShellPattern.Service', ['ngGo'])
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Theme.Service', ['ngGo'])
+angular.module('ngGo.Board.Theme.Service', [
+  'ngGo'
+])
 
 /**
  * Factory definition
  */
-.provider('BoardTheme', ["StoneColor", "MarkupTypes", function (StoneColor, MarkupTypes) {
+.provider('BoardTheme', ['StoneColor', 'MarkupTypes', function(StoneColor, MarkupTypes) {
 
   /**
    * Default theme
@@ -1850,45 +1893,50 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
       //Stone style can be shell, glass, mono, or specify a custom handler service
       style: 'shell',
       shadow: true,
-      radius: function radius(cellSize) {
+      radius: function(cellSize) {
         return Math.floor(cellSize / 2);
       },
 
       //Shell stones
       shell: {
-        color: function color(stoneColor) {
+        color: function(stoneColor) {
           if (stoneColor === StoneColor.B) {
             return '#111';
           }
           return '#BFBFBA';
         },
         stroke: 'rgba(128,128,128,0.15)',
-        types: [{
-          lines: [0.10, 0.12, 0.11, 0.10, 0.09, 0.09, 0.09, 0.09],
-          factor: 0.15,
-          thickness: 1.75
-        }, {
-          lines: [0.10, 0.09, 0.08, 0.07, 0.09, 0.06, 0.06, 0.07, 0.07, 0.06, 0.06],
-          factor: 0.1,
-          thickness: 1.5
-        }, {
-          lines: [0.22, 0.11, 0.13, 0.06, 0.11, 0.09],
-          factor: 0.05,
-          thickness: 1.75
-        }, {
-          lines: [0.18, 0.23, 0.09, 0.17, 0.14],
-          factor: 0.1,
-          thickness: 2
-        }]
+        types: [
+          {
+            lines: [0.10, 0.12, 0.11, 0.10, 0.09, 0.09, 0.09, 0.09],
+            factor: 0.15,
+            thickness: 1.75
+          },
+          {
+            lines: [0.10, 0.09, 0.08, 0.07, 0.09, 0.06, 0.06, 0.07, 0.07, 0.06, 0.06],
+            factor: 0.1,
+            thickness: 1.5
+          },
+          {
+            lines: [0.22, 0.11, 0.13, 0.06, 0.11, 0.09],
+            factor: 0.05,
+            thickness: 1.75
+          },
+          {
+            lines: [0.18, 0.23, 0.09, 0.17, 0.14],
+            factor: 0.1,
+            thickness: 2
+          }
+        ]
       },
 
       //Mono stones
       mono: {
         lineWidth: 1,
-        lineColor: function lineColor() {
+        lineColor: function() {
           return '#000';
         },
-        color: function color(stoneColor) {
+        color: function(stoneColor) {
           if (stoneColor === StoneColor.B) {
             return '#000';
           }
@@ -1905,7 +1953,7 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
       //Faded stones
       faded: {
         scale: 1,
-        alpha: function alpha(stoneColor) {
+        alpha: function(stoneColor) {
           if (stoneColor === StoneColor.B) {
             return 0.3;
           }
@@ -1921,20 +1969,20 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
       color: 'rgba(40,30,20,0.5)',
 
       //Shadow size
-      size: function size(cellSize) {
+      size: function(cellSize) {
         return Math.floor(cellSize / 20);
       },
 
       //Shadow blur size
-      blur: function blur(cellSize) {
+      blur: function(cellSize) {
         return cellSize / 20;
       },
 
       //Shadow offset
-      offsetX: function offsetX(cellSize) {
+      offsetX: function(cellSize) {
         return Math.ceil(cellSize / 20);
       },
-      offsetY: function offsetY(cellSize) {
+      offsetY: function(cellSize) {
         return Math.ceil(cellSize / 20);
       }
     },
@@ -1943,7 +1991,7 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
     markup: {
 
       //Standard color
-      color: function color(stoneColor) {
+      color: function(stoneColor) {
         if (stoneColor === StoneColor.B) {
           return 'rgba(255,255,255,0.9)';
         }
@@ -1951,7 +1999,7 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
       },
 
       //Line width
-      lineWidth: function lineWidth(cellSize) {
+      lineWidth: function(cellSize) {
         return Math.max(1, Math.floor(cellSize / 16));
       },
 
@@ -1995,7 +2043,7 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
       //Variation markup
       variation: {
         type: MarkupTypes.LABEL,
-        text: function text(i) {
+        text: function(i) {
           return String.fromCharCode(65 + i);
         },
         color: 'rgba(86,114,30,0.9)'
@@ -2023,10 +2071,11 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
 
       //Line properties
       lineColor: 'rgba(60,40,15,1)',
-      lineWidth: function lineWidth(cellSize) {
+      lineWidth: function(cellSize) {
         if (cellSize > 60) {
           return 2;
-        } else if (cellSize > 50) {
+        }
+        else if (cellSize > 50) {
           return 1.5;
         }
         return 1;
@@ -2038,35 +2087,49 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
 
         //Color and radius
         color: 'rgba(60,40,15,1)',
-        radius: function radius(cellSize) {
+        radius: function(cellSize) {
           if (cellSize > 50) {
-            return Math.floor(cellSize / 16 + 1);
-          } else if (cellSize > 30) {
+            return Math.floor((cellSize / 16) + 1);
+          }
+          else if (cellSize > 30) {
             return 3;
-          } else if (cellSize > 15) {
+          }
+          else if (cellSize > 15) {
             return 2;
-          } else if (cellSize > 5) {
+          }
+          else if (cellSize > 5) {
             return 1.5;
           }
           return 1;
         },
 
         //Locations
-        points: function points(width, height) {
+        points: function(width, height) {
 
           //19x19
           if (width === height && width === 19) {
-            return [{ x: 3, y: 3 }, { x: 9, y: 3 }, { x: 15, y: 3 }, { x: 3, y: 9 }, { x: 9, y: 9 }, { x: 15, y: 9 }, { x: 3, y: 15 }, { x: 9, y: 15 }, { x: 15, y: 15 }];
+            return [
+              { x: 3, y: 3 }, { x: 9, y: 3 }, { x: 15,y: 3 },
+              { x: 3, y: 9 }, { x: 9, y: 9 }, { x: 15,y: 9 },
+              { x: 3, y: 15 }, { x: 9, y: 15 }, { x: 15,y: 15 }
+            ];
           }
 
           //13x13
           if (width === height && width === 13) {
-            return [{ x: 3, y: 3 }, { x: 9, y: 3 }, { x: 3, y: 9 }, { x: 9, y: 9 }];
+            return [
+              { x: 3, y: 3 }, { x: 9, y: 3 },
+              { x: 3, y: 9 }, { x: 9, y: 9 }
+            ];
           }
 
           //9x9
           if (width === height && width === 9) {
-            return [{ x: 4, y: 4 }, { x: 2, y: 2 }, { x: 2, y: 6 }, { x: 6, y: 2 }, { x: 6, y: 6 }];
+            return [
+              { x: 4, y: 4}, { x: 2, y: 2},
+              { x: 2, y: 6}, { x: 6, y: 2},
+              { x: 6, y: 6}
+            ];
           }
 
           //No star points
@@ -2089,9 +2152,9 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
         font: 'Arial',
         style: 'numbers',
         inverse: true,
-        size: function size() {
-          return function (ch, cellSize) {
-            return Math.floor(cellSize * 0.3 + 1) + 'px';
+        size: function() {
+          return function(ch, cellSize) {
+            return Math.floor((cellSize * 0.3) + 1) + 'px';
           };
         }
       },
@@ -2101,9 +2164,9 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
         font: 'Arial',
         style: 'letters',
         inverse: false,
-        size: function size() {
-          return function (ch, cellSize) {
-            return Math.floor(cellSize * 0.3 + 1) + 'px';
+        size: function() {
+          return function(ch, cellSize) {
+            return Math.floor((cellSize * 0.3) + 1) + 'px';
           };
         }
       }
@@ -2113,7 +2176,7 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
   /**
    * Set global default theme
    */
-  this.setTheme = function (theme) {
+  this.setTheme = function(theme) {
     if (theme) {
       defaultTheme = angular.merge(defaultTheme, theme);
     }
@@ -2122,7 +2185,7 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
   /**
    * Service getter
    */
-  this.$get = function () {
+  this.$get = function() {
 
     /**
      * Board theme constructor
@@ -2137,7 +2200,7 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
     /**
      * Reset the theme to defaults
      */
-    BoardTheme.prototype.reset = function () {
+    BoardTheme.prototype.reset = function() {
 
       //Use default theme as a base
       this.theme = angular.copy(defaultTheme);
@@ -2151,7 +2214,7 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
     /**
      * Get a theme property
      */
-    BoardTheme.prototype.get = function (property) {
+    BoardTheme.prototype.get = function(property) {
 
       //Determine path to the property
       var path = property.split('.');
@@ -2162,7 +2225,8 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
 
         //Can't find the property?
         if (typeof prop[path[i]] === 'undefined') {
-          throw new Error('Could not find theme property ' + property);
+          console.warn('Could not find theme property', property);
+          return null;
         }
 
         //Advance further in the object
@@ -2189,7 +2253,7 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
     /**
      * Change a theme property dynamically (accepts handler function as value)
      */
-    BoardTheme.prototype.set = function (property, value) {
+    BoardTheme.prototype.set = function(property, value) {
 
       //Determine path to the property
       var path = property.split('.');
@@ -2199,7 +2263,7 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
       for (var i = 0; i < path.length; i++) {
 
         //Time to set?
-        if (i + 1 === path.length) {
+        if ((i + 1) === path.length) {
           prop[path[i]] = value;
           break;
         }
@@ -2221,7 +2285,7 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
      * To combat 2d canvas blurry lines, we translate the canvas prior to drawing elements.
      * See: http://www.mobtowers.com/html5-canvas-crisp-lines-every-time/
      */
-    BoardTheme.prototype.canvasTranslate = function (lineWidth) {
+    BoardTheme.prototype.canvasTranslate = function(lineWidth) {
 
       //If no linewidth specified, use the grid line width as a reference
       //to make sure stuff is aligned to the grid
@@ -2230,18 +2294,17 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
       }
 
       //Return a translation for uneven widths
-      return lineWidth % 2 * 0.5;
+      return (lineWidth % 2) * 0.5;
     };
 
     //Return
     return BoardTheme;
   };
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * InvalidDataError :: Error class to handle invalid data.
@@ -2250,12 +2313,14 @@ angular.module('ngGo.Board.Theme.Service', ['ngGo'])
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Errors.InvalidDataError.Service', ['ngGo'])
+angular.module('ngGo.Errors.InvalidDataError.Service', [
+  'ngGo'
+])
 
 /**
  * Factory definition
  */
-.factory('InvalidDataError', ["ngGo", function (ngGo) {
+.factory('InvalidDataError', ['ngGo', function(ngGo) {
 
   /**
    * Define error
@@ -2301,11 +2366,10 @@ angular.module('ngGo.Errors.InvalidDataError.Service', ['ngGo'])
   //Return object
   return InvalidDataError;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * InvalidPositionError :: Error class to handle invalid moves.
@@ -2314,12 +2378,14 @@ angular.module('ngGo.Errors.InvalidDataError.Service', ['ngGo'])
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Errors.InvalidPositionError.Service', ['ngGo'])
+angular.module('ngGo.Errors.InvalidPositionError.Service', [
+  'ngGo'
+])
 
 /**
  * Factory definition
  */
-.factory('InvalidPositionError', ["ngGo", "StoneColor", function (ngGo, StoneColor) {
+.factory('InvalidPositionError', ['ngGo', 'StoneColor', function(ngGo, StoneColor) {
 
   /**
    * Define error
@@ -2333,7 +2399,8 @@ angular.module('ngGo.Errors.InvalidPositionError.Service', ['ngGo'])
 
     //Add position data
     if (typeof x !== 'undefined' && typeof y !== 'undefined' && typeof color !== 'undefined') {
-      this.message += ' Trying to place a ' + (color === StoneColor.W ? 'white' : 'black') + ' stone on (' + x + ', ' + y + ')';
+      this.message += ' Trying to place a ' + (color === StoneColor.W ? 'white' : 'black') +
+        ' stone on (' + x + ', ' + y + ')';
     }
 
     //Append code message
@@ -2364,13 +2431,10 @@ angular.module('ngGo.Errors.InvalidPositionError.Service', ['ngGo'])
   //Return object
   return InvalidPositionError;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Game :: This class represents a game record or a game that is being played/edited. The class
@@ -2383,12 +2447,21 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Game.Node.Service', 'ngGo.Game.Position.Service', 'ngGo.Kifu.Blank.Service', 'ngGo.Kifu.Parser.Service', 'ngGo.Errors.InvalidDataError.Service', 'ngGo.Errors.InvalidPositionError.Service'])
+angular.module('ngGo.Game.Service', [
+  'ngGo',
+  'ngGo.Game.Path.Service',
+  'ngGo.Game.Node.Service',
+  'ngGo.Game.Position.Service',
+  'ngGo.Kifu.Blank.Service',
+  'ngGo.Kifu.Parser.Service',
+  'ngGo.Errors.InvalidDataError.Service',
+  'ngGo.Errors.InvalidPositionError.Service'
+])
 
 /**
  * Factory definition
  */
-.provider('Game', function () {
+.provider('Game', function() {
 
   /**
    * Default configuration
@@ -2415,16 +2488,19 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
   /**
    * Set global default configuration for players
    */
-  this.setConfig = function (config) {
+  this.setConfig = function(config) {
     defaultConfig = angular.extend(defaultConfig, config);
   };
 
   /**
    * Service getter
    */
-  this.$get = ["ngGo", "StoneColor", "GamePath", "GameNode", "GamePosition", "KifuParser", "KifuBlank", "InvalidDataError", "InvalidPositionError", function (ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser, KifuBlank, InvalidDataError, InvalidPositionError) {
+  this.$get = ['ngGo', 'StoneColor', 'GamePath', 'GameNode', 'GamePosition', 'KifuParser', 'KifuBlank', 'InvalidDataError', 'InvalidPositionError', function(
+    ngGo, StoneColor, GamePath, GameNode, GamePosition, KifuParser,
+    KifuBlank, InvalidDataError, InvalidPositionError
+  ) {
 
-    /**************************************************************************
+    /*****************************************************************************
      * General helpers
      ***/
 
@@ -2458,7 +2534,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       }
     }
 
-    /**************************************************************************
+    /*****************************************************************************
      * Node navigation helpers
      ***/
 
@@ -2527,10 +2603,10 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
 
       //Set the initial turn depending on handicap
       //Can be overwritten by game record instructions
-      this.setTurn(this.info.game.handicap > 1 ? StoneColor.W : StoneColor.B);
+      this.setTurn((this.info.game.handicap > 1) ? StoneColor.W : StoneColor.B);
     }
 
-    /**************************************************************************
+    /*****************************************************************************
      * Position history helpers
      ***/
 
@@ -2594,7 +2670,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       }
     }
 
-    /**************************************************************************
+    /*****************************************************************************
      * Execution helpers
      ***/
 
@@ -2609,14 +2685,15 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       }
 
       //Initialize new position
-      var i = void 0;
+      var i;
       var newPosition = this.position.clone();
 
       //Handle moves
       if (this.node.isMove()) {
         if (this.node.move.pass) {
           newPosition.setTurn(-this.node.move.color);
-        } else {
+        }
+        else {
           this.validateMove(this.node.move.x, this.node.move.y, this.node.move.color, newPosition);
         }
       }
@@ -2630,7 +2707,9 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       if (this.node.setup) {
         for (i in this.node.setup) {
           if (this.node.setup.hasOwnProperty(i)) {
-            newPosition.stones.set(this.node.setup[i].x, this.node.setup[i].y, this.node.setup[i].color);
+            newPosition.stones.set(
+              this.node.setup[i].x, this.node.setup[i].y, this.node.setup[i].color
+            );
           }
         }
       }
@@ -2639,7 +2718,9 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       if (this.node.markup) {
         for (i in this.node.markup) {
           if (this.node.markup.hasOwnProperty(i)) {
-            newPosition.markup.set(this.node.markup[i].x, this.node.markup[i].y, this.node.markup[i]);
+            newPosition.markup.set(
+              this.node.markup[i].x, this.node.markup[i].y, this.node.markup[i]
+            );
           }
         }
       }
@@ -2648,7 +2729,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       pushPosition.call(this, newPosition);
     }
 
-    /**************************************************************************
+    /*****************************************************************************
      * Game class
      ***/
 
@@ -2664,12 +2745,12 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       Object.defineProperty(this, 'position', {
 
         //Getter returns the last position from the stack
-        get: function get() {
+        get: function() {
           return this.history[this.history.length - 1];
         },
 
         //Setter adds a new position to the stack
-        set: function set(newPosition) {
+        set: function(newPosition) {
           this.history[this.history.length] = newPosition;
         }
       });
@@ -2677,7 +2758,8 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       //Load data
       if (data) {
         this.load(data);
-      } else {
+      }
+      else {
         this.init();
       }
     }
@@ -2685,7 +2767,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Initialize
      */
-    Game.prototype.init = function () {
+    Game.prototype.init = function() {
 
       //Info properties
       this.info = {};
@@ -2707,7 +2789,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Load game record data
      */
-    Game.prototype.load = function (data) {
+    Game.prototype.load = function(data) {
 
       //Initialize
       this.init();
@@ -2715,7 +2797,8 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       //Try to load game record data
       try {
         this.fromData(data);
-      } catch (errorCode) {
+      }
+      catch (errorCode) {
 
         //Just initialize our history with a blank position
         initializeHistory.call(this);
@@ -2731,7 +2814,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Reload game record
      */
-    Game.prototype.reload = function () {
+    Game.prototype.reload = function() {
       if (this.jgf) {
         this.load(this.jgf);
       }
@@ -2740,18 +2823,18 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Check if we managed to load a valid game record
      */
-    Game.prototype.isLoaded = function () {
+    Game.prototype.isLoaded = function() {
       return this.root !== null;
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * Game cloning and conversion
      ***/
 
     /**
      * Clone this game
      */
-    Game.prototype.clone = function () {
+    Game.prototype.clone = function() {
 
       //Create new kifu object and get properties
       var clone = new Game();
@@ -2769,7 +2852,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Load from an unknown data source
      */
-    Game.prototype.fromData = function (data) {
+    Game.prototype.fromData = function(data) {
 
       //No data, can't do much
       if (!data) {
@@ -2781,30 +2864,33 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
         var c = data.charAt(0);
         if (c === '(') {
           return this.fromSgf(data);
-        } else if (c === '{' || c === '[') {
+        }
+        else if (c === '{' || c === '[') {
           return this.fromJgf(data);
-        } else if (c === '\\') {
+        }
+        else if (c === '\\') {
           return this.fromGib(data);
-        } else {
+        }
+        else {
           throw ngGo.error.UNKNOWN_DATA;
         }
       }
 
       //Object given? Probably a JGF object
-      else if ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object') {
-          this.fromJgf(data);
-        }
+      else if (typeof data === 'object') {
+        this.fromJgf(data);
+      }
 
-        //Something else?
-        else {
-            throw ngGo.error.UNKNOWN_DATA;
-          }
+      //Something else?
+      else {
+        throw ngGo.error.UNKNOWN_DATA;
+      }
     };
 
     /**
      * Load from GIB data
      */
-    Game.prototype.fromGib = function (gib) {
+    Game.prototype.fromGib = function(gib) {
 
       //Use the kifu parser
       var jgf = KifuParser.gib2jgf(gib);
@@ -2819,7 +2905,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Load from SGF data
      */
-    Game.prototype.fromSgf = function (sgf) {
+    Game.prototype.fromSgf = function(sgf) {
 
       //Use the kifu parser
       var jgf = KifuParser.sgf2jgf(sgf);
@@ -2834,13 +2920,14 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Load from JGF data
      */
-    Game.prototype.fromJgf = function (jgf) {
+    Game.prototype.fromJgf = function(jgf) {
 
       //Parse jgf string
       if (typeof jgf === 'string') {
         try {
           jgf = angular.fromJson(jgf);
-        } catch (error) {
+        }
+        catch (error) {
           throw ngGo.error.INVALID_JGF_JSON;
         }
       }
@@ -2857,10 +2944,12 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
         if (jgf.tree.charAt(0) === '[') {
           try {
             jgf.tree = angular.fromJson(jgf.tree);
-          } catch (error) {
+          }
+          catch (error) {
             throw ngGo.error.INVALID_JGF_TREE_JSON;
           }
-        } else {
+        }
+        else {
           jgf.tree = [];
         }
       }
@@ -2890,14 +2979,14 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Convert to SGF
      */
-    Game.prototype.toSgf = function () {
+    Game.prototype.toSgf = function() {
       return KifuParser.jgf2sgf(this.toJgf());
     };
 
     /**
      * Convert to JGF (optionally stringified)
      */
-    Game.prototype.toJgf = function (stringify) {
+    Game.prototype.toJgf = function(stringify) {
 
       //Initialize JGF and get properties
       var jgf = KifuBlank.jgf();
@@ -2918,8 +3007,8 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
 
         //Otherwise copy
         else {
-            jgf[p] = angular.copy(this[p]);
-          }
+          jgf[p] = angular.copy(this[p]);
+        }
       }
 
       //Build tree
@@ -2929,21 +3018,21 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       return stringify ? angular.toJson(jgf) : jgf;
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * Getters
      ***/
 
     /**
      * Get current node
      */
-    Game.prototype.getNode = function () {
+    Game.prototype.getNode = function() {
       return this.node;
     };
 
     /**
      * Get nodes array for currently remembered path
      */
-    Game.prototype.getNodes = function () {
+    Game.prototype.getNodes = function() {
 
       //Initialize node to process
       var node = this.root;
@@ -2964,7 +3053,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Get node for a certain move
      */
-    Game.prototype.getMoveNode = function (move) {
+    Game.prototype.getMoveNode = function(move) {
       var nodes = this.getMoveNodes(move, move);
       return nodes.length ? nodes[0] : null;
     };
@@ -2972,7 +3061,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Get move nodes restricted by given move numbers
      */
-    Game.prototype.getMoveNodes = function (fromMove, toMove) {
+    Game.prototype.getMoveNodes = function(fromMove, toMove) {
 
       //Get all nodes for the current path
       var nodes = this.getNodes();
@@ -2982,10 +3071,10 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       toMove = toMove || nodes.length;
 
       //Filter
-      return nodes.filter(function (node) {
+      return nodes.filter(function(node) {
         if (node.isMove()) {
           var move = node.getMoveNumber();
-          return move >= fromMove && move <= toMove;
+          return (move >= fromMove && move <= toMove);
         }
         return false;
       });
@@ -2994,7 +3083,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Get current move number
      */
-    Game.prototype.getMove = function () {
+    Game.prototype.getMove = function() {
       if (this.node) {
         return this.node.getMoveNumber();
       }
@@ -3004,7 +3093,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Get the number of moves in the main branch
      */
-    Game.prototype.getMoveCount = function () {
+    Game.prototype.getMoveCount = function() {
       var moveNodes = this.getMoveNodes();
       return moveNodes.length;
     };
@@ -3012,7 +3101,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Get the move variation for given coordinates
      */
-    Game.prototype.getMoveVariation = function (x, y) {
+    Game.prototype.getMoveVariation = function(x, y) {
       if (this.node) {
         return this.node.getMoveVariation(x, y);
       }
@@ -3022,14 +3111,14 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Get the current game position
      */
-    Game.prototype.getPosition = function () {
+    Game.prototype.getPosition = function() {
       return this.position;
     };
 
     /**
      * Get the game path
      */
-    Game.prototype.getPath = function (clone) {
+    Game.prototype.getPath = function(clone) {
       if (clone) {
         return this.path.clone();
       }
@@ -3039,21 +3128,21 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Clone the current game path
      */
-    Game.prototype.clonePath = function () {
+    Game.prototype.clonePath = function() {
       return this.path.clone();
     };
 
     /**
      * Get the game path to a certain named node
      */
-    Game.prototype.getPathToNode = function (nodeName) {
+    Game.prototype.getPathToNode = function(nodeName) {
       return GamePath.findNode(nodeName, this.root);
     };
 
     /**
      * Get the game komi
      */
-    Game.prototype.getKomi = function () {
+    Game.prototype.getKomi = function() {
       var komi = this.get('game.komi', 0);
       return parseFloat(komi);
     };
@@ -3061,7 +3150,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Set the game komi
      */
-    Game.prototype.setKomi = function (komi) {
+    Game.prototype.setKomi = function(komi) {
       if (typeof komi === 'undefined') {
         komi = this.config.defaultKomi;
       }
@@ -3071,21 +3160,21 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Get the game name
      */
-    Game.prototype.getName = function () {
+    Game.prototype.getName = function() {
       return this.get('game.name', '');
     };
 
     /**
      * Get the game result
      */
-    Game.prototype.getResult = function () {
+    Game.prototype.getResult = function() {
       return this.get('game.result', '');
     };
 
     /**
      * Get the player turn for this position
      */
-    Game.prototype.getTurn = function () {
+    Game.prototype.getTurn = function() {
 
       //Must have a position
       if (!this.history.length) {
@@ -3099,7 +3188,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Set the player turn for the current position
      */
-    Game.prototype.setTurn = function (color) {
+    Game.prototype.setTurn = function(color) {
 
       //Must have a position
       if (!this.history.length) {
@@ -3113,7 +3202,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Get the total capture count up to the current position
      */
-    Game.prototype.getCaptureCount = function () {
+    Game.prototype.getCaptureCount = function() {
 
       //Initialize
       var captures = {};
@@ -3133,7 +3222,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Get an info property
      */
-    Game.prototype.get = function (property, defaultValue) {
+    Game.prototype.get = function(property, defaultValue) {
 
       //Must have a property
       if (!property) {
@@ -3147,7 +3236,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
 
       //Initialize object we're getting info from
       var obj = this.info;
-      var key = void 0;
+      var key;
 
       //Loop the properties
       for (var p = 0; p < property.length; p++) {
@@ -3156,7 +3245,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
         key = property[p];
 
         //Last key reached? Done, get value
-        if (p + 1 === property.length) {
+        if ((p + 1) === property.length) {
           if (typeof obj[key] === 'undefined') {
             return defaultValue;
           }
@@ -3164,8 +3253,9 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
         }
 
         //Must be object container
-        if (_typeof(obj[key]) !== 'object') {
-          throw new Error('Game info property ' + key + ' is not an object');
+        if (typeof obj[key] !== 'object') {
+          console.warn('Game info property', key, 'is not an object');
+          return defaultValue;
         }
 
         //Move up in tree
@@ -3173,21 +3263,21 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       }
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * Checkers
      ***/
 
     /**
      * Check if coordinates are on the board
      */
-    Game.prototype.isOnBoard = function (x, y) {
+    Game.prototype.isOnBoard = function(x, y) {
       return x >= 0 && y >= 0 && x < this.info.board.width && y < this.info.board.height;
     };
 
     /**
      * Check if given coordinates are one of the next child node coordinates
      */
-    Game.prototype.isMoveVariation = function (x, y) {
+    Game.prototype.isMoveVariation = function(x, y) {
       if (this.node) {
         return this.node.isMoveVariation(x, y);
       }
@@ -3197,25 +3287,25 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Check if a given position is repeating within this game
      */
-    Game.prototype.isRepeatingPosition = function (checkPosition) {
+    Game.prototype.isRepeatingPosition = function(checkPosition) {
 
       //Init
-      var stop = void 0;
+      var stop;
 
       //Check for ko only? (Last two positions)
-      if (this.checkRepeat === 'KO' && this.history.length - 2 >= 0) {
+      if (this.checkRepeat === 'KO' && (this.history.length - 2) >= 0) {
         stop = this.history.length - 2;
       }
 
       //Check all history?
       else if (this.checkRepeat === 'ALL') {
-          stop = 0;
-        }
+        stop = 0;
+      }
 
-        //Not repeating
-        else {
-            return false;
-          }
+      //Not repeating
+      else {
+        return false;
+      }
 
       //Loop history of positions to check
       for (var i = this.history.length - 2; i >= stop; i--) {
@@ -3231,11 +3321,12 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Wrapper for validateMove() returning a boolean and catching any errors
      */
-    Game.prototype.isValidMove = function (x, y, color) {
+    Game.prototype.isValidMove = function(x, y, color) {
       try {
         this.validateMove(x, y, color);
         return true;
-      } catch (error) {
+      }
+      catch (error) {
         return false;
       }
     };
@@ -3244,7 +3335,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
      * Check if a move is valid. If valid, the new game position object is returned.
      * You can supply a pre-created position to use, or the current position is cloned.
      */
-    Game.prototype.validateMove = function (x, y, color, newPosition) {
+    Game.prototype.validateMove = function(x, y, color, newPosition) {
 
       //Check coordinates validity
       if (!this.isOnBoard(x, y)) {
@@ -3281,8 +3372,8 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
 
           //Invalid move
           else {
-              throw new InvalidPositionError(ngGo.error.POSTITION_IS_SUICIDE, x, y, color);
-            }
+            throw new InvalidPositionError(ngGo.error.POSTITION_IS_SUICIDE, x, y, color);
+          }
         }
       }
 
@@ -3301,7 +3392,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Check if a stone (setup) placement is valid.
      */
-    Game.prototype.validatePlacement = function (x, y, color, position) {
+    Game.prototype.validatePlacement = function(x, y, color, position) {
 
       //Check coordinates validity
       if (!this.isOnBoard(x, y)) {
@@ -3329,14 +3420,14 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       }
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * Stone and markup handling
      ***/
 
     /**
      * Add a stone
      */
-    Game.prototype.addStone = function (x, y, color) {
+    Game.prototype.addStone = function(x, y, color) {
 
       //Check if there's anything to do at all
       if (this.position.stones.is(x, y, color)) {
@@ -3383,7 +3474,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Add markup
      */
-    Game.prototype.addMarkup = function (x, y, markup) {
+    Game.prototype.addMarkup = function(x, y, markup) {
 
       //No markup instructions container in this node?
       if (typeof this.node.markup === 'undefined') {
@@ -3400,7 +3491,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Remove a stone
      */
-    Game.prototype.removeStone = function (x, y) {
+    Game.prototype.removeStone = function(x, y) {
 
       //Check if the stone is found in setup instructions
       var foundInSetup = false;
@@ -3430,7 +3521,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Remove markup
      */
-    Game.prototype.removeMarkup = function (x, y) {
+    Game.prototype.removeMarkup = function(x, y) {
 
       //Remove from node
       if (typeof this.node.markup !== 'undefined') {
@@ -3447,7 +3538,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Check if there is a stone at the given coordinates for the current position
      */
-    Game.prototype.hasStone = function (x, y, color) {
+    Game.prototype.hasStone = function(x, y, color) {
       if (typeof color !== 'undefined') {
         return this.position.stones.is(x, y, color);
       }
@@ -3457,7 +3548,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Check if there is markup at the given coordinate for the current position
      */
-    Game.prototype.hasMarkup = function (x, y, type) {
+    Game.prototype.hasMarkup = function(x, y, type) {
       if (typeof type !== 'undefined') {
         return this.position.markup.is(x, y, type);
       }
@@ -3467,25 +3558,25 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Get stone on coordinates
      */
-    Game.prototype.getStone = function (x, y) {
+    Game.prototype.getStone = function(x, y) {
       return this.position.stones.get(x, y);
     };
 
     /**
      * Get markup on coordinates
      */
-    Game.prototype.getMarkup = function (x, y) {
+    Game.prototype.getMarkup = function(x, y) {
       return this.position.markup.get(x, y);
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * Move handling
      ***/
 
     /**
      * Play move
      */
-    Game.prototype.play = function (x, y, color) {
+    Game.prototype.play = function(x, y, color) {
 
       //Color defaults to current turn
       color = color || this.position.getTurn();
@@ -3520,7 +3611,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Play pass
      */
-    Game.prototype.pass = function (color) {
+    Game.prototype.pass = function(color) {
 
       //Color defaults to current turn
       color = color || this.position.getTurn();
@@ -3549,17 +3640,17 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       this.path.advance(i);
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * Game tree navigation
      ***/
 
     /**
      * Go to the next position
      */
-    Game.prototype.next = function (i) {
+    Game.prototype.next = function(i) {
 
       //Object (node) given as parameter? Find index
-      if ((typeof i === 'undefined' ? 'undefined' : _typeof(i)) === 'object') {
+      if (typeof i === 'object') {
         i = this.node.children.indexOf(i);
       }
 
@@ -3570,7 +3661,8 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
         try {
           executeNode.call(this);
           return true;
-        } catch (error) {
+        }
+        catch (error) {
           previousNode.call(this);
           throw error;
         }
@@ -3583,7 +3675,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Go to the previous position
      */
-    Game.prototype.previous = function () {
+    Game.prototype.previous = function() {
 
       //Go to the previous node
       if (previousNode.call(this)) {
@@ -3598,7 +3690,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Go to the last position
      */
-    Game.prototype.last = function () {
+    Game.prototype.last = function() {
 
       //Keep going to the next node until we reach the end
       while (nextNode.call(this)) {
@@ -3606,7 +3698,8 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
         //If an invalid move is detected, we can't go on
         try {
           executeNode.call(this);
-        } catch (error) {
+        }
+        catch (error) {
           previousNode.call(this);
           throw error;
         }
@@ -3616,7 +3709,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Go to the first position
      */
-    Game.prototype.first = function () {
+    Game.prototype.first = function() {
 
       //Go to the first node
       firstNode.call(this);
@@ -3629,7 +3722,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Go to position specified by a path object, a numeric move numer, or a node name string
      */
-    Game.prototype.goto = function (target) {
+    Game.prototype.goto = function(target) {
 
       //Must have a tree
       if (this.root === null) {
@@ -3647,7 +3740,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       }
 
       //Initialize path
-      var path = void 0;
+      var path;
 
       //Simple move number? Convert to path object
       if (typeof target === 'number') {
@@ -3658,22 +3751,22 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       //String? Named node
       else if (typeof target === 'string') {
 
-          //Already here?
-          if (this.node.name === target) {
-            return;
-          }
-
-          //Find path to node
-          path = this.getPathToNode(target);
-          if (path === null) {
-            return;
-          }
+        //Already here?
+        if (this.node.name === target) {
+          return;
         }
 
-        //Otherwise assume path object
-        else {
-            path = target;
-          }
+        //Find path to node
+        path = this.getPathToNode(target);
+        if (path === null) {
+          return;
+        }
+      }
+
+      //Otherwise assume path object
+      else {
+        path = target;
+      }
 
       //Already here?
       if (this.path.compare(path)) {
@@ -3700,7 +3793,8 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
         //If an invalid move is detected, we can't go on
         try {
           executeNode.call(this);
-        } catch (error) {
+        }
+        catch (error) {
           previousNode.call(this);
           throw error;
         }
@@ -3710,7 +3804,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Go to the next fork
      */
-    Game.prototype.nextFork = function () {
+    Game.prototype.nextFork = function() {
 
       //Keep going to the next node until we reach one with multiple children
       while (nextNode.call(this)) {
@@ -3718,7 +3812,8 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
         //If an invalid move is detected, we can't go on
         try {
           executeNode.call(this);
-        } catch (error) {
+        }
+        catch (error) {
           previousNode.call(this);
           throw error;
         }
@@ -3733,7 +3828,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Go to the previous fork
      */
-    Game.prototype.previousFork = function () {
+    Game.prototype.previousFork = function() {
 
       //Loop until we find a node with more than one child
       while (previousNode.call(this)) {
@@ -3747,7 +3842,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Go to the next move with comments
      */
-    Game.prototype.nextComment = function () {
+    Game.prototype.nextComment = function() {
 
       //Keep going to the next node until we find one with comments
       while (nextNode.call(this)) {
@@ -3755,7 +3850,8 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
         //If an invalid move is detected, we can't go on
         try {
           executeNode.call(this);
-        } catch (error) {
+        }
+        catch (error) {
           previousNode.call(this);
           throw error;
         }
@@ -3770,7 +3866,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Go to the previous move with comments
      */
-    Game.prototype.previousComment = function () {
+    Game.prototype.previousComment = function() {
 
       //Go back until we find a node with comments
       while (previousNode.call(this)) {
@@ -3785,14 +3881,14 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
       }
     };
 
-    /**************************************************************************
+    /*****************************************************************************
      * State handling
      ***/
 
     /**
      * Get the board state
      */
-    Game.prototype.getState = function () {
+    Game.prototype.getState = function() {
 
       //Can only create when we have a JGF and path
       if (!this.jgf || !this.path) {
@@ -3812,7 +3908,7 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     /**
      * Restore the game state
      */
-    Game.prototype.restoreState = function (state) {
+    Game.prototype.restoreState = function(state) {
 
       //Must have jgf and path
       if (!state || !state.jgf || !state.path) {
@@ -3828,13 +3924,10 @@ angular.module('ngGo.Game.Service', ['ngGo', 'ngGo.Game.Path.Service', 'ngGo.Gam
     return Game;
   }];
 });
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+(function(window, angular, undefined) {'use strict';
 
 /**
  * GameNode :: This class represents a single node in the game moves tree. It contains
@@ -3847,12 +3940,14 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Game.Node.Service', ['ngGo'])
+angular.module('ngGo.Game.Node.Service', [
+  'ngGo'
+])
 
 /**
  * Factory definition
  */
-.factory('GameNode', ["StoneColor", function (StoneColor) {
+.factory('GameNode', ['StoneColor', function(StoneColor) {
 
   /**
    * Character index of "a"
@@ -3873,7 +3968,8 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
     baseObject = baseObject || {};
     if (coords === '' || coords === 'pass') {
       baseObject.pass = true;
-    } else {
+    }
+    else {
 
       //Backwards compatibility with SGF string coordinates in JGF
       if (typeof coords === 'string') {
@@ -3881,8 +3977,8 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
       }
 
       //Append coordinates
-      baseObject.x = Number(coords[0]);
-      baseObject.y = Number(coords[1]);
+      baseObject.x = coords[0] * 1;
+      baseObject.y = coords[1] * 1;
     }
     return baseObject;
   }
@@ -3891,7 +3987,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
    * Convert a numeric color value (color constant) to a string
    */
   function toStringColor(color) {
-    return color === StoneColor.B ? 'B' : color === StoneColor.W ? 'W' : '';
+    return (color === StoneColor.B) ? 'B' : (((color === StoneColor.W) ? 'W' : ''));
   }
 
   /**
@@ -3900,13 +3996,14 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   function toColorConstant(color) {
     if (color === 'B') {
       return StoneColor.B;
-    } else if (color === 'W') {
+    }
+    else if (color === 'W') {
       return StoneColor.W;
     }
     return StoneColor.E;
   }
 
-  /**************************************************************************
+  /*****************************************************************************
    * Helpers for conversion between JGF / KIFU format
    ***/
 
@@ -3931,8 +4028,8 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
 
     //Regular move
     else {
-        jgfMove[color] = [move.x, move.y];
-      }
+      jgfMove[color] = [move.x, move.y];
+    }
 
     //Delete coordinates and color
     delete jgfMove.x;
@@ -3949,14 +4046,14 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   function convertMoveFromJgf(move) {
 
     //Prepare color, coordinates
-    var color = void 0,
-        coords = void 0;
+    var color, coords;
 
     //Check whose move it was
     if (move.W) {
       color = 'W';
       coords = move.W;
-    } else if (move.B) {
+    }
+    else if (move.B) {
       color = 'B';
       coords = move.B;
     }
@@ -3978,8 +4075,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   function convertSetupToJgf(setup) {
 
     //Initialize variables
-    var i = void 0,
-        color = void 0;
+    var i, color;
     var jgfSetup = {};
 
     //Loop setup objects
@@ -4009,9 +4105,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   function convertSetupFromJgf(setup) {
 
     //Initialize variables
-    var c = void 0,
-        key = void 0,
-        color = void 0;
+    var c, key, color;
     var gameSetup = [];
 
     //Loop setup
@@ -4042,8 +4136,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   function convertMarkupToJgf(markup) {
 
     //Initialize variables
-    var i = void 0,
-        type = void 0;
+    var i, type;
     var jgfMarkup = {};
 
     //Loop setup objects
@@ -4061,7 +4154,8 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
         //Label?
         if (type === 'label') {
           jgfMarkup[type].push([markup[i].x, markup[i].y, markup[i].text]);
-        } else {
+        }
+        else {
           jgfMarkup[type].push([markup[i].x, markup[i].y]);
         }
       }
@@ -4077,8 +4171,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   function convertMarkupFromJgf(markup) {
 
     //Initialize variables
-    var l = void 0,
-        type = void 0;
+    var l, type;
     var gameMarkup = [];
 
     //Loop markup types
@@ -4112,7 +4205,8 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
               text: markup[type][l][2]
             }));
           }
-        } else {
+        }
+        else {
 
           //Loop coordinates
           for (l in markup[type]) {
@@ -4198,7 +4292,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   /**
    * Get node's child specified by index or null if doesn't exist
    */
-  GameNode.prototype.getChild = function (i) {
+  GameNode.prototype.getChild = function(i) {
     i = i || 0;
     if (this.children[i]) {
       return this.children[i];
@@ -4209,28 +4303,28 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   /**
    * Get all the children
    */
-  GameNode.prototype.getChildren = function () {
+  GameNode.prototype.getChildren = function() {
     return this.children;
   };
 
   /**
    * Check if the node has any chilren
    */
-  GameNode.prototype.hasChildren = function () {
-    return this.children.length > 0;
+  GameNode.prototype.hasChildren = function() {
+    return (this.children.length > 0);
   };
 
   /**
    * Get parent node
    */
-  GameNode.prototype.getParent = function () {
+  GameNode.prototype.getParent = function() {
     return this.parent;
   };
 
   /**
    * Check if the node has more than one move variation
    */
-  GameNode.prototype.hasMoveVariations = function () {
+  GameNode.prototype.hasMoveVariations = function() {
 
     //Less than two child nodes?
     if (this.children.length <= 1) {
@@ -4259,7 +4353,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   /**
    * Get all the move variation nodes
    */
-  GameNode.prototype.getMoveVariations = function () {
+  GameNode.prototype.getMoveVariations = function() {
 
     //No child nodes?
     if (this.children.length === 0) {
@@ -4285,7 +4379,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   /**
    * Get the move variation for given coordinates
    */
-  GameNode.prototype.getMoveVariation = function (x, y) {
+  GameNode.prototype.getMoveVariation = function(x, y) {
 
     //Loop the child nodes
     for (var i = 0; i < this.children.length; i++) {
@@ -4301,7 +4395,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   /**
    * Check if given coordinates are one of the next child node coordinates
    */
-  GameNode.prototype.isMoveVariation = function (x, y) {
+  GameNode.prototype.isMoveVariation = function(x, y) {
 
     //Loop the child nodes
     for (var i = 0; i < this.children.length; i++) {
@@ -4317,21 +4411,21 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   /**
    * Check if we have comments
    */
-  GameNode.prototype.hasComments = function () {
-    return this.comments && this.comments.length > 0;
+  GameNode.prototype.hasComments = function() {
+    return (this.comments && this.comments.length > 0);
   };
 
   /**
    * Check if this is a move node
    */
-  GameNode.prototype.isMove = function () {
+  GameNode.prototype.isMove = function() {
     return !!this.move;
   };
 
   /**
    * Get move number
    */
-  GameNode.prototype.getMoveNumber = function () {
+  GameNode.prototype.getMoveNumber = function() {
 
     //Move node?
     if (this.isMove()) {
@@ -4350,14 +4444,14 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
     return 0;
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Node manipulation
    ***/
 
   /**
    * Remove this node from its parent
    */
-  GameNode.prototype.remove = function () {
+  GameNode.prototype.remove = function() {
 
     //Can't remove if no parent
     if (!this.parent) {
@@ -4377,7 +4471,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   /**
    * Move the node up in the parent's child tree
    */
-  GameNode.prototype.moveUp = function () {
+  GameNode.prototype.moveUp = function() {
 
     //Can't move if no parent
     if (!this.parent) {
@@ -4396,7 +4490,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   /**
    * Move the node down in the parent's child tree
    */
-  GameNode.prototype.moveDown = function () {
+  GameNode.prototype.moveDown = function() {
 
     //Can't move if no parent
     if (!this.parent) {
@@ -4405,7 +4499,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
 
     //Find the index of this node, and if found swap the nodes from position
     var i = this.parent.children.indexOf(this);
-    if (i !== -1 && i < this.parent.children.length - 1) {
+    if (i !== -1 && i < (this.parent.children.length - 1)) {
       var temp = this.parent.children[i + 1];
       this.parent.children[i + 1] = this;
       this.parent.children[i] = temp;
@@ -4415,7 +4509,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   /**
    * Append this node to another node
    */
-  GameNode.prototype.appendTo = function (node) {
+  GameNode.prototype.appendTo = function(node) {
 
     //Remove from existing parent
     this.remove();
@@ -4429,7 +4523,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   /**
    * Append child node to this node.
    */
-  GameNode.prototype.appendChild = function (node) {
+  GameNode.prototype.appendChild = function(node) {
     node.parent = this;
     this.children.push(node);
     return this.children.length - 1;
@@ -4438,7 +4532,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   /**
    * Insert another node after this one
    */
-  GameNode.prototype.insertNode = function (node) {
+  GameNode.prototype.insertNode = function(node) {
 
     //Loop our children and change parent node
     for (var i = 0; i < this.children.length; i++) {
@@ -4453,14 +4547,14 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
     this.children = [node];
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * JGF conversion
    ***/
 
   /**
    * Build a Game Node from a given JGF tree
    */
-  GameNode.prototype.fromJgf = function (jgf, gameNode) {
+  GameNode.prototype.fromJgf = function(jgf, gameNode) {
 
     //Root JGF file given?
     if (typeof jgf.tree !== 'undefined') {
@@ -4468,10 +4562,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
     }
 
     //Initialize helper vars
-    var variationNode = void 0,
-        nextNode = void 0,
-        i = void 0,
-        j = void 0;
+    var variationNode, nextNode, i, j;
 
     //Node to work with given? Otherwise, work with ourselves
     gameNode = gameNode || this;
@@ -4497,30 +4588,32 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
       //Regular node
       else {
 
-          //Get properties to copy
-          var properties = Object.getOwnPropertyNames(jgf[i]);
+        //Get properties to copy
+        var properties = Object.getOwnPropertyNames(jgf[i]);
 
-          //Copy node properties
-          for (var key in properties) {
-            if (properties.hasOwnProperty(key)) {
-              var prop = properties[key];
+        //Copy node properties
+        for (var key in properties) {
+          if (properties.hasOwnProperty(key)) {
+            var prop = properties[key];
 
-              //Conversion function present?
-              if (typeof conversionMap.fromJgf[prop] !== 'undefined') {
-                gameNode[prop] = conversionMap.fromJgf[prop](jgf[i][prop]);
-              } else if (_typeof(jgf[i][prop]) === 'object') {
-                gameNode[prop] = angular.copy(jgf[i][prop]);
-              } else {
-                gameNode[prop] = jgf[i][prop];
-              }
+            //Conversion function present?
+            if (typeof conversionMap.fromJgf[prop] !== 'undefined') {
+              gameNode[prop] = conversionMap.fromJgf[prop](jgf[i][prop]);
+            }
+            else if (typeof jgf[i][prop] === 'object') {
+              gameNode[prop] = angular.copy(jgf[i][prop]);
+            }
+            else {
+              gameNode[prop] = jgf[i][prop];
             }
           }
         }
+      }
 
       //Next element is a regular node? Prepare new working node
       //Otherwise, if there are no more nodes or if the next element is
       //an array (e.g. variations), we keep our working node as the current one
-      if (i + 1 < jgf.length && !angular.isArray(jgf[i + 1])) {
+      if ((i + 1) < jgf.length && !angular.isArray(jgf[i + 1])) {
         nextNode = new GameNode();
         gameNode.appendChild(nextNode);
         gameNode = nextNode;
@@ -4531,7 +4624,7 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   /**
    * Convert this node to a JGF node container
    */
-  GameNode.prototype.toJgf = function (container) {
+  GameNode.prototype.toJgf = function(container) {
 
     //Initialize container to add nodes to
     container = container || [];
@@ -4553,9 +4646,11 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
         //Conversion function present?
         if (typeof conversionMap.toJgf[prop] !== 'undefined') {
           node[prop] = conversionMap.toJgf[prop](this[prop]);
-        } else if (_typeof(this[prop]) === 'object') {
+        }
+        else if (typeof this[prop] === 'object') {
           node[prop] = angular.copy(this[prop]);
-        } else {
+        }
+        else {
           node[prop] = this[prop];
         }
       }
@@ -4585,8 +4680,8 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
 
     //Just one child?
     else if (this.children.length === 1) {
-        this.children[0].toJgf(container);
-      }
+      this.children[0].toJgf(container);
+    }
 
     //Return container
     return container;
@@ -4595,13 +4690,10 @@ angular.module('ngGo.Game.Node.Service', ['ngGo'])
   //Return object
   return GameNode;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+(function(window, angular, undefined) {'use strict';
 
 /**
  * GamePath :: A simple class that keeps track of a path taken in a game.
@@ -4610,12 +4702,14 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Game.Path.Service', ['ngGo'])
+angular.module('ngGo.Game.Path.Service', [
+  'ngGo'
+])
 
 /**
  * Factory definition
  */
-.factory('GamePath', function () {
+.factory('GamePath', function() {
 
   /**
    * Constructor
@@ -4627,7 +4721,7 @@ angular.module('ngGo.Game.Path.Service', ['ngGo'])
   /**
    * Reset
    */
-  GamePath.prototype.reset = function () {
+  GamePath.prototype.reset = function() {
     this.move = 0;
     this.path = {};
     this.branches = 0;
@@ -4637,7 +4731,7 @@ angular.module('ngGo.Game.Path.Service', ['ngGo'])
   /**
    * Advance a move
    */
-  GamePath.prototype.advance = function (i) {
+  GamePath.prototype.advance = function(i) {
 
     //Different child variation chosen? Remember
     if (i > 0) {
@@ -4653,7 +4747,7 @@ angular.module('ngGo.Game.Path.Service', ['ngGo'])
   /**
    * Retreat a move
    */
-  GamePath.prototype.retreat = function () {
+  GamePath.prototype.retreat = function() {
 
     //At start?
     if (this.move === 0) {
@@ -4674,7 +4768,7 @@ angular.module('ngGo.Game.Path.Service', ['ngGo'])
   /**
    * Go to a specific move number
    */
-  GamePath.prototype.setMove = function (no) {
+  GamePath.prototype.setMove = function(no) {
 
     //Less than our current move? We need to erase any paths above the move number
     if (no < this.move) {
@@ -4694,24 +4788,24 @@ angular.module('ngGo.Game.Path.Service', ['ngGo'])
   /**
    * Get the move number
    */
-  GamePath.prototype.getMove = function () {
+  GamePath.prototype.getMove = function() {
     return this.move;
   };
 
   /**
    * Get the node choice at a specific move number
    */
-  GamePath.prototype.nodeAt = function (no) {
-    return typeof this.path[no] === 'undefined' ? 0 : this.path[no];
+  GamePath.prototype.nodeAt = function(no) {
+    return (typeof this.path[no] === 'undefined') ? 0 : this.path[no];
   };
 
   /**
    * Compare to another path
    */
-  GamePath.prototype.compare = function (otherPath) {
+  GamePath.prototype.compare = function(otherPath) {
 
     //Invalid object?
-    if (!otherPath || (typeof otherPath === 'undefined' ? 'undefined' : _typeof(otherPath)) !== 'object' || typeof otherPath.move === 'undefined') {
+    if (!otherPath || typeof otherPath !== 'object' || typeof otherPath.move === 'undefined') {
       return;
     }
 
@@ -4734,7 +4828,7 @@ angular.module('ngGo.Game.Path.Service', ['ngGo'])
   /**
    * Clone
    */
-  GamePath.prototype.clone = function () {
+  GamePath.prototype.clone = function() {
 
     //Create new instance
     var newPath = new GamePath();
@@ -4780,7 +4874,7 @@ angular.module('ngGo.Game.Path.Service', ['ngGo'])
   /**
    * Static helper to create a path object to reach a certain node
    */
-  GamePath.findNode = function (nodeName, rootNode) {
+  GamePath.findNode = function(nodeName, rootNode) {
 
     //Create new instance
     var path = new GamePath();
@@ -4797,11 +4891,10 @@ angular.module('ngGo.Game.Path.Service', ['ngGo'])
   //Return
   return GamePath;
 });
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * GamePosition :: This class represents a single game position. It keeps track of the stones and
@@ -4813,12 +4906,15 @@ angular.module('ngGo.Game.Path.Service', ['ngGo'])
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service'])
+angular.module('ngGo.Game.Position.Service', [
+  'ngGo',
+  'ngGo.Board.Grid.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('GamePosition', ["StoneColor", "BoardGrid", function (StoneColor, BoardGrid) {
+.factory('GamePosition', ['StoneColor', 'BoardGrid', function(StoneColor, BoardGrid) {
 
   /**
    * Constructor
@@ -4850,7 +4946,7 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
   /**
    * Set the grid size
    */
-  GamePosition.prototype.setSize = function (width, height) {
+  GamePosition.prototype.setSize = function(width, height) {
 
     //Check what's given
     width = width || height || 0;
@@ -4871,7 +4967,7 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
   /**
    * Clear the whole position
    */
-  GamePosition.prototype.empty = function () {
+  GamePosition.prototype.empty = function() {
     this.stones.empty();
     this.markup.empty();
   };
@@ -4879,25 +4975,25 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
   /**
    * Sets stone color at given coordinates.
    */
-  GamePosition.prototype.setStone = function (x, y, color) {
+  GamePosition.prototype.setStone = function(x, y, color) {
     this.stones.set(x, y, color);
   };
 
   /**
    * Sets markup type at given coordinates.
    */
-  GamePosition.prototype.setMarkup = function (x, y, markup) {
+  GamePosition.prototype.setMarkup = function(x, y, markup) {
     this.markup.set(x, y, markup);
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Liberties and capturing
    ***/
 
   /**
    * Check if a group of given color has liberties, starting at the given coordinates
    */
-  GamePosition.prototype.hasLiberties = function (x, y, groupColor, tested) {
+  GamePosition.prototype.hasLiberties = function(x, y, groupColor, tested) {
 
     //Out of bounds? No liberties outside of the board
     if (!this.stones.isOnGrid(x, y)) {
@@ -4928,13 +5024,16 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
 
     //Ok, so we're looking at a stone of our own color. Test adjacent positions.
     //If we get at least one true, we have a liberty
-    return this.hasLiberties(x, y - 1, groupColor, tested) || this.hasLiberties(x, y + 1, groupColor, tested) || this.hasLiberties(x - 1, y, groupColor, tested) || this.hasLiberties(x + 1, y, groupColor, tested);
+    return this.hasLiberties(x, y - 1, groupColor, tested) ||
+        this.hasLiberties(x, y + 1, groupColor, tested) ||
+        this.hasLiberties(x - 1, y, groupColor, tested) ||
+        this.hasLiberties(x + 1, y, groupColor, tested);
   };
 
   /**
    * Helper to capture adjacent groups
    */
-  GamePosition.prototype.captureAdjacent = function (x, y, friendlyColor) {
+  GamePosition.prototype.captureAdjacent = function(x, y, friendlyColor) {
 
     //Validate boundaries
     if (!this.stones.isOnGrid(x, y)) {
@@ -4973,7 +5072,7 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
   /**
    * Helper if we can capture a certain group
    */
-  GamePosition.prototype.canCapture = function (x, y, enemyColor, doCapture) {
+  GamePosition.prototype.canCapture = function(x, y, enemyColor, doCapture) {
 
     //Out of bounds? Nothing to capture
     if (!this.stones.isOnGrid(x, y)) {
@@ -5010,7 +5109,7 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
   /**
    * Capture a group of certain color, starting at the given coordinates
    */
-  GamePosition.prototype.captureGroup = function (x, y, enemyColor) {
+  GamePosition.prototype.captureGroup = function(x, y, enemyColor) {
 
     //Validate boundaries
     if (!this.stones.isOnGrid(x, y)) {
@@ -5041,7 +5140,7 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
   /**
    * Capture a stone at given coordinates
    */
-  GamePosition.prototype.captureStone = function (x, y) {
+  GamePosition.prototype.captureStone = function(x, y) {
 
     //Validate boundaries
     if (!this.stones.isOnGrid(x, y)) {
@@ -5058,63 +5157,63 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
 
     //Ok, stone present, capture it
     this.stones.set(x, y, StoneColor.EMPTY);
-    this.captures[color].push({ x: x, y: y });
+    this.captures[color].push({x: x, y: y});
   };
 
   /**
    * Set captures for a color (expects array with capture object coordinates)
    */
-  GamePosition.prototype.setCaptures = function (color, captures) {
+  GamePosition.prototype.setCaptures = function(color, captures) {
     this.captures[color] = captures;
   };
 
   /**
    * Get captures for a color
    */
-  GamePosition.prototype.getCaptures = function (color) {
+  GamePosition.prototype.getCaptures = function(color) {
     return this.captures[color] || [];
   };
 
   /**
    * Get the capture count for a color (= the number of captures of the opposing color)
    */
-  GamePosition.prototype.getCaptureCount = function (color) {
+  GamePosition.prototype.getCaptureCount = function(color) {
     return this.captures[-color].length;
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Turn control
    ***/
 
   /**
    * Set color for whose move it is at this position
    */
-  GamePosition.prototype.setTurn = function (color) {
+  GamePosition.prototype.setTurn = function(color) {
     this.turn = color;
   };
 
   /**
    * Get color for whose move it is at this position
    */
-  GamePosition.prototype.getTurn = function () {
+  GamePosition.prototype.getTurn = function() {
     return this.turn;
   };
 
   /**
    * Switch the player turn on this position
    */
-  GamePosition.prototype.switchTurn = function () {
+  GamePosition.prototype.switchTurn = function() {
     this.turn = -this.turn;
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Cloning and comparison
    ***/
 
   /**
    * Clones the whole position except turn and captures
    */
-  GamePosition.prototype.clone = function () {
+  GamePosition.prototype.clone = function() {
 
     //Create a new position
     var newPosition = new GamePosition();
@@ -5133,7 +5232,7 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
   /**
    * Checks if a given position is the same as the current position
    */
-  GamePosition.prototype.isSameAs = function (newPosition) {
+  GamePosition.prototype.isSameAs = function(newPosition) {
 
     //Must have the same size
     if (this.width !== newPosition.width || this.height !== newPosition.height) {
@@ -5147,11 +5246,10 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
   //Return
   return GamePosition;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * GameScore :: A simple class that contains a game score
@@ -5160,18 +5258,21 @@ angular.module('ngGo.Game.Position.Service', ['ngGo', 'ngGo.Board.Grid.Service']
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Game.Score.Service', ['ngGo'])
+angular.module('ngGo.Game.Score.Service', [
+  'ngGo'
+])
 
 /**
  * Factory definition
  */
-.factory('GameScore', ["StoneColor", function (StoneColor) {
+.factory('GameScore', ['StoneColor', function(StoneColor) {
 
   /**
    * Helper to calculate the total points
    */
   function calcTotal() {
-    return parseInt(this.stones) + parseInt(this.territory) + parseInt(this.captures) + parseInt(this.komi);
+    return parseInt(this.stones) + parseInt(this.territory) +
+      parseInt(this.captures) + parseInt(this.komi);
   }
 
   /**
@@ -5190,10 +5291,10 @@ angular.module('ngGo.Game.Score.Service', ['ngGo'])
     this.reset();
 
     //Add total handlers
-    this.black.total = function () {
+    this.black.total = function() {
       return calcTotal.call(self.black);
     };
-    this.white.total = function () {
+    this.white.total = function() {
       return calcTotal.call(self.white);
     };
   }
@@ -5201,7 +5302,7 @@ angular.module('ngGo.Game.Score.Service', ['ngGo'])
   /**
    * Reset the game score
    */
-  GameScore.prototype.reset = function () {
+  GameScore.prototype.reset = function() {
 
     //Get properties to loop
     var props = ['stones', 'territory', 'captures', 'komi'];
@@ -5216,7 +5317,7 @@ angular.module('ngGo.Game.Score.Service', ['ngGo'])
   /**
    * Get the winner
    */
-  GameScore.prototype.winner = function () {
+  GameScore.prototype.winner = function() {
 
     //Get totals
     var b = this.black.total();
@@ -5225,7 +5326,8 @@ angular.module('ngGo.Game.Score.Service', ['ngGo'])
     //Determine winner
     if (w > b) {
       return StoneColor.W;
-    } else if (b > w) {
+    }
+    else if (b > w) {
       return StoneColor.B;
     }
     return StoneColor.E;
@@ -5234,11 +5336,10 @@ angular.module('ngGo.Game.Score.Service', ['ngGo'])
   //Return
   return GameScore;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * GameScorer :: This class is used to determine the score of a certain game position. It also
@@ -5248,12 +5349,16 @@ angular.module('ngGo.Game.Score.Service', ['ngGo'])
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Game.Scorer.Service', ['ngGo', 'ngGo.Game.Score.Service', 'ngGo.Board.Grid.Service'])
+angular.module('ngGo.Game.Scorer.Service', [
+  'ngGo',
+  'ngGo.Game.Score.Service',
+  'ngGo.Board.Grid.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('GameScorer', ["GameScore", "StoneColor", "BoardGrid", function (GameScore, StoneColor, BoardGrid) {
+.factory('GameScorer', ['GameScore', 'StoneColor', 'BoardGrid', function(GameScore, StoneColor, BoardGrid) {
 
   /**
    * Possible score states
@@ -5289,8 +5394,8 @@ angular.module('ngGo.Game.Scorer.Service', ['ngGo', 'ngGo.Game.Score.Service', '
 
     //Otherwise, mark as candidate
     else {
-        this.stones.set(x, y, candidateColor);
-      }
+      this.stones.set(x, y, candidateColor);
+    }
 
     //Set adjacent squares
     territorySet.call(this, x - 1, y, candidateColor, boundaryColor);
@@ -5329,14 +5434,7 @@ angular.module('ngGo.Game.Scorer.Service', ['ngGo', 'ngGo.Game.Score.Service', '
 
     //Initialize vars
     var change = true;
-    var curState = void 0,
-        newState = void 0,
-        adjacent = void 0,
-        b = void 0,
-        w = void 0,
-        a = void 0,
-        x = void 0,
-        y = void 0;
+    var curState, newState, adjacent, b, w, a, x, y;
 
     //Loop while there is change
     while (change) {
@@ -5352,21 +5450,38 @@ angular.module('ngGo.Game.Scorer.Service', ['ngGo', 'ngGo.Game.Score.Service', '
           curState = this.stones.get(x, y);
 
           //Unknown or candiates?
-          if (curState === scoreState.UNKNOWN || curState === scoreState.BLACK_CANDIDATE || curState === scoreState.WHITE_CANDIDATE) {
+          if (
+            curState === scoreState.UNKNOWN ||
+            curState === scoreState.BLACK_CANDIDATE ||
+            curState === scoreState.WHITE_CANDIDATE
+          ) {
 
             //Get state in adjacent positions
-            adjacent = [this.stones.get(x - 1, y), this.stones.get(x, y - 1), this.stones.get(x + 1, y), this.stones.get(x, y + 1)];
+            adjacent = [
+              this.stones.get(x - 1, y),
+              this.stones.get(x, y - 1),
+              this.stones.get(x + 1, y),
+              this.stones.get(x, y + 1)
+            ];
 
             //Reset
             b = w = false;
 
             //Loop adjacent squares
             for (a = 0; a < 4; a++) {
-              if (adjacent[a] === scoreState.BLACK_STONE || adjacent[a] === scoreState.BLACK_CANDIDATE) {
+              if (
+                adjacent[a] === scoreState.BLACK_STONE ||
+                adjacent[a] === scoreState.BLACK_CANDIDATE
+              ) {
                 b = true;
-              } else if (adjacent[a] === scoreState.WHITE_STONE || adjacent[a] === scoreState.WHITE_CANDIDATE) {
+              }
+              else if (
+                adjacent[a] === scoreState.WHITE_STONE ||
+                adjacent[a] === scoreState.WHITE_CANDIDATE
+              ) {
                 w = true;
-              } else if (adjacent[a] === scoreState.NEUTRAL) {
+              }
+              else if (adjacent[a] === scoreState.NEUTRAL) {
                 b = w = true;
               }
             }
@@ -5374,11 +5489,14 @@ angular.module('ngGo.Game.Scorer.Service', ['ngGo', 'ngGo.Game.Score.Service', '
             //Determine new state
             if (b && w) {
               newState = scoreState.NEUTRAL;
-            } else if (b) {
+            }
+            else if (b) {
               newState = scoreState.BLACK_CANDIDATE;
-            } else if (w) {
+            }
+            else if (w) {
               newState = scoreState.WHITE_CANDIDATE;
-            } else {
+            }
+            else {
               newState = false;
             }
 
@@ -5412,7 +5530,7 @@ angular.module('ngGo.Game.Scorer.Service', ['ngGo', 'ngGo.Game.Score.Service', '
     /**
      * Load a game to score
      */
-    load: function load(game) {
+    load: function(game) {
 
       //Reset score
       this.score = new GameScore();
@@ -5431,32 +5549,33 @@ angular.module('ngGo.Game.Scorer.Service', ['ngGo', 'ngGo.Game.Score.Service', '
     /**
      * Get the calculated score
      */
-    getScore: function getScore() {
+    getScore: function() {
       return this.score;
     },
 
     /**
      * Get the points grid
      */
-    getPoints: function getPoints() {
+    getPoints: function() {
       return this.points;
     },
 
     /**
      * Get the captures grid
      */
-    getCaptures: function getCaptures() {
+    getCaptures: function() {
       return this.captures;
     },
 
     /**
      * Run score calculation routine
      */
-    calculate: function calculate() {
+    calculate: function() {
 
       //No game?
       if (!this.game) {
-        throw new Error('No game loaded in game scorer, can\'t calculate score.');
+        console.warn('No game loaded in game scorer, can\'t calutlate score.');
+        return;
       }
 
       //Empty grids
@@ -5480,10 +5599,7 @@ angular.module('ngGo.Game.Scorer.Service', ['ngGo', 'ngGo.Game.Score.Service', '
       this.score.white.komi = komi > 0 ? komi : 0;
 
       //Init helper vars
-      var x = void 0,
-          y = void 0,
-          state = void 0,
-          color = void 0;
+      var x, y, state, color;
 
       //Loop position
       for (x = 0; x < this.stones.width; x++) {
@@ -5537,7 +5653,7 @@ angular.module('ngGo.Game.Scorer.Service', ['ngGo', 'ngGo.Game.Score.Service', '
     /**
      * Mark stones dead or alive
      */
-    mark: function mark(x, y) {
+    mark: function(x, y) {
 
       //Get color of original position and state of the count position
       var color = this.game.position.stones.get(x, y);
@@ -5553,34 +5669,33 @@ angular.module('ngGo.Game.Scorer.Service', ['ngGo', 'ngGo.Game.Score.Service', '
 
         //Was marked as not white, reset the territory
         else {
-            territoryReset.call(this, x, y);
-          }
+          territoryReset.call(this, x, y);
+        }
       }
 
       //Black stone
       else if (color === StoneColor.B) {
 
-          //Was black, mark it and any territory it's in as white's
-          if (state === scoreState.BLACK_STONE) {
-            territorySet.call(this, x, y, scoreState.WHITE_CANDIDATE, scoreState.WHITE_STONE);
-          }
-
-          //Was marked as not black, reset the territory
-          else {
-              territoryReset.call(this, x, y);
-            }
+        //Was black, mark it and any territory it's in as white's
+        if (state === scoreState.BLACK_STONE) {
+          territorySet.call(this, x, y, scoreState.WHITE_CANDIDATE, scoreState.WHITE_STONE);
         }
+
+        //Was marked as not black, reset the territory
+        else {
+          territoryReset.call(this, x, y);
+        }
+      }
     }
   };
 
   //Return
   return GameScorer;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * KifuBlank :: This is a class which can generate blank JGF or SGF templates.
@@ -5589,12 +5704,14 @@ angular.module('ngGo.Game.Scorer.Service', ['ngGo', 'ngGo.Game.Score.Service', '
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Kifu.Blank.Service', ['ngGo'])
+angular.module('ngGo.Kifu.Blank.Service', [
+  'ngGo'
+])
 
 /**
  * Factory definition
  */
-.factory('KifuBlank', ["ngGo", function (ngGo) {
+.factory('KifuBlank', ['ngGo', function(ngGo) {
 
   /**
    * Blank JGF
@@ -5607,13 +5724,16 @@ angular.module('ngGo.Kifu.Blank.Service', ['ngGo'])
     },
     game: {
       type: 'go',
-      players: [{
-        color: 'black',
-        name: 'Black'
-      }, {
-        color: 'white',
-        name: 'White'
-      }]
+      players: [
+        {
+          color: 'black',
+          name: 'Black'
+        },
+        {
+          color: 'white',
+          name: 'White'
+        }
+      ]
     },
     board: {
       width: 19,
@@ -5643,7 +5763,7 @@ angular.module('ngGo.Kifu.Blank.Service', ['ngGo'])
     /**
      * Get blank JGF
      */
-    jgf: function jgf(base) {
+    jgf: function(base) {
 
       //Initialize blank
       var blank = angular.copy(blankJgf);
@@ -5664,7 +5784,7 @@ angular.module('ngGo.Kifu.Blank.Service', ['ngGo'])
     /**
      * Get blank SGF
      */
-    sgf: function sgf(base) {
+    sgf: function(base) {
 
       //Initialize blank
       var blank = angular.copy(blankSgf);
@@ -5686,11 +5806,10 @@ angular.module('ngGo.Kifu.Blank.Service', ['ngGo'])
   //Return object
   return KifuBlank;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * KifuParser :: This is a wrapper class for all available kifu parsers. It also provides
@@ -5700,7 +5819,12 @@ angular.module('ngGo.Kifu.Blank.Service', ['ngGo'])
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Kifu.Parser.Service', ['ngGo', 'ngGo.Kifu.Parsers.Gib2Jgf.Service', 'ngGo.Kifu.Parsers.Sgf2Jgf.Service', 'ngGo.Kifu.Parsers.Jgf2Sgf.Service'])
+angular.module('ngGo.Kifu.Parser.Service', [
+  'ngGo',
+  'ngGo.Kifu.Parsers.Gib2Jgf.Service',
+  'ngGo.Kifu.Parsers.Sgf2Jgf.Service',
+  'ngGo.Kifu.Parsers.Jgf2Sgf.Service'
+])
 
 /**
  * SGF/JGF aliases constant for conversion between the two formats
@@ -5768,7 +5892,7 @@ angular.module('ngGo.Kifu.Parser.Service', ['ngGo', 'ngGo.Kifu.Parsers.Gib2Jgf.S
 /**
  * Factory definition
  */
-.factory('KifuParser', ["Gib2Jgf", "Sgf2Jgf", "Jgf2Sgf", function (Gib2Jgf, Sgf2Jgf, Jgf2Sgf) {
+.factory('KifuParser', ['Gib2Jgf', 'Sgf2Jgf', 'Jgf2Sgf', function(Gib2Jgf, Sgf2Jgf, Jgf2Sgf) {
 
   /**
    * Parser wrapper class
@@ -5778,21 +5902,21 @@ angular.module('ngGo.Kifu.Parser.Service', ['ngGo', 'ngGo.Kifu.Parsers.Gib2Jgf.S
     /**
      * Parse GIB string into a JGF object or string
      */
-    gib2jgf: function gib2jgf(gib, stringified) {
+    gib2jgf: function(gib, stringified) {
       return Gib2Jgf.parse(gib, stringified);
     },
 
     /**
      * Parse SGF string into a JGF object or string
      */
-    sgf2jgf: function sgf2jgf(sgf, stringified) {
+    sgf2jgf: function(sgf, stringified) {
       return Sgf2Jgf.parse(sgf, stringified);
     },
 
     /**
      * Parse JGF object or string into an SGF string
      */
-    jgf2sgf: function jgf2sgf(jgf) {
+    jgf2sgf: function(jgf) {
       return Jgf2Sgf.parse(jgf);
     }
   };
@@ -5800,28 +5924,28 @@ angular.module('ngGo.Kifu.Parser.Service', ['ngGo', 'ngGo.Kifu.Parsers.Gib2Jgf.S
   //Return object
   return KifuParser;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
-
+(function(window, angular, undefined) {'use strict';
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Player.Directive', ['ngGo.Board.Directive'])
+angular.module('ngGo.Player.Directive', [
+  'ngGo.Board.Directive'
+])
 
 /**
  * Directive definition
  */
-.directive('player', ["Player", function (Player) {
+.directive('player', ['Player', function(Player) {
   return {
     restrict: 'E',
 
     /**
      * Controller
      */
-    controller: ["$scope", function controller($scope) {
+    controller: ['$scope', function($scope) {
 
       //Set player in scope
       if (!$scope.Player) {
@@ -5832,37 +5956,36 @@ angular.module('ngGo.Player.Directive', ['ngGo.Board.Directive'])
     /**
      * Linking function
      */
-    link: function link(scope, element, attrs) {
+    link: function(scope, element, attrs) {
 
       //Link the element
       Player.linkElement(element);
 
       //Observe mode and tool attributes
-      attrs.$observe('mode', function (mode) {
+      attrs.$observe('mode', function(mode) {
         Player.switchMode(mode);
       });
-      attrs.$observe('tool', function (tool) {
+      attrs.$observe('tool', function(tool) {
         Player.switchTool(tool);
       });
 
       //Observe other settings attributes
-      attrs.$observe('variationMarkup', function (attr) {
+      attrs.$observe('variationMarkup', function(attr) {
         Player.setVariationMarkup(attr === 'true');
       });
-      attrs.$observe('solutionPaths', function (attr) {
+      attrs.$observe('solutionPaths', function(attr) {
         Player.toggleSolutionPaths(attr === 'true');
       });
-      attrs.$observe('lastMoveMarker', function (attr) {
+      attrs.$observe('lastMoveMarker', function(attr) {
         Player.setLastMoveMarker(attr);
       });
     }
   };
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Player :: This class brings the board to life and allows a user to interact with it. It
@@ -5874,12 +5997,19 @@ angular.module('ngGo.Player.Directive', ['ngGo.Board.Directive'])
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Player.Mode.Common.Service', 'ngGo.Board.Service', 'ngGo.Game.Service', 'ngGo.Game.Scorer.Service'])
+angular.module('ngGo.Player.Service', [
+  'ngGo',
+  'ngGo.Player.Directive',
+  'ngGo.Player.Mode.Common.Service',
+  'ngGo.Board.Service',
+  'ngGo.Game.Service',
+  'ngGo.Game.Scorer.Service'
+])
 
 /**
  * Provider definition
  */
-.provider('Player', ["PlayerModes", "PlayerTools", "MarkupTypes", function (PlayerModes, PlayerTools, MarkupTypes) {
+.provider('Player', ['PlayerModes', 'PlayerTools', 'MarkupTypes', function(PlayerModes, PlayerTools, MarkupTypes) {
 
   /**
    * Default configuration
@@ -5907,14 +6037,14 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
   /**
    * Set global default configuration for players
    */
-  this.setConfig = function (config) {
+  this.setConfig = function(config) {
     defaultConfig = angular.extend(defaultConfig, config);
   };
 
   /**
    * Service getter
    */
-  this.$get = ["$rootScope", "$document", "Game", "GameScorer", "Board", "PlayerTools", function ($rootScope, $document, Game, GameScorer, Board, PlayerTools) {
+  this.$get = ['$rootScope', '$document', 'Game', 'GameScorer', 'Board', 'PlayerTools', function($rootScope, $document, Game, GameScorer, Board, PlayerTools) {
 
     /**
      * Helper to append board grid coordinatess to the broadcast event object
@@ -5935,24 +6065,36 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       //Set x
       if (typeof mouseEvent.offsetX !== 'undefined') {
         x = mouseEvent.offsetX;
-      } else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetX !== 'undefined') {
+      }
+      else if (
+        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetX !== 'undefined'
+      ) {
         x = mouseEvent.originalEvent.offsetX;
-      } else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerX !== 'undefined') {
+      }
+      else if (
+        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerX !== 'undefined'
+      ) {
         x = mouseEvent.originalEvent.layerX;
       }
 
       //Set y
       if (typeof mouseEvent.offsetY !== 'undefined') {
         y = mouseEvent.offsetY;
-      } else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetY !== 'undefined') {
+      }
+      else if (
+        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetY !== 'undefined'
+      ) {
         y = mouseEvent.originalEvent.offsetY;
-      } else if (mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerY !== 'undefined') {
+      }
+      else if (
+        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerY !== 'undefined'
+      ) {
         y = mouseEvent.originalEvent.layerY;
       }
 
       //Apply pixel ratio factor
-      x *= window.devicePixelRatio || 1;
-      y *= window.devicePixelRatio || 1;
+      x *= (window.devicePixelRatio || 1);
+      y *= (window.devicePixelRatio || 1);
 
       //Append coords
       broadcastEvent.x = this.board.getGridX(x);
@@ -5990,7 +6132,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Initialization
        */
-      init: function init() {
+      init: function() {
 
         //Unlink board instance, create new game
         this.board = null;
@@ -6026,7 +6168,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Link the player to a HTML element
        */
-      linkElement: function linkElement(element) {
+      linkElement: function(element) {
 
         //Set element
         this.element = element;
@@ -6044,14 +6186,14 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         this.registerElementEvent('wheel');
       },
 
-      /**************************************************************************
+      /*****************************************************************************
        * Configuration
        ***/
 
       /**
        * Parse config instructions
        */
-      parseConfig: function parseConfig(config) {
+      parseConfig: function(config) {
 
         //Extend from default config
         this.config = angular.extend({}, defaultConfig, config || {});
@@ -6062,7 +6204,11 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         this.setArrowKeysNavigation(this.config.arrowKeysNavigation);
         this.setScrollWheelNavigation(this.config.scrollWheelNavigation);
         this.setLastMoveMarker(this.config.lastMoveMarker);
-        this.setVariationMarkup(this.config.variationMarkup, this.config.variationChildren, this.config.variationSiblings);
+        this.setVariationMarkup(
+          this.config.variationMarkup,
+          this.config.variationChildren,
+          this.config.variationSiblings
+        );
 
         //Let the modes parse their config
         for (var mode in this.modes) {
@@ -6075,7 +6221,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Set arrow keys navigation
        */
-      setArrowKeysNavigation: function setArrowKeysNavigation(arrowKeys) {
+      setArrowKeysNavigation: function(arrowKeys) {
         if (arrowKeys !== this.arrowKeysNavigation) {
           this.arrowKeysNavigation = arrowKeys;
           this.broadcast('settingChange', 'arrowKeysNavigation');
@@ -6085,7 +6231,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Set scroll wheel navigation
        */
-      setScrollWheelNavigation: function setScrollWheelNavigation(scrollWheel) {
+      setScrollWheelNavigation: function(scrollWheel) {
         if (scrollWheel !== this.scrollWheelNavigation) {
           this.scrollWheelNavigation = scrollWheel;
           this.broadcast('settingChange', 'scrollWheelNavigation');
@@ -6095,7 +6241,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Set the last move marker
        */
-      setLastMoveMarker: function setLastMoveMarker(lastMoveMarker) {
+      setLastMoveMarker: function(lastMoveMarker) {
         if (lastMoveMarker !== this.lastMoveMarker) {
           this.lastMoveMarker = lastMoveMarker;
           this.broadcast('settingChange', 'lastMoveMarker');
@@ -6105,7 +6251,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Set variation markup on the board
        */
-      setVariationMarkup: function setVariationMarkup(variationMarkup, variationChildren, variationSiblings) {
+      setVariationMarkup: function(variationMarkup, variationChildren, variationSiblings) {
 
         //One change event for these three settings
         var change = false;
@@ -6117,13 +6263,17 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         }
 
         //Children setting change?
-        if (typeof variationChildren !== 'undefined' && variationChildren !== this.variationChildren) {
+        if (
+          typeof variationChildren !== 'undefined' && variationChildren !== this.variationChildren
+        ) {
           this.variationChildren = variationChildren;
           change = true;
         }
 
         //Siblings setting change?
-        if (typeof variationSiblings !== 'undefined' && variationSiblings !== this.variationSiblings) {
+        if (
+          typeof variationSiblings !== 'undefined' && variationSiblings !== this.variationSiblings
+        ) {
           this.variationSiblings = variationSiblings;
           change = true;
         }
@@ -6134,14 +6284,14 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         }
       },
 
-      /**************************************************************************
+      /*****************************************************************************
        * Mode and tool handling
        ***/
 
       /**
        * Register a player mode
        */
-      registerMode: function registerMode(mode, PlayerMode) {
+      registerMode: function(mode, PlayerMode) {
 
         //Register the mode and let it parse the configuration
         this.modes[mode] = PlayerMode;
@@ -6161,28 +6311,28 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Set available tools
        */
-      setTools: function setTools(tools) {
+      setTools: function(tools) {
         this.tools = tools || [PlayerTools.NONE];
       },
 
       /**
        * Check if we have a player mode
        */
-      hasMode: function hasMode(mode) {
+      hasMode: function(mode) {
         return this.modes[mode] ? true : false;
       },
 
       /**
        * Check if we have a player tool
        */
-      hasTool: function hasTool(tool) {
-        return this.tools.indexOf(tool) !== -1;
+      hasTool: function(tool) {
+        return (this.tools.indexOf(tool) !== -1);
       },
 
       /**
        * Switch player mode
        */
-      switchMode: function switchMode(mode, force) {
+      switchMode: function(mode, force) {
 
         //No change?
         if (!force && (!mode || this.mode === mode)) {
@@ -6207,7 +6357,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Switch player tool
        */
-      switchTool: function switchTool(tool, force) {
+      switchTool: function(tool, force) {
 
         //No change?
         if (!force && (!tool || this.tool === tool)) {
@@ -6228,7 +6378,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Save the full player state
        */
-      saveState: function saveState() {
+      saveState: function() {
 
         //Save player state
         this.playerState = {
@@ -6245,7 +6395,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Restore to the saved player state
        */
-      restoreState: function restoreState() {
+      restoreState: function() {
 
         //Must have player state
         if (!this.playerState) {
@@ -6262,19 +6412,20 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         this.restoreGameState();
       },
 
-      /**************************************************************************
+      /*****************************************************************************
        * Game record handling
        ***/
 
       /**
        * Load game record
        */
-      load: function load(data, allowPlayerConfig) {
+      load: function(data, allowPlayerConfig) {
 
         //Try to load the game record data
         try {
           this.game.load(data);
-        } catch (error) {
+        }
+        catch (error) {
           throw error;
         }
 
@@ -6303,7 +6454,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Reload the existing game record
        */
-      reload: function reload() {
+      reload: function() {
 
         //Must have game
         if (!this.game || !this.game.isLoaded()) {
@@ -6323,7 +6474,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Save the current state
        */
-      saveGameState: function saveGameState() {
+      saveGameState: function() {
         if (this.game && this.game.isLoaded()) {
           this.gameState = this.game.getState();
         }
@@ -6332,7 +6483,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Restore to the saved state
        */
-      restoreGameState: function restoreGameState() {
+      restoreGameState: function() {
 
         //Must have game and saved state
         if (!this.game || !this.gameState) {
@@ -6349,14 +6500,14 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         }
       },
 
-      /**************************************************************************
+      /*****************************************************************************
        * Navigation
        ***/
 
       /**
        * Go to the next position
        */
-      next: function next(i) {
+      next: function(i) {
         if (this.game && this.game.node !== this.restrictNodeEnd) {
           this.game.next(i);
           this.processPosition();
@@ -6366,7 +6517,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Go back to the previous position
        */
-      previous: function previous() {
+      previous: function() {
         if (this.game && this.game.node !== this.restrictNodeStart) {
           this.game.previous();
           this.processPosition();
@@ -6376,7 +6527,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Go to the last position
        */
-      last: function last() {
+      last: function() {
         if (this.game) {
           this.game.last();
           this.processPosition();
@@ -6386,7 +6537,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Go to the first position
        */
-      first: function first() {
+      first: function() {
         if (this.game) {
           this.game.first();
           this.processPosition();
@@ -6396,7 +6547,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Go to a specific move number, tree path or named node
        */
-      goto: function goto(target) {
+      goto: function(target) {
         if (this.game && target) {
           this.game.goto(target);
           this.processPosition();
@@ -6406,7 +6557,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Go to the previous fork
        */
-      previousFork: function previousFork() {
+      previousFork: function() {
         if (this.game) {
           this.game.previousFork();
           this.processPosition();
@@ -6416,7 +6567,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Go to the next fork
        */
-      nextFork: function nextFork() {
+      nextFork: function() {
         if (this.game) {
           this.game.nextFork();
           this.processPosition();
@@ -6426,7 +6577,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Go to the next position with a comment
        */
-      nextComment: function nextComment() {
+      nextComment: function() {
         if (this.game && this.game.node !== this.restrictNodeEnd) {
           this.game.nextComment();
           this.processPosition();
@@ -6436,7 +6587,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Go back to the previous position with a comment
        */
-      previousComment: function previousComment() {
+      previousComment: function() {
         if (this.game && this.game.node !== this.restrictNodeStart) {
           this.game.previousComment();
           this.processPosition();
@@ -6446,7 +6597,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Restrict navigation to the current node
        */
-      restrictNode: function restrictNode(end) {
+      restrictNode: function(end) {
 
         //Must have game and node
         if (!this.game || !this.game.node) {
@@ -6456,7 +6607,8 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         //Restrict to current node
         if (end) {
           this.restrictNodeEnd = this.game.node;
-        } else {
+        }
+        else {
           this.restrictNodeStart = this.game.node;
         }
       },
@@ -6464,7 +6616,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Process a new game position
        */
-      processPosition: function processPosition() {
+      processPosition: function() {
 
         //No game?
         if (!this.game || !this.game.isLoaded()) {
@@ -6502,7 +6654,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Show move numbers
        */
-      showMoveNumbers: function showMoveNumbers(fromMove, toMove) {
+      showMoveNumbers: function(fromMove, toMove) {
 
         //No game?
         if (!this.game || !this.game.isLoaded()) {
@@ -6518,7 +6670,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         var move = fromMove;
 
         //Loop nodes
-        angular.forEach(nodes, function (node) {
+        angular.forEach(nodes, function(node) {
           this.board.add('markup', node.move.x, node.move.y, {
             type: MarkupTypes.LABEL,
             text: move++
@@ -6529,14 +6681,14 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         this.board.redraw('markup');
       },
 
-      /**************************************************************************
+      /*****************************************************************************
        * Game handling
        ***/
 
       /**
        * Start a new game
        */
-      newGame: function newGame() {
+      newGame: function() {
         this.game = new Game();
         this.processPosition();
       },
@@ -6544,7 +6696,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Score the current game position
        */
-      scoreGame: function scoreGame() {
+      scoreGame: function() {
 
         //Calculate score
         GameScorer.calculate();
@@ -6562,21 +6714,21 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         this.broadcast('scoreCalculated', score);
       },
 
-      /**************************************************************************
+      /*****************************************************************************
        * Board handling
        ***/
 
       /**
        * Get the board
        */
-      getBoard: function getBoard() {
+      getBoard: function() {
         return this.board;
       },
 
       /**
        * Set the board
        */
-      setBoard: function setBoard(Board) {
+      setBoard: function(Board) {
 
         //Set the board
         this.board = Board;
@@ -6597,7 +6749,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Update the board
        */
-      updateBoard: function updateBoard(node, position, pathChanged) {
+      updateBoard: function(node, position, pathChanged) {
 
         //Must have board
         if (!this.board) {
@@ -6616,14 +6768,14 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         this.broadcast('boardUpdate', node);
       },
 
-      /**************************************************************************
+      /*****************************************************************************
        * Event handling
        ***/
 
       /**
        * Register an element event
        */
-      registerElementEvent: function registerElementEvent(event, element) {
+      registerElementEvent: function(event, element) {
 
         //Which element to use
         if (typeof element === 'undefined' || !element.on) {
@@ -6632,18 +6784,19 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
 
         //Remove any existing event listener and apply new one
         //TODO: Namespacing events doesn't work with Angular's jqLite
-        element.off(event /* + '.ngGo.player'*/);
-        element.on(event /* + '.ngGo.player'*/, this.broadcast.bind(this, event));
+        element.off(event/* + '.ngGo.player'*/);
+        element.on(event/* + '.ngGo.player'*/, this.broadcast.bind(this, event));
       },
 
       /**
        * Event listener
        */
-      on: function on(type, listener, mode, $scope) {
+      on: function(type, listener, mode, $scope) {
 
         //Must have valid listener
         if (typeof listener !== 'function') {
-          throw new Error('Listener is not a function: ' + listener);
+          console.warn('Listener is not a function:', listener);
+          return;
         }
 
         //Scope given as 3rd parameter?
@@ -6666,11 +6819,14 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
         var scope = $scope || $rootScope;
 
         //Create listener and return de-registration function
-        return scope.$on('ngGo.player.' + type, function () {
+        return scope.$on('ngGo.player.' + type, function() {
 
           //Filter on mode
           if (mode) {
-            if (typeof mode === 'string' && mode !== self.mode || mode.indexOf(self.mode) === -1) {
+            if (
+              (typeof mode === 'string' && mode !== self.mode) ||
+              mode.indexOf(self.mode) === -1
+            ) {
               return;
             }
           }
@@ -6689,7 +6845,8 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
           if (self.preventClickEvent && type === 'click') {
             delete self.preventClickEvent;
             return;
-          } else if (type === 'mousedrag') {
+          }
+          else if (type === 'mousedrag') {
             self.preventClickEvent = true;
           }
 
@@ -6701,7 +6858,7 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
       /**
        * Event broadcaster
        */
-      broadcast: function broadcast(type, args) {
+      broadcast: function(type, args) {
 
         //Must have type
         if (!type) {
@@ -6710,10 +6867,11 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
 
         //Make sure we are in a digest cycle
         if (!$rootScope.$$phase) {
-          $rootScope.$apply(function () {
+          $rootScope.$apply(function() {
             $rootScope.$broadcast('ngGo.player.' + type, args);
           });
-        } else {
+        }
+        else {
           $rootScope.$broadcast('ngGo.player.' + type, args);
         }
       }
@@ -6726,11 +6884,10 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
     return Player;
   }];
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * GridLayer :: This class represents the grid layer of the board, and it is responsible for drawing
@@ -6740,12 +6897,16 @@ angular.module('ngGo.Player.Service', ['ngGo', 'ngGo.Player.Directive', 'ngGo.Pl
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Layer.GridLayer.Service', ['ngGo', 'ngGo.Board.Layer.Service', 'ngGo.Board.Object.Coordinates.Service'])
+angular.module('ngGo.Board.Layer.GridLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.Coordinates.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('GridLayer', ["BoardLayer", "Coordinates", function (BoardLayer, Coordinates) {
+.factory('GridLayer', ['BoardLayer', 'Coordinates', function(BoardLayer, Coordinates) {
 
   /**
    * Helper for drawing starpoints
@@ -6791,43 +6952,43 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', ['ngGo', 'ngGo.Board.Layer.
   /**
    * Show or hide the coordinates.
    */
-  GridLayer.prototype.setCoordinates = function (show) {
+  GridLayer.prototype.setCoordinates = function(show) {
     this.coordinates = show;
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Object handling
    ***/
 
   /**
    * Get all has nothing to return
    */
-  GridLayer.prototype.getAll = function () {
+  GridLayer.prototype.getAll = function() {
     return null;
   };
 
   /**
    * Set all has nothing to set
    */
-  GridLayer.prototype.setAll = function () /*grid*/{
+  GridLayer.prototype.setAll = function(/*grid*/) {
     return;
   };
 
   /**
    * Remove all has nothing to remove
    */
-  GridLayer.prototype.removeAll = function () {
+  GridLayer.prototype.removeAll = function() {
     return;
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Drawing
    ***/
 
   /**
    * Draw method
    */
-  GridLayer.prototype.draw = function () {
+  GridLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
     if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -6858,9 +7019,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', ['ngGo', 'ngGo.Board.Layer.
     this.context.strokeStyle = strokeStyle;
 
     //Helper vars
-    var i = void 0,
-        x = void 0,
-        y = void 0;
+    var i, x, y;
 
     //Draw vertical lines
     for (i = this.board.grid.xLeft; i <= this.board.grid.xRight; i++) {
@@ -6896,7 +7055,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', ['ngGo', 'ngGo.Board.Layer.
   /**
    * Clear a square cell area on the grid
    */
-  GridLayer.prototype.clearCell = function (gridX, gridY) {
+  GridLayer.prototype.clearCell = function(gridX, gridY) {
 
     //Get absolute coordinates and stone radius
     var x = this.board.getAbsX(gridX);
@@ -6921,7 +7080,7 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', ['ngGo', 'ngGo.Board.Layer.
   /**
    * Redraw a square cell area on the grid
    */
-  GridLayer.prototype.redrawCell = function (gridX, gridY) {
+  GridLayer.prototype.redrawCell = function(gridX, gridY) {
 
     //Get absolute coordinates and stone radius
     var x = this.board.getAbsX(gridX);
@@ -6938,10 +7097,10 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', ['ngGo', 'ngGo.Board.Layer.
     var starPoints = this.board.theme.get('grid.star.points', this.board.width, this.board.height);
 
     //Determine draw coordinates
-    var x1 = gridX === 0 ? x : x - r;
-    var x2 = gridX === this.board.width - 1 ? x : x + r;
-    var y1 = gridY === 0 ? y : y - r;
-    var y2 = gridY === this.board.height - 1 ? y : y + r;
+    var x1 = (gridX === 0) ? x : x - r;
+    var x2 = (gridX === this.board.width - 1) ? x : x + r;
+    var y1 = (gridY === 0) ? y : y - r;
+    var y2 = (gridY === this.board.height - 1) ? y : y + r;
 
     //Translate canvas
     this.context.translate(canvasTranslate, canvasTranslate);
@@ -6972,23 +7131,25 @@ angular.module('ngGo.Board.Layer.GridLayer.Service', ['ngGo', 'ngGo.Board.Layer.
   //Return
   return GridLayer;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Layer.HoverLayer.Service', ['ngGo', 'ngGo.Board.Layer.Service', 'ngGo.Board.Object.Markup.Service', 'ngGo.Board.Object.StoneFaded.Service'])
+angular.module('ngGo.Board.Layer.HoverLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.Markup.Service',
+  'ngGo.Board.Object.StoneFaded.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('HoverLayer', ["BoardLayer", "Markup", "StoneFaded", function (BoardLayer, Markup, StoneFaded) {
+.factory('HoverLayer', ['BoardLayer', 'Markup', 'StoneFaded', function(BoardLayer, Markup, StoneFaded) {
 
   /**
    * Constructor
@@ -7010,7 +7171,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', ['ngGo', 'ngGo.Board.Layer
   /**
    * Add hover item
    */
-  HoverLayer.prototype.add = function (x, y, hover) {
+  HoverLayer.prototype.add = function(x, y, hover) {
 
     //Validate coordinates
     if (!this.grid.isOnGrid(x, y)) {
@@ -7034,18 +7195,20 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', ['ngGo', 'ngGo.Board.Layer
 
     //Markup
     else if (hover.type === 'markup') {
-        hover.objectClass = Markup;
-        if (_typeof(hover.value) === 'object') {
-          hover.object = angular.extend(hover.object, hover.value);
-        } else {
-          hover.object.type = hover.value;
-        }
+      hover.objectClass = Markup;
+      if (typeof hover.value === 'object') {
+        hover.object = angular.extend(hover.object, hover.value);
       }
-
-      //Unknown
       else {
-          throw new Error('Unknown hover type ' + hover.type);
-        }
+        hover.object.type = hover.value;
+      }
+    }
+
+    //Unknown
+    else {
+      console.warn('Unknown hover type', hover.type);
+      return;
+    }
 
     //Check if we need to hide something on layers underneath
     if (this.board.has(hover.type, x, y)) {
@@ -7070,7 +7233,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', ['ngGo', 'ngGo.Board.Layer
   /**
    * Remove the hover object
    */
-  HoverLayer.prototype.remove = function (x, y) {
+  HoverLayer.prototype.remove = function(x, y) {
 
     //Validate coordinates
     if (!this.grid.has(x, y)) {
@@ -7086,7 +7249,9 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', ['ngGo', 'ngGo.Board.Layer
     //Other objects to restore?
     for (var i = 0; i < this.restore.length; i++) {
       if (this.restore[i].x === x && this.restore[i].y === y) {
-        this.board.add(this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value);
+        this.board.add(
+          this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
+        );
         this.restore.splice(i, 1);
       }
     }
@@ -7095,7 +7260,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', ['ngGo', 'ngGo.Board.Layer
   /**
    * Remove all hover objects
    */
-  HoverLayer.prototype.removeAll = function () {
+  HoverLayer.prototype.removeAll = function() {
 
     //Anything to do?
     if (this.grid.isEmpty()) {
@@ -7103,7 +7268,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', ['ngGo', 'ngGo.Board.Layer
     }
 
     //Get all item as objects
-    var i = void 0;
+    var i;
     var hover = this.grid.all('layer');
 
     //Clear them
@@ -7119,7 +7284,9 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', ['ngGo', 'ngGo.Board.Layer
 
     //Restore objects on other layers
     for (i = 0; i < this.restore.length; i++) {
-      this.board.add(this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value);
+      this.board.add(
+        this.restore[i].layer, this.restore[i].x, this.restore[i].y, this.restore[i].value
+      );
     }
 
     //Clear restore array
@@ -7129,7 +7296,7 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', ['ngGo', 'ngGo.Board.Layer
   /**
    * Draw layer
    */
-  HoverLayer.prototype.draw = function () {
+  HoverLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
     if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -7148,21 +7315,24 @@ angular.module('ngGo.Board.Layer.HoverLayer.Service', ['ngGo', 'ngGo.Board.Layer
   //Return
   return HoverLayer;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Layer.MarkupLayer.Service', ['ngGo', 'ngGo.Board.Layer.Service', 'ngGo.Board.Object.Markup.Service'])
+angular.module('ngGo.Board.Layer.MarkupLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.Markup.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('MarkupLayer', ["BoardLayer", "Markup", function (BoardLayer, Markup) {
+.factory('MarkupLayer', ['BoardLayer', 'Markup', function(BoardLayer, Markup) {
 
   /**
    * Constructor
@@ -7178,17 +7348,17 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', ['ngGo', 'ngGo.Board.Laye
    */
   angular.extend(MarkupLayer.prototype, BoardLayer.prototype);
 
-  /**************************************************************************
+  /*****************************************************************************
    * Object handling
    ***/
 
   /**
    * Set all markup at once
    */
-  MarkupLayer.prototype.setAll = function (grid) {
+  MarkupLayer.prototype.setAll = function(grid) {
 
     //Get changes compared to current grid
-    var i = void 0;
+    var i;
     var changes = this.grid.compare(grid, 'type');
 
     //Clear removed stuff
@@ -7208,7 +7378,7 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', ['ngGo', 'ngGo.Board.Laye
   /**
    * Remove all (clear layer and empty grid)
    */
-  MarkupLayer.prototype.removeAll = function () {
+  MarkupLayer.prototype.removeAll = function() {
 
     //Get all markup as objects
     var markup = this.grid.all('type');
@@ -7222,14 +7392,14 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', ['ngGo', 'ngGo.Board.Laye
     this.grid.empty();
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Drawing
    ***/
 
   /**
    * Draw layer
    */
-  MarkupLayer.prototype.draw = function () {
+  MarkupLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
     if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -7248,7 +7418,7 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', ['ngGo', 'ngGo.Board.Laye
   /**
    * Draw cell
    */
-  MarkupLayer.prototype.drawCell = function (x, y) {
+  MarkupLayer.prototype.drawCell = function(x, y) {
 
     //Can only draw when we have dimensions
     if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -7264,7 +7434,7 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', ['ngGo', 'ngGo.Board.Laye
   /**
    * Clear cell
    */
-  MarkupLayer.prototype.clearCell = function (x, y) {
+  MarkupLayer.prototype.clearCell = function(x, y) {
     if (this.grid.has(x, y)) {
       Markup.clear.call(this, this.grid.get(x, y, 'type'));
     }
@@ -7273,21 +7443,25 @@ angular.module('ngGo.Board.Layer.MarkupLayer.Service', ['ngGo', 'ngGo.Board.Laye
   //Return
   return MarkupLayer;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Layer.ScoreLayer.Service', ['ngGo', 'ngGo.Board.Layer.Service', 'ngGo.Board.Object.StoneMini.Service', 'ngGo.Board.Object.StoneFaded.Service'])
+angular.module('ngGo.Board.Layer.ScoreLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.StoneMini.Service',
+  'ngGo.Board.Object.StoneFaded.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('ScoreLayer', ["BoardLayer", "StoneMini", "StoneFaded", function (BoardLayer, StoneMini, StoneFaded) {
+.factory('ScoreLayer', ['BoardLayer', 'StoneMini', 'StoneFaded', function(BoardLayer, StoneMini, StoneFaded) {
 
   /**
    * Constructor
@@ -7307,14 +7481,14 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', ['ngGo', 'ngGo.Board.Layer
    */
   angular.extend(ScoreLayer.prototype, BoardLayer.prototype);
 
-  /**************************************************************************
+  /*****************************************************************************
    * Object handling
    ***/
 
   /**
    * Set points and captures
    */
-  ScoreLayer.prototype.setAll = function (points, captures) {
+  ScoreLayer.prototype.setAll = function(points, captures) {
 
     //Remove all existing stuff first
     this.removeAll();
@@ -7330,7 +7504,7 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', ['ngGo', 'ngGo.Board.Layer
   /**
    * Remove all scoring
    */
-  ScoreLayer.prototype.removeAll = function () {
+  ScoreLayer.prototype.removeAll = function() {
 
     //If there are captures, draw them back onto the stones layer
     for (var i = 0; i < this.captures.length; i++) {
@@ -7345,14 +7519,14 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', ['ngGo', 'ngGo.Board.Layer
     this.captures = [];
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Drawing
    ***/
 
   /**
    * Draw layer
    */
-  ScoreLayer.prototype.draw = function () {
+  ScoreLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
     if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -7360,7 +7534,7 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', ['ngGo', 'ngGo.Board.Layer
     }
 
     //Init
-    var i = void 0;
+    var i;
 
     //Draw captures first (removing stones from the stones layer)
     for (i = 0; i < this.captures.length; i++) {
@@ -7377,21 +7551,24 @@ angular.module('ngGo.Board.Layer.ScoreLayer.Service', ['ngGo', 'ngGo.Board.Layer
   //Return
   return ScoreLayer;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Layer.ShadowLayer.Service', ['ngGo', 'ngGo.Board.Layer.Service', 'ngGo.Board.Object.StoneShadow.Service'])
+angular.module('ngGo.Board.Layer.ShadowLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.StoneShadow.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('ShadowLayer', ["BoardLayer", "StoneShadow", function (BoardLayer, StoneShadow) {
+.factory('ShadowLayer', ['BoardLayer', 'StoneShadow', function(BoardLayer, StoneShadow) {
 
   /**
    * Constructor
@@ -7410,10 +7587,10 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', ['ngGo', 'ngGo.Board.Laye
   /**
    * Add a stone
    */
-  ShadowLayer.prototype.add = function (stone) {
+  ShadowLayer.prototype.add = function(stone) {
 
     //Don't add if no shadow
-    if (stone.shadow === false || typeof stone.alpha !== 'undefined' && stone.alpha < 1) {
+    if (stone.shadow === false || (typeof stone.alpha !== 'undefined' && stone.alpha < 1)) {
       return;
     }
 
@@ -7434,7 +7611,7 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', ['ngGo', 'ngGo.Board.Laye
   /**
    * Remove a stone
    */
-  ShadowLayer.prototype.remove = function (stone) {
+  ShadowLayer.prototype.remove = function(stone) {
 
     //Remove from grid
     this.grid.unset(stone.x, stone.y);
@@ -7446,7 +7623,7 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', ['ngGo', 'ngGo.Board.Laye
   /**
    * Draw layer
    */
-  ShadowLayer.prototype.draw = function () {
+  ShadowLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
     if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -7471,21 +7648,24 @@ angular.module('ngGo.Board.Layer.ShadowLayer.Service', ['ngGo', 'ngGo.Board.Laye
   //Return
   return ShadowLayer;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Layer.StonesLayer.Service', ['ngGo', 'ngGo.Board.Layer.Service', 'ngGo.Board.Object.Stone.Service'])
+angular.module('ngGo.Board.Layer.StonesLayer.Service', [
+  'ngGo',
+  'ngGo.Board.Layer.Service',
+  'ngGo.Board.Object.Stone.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('StonesLayer', ["BoardLayer", "Stone", "StoneColor", function (BoardLayer, Stone, StoneColor) {
+.factory('StonesLayer', ['BoardLayer', 'Stone', 'StoneColor', function(BoardLayer, Stone, StoneColor) {
 
   /**
    * Constructor
@@ -7504,17 +7684,17 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', ['ngGo', 'ngGo.Board.Laye
    */
   angular.extend(StonesLayer.prototype, BoardLayer.prototype);
 
-  /**************************************************************************
+  /*****************************************************************************
    * Object handling
    ***/
 
   /**
    * Set all stones at once
    */
-  StonesLayer.prototype.setAll = function (grid) {
+  StonesLayer.prototype.setAll = function(grid) {
 
     //Get changes compared to current grid
-    var i = void 0;
+    var i;
     var changes = this.grid.compare(grid, 'color');
 
     //Clear removed stuff
@@ -7531,14 +7711,14 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', ['ngGo', 'ngGo.Board.Laye
     this.grid = grid.clone();
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Drawing
    ***/
 
   /**
    * Draw layer
    */
-  StonesLayer.prototype.draw = function () {
+  StonesLayer.prototype.draw = function() {
 
     //Can only draw when we have dimensions and context
     if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -7557,7 +7737,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', ['ngGo', 'ngGo.Board.Laye
   /**
    * Redraw layer
    */
-  StonesLayer.prototype.redraw = function () {
+  StonesLayer.prototype.redraw = function() {
 
     //Clear shadows layer
     this.board.removeAll('shadow');
@@ -7570,7 +7750,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', ['ngGo', 'ngGo.Board.Laye
   /**
    * Draw cell
    */
-  StonesLayer.prototype.drawCell = function (x, y) {
+  StonesLayer.prototype.drawCell = function(x, y) {
 
     //Can only draw when we have dimensions
     if (this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -7586,7 +7766,7 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', ['ngGo', 'ngGo.Board.Laye
   /**
    * Clear cell
    */
-  StonesLayer.prototype.clearCell = function (x, y) {
+  StonesLayer.prototype.clearCell = function(x, y) {
     if (this.grid.has(x, y)) {
       Stone.clear.call(this, this.grid.get(x, y, 'color'));
     }
@@ -7595,11 +7775,10 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', ['ngGo', 'ngGo.Board.Laye
   //Return
   return StonesLayer;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Coordinates :: This class is used for drawing board coordinates
@@ -7608,15 +7787,22 @@ angular.module('ngGo.Board.Layer.StonesLayer.Service', ['ngGo', 'ngGo.Board.Laye
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Object.Coordinates.Service', ['ngGo'])
+angular.module('ngGo.Board.Object.Coordinates.Service', [
+  'ngGo'
+])
 
 /**
  * Factory definition
  */
-.factory('Coordinates', function () {
+.factory('Coordinates', function() {
 
   //Kanji
-  var _kanji = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十', '二十一', '二十二', '二十三', '二十四', '二十五', '二十六', '二十七', '二十八', '二十九', '三十', '三十一', '三十二', '三十三', '三十四', '三十五', '三十六', '三十七', '三十八', '三十九', '四十'];
+  var kanji = [
+    '一', '二', '三', '四', '五', '六', '七', '八', '九', '十',
+    '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+    '二十一', '二十二', '二十三', '二十四', '二十五', '二十六', '二十七', '二十八', '二十九', '三十',
+    '三十一', '三十二', '三十三', '三十四', '三十五', '三十六', '三十七', '三十八', '三十九', '四十'
+  ];
 
   //Character codes
   var aChar = 'A'.charCodeAt(0);
@@ -7628,17 +7814,17 @@ angular.module('ngGo.Board.Object.Coordinates.Service', ['ngGo'])
   var coordinates = {
 
     //Kanji coordinates
-    kanji: function kanji(i) {
-      return _kanji[i] || '';
+    kanji: function(i) {
+      return kanji[i] || '';
     },
 
     //Numbers from 1
-    numbers: function numbers(i) {
+    numbers: function(i) {
       return i + 1;
     },
 
     //Capital letters from A
-    letters: function letters(i) {
+    letters: function(i) {
 
       //Initialize
       var ch = '';
@@ -7659,16 +7845,17 @@ angular.module('ngGo.Board.Object.Coordinates.Service', ['ngGo'])
     },
 
     //JGF coordinates (e.g. 0, 1, ...)
-    jgf: function jgf(i) {
+    jgf: function(i) {
       return i;
     },
 
     //SGF coordinates (e.g. a, b, ...)
-    sgf: function sgf(i) {
-      var ch = void 0;
+    sgf: function(i) {
+      var ch;
       if (i < 26) {
         ch = aCharLc + i;
-      } else {
+      }
+      else {
         ch = aChar + i;
       }
       return String.fromCharCode(ch);
@@ -7683,7 +7870,7 @@ angular.module('ngGo.Board.Object.Coordinates.Service', ['ngGo'])
     /**
      * Draw
      */
-    draw: function draw() {
+    draw: function() {
 
       //Can only draw when we have context and dimensions
       if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -7720,11 +7907,7 @@ angular.module('ngGo.Board.Object.Coordinates.Service', ['ngGo'])
       this.context.textAlign = 'center';
 
       //Helper vars
-      var i = void 0,
-          j = void 0,
-          x = void 0,
-          y = void 0,
-          ch = void 0;
+      var i, j, x, y, ch;
 
       //Draw vertical coordinates
       for (i = 0; i < this.board.height; i++) {
@@ -7738,9 +7921,11 @@ angular.module('ngGo.Board.Object.Coordinates.Service', ['ngGo'])
         //Get character
         if (typeof vertical.style === 'function') {
           ch = vertical.style.call(this, j);
-        } else if (coordinates[vertical.style]) {
+        }
+        else if (coordinates[vertical.style]) {
           ch = coordinates[vertical.style].call(this, j);
-        } else {
+        }
+        else {
           ch = j;
         }
 
@@ -7763,9 +7948,11 @@ angular.module('ngGo.Board.Object.Coordinates.Service', ['ngGo'])
         //Get character
         if (typeof horizontal.style === 'function') {
           ch = horizontal.style.call(this, j);
-        } else if (coordinates[horizontal.style]) {
+        }
+        else if (coordinates[horizontal.style]) {
           ch = coordinates[horizontal.style].call(this, j);
-        } else {
+        }
+        else {
           ch = j;
         }
 
@@ -7781,11 +7968,10 @@ angular.module('ngGo.Board.Object.Coordinates.Service', ['ngGo'])
   //Return
   return Coordinates;
 });
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Markup :: This class is used for drawing markup
@@ -7794,12 +7980,15 @@ angular.module('ngGo.Board.Object.Coordinates.Service', ['ngGo'])
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.Service'])
+angular.module('ngGo.Board.Object.Markup.Service', [
+  'ngGo',
+  'ngGo.Board.Object.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('Markup', ["MarkupTypes", "BoardObject", function (MarkupTypes, BoardObject) {
+.factory('Markup', ['MarkupTypes', 'BoardObject', function(MarkupTypes, BoardObject) {
 
   /**
    * Math constants
@@ -7816,7 +8005,9 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     var x = this.board.getAbsX(markup.x);
     var y = this.board.getAbsY(markup.y);
     var s = this.board.getCellSize();
-    var r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.triangle.scale'));
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.triangle.scale')
+    );
 
     //Apply scaling factor?
     if (markup.scale) {
@@ -7859,7 +8050,9 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     var x = this.board.getAbsX(markup.x);
     var y = this.board.getAbsY(markup.y);
     var s = this.board.getCellSize();
-    var r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.square.scale'));
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.square.scale')
+    );
 
     //Apply scaling factor?
     if (markup.scale) {
@@ -7902,7 +8095,9 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     var x = this.board.getAbsX(markup.x);
     var y = this.board.getAbsY(markup.y);
     var s = this.board.getCellSize();
-    var r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.circle.scale'));
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.circle.scale')
+    );
 
     //Apply scaling factor?
     if (markup.scale) {
@@ -7942,7 +8137,9 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     var x = this.board.getAbsX(markup.x);
     var y = this.board.getAbsY(markup.y);
     var s = this.board.getCellSize();
-    var r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.mark.scale'));
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.mark.scale')
+    );
 
     //Apply scaling factor?
     if (markup.scale) {
@@ -7990,7 +8187,9 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     var x = this.board.getAbsX(markup.x);
     var y = this.board.getAbsY(markup.y);
     var s = this.board.getCellSize();
-    var r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.circle.scale'));
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.circle.scale')
+    );
 
     //Apply scaling factor?
     if (markup.scale) {
@@ -8030,7 +8229,9 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     var x = this.board.getAbsX(markup.x);
     var y = this.board.getAbsY(markup.y);
     var s = this.board.getCellSize();
-    var r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.last.scale'));
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.last.scale')
+    );
 
     //Apply scaling factor?
     if (markup.scale) {
@@ -8071,7 +8272,9 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     var x = this.board.getAbsX(markup.x);
     var y = this.board.getAbsY(markup.y);
     var s = this.board.getCellSize();
-    var r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.smiley.scale'));
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.smiley.scale')
+    );
 
     //Apply scaling factor?
     if (markup.scale) {
@@ -8104,7 +8307,9 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     this.context.stroke();
     this.context.beginPath();
     this.context.moveTo(x - r / 1.6, y + r / 8);
-    this.context.bezierCurveTo(x - r / 1.8, y + r / 1.5, x + r / 1.8, y + r / 1.5, x + r / 1.6, y + r / 8);
+    this.context.bezierCurveTo(
+      x - r / 1.8, y + r / 1.5, x + r / 1.8, y + r / 1.5, x + r / 1.6, y + r / 8
+    );
     this.context.stroke();
 
     //Undo translation
@@ -8120,7 +8325,9 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     var x = this.board.getAbsX(markup.x);
     var y = this.board.getAbsY(markup.y);
     var s = this.board.getCellSize();
-    var r = Math.round(this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.smiley.scale'));
+    var r = Math.round(
+      this.board.theme.get('stone.radius', s) * this.board.theme.get('markup.smiley.scale')
+    );
 
     //Apply scaling factor?
     if (markup.scale) {
@@ -8153,7 +8360,9 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     this.context.stroke();
     this.context.beginPath();
     this.context.moveTo(x - r / 1.6, y + r / 1.5 - 1);
-    this.context.bezierCurveTo(x - r / 1.8, y + r / 8 - 1, x + r / 1.8, y + r / 8 - 1, x + r / 1.6, y + r / 1.5 - 1);
+    this.context.bezierCurveTo(
+      x - r / 1.8, y + r / 8 - 1, x + r / 1.8, y + r / 8 - 1, x + r / 1.6, y + r / 1.5 - 1
+    );
     this.context.stroke();
 
     //Undo translation
@@ -8205,9 +8414,11 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     //Determine font size
     if (markup.text.length === 1) {
       this.context.font = Math.round(r * 1.5) + 'px ' + font;
-    } else if (markup.text.length === 2) {
+    }
+    else if (markup.text.length === 2) {
       this.context.font = Math.round(r * 1.2) + 'px ' + font;
-    } else {
+    }
+    else {
       this.context.font = r + 'px ' + font;
     }
 
@@ -8238,7 +8449,7 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     /**
      * Draw
      */
-    draw: function draw(markup) {
+    draw: function(markup) {
 
       //Can only draw when we have dimensions and context
       if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -8299,7 +8510,7 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
     /**
      * Clear
      */
-    clear: function clear(markup) {
+    clear: function(markup) {
 
       //Can only draw when we have dimensions and context
       if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -8319,11 +8530,10 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
   //Return
   return Markup;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Stone :: This class is used for drawing stones on the board.
@@ -8332,17 +8542,21 @@ angular.module('ngGo.Board.Object.Markup.Service', ['ngGo', 'ngGo.Board.Object.S
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Object.Stone.Service', ['ngGo', 'ngGo.Board.Object.Service', 'ngGo.Board.ShellPattern.Service'])
+angular.module('ngGo.Board.Object.Stone.Service', [
+  'ngGo',
+  'ngGo.Board.Object.Service',
+  'ngGo.Board.ShellPattern.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('Stone', ["$injector", "BoardObject", "StoneColor", "ShellPattern", function ($injector, BoardObject, StoneColor, ShellPattern) {
+.factory('Stone', ['$injector', 'BoardObject', 'StoneColor', 'ShellPattern', function($injector, BoardObject, StoneColor, ShellPattern) {
 
   /**
    * Shell random seed
    */
-  var shellSeed = void 0;
+  var shellSeed;
 
   /**
    * Mono colored stones
@@ -8439,11 +8653,16 @@ angular.module('ngGo.Board.Object.Stone.Service', ['ngGo', 'ngGo.Board.Object.Se
 
     //Determine stone texture
     if (color === StoneColor.W) {
-      this.context.fillStyle = this.context.createRadialGradient(x - 2 * r / 5, y - 2 * r / 5, r / 3, x - r / 5, y - r / 5, 5 * r / 5);
+      this.context.fillStyle = this.context.createRadialGradient(
+        x - 2 * r / 5, y - 2 * r / 5, r / 3, x - r / 5, y - r / 5, 5 * r / 5
+      );
       this.context.fillStyle.addColorStop(0, '#fff');
       this.context.fillStyle.addColorStop(1, '#aaa');
-    } else {
-      this.context.fillStyle = this.context.createRadialGradient(x - 2 * r / 5, y - 2 * r / 5, 1, x - r / 5, y - r / 5, 4 * r / 5);
+    }
+    else {
+      this.context.fillStyle = this.context.createRadialGradient(
+        x - 2 * r / 5, y - 2 * r / 5, 1, x - r / 5, y - r / 5, 4 * r / 5
+      );
       this.context.fillStyle.addColorStop(0, '#666');
       this.context.fillStyle.addColorStop(1, '#111');
     }
@@ -8507,18 +8726,21 @@ angular.module('ngGo.Board.Object.Stone.Service', ['ngGo', 'ngGo.Board.Object.Se
     if (color === StoneColor.W) {
 
       //Get random shell type
-      var type = shellSeed % (shellTypes.length + stone.x * this.board.width + stone.y) % shellTypes.length;
+      var type =
+        shellSeed % (shellTypes.length + stone.x * this.board.width + stone.y) % shellTypes.length;
 
       //Determine random angle
       var z = this.board.width * this.board.height + stone.x * this.board.width + stone.y;
-      var angle = 2 / z * (shellSeed % z);
+      var angle = (2 / z) * (shellSeed % z);
 
       //Draw shell pattern
       ShellPattern.call(shellTypes[type], this.context, x, y, r, angle, strokeStyle);
 
       //Add radial gradient
       this.context.beginPath();
-      this.context.fillStyle = this.context.createRadialGradient(x - 2 * r / 5, y - 2 * r / 5, r / 6, x - r / 5, y - r / 5, r);
+      this.context.fillStyle = this.context.createRadialGradient(
+        x - 2 * r / 5, y - 2 * r / 5, r / 6, x - r / 5, y - r / 5, r
+      );
       this.context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.9)');
       this.context.fillStyle.addColorStop(1, 'rgba(255,255,255,0)');
       this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
@@ -8528,22 +8750,26 @@ angular.module('ngGo.Board.Object.Stone.Service', ['ngGo', 'ngGo.Board.Object.Se
     //Slate stones
     else {
 
-        //Add radial gradient
-        this.context.beginPath();
-        this.context.fillStyle = this.context.createRadialGradient(x + 2 * r / 5, y + 2 * r / 5, 0, x + r / 2, y + r / 2, r);
-        this.context.fillStyle.addColorStop(0, 'rgba(32,32,32,1)');
-        this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
-        this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
-        this.context.fill();
+      //Add radial gradient
+      this.context.beginPath();
+      this.context.fillStyle = this.context.createRadialGradient(
+        x + 2 * r / 5, y + 2 * r / 5, 0, x + r / 2, y + r / 2, r
+      );
+      this.context.fillStyle.addColorStop(0, 'rgba(32,32,32,1)');
+      this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
+      this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
+      this.context.fill();
 
-        //Add radial gradient
-        this.context.beginPath();
-        this.context.fillStyle = this.context.createRadialGradient(x - 2 * r / 5, y - 2 * r / 5, 1, x - r / 2, y - r / 2, 3 * r / 2);
-        this.context.fillStyle.addColorStop(0, 'rgba(64,64,64,1)');
-        this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
-        this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
-        this.context.fill();
-      }
+      //Add radial gradient
+      this.context.beginPath();
+      this.context.fillStyle = this.context.createRadialGradient(
+        x - 2 * r / 5, y - 2 * r / 5, 1, x - r / 2, y - r / 2, 3 * r / 2
+      );
+      this.context.fillStyle.addColorStop(0, 'rgba(64,64,64,1)');
+      this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
+      this.context.arc(x, y, Math.max(0, r - 0.5), 0, 2 * Math.PI, true);
+      this.context.fill();
+    }
 
     //Undo transparency?
     if (stone.alpha && stone.alpha < 1) {
@@ -8562,7 +8788,7 @@ angular.module('ngGo.Board.Object.Stone.Service', ['ngGo', 'ngGo.Board.Object.Se
     /**
      * Draw a stone
      */
-    draw: function draw(stone) {
+    draw: function(stone) {
 
       //Can only draw when we have dimensions and context
       if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -8607,7 +8833,7 @@ angular.module('ngGo.Board.Object.Stone.Service', ['ngGo', 'ngGo.Board.Object.Se
     /**
      * Clear a stone
      */
-    clear: function clear(stone) {
+    clear: function(stone) {
 
       //Can only draw when we have dimensions and context
       if (!this.context || this.board.drawWidth === 0 || this.board.drawheight === 0) {
@@ -8627,11 +8853,10 @@ angular.module('ngGo.Board.Object.Stone.Service', ['ngGo', 'ngGo.Board.Object.Se
   //Return
   return Stone;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * StoneFaded :: This class extends the Stone class and is used for drawing faded stones.
@@ -8640,12 +8865,15 @@ angular.module('ngGo.Board.Object.Stone.Service', ['ngGo', 'ngGo.Board.Object.Se
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Object.StoneFaded.Service', ['ngGo', 'ngGo.Board.Object.Stone.Service'])
+angular.module('ngGo.Board.Object.StoneFaded.Service', [
+  'ngGo',
+  'ngGo.Board.Object.Stone.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('StoneFaded', ["Stone", function (Stone) {
+.factory('StoneFaded', ['Stone', function(Stone) {
 
   /**
    * Class
@@ -8655,7 +8883,7 @@ angular.module('ngGo.Board.Object.StoneFaded.Service', ['ngGo', 'ngGo.Board.Obje
     /**
      * Draw stone
      */
-    draw: function draw(stone) {
+    draw: function(stone) {
 
       //Set scale and alpha
       stone.scale = this.board.theme.get('stone.faded.scale');
@@ -8671,7 +8899,7 @@ angular.module('ngGo.Board.Object.StoneFaded.Service', ['ngGo', 'ngGo.Board.Obje
     /**
      * Clear stone
      */
-    clear: function clear(stone) {
+    clear: function(stone) {
 
       //Don't show shadow
       stone.shadow = false;
@@ -8684,11 +8912,10 @@ angular.module('ngGo.Board.Object.StoneFaded.Service', ['ngGo', 'ngGo.Board.Obje
   //Return
   return StoneFaded;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * StoneMini :: This class extends the Stone class and is used for drawing mini stones
@@ -8698,12 +8925,15 @@ angular.module('ngGo.Board.Object.StoneFaded.Service', ['ngGo', 'ngGo.Board.Obje
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Object.StoneMini.Service', ['ngGo', 'ngGo.Board.Object.Stone.Service'])
+angular.module('ngGo.Board.Object.StoneMini.Service', [
+  'ngGo',
+  'ngGo.Board.Object.Stone.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('StoneMini', ["Stone", function (Stone) {
+.factory('StoneMini', ['Stone', function(Stone) {
 
   /**
    * Class
@@ -8713,7 +8943,7 @@ angular.module('ngGo.Board.Object.StoneMini.Service', ['ngGo', 'ngGo.Board.Objec
     /**
      * Draw stone
      */
-    draw: function draw(stone) {
+    draw: function(stone) {
 
       //Set scale and alpha
       stone.scale = this.board.theme.get('stone.mini.scale');
@@ -8729,7 +8959,7 @@ angular.module('ngGo.Board.Object.StoneMini.Service', ['ngGo', 'ngGo.Board.Objec
     /**
      * Clear stone
      */
-    clear: function clear(stone) {
+    clear: function(stone) {
 
       //Don't show shadow
       stone.shadow = false;
@@ -8742,11 +8972,10 @@ angular.module('ngGo.Board.Object.StoneMini.Service', ['ngGo', 'ngGo.Board.Objec
   //Return
   return StoneMini;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * StoneShadow :: This class is used for drawing stone shadows on the board.
@@ -8755,12 +8984,15 @@ angular.module('ngGo.Board.Object.StoneMini.Service', ['ngGo', 'ngGo.Board.Objec
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Board.Object.StoneShadow.Service', ['ngGo', 'ngGo.Board.Object.Service'])
+angular.module('ngGo.Board.Object.StoneShadow.Service', [
+  'ngGo',
+  'ngGo.Board.Object.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('StoneShadow', function () {
+.factory('StoneShadow', function() {
 
   /**
    * Constructor
@@ -8770,7 +9002,7 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', ['ngGo', 'ngGo.Board.Obj
     /**
      * Draw a stone shadow
      */
-    draw: function draw(stone) {
+    draw: function(stone) {
 
       //No context?
       if (!this.context) {
@@ -8778,7 +9010,7 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', ['ngGo', 'ngGo.Board.Obj
       }
 
       //Don't draw shadows if there is stone alpha or if explicitly stated
-      if (stone.alpha && stone.alpha < 1 || stone.shadow === false) {
+      if ((stone.alpha && stone.alpha < 1) || stone.shadow === false) {
         return;
       }
 
@@ -8800,7 +9032,9 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', ['ngGo', 'ngGo.Board.Obj
       var shadowColor = this.board.theme.get('shadow.color');
 
       //Configure context
-      this.context.fillStyle = this.context.createRadialGradient(x + offsetX, y + offsetY, r - 1 - blur, x + offsetX, y + offsetY, r + blur);
+      this.context.fillStyle = this.context.createRadialGradient(
+        x + offsetX, y + offsetY, r - 1 - blur, x + offsetX, y + offsetY, r + blur
+      );
       this.context.fillStyle.addColorStop(0, shadowColor);
       this.context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)');
 
@@ -8813,7 +9047,7 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', ['ngGo', 'ngGo.Board.Obj
     /**
      * Clear a stone shadow
      */
-    clear: function clear(stone) {
+    clear: function(stone) {
 
       //Note: this method is currently not in use due to the overlapping shadows
       //problem. Instead, the entire shadow layer is simply cleared and redrawn
@@ -8826,7 +9060,7 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', ['ngGo', 'ngGo.Board.Obj
       }
 
       //Don't draw shadows if there is stone alpha or if explicitly stated
-      if (stone.alpha && stone.alpha < 1 || stone.shadow === false) {
+      if ((stone.alpha && stone.alpha < 1) || stone.shadow === false) {
         return;
       }
 
@@ -8844,11 +9078,10 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', ['ngGo', 'ngGo.Board.Obj
   //Return
   return StoneShadow;
 });
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Gib2Jgf :: This is a parser wrapped by the KifuParser which is used to convert fom GIB to JGF.
@@ -8858,12 +9091,15 @@ angular.module('ngGo.Board.Object.StoneShadow.Service', ['ngGo', 'ngGo.Board.Obj
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Service'])
+angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
+  'ngGo',
+  'ngGo.Kifu.Blank.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('Gib2Jgf', ["ngGo", "KifuBlank", function (ngGo, KifuBlank) {
+.factory('Gib2Jgf', ['ngGo', 'KifuBlank', function(ngGo, KifuBlank) {
 
   /**
    * Regular expressions
@@ -8886,7 +9122,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     }
 
     //Determine player color
-    var color = match[1].toUpperCase() === 'BLACK' ? 'black' : 'white';
+    var color = (match[1].toUpperCase() === 'BLACK') ? 'black' : 'white';
 
     //Create player object
     var player = {
@@ -8934,15 +9170,17 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
   function parseResult(jgf, match) {
 
     //Winner color
-    var result = match[1].toLowerCase() === 'black' ? 'B' : 'W';
+    var result = (match[1].toLowerCase() === 'black') ? 'B' : 'W';
     result += '+';
 
     //Win condition
     if (match[2].match(/res/i)) {
       result += 'R';
-    } else if (match[2].match(/time/i)) {
+    }
+    else if (match[2].match(/time/i)) {
       result += 'T';
-    } else {
+    }
+    else {
       result += match[2];
     }
 
@@ -8959,15 +9197,26 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     var color = match[2];
     if (color === 1) {
       color = 'B';
-    } else if (color === 2) {
+    }
+    else if (color === 2) {
       color = 'W';
-    } else {
+    }
+    else {
       return;
     }
 
     //Create move container
     node.move = {};
-    node.move[color] = [Number(match[3]), Number(match[4])];
+
+    //Pass
+    if (false) {
+
+    }
+
+    //Regular move
+    else {
+      node.move[color] = [match[3] * 1, match[4] * 1];
+    }
   }
 
   /**
@@ -8978,33 +9227,33 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     /**
      * Parse GIB string into a JGF object or string
      */
-    parse: function parse(gib, stringified) {
+    parse: function(gib, stringified) {
 
       //Get new JGF object
       var jgf = KifuBlank.jgf();
 
       //Initialize
-      var match = void 0;
+      var match;
       var container = jgf.tree;
 
       //Create first node for game, which is usually an empty board position, but can
       //contain comments or board setup instructions, which will be added to the node
       //later if needed.
-      var node = { root: true };
+      var node = {root: true};
       container.push(node);
 
       //Find player information
-      while (match = regPlayer.exec(gib)) {
+      while ((match = regPlayer.exec(gib))) {
         parsePlayer(jgf, match);
       }
 
       //Find komi
-      if (match = regKomi.exec(gib)) {
+      if ((match = regKomi.exec(gib))) {
         parseKomi(jgf, match);
       }
 
       //Find game date
-      if (match = regDate.exec(gib)) {
+      if ((match = regDate.exec(gib))) {
         parseDate(jgf, match);
       }
 
@@ -9014,7 +9263,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
       }
 
       //Find moves
-      while (match = regMove.exec(gib)) {
+      while ((match = regMove.exec(gib))) {
 
         //Create new node
         node = {};
@@ -9039,13 +9288,10 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
   //Return object
   return Parser;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Jgf2Sgf :: This is a parser wrapped by the KifuParser which is used to convert fom JGF to SGF
@@ -9054,12 +9300,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Service'])
+angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
+  'ngGo',
+  'ngGo.Kifu.Blank.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('Jgf2Sgf', ["ngGo", "sgfAliases", "sgfGames", "KifuBlank", function (ngGo, sgfAliases, sgfGames, KifuBlank) {
+.factory('Jgf2Sgf', ['ngGo', 'sgfAliases', 'sgfGames', 'KifuBlank', function(ngGo, sgfAliases, sgfGames, KifuBlank) {
 
   /**
    * Flip SGF alias map and create JGF alias map
@@ -9083,7 +9332,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     return String.fromCharCode(aChar + coords[0]) + String.fromCharCode(aChar + coords[1]);
   }
 
-  /**************************************************************************
+  /*****************************************************************************
    * Conversion helpers
    ***/
 
@@ -9115,13 +9364,13 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
   function parseMove(move, output) {
 
     //Determine and validate color
-    var color = move.B ? 'B' : move.W ? 'W' : '';
+    var color = move.B ? 'B' : (move.W ? 'W' : '');
     if (color === '') {
       return;
     }
 
     //Determine move
-    var coords = move[color] === 'pass' ? '' : move[color];
+    var coords = (move[color] === 'pass') ? '' : move[color];
 
     //Append to SGF
     output.sgf += color + '[' + convertCoordinates(coords) + ']';
@@ -9175,14 +9424,15 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     //Loop markup types
     for (var type in markup) {
       if (markup.hasOwnProperty(type)) {
-        var i = void 0;
+        var i;
 
         //Label type has the label text appended to the coords
         if (type === 'label') {
           for (i = 0; i < markup[type].length; i++) {
             markup[type][i] = convertCoordinates(markup[type][i]) + ':' + markup[type][i][2];
           }
-        } else {
+        }
+        else {
           for (i = 0; i < markup[type].length; i++) {
             markup[type][i] = convertCoordinates(markup[type][i]);
           }
@@ -9212,14 +9462,15 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
   function parseComments(comments, output) {
 
     //Determine key
-    var key = typeof jgfAliases.comments !== 'undefined' ? jgfAliases.comments : 'C';
+    var key = (typeof jgfAliases.comments !== 'undefined') ? jgfAliases.comments : 'C';
 
     //Flatten comment objects
     var flatComments = [];
     for (var c = 0; c < comments.length; c++) {
       if (typeof comments[c] === 'string') {
         flatComments.push(comments[c]);
-      } else if (comments[c].comment) {
+      }
+      else if (comments[c].comment) {
         flatComments.push(comments[c].comment);
       }
     }
@@ -9232,7 +9483,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
    * Node name parser
    */
   function parseNodeName(nodeName, output) {
-    var key = typeof jgfAliases.name !== 'undefined' ? jgfAliases.name : 'N';
+    var key = (typeof jgfAliases.name !== 'undefined') ? jgfAliases.name : 'N';
     output.sgf += key + '[' + escapeSgf(nodeName) + ']';
   }
 
@@ -9297,21 +9548,22 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
       //Different dimensions are not supported by SGF, but OGS uses the
       //format w:h, so we will stick with that for anyone who supports it.
       else {
-          rootProperties.SZ = board.width + ':' + board.height;
-        }
+        rootProperties.SZ = board.width + ':' + board.height;
+      }
     }
 
     //Otherwise, check if only width or height were given at least
     else if (board.width) {
-        rootProperties.SZ = board.width;
-      } else if (board.height) {
-        rootProperties.SZ = board.height;
-      }
+      rootProperties.SZ = board.width;
+    }
+    else if (board.height) {
+      rootProperties.SZ = board.height;
+    }
 
-      //Can't determine size
-      else {
-          rootProperties.SZ = '';
-        }
+    //Can't determine size
+    else {
+      rootProperties.SZ = '';
+    }
   }
 
   /**
@@ -9323,12 +9575,12 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     for (var p = 0; p < players.length; p++) {
 
       //Validate color
-      if (!players[p].color || players[p].color !== 'black' && players[p].color !== 'white') {
+      if (!players[p].color || (players[p].color !== 'black' && players[p].color !== 'white')) {
         continue;
       }
 
       //Get SGF color
-      var color = players[p].color === 'black' ? 'B' : 'W';
+      var color = (players[p].color === 'black') ? 'B' : 'W';
 
       //Name given?
       if (players[p].name) {
@@ -9369,7 +9621,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     'game.players': parsePlayers
   };
 
-  /**************************************************************************
+  /*****************************************************************************
    * Parser functions
    ***/
 
@@ -9405,7 +9657,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
           }
 
           //Other object, can't handle it
-          if (_typeof(node[key]) === 'object') {
+          if (typeof node[key] === 'object') {
             continue;
           }
 
@@ -9415,7 +9667,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
       }
 
       //More to come?
-      if (i + 1 < tree.length) {
+      if ((i + 1) < tree.length) {
         output.sgf += '\n;';
       }
     }
@@ -9441,10 +9693,10 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
         }
 
         //Build jgf key
-        var jgfKey = key === '' ? subKey : key + '.' + subKey;
+        var jgfKey = (key === '') ? subKey : key + '.' + subKey;
 
         //If the item is an object, handle separately
-        if (_typeof(jgf[subKey]) === 'object') {
+        if (typeof jgf[subKey] === 'object') {
 
           //Handler for this object present in parsing map?
           if (typeof parsingMap[jgfKey] !== 'undefined') {
@@ -9453,19 +9705,20 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
 
           //Otherwise, just flatten and call this function recursively
           else {
-              extractRootProperties(jgf[subKey], rootProperties, jgfKey);
-            }
+            extractRootProperties(jgf[subKey], rootProperties, jgfKey);
+          }
           continue;
         }
 
         //Check if it's a known key, if so, append the value to the root
-        var value = void 0;
+        var value;
         if (typeof jgfAliases[jgfKey] !== 'undefined') {
 
           //Handler present in parsing map?
           if (typeof parsingMap[jgfKey] !== 'undefined') {
             value = parsingMap[jgfKey](jgf[subKey]);
-          } else {
+          }
+          else {
             value = escapeSgf(jgf[subKey]);
           }
 
@@ -9484,7 +9737,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     /**
      * Parse JGF object or string into an SGF string
      */
-    parse: function parse(jgf) {
+    parse: function(jgf) {
 
       //String given?
       if (typeof jgf === 'string') {
@@ -9493,11 +9746,12 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
 
       //Must have moves tree
       if (!jgf.tree) {
-        throw new Error('No moves tree in JGF object');
+        console.error('No moves tree in JGF object');
+        return;
       }
 
       //Initialize output (as object, so it remains a reference) and root properties container
-      var output = { sgf: '(\n;' };
+      var output = {sgf: '(\n;'};
       var root = angular.copy(jgf);
       var rootProperties = KifuBlank.sgf();
 
@@ -9533,13 +9787,10 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
   //Return object
   return Parser;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+(function(window, angular, undefined) {'use strict';
 
 /**
  * Sgf2Jgf :: This is a parser wrapped by the KifuParser which is used to convert fom SGF to JGF
@@ -9548,12 +9799,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Service'])
+angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
+  'ngGo',
+  'ngGo.Kifu.Blank.Service'
+])
 
 /**
  * Factory definition
  */
-.factory('Sgf2Jgf', ["ngGo", "sgfAliases", "sgfGames", "KifuBlank", function (ngGo, sgfAliases, sgfGames, KifuBlank) {
+.factory('Sgf2Jgf', ['ngGo', 'sgfAliases', 'sgfGames', 'KifuBlank', function(ngGo, sgfAliases, sgfGames, KifuBlank) {
 
   /**
    * Regular expressions for SGF data
@@ -9575,7 +9829,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     return [coords.charCodeAt(0) - aChar, coords.charCodeAt(1) - aChar];
   }
 
-  /**************************************************************************
+  /*****************************************************************************
    * Conversion helpers
    ***/
 
@@ -9587,7 +9841,8 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
       var app = value[0].split(':');
       if (app.length > 1) {
         jgf.record.application = app[0] + ' v' + app[1];
-      } else {
+      }
+      else {
         jgf.record.application = app[0];
       }
     }
@@ -9607,7 +9862,8 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     var game = value[0];
     if (typeof sgfGames[game] !== 'undefined') {
       jgf.game.type = sgfGames[game];
-    } else {
+    }
+    else {
       jgf.game.type = value[0];
     }
   }
@@ -9621,14 +9877,14 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     node.move = {};
 
     //Pass
-    if (value[0] === '' || jgf.width <= 19 && value[0] === 'tt') {
+    if (value[0] === '' || (jgf.width <= 19 && value[0] === 'tt')) {
       node.move[key] = 'pass';
     }
 
     //Regular move
     else {
-        node.move[key] = convertCoordinates(value[0]);
-      }
+      node.move[key] = convertCoordinates(value[0]);
+    }
   }
 
   /**
@@ -9785,7 +10041,8 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     if (size.length > 1) {
       jgf.board.width = parseInt(size[0]);
       jgf.board.height = parseInt(size[1]);
-    } else {
+    }
+    else {
       jgf.board.width = jgf.board.height = parseInt(size[0]);
     }
   }
@@ -9862,7 +10119,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     }
 
     //Determine player color
-    var color = key === 'PB' || key === 'BT' || key === 'BR' ? 'black' : 'white';
+    var color = (key === 'PB' || key === 'BT' || key === 'BR') ? 'black' : 'white';
 
     //Get key alias
     if (typeof sgfAliases[key] !== 'undefined') {
@@ -9878,7 +10135,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     }
 
     //Player of this color not found, initialize
-    var player = { color: color };
+    var player = {color: color};
     player[key] = value[0];
     jgf.game.players.push(player);
   }
@@ -9935,9 +10192,11 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
   /**
    * These properties need a node object
    */
-  var needsNode = ['B', 'W', 'C', 'N', 'AB', 'AW', 'AE', 'PL', 'LB', 'CR', 'SQ', 'TR', 'MA', 'SL', 'TW', 'TB'];
+  var needsNode = [
+    'B', 'W', 'C', 'N', 'AB', 'AW', 'AE', 'PL', 'LB', 'CR', 'SQ', 'TR', 'MA', 'SL', 'TW', 'TB'
+  ];
 
-  /**************************************************************************
+  /*****************************************************************************
    * Parser helpers
    ***/
 
@@ -9947,13 +10206,13 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
   function setInfo(jgf, position, value) {
 
     //Position given must be an array
-    if ((typeof position === 'undefined' ? 'undefined' : _typeof(position)) !== 'object') {
+    if (typeof position !== 'object') {
       return;
     }
 
     //Initialize node to attach value to
     var node = jgf;
-    var key = void 0;
+    var key;
 
     //Loop the position
     for (var p = 0; p < position.length; p++) {
@@ -9962,12 +10221,12 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
       key = position[p];
 
       //Last key reached? Done
-      if (p + 1 === position.length) {
+      if ((p + 1) === position.length) {
         break;
       }
 
       //Create container if not set
-      if (_typeof(node[key]) !== 'object') {
+      if (typeof node[key] !== 'object') {
         node[key] = {};
       }
 
@@ -9987,10 +10246,10 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
     /**
      * Parse SGF string into a JGF object or string
      */
-    parse: function parse(sgf, stringified) {
+    parse: function(sgf, stringified) {
 
       //Get new JGF object (with SGF node as a base)
-      var jgf = KifuBlank.jgf({ record: { sgf: {} } });
+      var jgf = KifuBlank.jgf({record: {sgf: {}}});
 
       //Initialize
       var stack = [];
@@ -9999,7 +10258,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
       //Create first node for game, which is usually an empty board position, but can
       //contain comments or board setup instructions, which will be added to the node
       //later if needed.
-      var node = { root: true };
+      var node = {root: true};
       container.push(node);
 
       //Find sequence of elements
@@ -10035,11 +10294,11 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
 
         //Grab last container from stack if end of variation reached
         else if (sequence[i] === ')') {
-            if (stack.length) {
-              container = stack.pop();
-            }
-            continue;
+          if (stack.length) {
+            container = stack.pop();
           }
+          continue;
+        }
 
         //Make array of properties within this sequence
         var properties = sequence[i].match(regNode) || [];
@@ -10101,8 +10360,8 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
 
           //Save in root
           else {
-              jgf[key] = values;
-            }
+            jgf[key] = values;
+          }
         }
 
         //Reset node, unless this was the root node
@@ -10124,11 +10383,10 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
   //Return object
   return Parser;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * PlayerModeCommon :: This class governs common event handling of the player shared by
@@ -10138,28 +10396,43 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', ['ngGo', 'ngGo.Kifu.Blank.Se
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Player.Mode.Common.Service', ['ngGo', 'ngGo.Game.Scorer.Service'])
+angular.module('ngGo.Player.Mode.Common.Service', [
+  'ngGo',
+  'ngGo.Game.Scorer.Service'
+])
 
 /**
  * Run block
  */
-.run(["Player", "PlayerModes", "PlayerModeCommon", function (Player, PlayerModes, PlayerModeCommon) {
+.run(['Player', 'PlayerModes', 'PlayerModeCommon', function(Player, PlayerModes, PlayerModeCommon) {
 
   /**
    * Register common event handlers
    */
-  Player.on('keydown', PlayerModeCommon.keyDown, [PlayerModes.REPLAY, PlayerModes.EDIT]);
-  Player.on('mousewheel wheel', PlayerModeCommon.mouseWheel, [PlayerModes.REPLAY, PlayerModes.EDIT]);
-  Player.on('mousemove', PlayerModeCommon.mouseMove, [PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE]);
-  Player.on('mouseout', PlayerModeCommon.mouseOut, [PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE]);
-  Player.on('mousedown', PlayerModeCommon.mouseDown, [PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE]);
-  Player.on('mouseup', PlayerModeCommon.mouseUp, [PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE]);
+  Player.on('keydown', PlayerModeCommon.keyDown, [
+    PlayerModes.REPLAY, PlayerModes.EDIT
+  ]);
+  Player.on('mousewheel wheel', PlayerModeCommon.mouseWheel, [
+    PlayerModes.REPLAY, PlayerModes.EDIT
+  ]);
+  Player.on('mousemove', PlayerModeCommon.mouseMove, [
+    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+  ]);
+  Player.on('mouseout', PlayerModeCommon.mouseOut, [
+    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+  ]);
+  Player.on('mousedown', PlayerModeCommon.mouseDown, [
+    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+  ]);
+  Player.on('mouseup', PlayerModeCommon.mouseUp, [
+    PlayerModes.REPLAY, PlayerModes.EDIT, PlayerModes.SOLVE
+  ]);
 }])
 
 /**
  * Factory definition
  */
-.factory('PlayerModeCommon', ["Player", "PlayerTools", "GameScorer", "KeyCodes", function (Player, PlayerTools, GameScorer, KeyCodes) {
+.factory('PlayerModeCommon', ['Player', 'PlayerTools', 'GameScorer', 'KeyCodes', function(Player, PlayerTools, GameScorer, KeyCodes) {
 
   /**
    * Helper to build drag object
@@ -10169,12 +10442,12 @@ angular.module('ngGo.Player.Mode.Common.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
     //Initialize drag object
     var drag = {
       start: {
-        x: this.mouse.dragStart.x > event.x ? event.x : this.mouse.dragStart.x,
-        y: this.mouse.dragStart.y > event.y ? event.y : this.mouse.dragStart.y
+        x: (this.mouse.dragStart.x > event.x) ? event.x : this.mouse.dragStart.x,
+        y: (this.mouse.dragStart.y > event.y) ? event.y : this.mouse.dragStart.y
       },
       stop: {
-        x: this.mouse.dragStart.x > event.x ? this.mouse.dragStart.x : event.x,
-        y: this.mouse.dragStart.y > event.y ? this.mouse.dragStart.y : event.y
+        x: (this.mouse.dragStart.x > event.x) ? this.mouse.dragStart.x : event.x,
+        y: (this.mouse.dragStart.y > event.y) ? this.mouse.dragStart.y : event.y
       }
     };
 
@@ -10268,7 +10541,7 @@ angular.module('ngGo.Player.Mode.Common.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
     /**
      * Handler for keydown events
      */
-    keyDown: function keyDown(event, keyboardEvent) {
+    keyDown: function(event, keyboardEvent) {
 
       //No game?
       if (!this.game || !this.game.isLoaded()) {
@@ -10327,7 +10600,7 @@ angular.module('ngGo.Player.Mode.Common.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
     /**
      * Handler for mousewheel events
      */
-    mouseWheel: function mouseWheel(event, mouseEvent) {
+    mouseWheel: function(event, mouseEvent) {
 
       //Disabled or not using move tool?
       if (!this.scrollWheelNavigation || this.tool !== PlayerTools.MOVE) {
@@ -10355,11 +10628,11 @@ angular.module('ngGo.Player.Mode.Common.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
 
       //Previous move
       else if (delta > 0) {
-          if (this.board) {
-            this.board.removeAll('hover');
-          }
-          this.previous();
+        if (this.board) {
+          this.board.removeAll('hover');
         }
+        this.previous();
+      }
 
       //Don't scroll the window
       if (delta !== 0) {
@@ -10370,7 +10643,7 @@ angular.module('ngGo.Player.Mode.Common.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
     /**
      * Mouse out handler
      */
-    mouseOut: function mouseOut() {
+    mouseOut: function() {
       if (this.board) {
         this.board.removeAll('hover');
       }
@@ -10379,10 +10652,13 @@ angular.module('ngGo.Player.Mode.Common.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
     /**
      * Mouse move handler
      */
-    mouseMove: function mouseMove(event, mouseEvent) {
+    mouseMove: function(event, mouseEvent) {
 
       //Attach drag object to events
-      if (this.mouse.dragStart && (this.mouse.dragStart.x !== event.x || this.mouse.dragStart.y !== event.y)) {
+      if (
+        this.mouse.dragStart &&
+        (this.mouse.dragStart.x !== event.x || this.mouse.dragStart.y !== event.y)
+      ) {
         mouseEvent.drag = dragObject.call(this, event);
       }
 
@@ -10407,7 +10683,7 @@ angular.module('ngGo.Player.Mode.Common.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
     /**
      * Mouse down handler
      */
-    mouseDown: function mouseDown(event) {
+    mouseDown: function(event) {
       this.mouse.dragStart = {
         x: event.x,
         y: event.y
@@ -10417,8 +10693,11 @@ angular.module('ngGo.Player.Mode.Common.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
     /**
      * Mouse up handler
      */
-    mouseUp: function mouseUp(event, mouseEvent) {
-      if (this.mouse.dragStart && (this.mouse.dragStart.x !== event.x || this.mouse.dragStart.y !== event.y)) {
+    mouseUp: function(event, mouseEvent) {
+      if (
+        this.mouse.dragStart &&
+        (this.mouse.dragStart.x !== event.x || this.mouse.dragStart.y !== event.y)
+      ) {
         mouseEvent.drag = dragObject.call(this, event);
         this.broadcast('mousedrag', mouseEvent);
       }
@@ -10429,11 +10708,10 @@ angular.module('ngGo.Player.Mode.Common.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
   //Return
   return PlayerMode;
 }]);
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * PlayerModeEdit :: This module governs the "edit" mode of the player, e.g. editing
@@ -10443,7 +10721,10 @@ angular.module('ngGo.Player.Mode.Common.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Service'])
+angular.module('ngGo.Player.Mode.Edit.Service', [
+  'ngGo',
+  'ngGo.Game.Scorer.Service'
+])
 
 /**
  * Setup tools
@@ -10473,7 +10754,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
 /**
  * Extend player functionality and register the mode
  */
-.run(["Player", "PlayerModes", "PlayerModeEdit", function (Player, PlayerModes, PlayerModeEdit) {
+.run(['Player', 'PlayerModes', 'PlayerModeEdit', function(Player, PlayerModes, PlayerModeEdit) {
 
   //Register event handlers
   Player.on('pathChange', PlayerModeEdit.pathChange, PlayerModes.EDIT);
@@ -10491,24 +10772,28 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
 /**
  * Provider definition
  */
-.provider('PlayerModeEdit', function () {
+.provider('PlayerModeEdit', function() {
 
   /**
    * Default configuration
    */
-  var defaultConfig = {};
+  var defaultConfig = {
+
+  };
 
   /**
    * Set global default configuration for players
    */
-  this.setConfig = function (config) {
+  this.setConfig = function(config) {
     defaultConfig = angular.extend(defaultConfig, config);
   };
 
   /**
    * Service getter
    */
-  this.$get = ["Player", "PlayerTools", "SetupTools", "MarkupTools", "MarkupTypes", "GameScorer", "StoneColor", function (Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor) {
+  this.$get = ['Player', 'PlayerTools', 'SetupTools', 'MarkupTools', 'MarkupTypes', 'GameScorer', 'StoneColor', function(
+    Player, PlayerTools, SetupTools, MarkupTools, MarkupTypes, GameScorer, StoneColor
+  ) {
 
     //Character codes
     var aChar = 'A'.charCodeAt(0);
@@ -10548,9 +10833,11 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
             }
           }
 
-          //Stone color tool;
-          //Add or overwrite stone if no stone present of the given color
-          else if (!this.game.hasStone(x, y, this.setupToolColor())) {
+          //Stone color tool
+          else {
+
+            //Add or overwrite stone if no stone present of the given color
+            if (!this.game.hasStone(x, y, this.setupToolColor())) {
               this.board.add('hover', x, y, {
                 type: 'stones',
                 value: this.setupToolColor()
@@ -10559,11 +10846,12 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
 
             //Stone present of same color? Can remove it if we're not dragging
             else if (!isDrag) {
-                this.board.add('hover', x, y, {
-                  type: 'markup',
-                  value: MarkupTypes.MARK
-                });
-              }
+              this.board.add('hover', x, y, {
+                type: 'markup',
+                value: MarkupTypes.MARK
+              });
+            }
+          }
           break;
 
         //Markup tool
@@ -10581,22 +10869,22 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
 
           //Text or number
           else if (this.markupTool === MarkupTools.TEXT || this.markupTool === MarkupTools.NUMBER) {
-              this.board.add('hover', x, y, {
-                type: 'markup',
-                value: {
-                  type: MarkupTypes.LABEL,
-                  text: this.markupLabel
-                }
-              });
-            }
-
-            //Other markup
-            else {
-                this.board.add('hover', x, y, {
-                  type: 'markup',
-                  value: this.markupTool
-                });
+            this.board.add('hover', x, y, {
+              type: 'markup',
+              value: {
+                type: MarkupTypes.LABEL,
+                text: this.markupLabel
               }
+            });
+          }
+
+          //Other markup
+          else {
+            this.board.add('hover', x, y, {
+              type: 'markup',
+              value: this.markupTool
+            });
+          }
           break;
 
         //Move tool
@@ -10656,32 +10944,32 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
 
       //Text
       else if (this.markupTool === MarkupTools.TEXT) {
-          this.game.addMarkup(x, y, {
-            type: MarkupTypes.LABEL,
-            text: this.markupLabel
-          });
+        this.game.addMarkup(x, y, {
+          type: MarkupTypes.LABEL,
+          text: this.markupLabel
+        });
 
-          //Determine next text label
-          this.markupLabels.push(this.markupLabel);
-          this.determineMarkupLabel();
-        }
+        //Determine next text label
+        this.markupLabels.push(this.markupLabel);
+        this.determineMarkupLabel();
+      }
 
-        //Number
-        else if (this.markupTool === MarkupTools.NUMBER) {
-            this.game.addMarkup(x, y, {
-              type: MarkupTypes.LABEL,
-              text: this.markupLabel
-            });
+      //Number
+      else if (this.markupTool === MarkupTools.NUMBER) {
+        this.game.addMarkup(x, y, {
+          type: MarkupTypes.LABEL,
+          text: this.markupLabel
+        });
 
-            //Determine next number label
-            this.markupLabels.push(this.markupLabel);
-            this.determineMarkupLabel();
-          }
+        //Determine next number label
+        this.markupLabels.push(this.markupLabel);
+        this.determineMarkupLabel();
+      }
 
-          //Other markup
-          else {
-              this.game.addMarkup(x, y, this.markupTool);
-            }
+      //Other markup
+      else {
+        this.game.addMarkup(x, y, this.markupTool);
+      }
     }
 
     /**
@@ -10700,20 +10988,20 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
       //Adding a stone
       else {
 
-          //A stone there already of the same color? Just remove if not dragging
-          if (!isDrag && this.game.hasStone(x, y, color)) {
-            this.game.removeStone(x, y);
-            return;
-          }
-
-          //Any stone present?
-          else if (this.game.hasStone(x, y)) {
-              this.game.removeStone(x, y);
-            }
-
-          //Add stone now
-          this.game.addStone(x, y, color);
+        //A stone there already of the same color? Just remove if not dragging
+        if (!isDrag && this.game.hasStone(x, y, color)) {
+          this.game.removeStone(x, y);
+          return;
         }
+
+        //Any stone present?
+        else if (this.game.hasStone(x, y)) {
+          this.game.removeStone(x, y);
+        }
+
+        //Add stone now
+        this.game.addStone(x, y, color);
+      }
 
       //Redraw markup
       this.board.layers.markup.redrawCell(x, y);
@@ -10757,14 +11045,14 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
       /**
        * Set the setup tool
        */
-      switchSetupTool: function switchSetupTool(tool) {
+      switchSetupTool: function(tool) {
         this.setupTool = tool;
       },
 
       /**
        * Set the markup tool
        */
-      switchMarkupTool: function switchMarkupTool(tool) {
+      switchMarkupTool: function(tool) {
         this.markupTool = tool;
         if (this.markupTool === MarkupTools.TEXT || this.markupTool === MarkupTools.NUMBER) {
           this.determineMarkupLabel();
@@ -10774,7 +11062,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
       /**
        * Conversion of setup tool to stone color
        */
-      setupToolColor: function setupToolColor() {
+      setupToolColor: function() {
         switch (this.setupTool) {
           case SetupTools.BLACK:
             return StoneColor.B;
@@ -10788,7 +11076,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
       /**
        * Set the new text markup label
        */
-      setMarkupLabel: function setMarkupLabel(label) {
+      setMarkupLabel: function(label) {
         if (label) {
           this.markupLabel = label;
         }
@@ -10797,7 +11085,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
       /**
        * Determine the new text markup label
        */
-      determineMarkupLabel: function determineMarkupLabel() {
+      determineMarkupLabel: function() {
 
         //Clear
         this.markupLabel = '';
@@ -10819,13 +11107,14 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
 
               //a-z
               else if (i < 52) {
-                  this.markupLabel = String.fromCharCode(aCharLc + i - 26);
-                }
+                this.markupLabel = String.fromCharCode(aCharLc + i - 26);
+              }
 
-                //AA, AB, AC, etc.
-                else {
-                    this.markupLabel = String.fromCharCode(aChar + Math.floor(i / 26) - 2) + String.fromCharCode(aChar + i % 26);
-                  }
+              //AA, AB, AC, etc.
+              else {
+                this.markupLabel = String.fromCharCode(aChar + Math.floor(i / 26) - 2) +
+                  String.fromCharCode(aChar + (i % 26));
+              }
 
               //Keep going
               i++;
@@ -10853,7 +11142,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
       /**
        * Hover handler
        */
-      hover: function hover(event) {
+      hover: function(event) {
 
         //Must have board
         if (!this.board) {
@@ -10864,7 +11153,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
         this.board.removeAll('hover');
 
         //Single coordinate?
-        if (!event.drag || this.tool !== PlayerTools.SETUP && this.tool !== PlayerTools.MARKUP) {
+        if (!event.drag || (this.tool !== PlayerTools.SETUP && this.tool !== PlayerTools.MARKUP)) {
           updateHoverMark.call(this);
           return;
         }
@@ -10886,19 +11175,19 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
       /**
        * Keydown handler
        */
-      keyDown: function keyDown() /*event, keyboardEvent*/{
+      keyDown: function(event, keyboardEvent) {
 
-        //TODO: tool switching via keyboard input
         //Switch key code
-        // switch (keyboardEvent.keyCode) {
-        //
-        // }
+        switch (keyboardEvent.keyCode) {
+
+          //TODO: tool switching via keyboard input
+        }
       },
 
       /**
        * Click handler
        */
-      click: function click(event) {
+      click: function(event) {
 
         //Falling outside of grid?
         if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
@@ -10954,11 +11243,10 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
       /**
        * Mouse drag handler
        */
-      mouseDrag: function mouseDrag(event) {
+      mouseDrag: function(event) {
 
         //Initialize vars
-        var x = void 0,
-            y = void 0;
+        var x, y;
 
         //Remove all hover items now to restore actual stones and markup to the board,
         //otherwise it will conflict when updating the board
@@ -11010,17 +11298,22 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
       /**
        * Path change
        */
-      pathChange: function pathChange() {
+      pathChange: function() {
         findAllMarkupLabels.call(this);
       },
 
       /**
        * Handler for mode entry
        */
-      modeEnter: function modeEnter() {
+      modeEnter: function() {
 
         //Set available tools for this mode
-        this.setTools([PlayerTools.MOVE, PlayerTools.SETUP, PlayerTools.MARKUP, PlayerTools.SCORE]);
+        this.setTools([
+          PlayerTools.MOVE,
+          PlayerTools.SETUP,
+          PlayerTools.MARKUP,
+          PlayerTools.SCORE
+        ]);
 
         //Set default tool
         this.tool = this.tools[0];
@@ -11032,7 +11325,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
       /**
        * Handler for tool switches
        */
-      toolSwitch: function toolSwitch() {
+      toolSwitch: function() {
 
         //Switched to scoring?
         if (this.tool === PlayerTools.SCORE) {
@@ -11046,10 +11339,12 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
         }
 
         //Back to another state?
-        else if (this.statePreScoring) {
+        else {
+          if (this.statePreScoring) {
             this.board.restoreState(this.statePreScoring);
             delete this.statePreScoring;
           }
+        }
       }
     };
 
@@ -11057,11 +11352,10 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
     return PlayerModeEdit;
   }];
 });
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * PlayerModeReplay :: This module governs the "replay" mode of the player, e.g. traversing
@@ -11071,12 +11365,15 @@ angular.module('ngGo.Player.Mode.Edit.Service', ['ngGo', 'ngGo.Game.Scorer.Servi
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Service'])
+angular.module('ngGo.Player.Mode.Replay.Service', [
+  'ngGo',
+  'ngGo.Game.Scorer.Service'
+])
 
 /**
  * Extend player functionality and register the mode
  */
-.run(["Player", "PlayerModes", "PlayerModeReplay", function (Player, PlayerModes, PlayerModeReplay) {
+.run(['Player', 'PlayerModes', 'PlayerModeReplay', function(Player, PlayerModes, PlayerModeReplay) {
 
   //Register event handlers
   Player.on('settingChange', PlayerModeReplay.settingChange, PlayerModes.REPLAY);
@@ -11095,7 +11392,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
 /**
  * Provider definition
  */
-.provider('PlayerModeReplay', function () {
+.provider('PlayerModeReplay', function() {
 
   /**
    * Default configuration
@@ -11109,14 +11406,14 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
   /**
    * Set global default configuration for players
    */
-  this.setConfig = function (config) {
+  this.setConfig = function(config) {
     defaultConfig = angular.extend(defaultConfig, config);
   };
 
   /**
    * Service getter
    */
-  this.$get = ["$interval", "Player", "PlayerModes", "PlayerTools", "MarkupTypes", "GameScorer", function ($interval, Player, PlayerModes, PlayerTools, MarkupTypes, GameScorer) {
+  this.$get = ['$interval', 'Player', 'PlayerModes', 'PlayerTools', 'MarkupTypes', 'GameScorer', function($interval, Player, PlayerModes, PlayerTools, MarkupTypes, GameScorer) {
 
     /**
      * Helper to update the hover mark
@@ -11204,7 +11501,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
 
       //Get the current node
       var node = this.game.getNode();
-      var variations = void 0;
+      var variations;
       if (!node) {
         return;
       }
@@ -11214,7 +11511,8 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
         variations = node.getMoveVariations();
         if (show) {
           showMoveVariations.call(this, variations);
-        } else {
+        }
+        else {
           hideMoveVariations.call(this, variations);
         }
       }
@@ -11224,7 +11522,8 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
         variations = node.parent.getMoveVariations();
         if (show) {
           showMoveVariations.call(this, variations);
-        } else {
+        }
+        else {
           hideMoveVariations.call(this, variations);
         }
       }
@@ -11243,7 +11542,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
       /**
        * Set auto play delay
        */
-      setAutoPlayDelay: function setAutoPlayDelay(delay) {
+      setAutoPlayDelay: function(delay) {
         if (this.autoPlayDelay !== delay) {
           this.autoPlayDelay = delay;
           this.broadcast('settingChange', 'autoPlayDelay');
@@ -11253,7 +11552,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
       /**
        * Start auto play with a given delay
        */
-      start: function start(delay) {
+      start: function(delay) {
 
         //Not in replay mode or already auto playing?
         if (this.mode !== PlayerModes.REPLAY || this.autoPlaying) {
@@ -11269,14 +11568,14 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
         var self = this;
 
         //Determine delay
-        delay = typeof delay === 'number' ? delay : this.autoPlayDelay;
+        delay = (typeof delay === 'number') ? delay : this.autoPlayDelay;
 
         //Switch tool
         this.switchTool(PlayerTools.NONE);
 
         //Create interval
         this.autoPlaying = true;
-        this.autoPlayPromise = $interval(function () {
+        this.autoPlayPromise = $interval(function() {
 
           //Advance to the next node
           self.next(0, true);
@@ -11294,7 +11593,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
       /**
        * Stop auto play
        */
-      stop: function stop() {
+      stop: function() {
 
         //Not in replay mode or not auto playing?
         if (this.mode !== PlayerModes.REPLAY || !this.autoPlaying) {
@@ -11323,7 +11622,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
       /**
        * Parse config instructions
        */
-      parseConfig: function parseConfig(config) {
+      parseConfig: function(config) {
 
         //Extend from default config
         this.config = angular.extend({}, this.config, defaultConfig, config || {});
@@ -11335,7 +11634,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
       /**
        * Setting changes handler
        */
-      settingChange: function settingChange(event, setting) {
+      settingChange: function(event, setting) {
 
         //Solution paths setting changes?
         if (setting === 'variationMarkup') {
@@ -11346,7 +11645,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
       /**
        * Hover handler
        */
-      hover: function hover() {
+      hover: function() {
 
         //Update hover mark
         if (this.board) {
@@ -11358,7 +11657,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
       /**
        * Board update event handler
        */
-      boardUpdate: function boardUpdate() {
+      boardUpdate: function() {
 
         //Show move variations
         if (this.variationMarkup) {
@@ -11369,7 +11668,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
       /**
        * Handler for mouse click events
        */
-      click: function click(event) {
+      click: function(event) {
 
         //Falling outside of grid?
         if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
@@ -11404,7 +11703,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
       /**
        * Path change event
        */
-      pathChange: function pathChange() {
+      pathChange: function() {
 
         //Update hover mark
         if (this.board) {
@@ -11416,10 +11715,14 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
       /**
        * Handler for mode entry
        */
-      modeEnter: function modeEnter() {
+      modeEnter: function() {
 
         //Set available tools for this mode
-        this.setTools([PlayerTools.MOVE, PlayerTools.SCORE, PlayerTools.NONE]);
+        this.setTools([
+          PlayerTools.MOVE,
+          PlayerTools.SCORE,
+          PlayerTools.NONE
+        ]);
 
         //Set default tool
         this.tool = this.tools[0];
@@ -11433,7 +11736,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
       /**
        * Handler for mode exit
        */
-      modeExit: function modeExit() {
+      modeExit: function() {
 
         //Stop auto playing
         if (this.autoPlaying) {
@@ -11449,7 +11752,7 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
       /**
        * Handler for tool switches
        */
-      toolSwitch: function toolSwitch() {
+      toolSwitch: function() {
 
         //Switched to scoring?
         if (this.tool === PlayerTools.SCORE) {
@@ -11463,10 +11766,12 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
         }
 
         //Back to another state?
-        else if (this.statePreScoring) {
+        else {
+          if (this.statePreScoring) {
             this.board.restoreState(this.statePreScoring);
             delete this.statePreScoring;
           }
+        }
       }
     };
 
@@ -11474,11 +11779,10 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
     return PlayerModeReplay;
   }];
 });
+
 })(window, window.angular);
 
-(function(window, angular, undefined) {
-  'use strict';
-'use strict';
+(function(window, angular, undefined) {'use strict';
 
 /**
  * PlayerModeSolve :: This module governs the "solve" mode of the player, e.g. trying to solve
@@ -11488,12 +11792,14 @@ angular.module('ngGo.Player.Mode.Replay.Service', ['ngGo', 'ngGo.Game.Scorer.Ser
 /**
  * Module definition and dependencies
  */
-angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
+angular.module('ngGo.Player.Mode.Solve.Service', [
+  'ngGo'
+])
 
 /**
  * Extend player functionality and register the mode
  */
-.run(["Player", "PlayerModes", "PlayerModeSolve", function (Player, PlayerModes, PlayerModeSolve) {
+.run(['Player', 'PlayerModes', 'PlayerModeSolve', function(Player, PlayerModes, PlayerModeSolve) {
 
   //Register event handlers
   Player.on('settingChange', PlayerModeSolve.settingChange, PlayerModes.SOLVE);
@@ -11512,7 +11818,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
 /**
  * Provider definition
  */
-.provider('PlayerModeSolve', ["StoneColor", function (StoneColor) {
+.provider('PlayerModeSolve', ['StoneColor', function(StoneColor) {
 
   /**
    * Default configuration
@@ -11533,14 +11839,14 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
   /**
    * Set global default configuration for players
    */
-  this.setConfig = function (config) {
+  this.setConfig = function(config) {
     defaultConfig = angular.extend(defaultConfig, config);
   };
 
   /**
    * Service getter
    */
-  this.$get = ["$timeout", "Player", "PlayerModes", "PlayerTools", "KeyCodes", function ($timeout, Player, PlayerModes, PlayerTools, KeyCodes) {
+  this.$get = ['$timeout', 'Player', 'PlayerModes', 'PlayerTools', 'KeyCodes', function($timeout, Player, PlayerModes, PlayerTools, KeyCodes) {
 
     /**
      * Check if we can make a move
@@ -11618,7 +11924,8 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
             scale: this.board.theme.get('markup.solution.valid.scale'),
             color: this.board.theme.get('markup.solution.valid.color')
           });
-        } else {
+        }
+        else {
           this.board.add('markup', variations[i].move.x, variations[i].move.y, {
             type: this.board.theme.get('markup.solution.invalid.type'),
             text: this.board.theme.get('markup.solution.invalid.text', i),
@@ -11663,7 +11970,8 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       //Call helper
       if (show) {
         showSolutionPaths.call(this, variations);
-      } else {
+      }
+      else {
         hideSolutionPaths.call(this, variations);
       }
     }
@@ -11696,7 +12004,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Set solve auto play delay
        */
-      setSolveAutoPlay: function setSolveAutoPlay(autoPlay) {
+      setSolveAutoPlay: function(autoPlay) {
         if (this.solveAutoPlay !== autoPlay) {
           this.solveAutoPlay = autoPlay;
           this.broadcast('settingChange', 'solveAutoPlay');
@@ -11706,7 +12014,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Set solve auto play delay
        */
-      setSolveAutoPlayDelay: function setSolveAutoPlayDelay(delay) {
+      setSolveAutoPlayDelay: function(delay) {
         if (this.solveAutoPlayDelay !== delay) {
           this.solveAutoPlayDelay = delay;
           this.broadcast('settingChange', 'solveAutoPlayDelay');
@@ -11716,7 +12024,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Set player color
        */
-      setPlayerColor: function setPlayerColor(color) {
+      setPlayerColor: function(color) {
         if (this.playerColor !== color) {
           this.playerColor = color;
           this.broadcast('settingChange', 'playerColor');
@@ -11726,7 +12034,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Get player color
        */
-      getPlayerColor: function getPlayerColor(asOnBoard) {
+      getPlayerColor: function(asOnBoard) {
         if (asOnBoard && this.board) {
           return this.board.colorMultiplier * this.playerColor;
         }
@@ -11736,7 +12044,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Toggle solution paths
        */
-      toggleSolutionPaths: function toggleSolutionPaths(solutionPaths) {
+      toggleSolutionPaths: function(solutionPaths) {
 
         //Toggle if not given
         if (typeof solutionPaths === 'undefined') {
@@ -11753,7 +12061,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Auto play next move
        */
-      autoPlayNext: function autoPlayNext(immediately) {
+      autoPlayNext: function(immediately) {
 
         //Must have game and children
         if (!this.game || !this.game.isLoaded() || this.game.node.children.length === 0) {
@@ -11763,7 +12071,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
         //Init vars
         var children = [];
         var self = this;
-        var i = void 0;
+        var i;
 
         //When picking a child node, we always prefer to pick a valid solution
         for (i = 0; i < this.game.node.children.length; i++) {
@@ -11788,18 +12096,19 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
 
         //Block navigation and run the timeout
         this.solveNavigationBlocked = true;
-        $timeout(function () {
+        $timeout(function() {
 
           //Move to next move and unblock navigation
           self.next(children[i]);
           self.solveNavigationBlocked = false;
+
         }, this.solveAutoPlayDelay);
       },
 
       /**
        * Start solving from the current game node
        */
-      solve: function solve() {
+      solve: function() {
 
         //Must have a game
         if (!this.game || !this.game.isLoaded()) {
@@ -11825,7 +12134,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Restart the problem
        */
-      restartProblem: function restartProblem() {
+      restartProblem: function() {
 
         //Must be in solve mode, must have game
         if (this.mode !== PlayerModes.SOLVE || !this.game || !this.game.isLoaded()) {
@@ -11856,7 +12165,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Parse config instructions
        */
-      parseConfig: function parseConfig(config) {
+      parseConfig: function(config) {
 
         //Extend from default config
         this.config = angular.extend({}, this.config, defaultConfig, config || {});
@@ -11871,7 +12180,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Setting changes handler
        */
-      settingChange: function settingChange(event, setting) {
+      settingChange: function(event, setting) {
 
         //Solution paths setting changes?
         if (setting === 'solutionPaths') {
@@ -11885,7 +12194,9 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
           drawSolutionPaths.call(this, this.solutionPaths);
 
           //Make an auto play move if it's not our turn
-          if (!this.problemSolved && this.solveAutoPlay && this.game.getTurn() !== this.playerColor) {
+          if (
+            !this.problemSolved && this.solveAutoPlay && this.game.getTurn() !== this.playerColor
+          ) {
             this.autoPlayNext(true);
           }
         }
@@ -11894,7 +12205,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Hover handler
        */
-      hover: function hover(event) {
+      hover: function(event) {
 
         //Update hover mark
         if (this.board) {
@@ -11906,7 +12217,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Board update event handler
        */
-      boardUpdate: function boardUpdate() {
+      boardUpdate: function() {
 
         //Show move variations
         if (this.solutionPaths) {
@@ -11917,7 +12228,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Handler for keydown events
        */
-      keyDown: function keyDown(event, keyboardEvent) {
+      keyDown: function(event, keyboardEvent) {
 
         //Switch key code
         switch (keyboardEvent.keyCode) {
@@ -11955,7 +12266,10 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
 
                 //Go back one more if this is not the player's turn and if
                 //the problem hasn't been solved yet
-                if (!this.problemSolved && this.solveAutoPlay && this.game.getTurn() === -this.playerColor) {
+                if (
+                  !this.problemSolved && this.solveAutoPlay &&
+                  this.game.getTurn() === -this.playerColor
+                ) {
                   this.previous();
                 }
               }
@@ -11967,7 +12281,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Handler for mouse click events
        */
-      click: function click(event) {
+      click: function(event) {
 
         //Falling outside of grid?
         if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
@@ -11989,29 +12303,30 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
             if (node.solution === true) {
               this.problemSolved = true;
               this.broadcast('solutionFound', node);
-            } else {
+            }
+            else {
               this.broadcast('solutionWrong', node);
             }
           }
 
           //Auto-play next move?
           else if (!this.problemSolved && this.solveAutoPlay) {
-              this.autoPlayNext();
-            }
+            this.autoPlayNext();
+          }
         }
 
         //Unknown variation, try to play
         else if (this.game.play(event.x, event.y)) {
-            this.problemOffPath = true;
-            this.processPosition();
-            this.broadcast('solutionOffPath', this.game.getNode());
-          }
+          this.problemOffPath = true;
+          this.processPosition();
+          this.broadcast('solutionOffPath', this.game.getNode());
+        }
       },
 
       /**
        * Path change event
        */
-      pathChange: function pathChange() {
+      pathChange: function() {
 
         //Update hover mark
         if (this.board) {
@@ -12023,10 +12338,12 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Handler for mode entry
        */
-      modeEnter: function modeEnter() {
+      modeEnter: function() {
 
         //Set available tools for this mode
-        this.setTools([PlayerTools.MOVE]);
+        this.setTools([
+          PlayerTools.MOVE
+        ]);
 
         //Set default tool
         this.tool = this.tools[0];
@@ -12040,7 +12357,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
       /**
        * Handler for mode exit
        */
-      modeExit: function modeExit() {
+      modeExit: function() {
 
         //Hide any solution variations
         if (this.solutionPaths) {
@@ -12053,4 +12370,5 @@ angular.module('ngGo.Player.Mode.Solve.Service', ['ngGo'])
     return PlayerModeSolve;
   }];
 }]);
+
 })(window, window.angular);

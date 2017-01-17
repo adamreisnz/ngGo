@@ -169,6 +169,30 @@ angular.module('ngGo.Game.Service', [
       this.setTurn((this.info.game.handicap > 1) ? StoneColor.W : StoneColor.B);
     }
 
+    /**
+     * Find the move index in the child nodes.
+     */
+    function findMoveIndexInChildNodes(x, y, color) {
+
+      //Only iterate when there are children
+      if (this.node.hasChildren()) {
+        for (let i = 0; i < this.node.children.length; ++i) {
+          const childNode = this.node.children[i];
+
+          //Only check if the child node is a move node
+          if (childNode.isMove()) {
+            const nodeMove = childNode.move;
+            if (nodeMove.x === x && nodeMove.y === y && nodeMove.color === color) {
+              return i;
+            }
+          }
+        }
+      }
+
+      //The move doesn't exist
+      return null;
+    }
+
     /**************************************************************************
      * Position history helpers
      ***/
@@ -399,16 +423,16 @@ angular.module('ngGo.Game.Service', [
      */
     Game.prototype.clone = function() {
 
-      //Create new kifu object and get properties
-      let clone = new Game();
-      let props = Object.getOwnPropertyNames(this);
+      //Create a new object and get properties
+      const clone = new Game();
+      const props = Object.getOwnPropertyNames(this);
 
-      //Copy all properties
+      //Deep copy all properties
       for (let p = 0; p < props.length; p++) {
-        clone[p] = angular.copy(this[p]);
+        const prop = props[p];
+        clone[prop] = angular.copy(this[prop]);
       }
 
-      //Return clone
       return clone;
     };
 
@@ -855,15 +879,13 @@ angular.module('ngGo.Game.Service', [
       let stop;
 
       //Check for ko only? (Last two positions)
-      if (this.checkRepeat === 'KO' && (this.history.length - 2) >= 0) {
+      if (this.config.checkRepeat === 'KO' && (this.history.length - 2) >= 0) {
         stop = this.history.length - 2;
       }
-
       //Check all history?
-      else if (this.checkRepeat === 'ALL') {
+      else if (this.config.checkRepeat === 'ALL') {
         stop = 0;
       }
-
       //Not repeating
       else {
         return false;
@@ -928,7 +950,7 @@ angular.module('ngGo.Game.Service', [
         if (!newPosition.hasLiberties(x, y)) {
 
           //Capture the group if it's allowed
-          if (this.allowSuicide) {
+          if (this.config.allowSuicide) {
             newPosition.captureGroup(x, y);
           }
 
@@ -940,7 +962,7 @@ angular.module('ngGo.Game.Service', [
       }
 
       //Check history for repeating moves
-      if (this.checkRepeat && this.isRepeatingPosition(newPosition)) {
+      if (this.config.checkRepeat && this.isRepeatingPosition(newPosition)) {
         throw new InvalidPositionError(ngGo.error.POSTITION_IS_REPEATING, x, y, color);
       }
 
@@ -1146,6 +1168,25 @@ angular.module('ngGo.Game.Service', [
       //Validate move and get new position
       let newPosition = this.validateMove(x, y, color);
 
+      //Check whether the move is in the existed child nodes
+      //If so, simply move to the existed node
+      const existedIndex = findMoveIndexInChildNodes.call(this, x, y, color);
+      if (existedIndex !== null) {
+
+        //Push the new position
+        pushPosition.call(this, newPosition);
+
+        //Remember the path
+        this.node.rememberedPath = existedIndex;
+
+        //Change the current node pointer
+        this.node = this.node.children[existedIndex];
+
+        //Advance the path
+        this.path.advance(existedIndex);
+        return true;
+      }
+
       //Push new position
       pushPosition.call(this, newPosition);
 
@@ -1200,6 +1241,38 @@ angular.module('ngGo.Game.Service', [
 
       //Advance path to the added node index
       this.path.advance(i);
+    };
+
+    /**
+     * Undo the placed stones.
+     */
+    Game.prototype.undo = function() {
+
+      //Validate if we can undo
+      if (!this.node.parent || this.node.hasChildren()) {
+        return false;
+      }
+
+      //Remove the node, set the pointer to its parent
+      const parentNode = this.node.parent;
+      this.node.remove();
+      this.node = parentNode;
+
+      //Reset the remembered path index if the index doesn't exist
+      if (typeof this.node.rememberedPath !== 'undefined') {
+        if (this.node.rememberedPath >= this.node.children.length) {
+          delete this.node.rememberedPath;
+        }
+      }
+
+      //Retreat the path
+      this.path.retreat();
+
+      //Pop the last position
+      popPosition.call(this);
+
+      //Valid operation
+      return true;
     };
 
     /**************************************************************************

@@ -39,7 +39,7 @@ angular.module('ngGo.Game.Path.Service', [
 
     //Different child variation chosen? Remember
     if (i > 0) {
-      this.path[this.move] = 1;
+      this.path[this.move] = i;
       this.branches++;
     }
 
@@ -58,14 +58,18 @@ angular.module('ngGo.Game.Path.Service', [
       return;
     }
 
-    //Delete path choice
-    if (this.path[this.move]) {
-      delete this.path[this.move];
-      this.branches--;
-    }
-
     //Decrement move
     this.move--;
+
+    //Delete path choice
+    if (typeof this.path[this.move] !== 'undefined') {
+      const branch = this.path[this.move];
+      delete this.path[this.move];
+      if (branch > 0) {
+        this.branches--;
+      }
+    }
+
     return this;
   };
 
@@ -74,12 +78,20 @@ angular.module('ngGo.Game.Path.Service', [
    */
   GamePath.prototype.setMove = function(no) {
 
+    //Do nothing if the move number is invalid
+    if (no < 0) {
+      return this;
+    }
+
     //Less than our current move? We need to erase any paths above the move number
     if (no < this.move) {
       for (let i in this.path) {
-        if (i > no) {
+        if (i >= no) {
+          const branch = this.path[i];
           delete this.path[i];
-          this.branches--;
+          if (branch > 0) {
+            this.branches--;
+          }
         }
       }
     }

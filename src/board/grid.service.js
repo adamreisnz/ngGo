@@ -211,7 +211,7 @@ angular.module('ngGo.Board.Grid.Service', [
     //Loop all coordinates
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
-        if (this.grid[x][y] !== grid[x][y]) {
+        if (this.grid[x][y] !== grid.grid[x][y]) {
           return false;
         }
       }

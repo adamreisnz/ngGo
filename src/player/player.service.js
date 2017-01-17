@@ -513,6 +513,23 @@ angular.module('ngGo.Player.Service', [
       },
 
       /**************************************************************************
+       * Move handling
+       ***/
+
+      /**
+       * Undo the positions.
+       */
+      undo() {
+        if (this.game) {
+          if (this.game.undo()) {
+            this.processPosition();
+            return true;
+          }
+          return false;
+        }
+      },
+
+      /**************************************************************************
        * Navigation
        ***/
 
@@ -687,6 +704,54 @@ angular.module('ngGo.Player.Service', [
             type: MarkupTypes.LABEL,
             text: move++,
           });
+        }, this);
+
+        //Redraw board markup
+        this.board.redraw('markup');
+      },
+
+      /**
+       * Show move numbers in branch lines.
+       */
+      showBranchMoveNumbers() {
+
+        //Exit when there is no game
+        if (!this.game || !this.game.isLoaded()) {
+          return;
+        }
+
+        //Get the move move number range in which the variant branch is
+        const endMoveNum = this.game.getMove();
+        const curGamePath = this.game.clonePath();
+        const path = curGamePath.path;
+        let startMoveNum;
+        for (startMoveNum = 0; startMoveNum <= endMoveNum; ++startMoveNum) {
+          const rememberedPath = path[startMoveNum];
+          if (rememberedPath > 0) {
+            break;
+          }
+        }
+        startMoveNum += 1;
+        let moveNum = 1;
+
+        //Exit when the current game path doesn't contain a variant branch
+        if (startMoveNum > endMoveNum) {
+          return;
+        }
+
+        //Get nodes of the moves in the range
+        const nodes = this.game.getMoveNodes(startMoveNum, endMoveNum);
+
+        //Clear previously added markups
+        this.board.layers.markup.removeAll();
+
+        //Draw markups
+        nodes.forEach(nodes, (node) => {
+          this.board.add('markup', node.move.x, node.move.y, {
+            type: MarkupTypes.LABEL,
+            text: moveNum.toString(),
+          });
+          moveNum += 1;
         }, this);
 
         //Redraw board markup
