@@ -332,12 +332,12 @@ angular.module('ngGo.Game.Service', [
       Object.defineProperty(this, 'position', {
 
         //Getter returns the last position from the stack
-        get: function() {
+        get() {
           return this.history[this.history.length - 1];
         },
 
         //Setter adds a new position to the stack
-        set: function(newPosition) {
+        set(newPosition) {
           this.history[this.history.length] = newPosition;
         },
       });
@@ -1244,7 +1244,7 @@ angular.module('ngGo.Game.Service', [
     };
 
     /**
-     * Undo the placed stones.
+     * Undo the placed stones
      */
     Game.prototype.undo = function() {
 

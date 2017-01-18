@@ -65,7 +65,7 @@ angular.module('ngGo.Kifu.Blank.Service', [
     /**
      * Get blank JGF
      */
-    jgf: function(base) {
+    jgf(base) {
 
       //Initialize blank
       let blank = angular.copy(blankJgf);
@@ -86,7 +86,7 @@ angular.module('ngGo.Kifu.Blank.Service', [
     /**
      * Get blank SGF
      */
-    sgf: function(base) {
+    sgf(base) {
 
       //Initialize blank
       let blank = angular.copy(blankSgf);

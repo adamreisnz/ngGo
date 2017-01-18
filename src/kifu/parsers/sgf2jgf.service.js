@@ -453,7 +453,7 @@ angular.module('ngGo.Kifu.Parsers.Sgf2Jgf.Service', [
     /**
      * Parse SGF string into a JGF object or string
      */
-    parse: function(sgf, stringified) {
+    parse(sgf, stringified) {
 
       //Get new JGF object (with SGF node as a base)
       let jgf = KifuBlank.jgf({record: {sgf: {}}});

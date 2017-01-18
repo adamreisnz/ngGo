@@ -188,7 +188,7 @@ angular.module('ngGo.Game.Scorer.Service', [
     /**
      * Load a game to score
      */
-    load: function(game) {
+    load(game) {
 
       //Reset score
       this.score = new GameScore();
@@ -207,28 +207,28 @@ angular.module('ngGo.Game.Scorer.Service', [
     /**
      * Get the calculated score
      */
-    getScore: function() {
+    getScore() {
       return this.score;
     },
 
     /**
      * Get the points grid
      */
-    getPoints: function() {
+    getPoints() {
       return this.points;
     },
 
     /**
      * Get the captures grid
      */
-    getCaptures: function() {
+    getCaptures() {
       return this.captures;
     },
 
     /**
      * Run score calculation routine
      */
-    calculate: function() {
+    calculate() {
 
       //No game?
       if (!this.game) {
@@ -312,7 +312,7 @@ angular.module('ngGo.Game.Scorer.Service', [
     /**
      * Mark stones dead or alive
      */
-    mark: function(x, y) {
+    mark(x, y) {
 
       //Get color of original position and state of the count position
       let color = this.game.position.stones.get(x, y);

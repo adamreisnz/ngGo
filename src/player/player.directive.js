@@ -15,7 +15,7 @@ angular.module('ngGo.Player.Directive', [
     /**
      * Controller
      */
-    controller: function($scope) {
+    controller($scope) {
 
       //Set player in scope
       if (!$scope.Player) {
@@ -26,7 +26,7 @@ angular.module('ngGo.Player.Directive', [
     /**
      * Linking function
      */
-    link: function(scope, element, attrs) {
+    link(scope, element, attrs) {
 
       //Link the element
       Player.linkElement(element);

@@ -219,7 +219,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Set solve auto play delay
        */
-      setSolveAutoPlay: function(autoPlay) {
+      setSolveAutoPlay(autoPlay) {
         if (this.solveAutoPlay !== autoPlay) {
           this.solveAutoPlay = autoPlay;
           this.broadcast('settingChange', 'solveAutoPlay');
@@ -229,7 +229,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Set solve auto play delay
        */
-      setSolveAutoPlayDelay: function(delay) {
+      setSolveAutoPlayDelay(delay) {
         if (this.solveAutoPlayDelay !== delay) {
           this.solveAutoPlayDelay = delay;
           this.broadcast('settingChange', 'solveAutoPlayDelay');
@@ -239,7 +239,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Set player color
        */
-      setPlayerColor: function(color) {
+      setPlayerColor(color) {
         if (this.playerColor !== color) {
           this.playerColor = color;
           this.broadcast('settingChange', 'playerColor');
@@ -249,7 +249,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Get player color
        */
-      getPlayerColor: function(asOnBoard) {
+      getPlayerColor(asOnBoard) {
         if (asOnBoard && this.board) {
           return this.board.colorMultiplier * this.playerColor;
         }
@@ -259,7 +259,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Toggle solution paths
        */
-      toggleSolutionPaths: function(solutionPaths) {
+      toggleSolutionPaths(solutionPaths) {
 
         //Toggle if not given
         if (typeof solutionPaths === 'undefined') {
@@ -276,7 +276,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Auto play next move
        */
-      autoPlayNext: function(immediately) {
+      autoPlayNext(immediately) {
 
         //Must have game and children
         if (!this.game || !this.game.isLoaded() || this.game.node.children.length === 0) {
@@ -323,7 +323,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Start solving from the current game node
        */
-      solve: function() {
+      solve() {
 
         //Must have a game
         if (!this.game || !this.game.isLoaded()) {
@@ -349,7 +349,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Restart the problem
        */
-      restartProblem: function() {
+      restartProblem() {
 
         //Must be in solve mode, must have game
         if (this.mode !== PlayerModes.SOLVE || !this.game || !this.game.isLoaded()) {
@@ -380,7 +380,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Parse config instructions
        */
-      parseConfig: function(config) {
+      parseConfig(config) {
 
         //Extend from default config
         this.config = angular.extend({}, this.config, defaultConfig, config || {});
@@ -395,7 +395,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Setting changes handler
        */
-      settingChange: function(event, setting) {
+      settingChange(event, setting) {
 
         //Solution paths setting changes?
         if (setting === 'solutionPaths') {
@@ -420,7 +420,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Hover handler
        */
-      hover: function(event) {
+      hover(event) {
 
         //Update hover mark
         if (this.board) {
@@ -432,7 +432,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Board update event handler
        */
-      boardUpdate: function() {
+      boardUpdate() {
 
         //Show move variations
         if (this.solutionPaths) {
@@ -443,7 +443,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Handler for keydown events
        */
-      keyDown: function(event, keyboardEvent) {
+      keyDown(event, keyboardEvent) {
 
         //Switch key code
         switch (keyboardEvent.keyCode) {
@@ -496,7 +496,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Handler for mouse click events
        */
-      click: function(event) {
+      click(event) {
 
         //Falling outside of grid?
         if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
@@ -541,7 +541,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Path change event
        */
-      pathChange: function() {
+      pathChange() {
 
         //Update hover mark
         if (this.board) {
@@ -553,7 +553,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Handler for mode entry
        */
-      modeEnter: function() {
+      modeEnter() {
 
         //Set available tools for this mode
         this.setTools([
@@ -572,7 +572,7 @@ angular.module('ngGo.Player.Mode.Solve.Service', [
       /**
        * Handler for mode exit
        */
-      modeExit: function() {
+      modeExit() {
 
         //Hide any solution variations
         if (this.solutionPaths) {

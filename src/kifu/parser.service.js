@@ -90,21 +90,21 @@ angular.module('ngGo.Kifu.Parser.Service', [
     /**
      * Parse GIB string into a JGF object or string
      */
-    gib2jgf: function(gib, stringified) {
+    gib2jgf(gib, stringified) {
       return Gib2Jgf.parse(gib, stringified);
     },
 
     /**
      * Parse SGF string into a JGF object or string
      */
-    sgf2jgf: function(sgf, stringified) {
+    sgf2jgf(sgf, stringified) {
       return Sgf2Jgf.parse(sgf, stringified);
     },
 
     /**
      * Parse JGF object or string into an SGF string
      */
-    jgf2sgf: function(jgf) {
+    jgf2sgf(jgf) {
       return Jgf2Sgf.parse(jgf);
     },
   };

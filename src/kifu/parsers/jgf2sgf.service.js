@@ -443,7 +443,7 @@ angular.module('ngGo.Kifu.Parsers.Jgf2Sgf.Service', [
     /**
      * Parse JGF object or string into an SGF string
      */
-    parse: function(jgf) {
+    parse(jgf) {
 
       //String given?
       if (typeof jgf === 'string') {

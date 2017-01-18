@@ -328,14 +328,14 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Set the setup tool
        */
-      switchSetupTool: function(tool) {
+      switchSetupTool(tool) {
         this.setupTool = tool;
       },
 
       /**
        * Set the markup tool
        */
-      switchMarkupTool: function(tool) {
+      switchMarkupTool(tool) {
         this.markupTool = tool;
         if (this.markupTool === MarkupTools.TEXT || this.markupTool === MarkupTools.NUMBER) {
           this.determineMarkupLabel();
@@ -345,7 +345,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Conversion of setup tool to stone color
        */
-      setupToolColor: function() {
+      setupToolColor() {
         switch (this.setupTool) {
           case SetupTools.BLACK:
             return StoneColor.B;
@@ -359,7 +359,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Set the new text markup label
        */
-      setMarkupLabel: function(label) {
+      setMarkupLabel(label) {
         if (label) {
           this.markupLabel = label;
         }
@@ -368,7 +368,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Determine the new text markup label
        */
-      determineMarkupLabel: function() {
+      determineMarkupLabel() {
 
         //Clear
         this.markupLabel = '';
@@ -425,7 +425,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Hover handler
        */
-      hover: function(event) {
+      hover(event) {
 
         //Must have board
         if (!this.board) {
@@ -458,7 +458,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Keydown handler
        */
-      keyDown: function(/*event, keyboardEvent*/) {
+      keyDown(/*event, keyboardEvent*/) {
 
         //TODO: tool switching via keyboard input
         //Switch key code
@@ -470,7 +470,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Click handler
        */
-      click: function(event) {
+      click(event) {
 
         //Falling outside of grid?
         if (!this.board || !this.board.isOnBoard(event.x, event.y)) {
@@ -526,7 +526,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Mouse drag handler
        */
-      mouseDrag: function(event) {
+      mouseDrag(event) {
 
         //Initialize vars
         let x, y;
@@ -581,14 +581,14 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Path change
        */
-      pathChange: function() {
+      pathChange() {
         findAllMarkupLabels.call(this);
       },
 
       /**
        * Handler for mode entry
        */
-      modeEnter: function() {
+      modeEnter() {
 
         //Set available tools for this mode
         this.setTools([
@@ -608,7 +608,7 @@ angular.module('ngGo.Player.Mode.Edit.Service', [
       /**
        * Handler for tool switches
        */
-      toolSwitch: function() {
+      toolSwitch() {
 
         //Switched to scoring?
         if (this.tool === PlayerTools.SCORE) {

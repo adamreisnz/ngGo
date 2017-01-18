@@ -134,7 +134,7 @@ angular.module('ngGo.Kifu.Parsers.Gib2Jgf.Service', [
     /**
      * Parse GIB string into a JGF object or string
      */
-    parse: function(gib, stringified) {
+    parse(gib, stringified) {
 
       //Get new JGF object
       let jgf = KifuBlank.jgf();

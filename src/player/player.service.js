@@ -56,7 +56,9 @@ angular.module('ngGo.Player.Service', [
   /**
    * Service getter
    */
-  this.$get = function($rootScope, $document, Game, GameScorer, Board, PlayerTools) {
+  this.$get = function(
+    $rootScope, $document, $timeout, Game, GameScorer, Board, PlayerTools
+  ) {
 
     /**
      * Helper to append board grid coordinatess to the broadcast event object
@@ -79,12 +81,14 @@ angular.module('ngGo.Player.Service', [
         x = mouseEvent.offsetX;
       }
       else if (
-        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetX !== 'undefined'
+        mouseEvent.originalEvent &&
+        typeof mouseEvent.originalEvent.offsetX !== 'undefined'
       ) {
         x = mouseEvent.originalEvent.offsetX;
       }
       else if (
-        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerX !== 'undefined'
+        mouseEvent.originalEvent &&
+        typeof mouseEvent.originalEvent.layerX !== 'undefined'
       ) {
         x = mouseEvent.originalEvent.layerX;
       }
@@ -94,12 +98,14 @@ angular.module('ngGo.Player.Service', [
         y = mouseEvent.offsetY;
       }
       else if (
-        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.offsetY !== 'undefined'
+        mouseEvent.originalEvent &&
+        typeof mouseEvent.originalEvent.offsetY !== 'undefined'
       ) {
         y = mouseEvent.originalEvent.offsetY;
       }
       else if (
-        mouseEvent.originalEvent && typeof mouseEvent.originalEvent.layerY !== 'undefined'
+        mouseEvent.originalEvent &&
+        typeof mouseEvent.originalEvent.layerY !== 'undefined'
       ) {
         y = mouseEvent.originalEvent.layerY;
       }
@@ -121,7 +127,7 @@ angular.module('ngGo.Player.Service', [
     /**
      * Player class
      */
-    let Player = {
+    const Player = {
 
       //Player configuration
       config: {},
@@ -144,7 +150,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Initialization
        */
-      init: function() {
+      init() {
 
         //Unlink board instance, create new game
         this.board = null;
@@ -180,7 +186,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Link the player to a HTML element
        */
-      linkElement: function(element) {
+      linkElement(element) {
 
         //Set element
         this.element = element;
@@ -205,7 +211,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Parse config instructions
        */
-      parseConfig: function(config) {
+      parseConfig(config) {
 
         //Extend from default config
         this.config = angular.extend({}, defaultConfig, config || {});
@@ -223,7 +229,7 @@ angular.module('ngGo.Player.Service', [
         );
 
         //Let the modes parse their config
-        for (let mode in this.modes) {
+        for (const mode in this.modes) {
           if (this.modes[mode].parseConfig) {
             this.modes[mode].parseConfig.call(this, this.config);
           }
@@ -233,7 +239,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Set arrow keys navigation
        */
-      setArrowKeysNavigation: function(arrowKeys) {
+      setArrowKeysNavigation(arrowKeys) {
         if (arrowKeys !== this.arrowKeysNavigation) {
           this.arrowKeysNavigation = arrowKeys;
           this.broadcast('settingChange', 'arrowKeysNavigation');
@@ -243,7 +249,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Set scroll wheel navigation
        */
-      setScrollWheelNavigation: function(scrollWheel) {
+      setScrollWheelNavigation(scrollWheel) {
         if (scrollWheel !== this.scrollWheelNavigation) {
           this.scrollWheelNavigation = scrollWheel;
           this.broadcast('settingChange', 'scrollWheelNavigation');
@@ -253,7 +259,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Set the last move marker
        */
-      setLastMoveMarker: function(lastMoveMarker) {
+      setLastMoveMarker(lastMoveMarker) {
         if (lastMoveMarker !== this.lastMoveMarker) {
           this.lastMoveMarker = lastMoveMarker;
           this.broadcast('settingChange', 'lastMoveMarker');
@@ -263,7 +269,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Set variation markup on the board
        */
-      setVariationMarkup: function(variationMarkup, variationChildren, variationSiblings) {
+      setVariationMarkup(variationMarkup, variationChildren, variationSiblings) {
 
         //One change event for these three settings
         let change = false;
@@ -276,7 +282,8 @@ angular.module('ngGo.Player.Service', [
 
         //Children setting change?
         if (
-          typeof variationChildren !== 'undefined' && variationChildren !== this.variationChildren
+          typeof variationChildren !== 'undefined' &&
+          variationChildren !== this.variationChildren
         ) {
           this.variationChildren = variationChildren;
           change = true;
@@ -284,7 +291,8 @@ angular.module('ngGo.Player.Service', [
 
         //Siblings setting change?
         if (
-          typeof variationSiblings !== 'undefined' && variationSiblings !== this.variationSiblings
+          typeof variationSiblings !== 'undefined' &&
+          variationSiblings !== this.variationSiblings
         ) {
           this.variationSiblings = variationSiblings;
           change = true;
@@ -303,7 +311,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Register a player mode
        */
-      registerMode: function(mode, PlayerMode) {
+      registerMode(mode, PlayerMode) {
 
         //Register the mode and let it parse the configuration
         this.modes[mode] = PlayerMode;
@@ -323,28 +331,28 @@ angular.module('ngGo.Player.Service', [
       /**
        * Set available tools
        */
-      setTools: function(tools) {
+      setTools(tools) {
         this.tools = tools || [PlayerTools.NONE];
       },
 
       /**
        * Check if we have a player mode
        */
-      hasMode: function(mode) {
+      hasMode(mode) {
         return this.modes[mode] ? true : false;
       },
 
       /**
        * Check if we have a player tool
        */
-      hasTool: function(tool) {
+      hasTool(tool) {
         return (this.tools.indexOf(tool) !== -1);
       },
 
       /**
        * Switch player mode
        */
-      switchMode: function(mode, force) {
+      switchMode(mode, force) {
 
         //No change?
         if (!force && (!mode || this.mode === mode)) {
@@ -369,7 +377,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Switch player tool
        */
-      switchTool: function(tool, force) {
+      switchTool(tool, force) {
 
         //No change?
         if (!force && (!tool || this.tool === tool)) {
@@ -377,7 +385,8 @@ angular.module('ngGo.Player.Service', [
         }
 
         //Validate tool switch (only when there is a mode)
-        if (this.mode && this.modes[this.mode] && this.tools.indexOf(tool) === -1) {
+        if (this.mode && this.modes[this.mode] &&
+          this.tools.indexOf(tool) === -1) {
           return false;
         }
 
@@ -390,7 +399,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Save the full player state
        */
-      saveState: function() {
+      saveState() {
 
         //Save player state
         this.playerState = {
@@ -407,7 +416,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Restore to the saved player state
        */
-      restoreState: function() {
+      restoreState() {
 
         //Must have player state
         if (!this.playerState) {
@@ -431,7 +440,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Load game record
        */
-      load: function(data, allowPlayerConfig) {
+      load(data, allowPlayerConfig) {
 
         //Try to load the game record data
         try {
@@ -466,7 +475,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Reload the existing game record
        */
-      reload: function() {
+      reload() {
 
         //Must have game
         if (!this.game || !this.game.isLoaded()) {
@@ -486,7 +495,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Save the current state
        */
-      saveGameState: function() {
+      saveGameState() {
         if (this.game && this.game.isLoaded()) {
           this.gameState = this.game.getState();
         }
@@ -495,7 +504,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Restore to the saved state
        */
-      restoreGameState: function() {
+      restoreGameState() {
 
         //Must have game and saved state
         if (!this.game || !this.gameState) {
@@ -513,11 +522,61 @@ angular.module('ngGo.Player.Service', [
       },
 
       /**************************************************************************
-       * Move handling
+       * Navigation
        ***/
 
       /**
-       * Undo the positions.
+       * Go to the next position
+       */
+      next(i) {
+        if (this.game && this.game.node !== this.restrictNodeEnd) {
+          this.game.next(i);
+          this.processPosition();
+        }
+      },
+
+      /**
+       * Go back to the previous position
+       */
+      previous() {
+        if (this.game && this.game.node !== this.restrictNodeStart) {
+          this.game.previous();
+          this.processPosition();
+        }
+      },
+
+      /**
+       * Go to the last position
+       */
+      last() {
+        if (this.game) {
+          this.game.last();
+          this.processPosition();
+        }
+      },
+
+      /**
+       * Go to the first position
+       */
+      first() {
+        if (this.game) {
+          this.game.first();
+          this.processPosition();
+        }
+      },
+
+      /**
+       * Go to a specific move number, tree path or named node
+       */
+      goto(target) {
+        if (this.game && target) {
+          this.game.goto(target);
+          this.processPosition();
+        }
+      },
+
+      /**
+       * Undo the last position
        */
       undo() {
         if (this.game) {
@@ -529,64 +588,10 @@ angular.module('ngGo.Player.Service', [
         }
       },
 
-      /**************************************************************************
-       * Navigation
-       ***/
-
-      /**
-       * Go to the next position
-       */
-      next: function(i) {
-        if (this.game && this.game.node !== this.restrictNodeEnd) {
-          this.game.next(i);
-          this.processPosition();
-        }
-      },
-
-      /**
-       * Go back to the previous position
-       */
-      previous: function() {
-        if (this.game && this.game.node !== this.restrictNodeStart) {
-          this.game.previous();
-          this.processPosition();
-        }
-      },
-
-      /**
-       * Go to the last position
-       */
-      last: function() {
-        if (this.game) {
-          this.game.last();
-          this.processPosition();
-        }
-      },
-
-      /**
-       * Go to the first position
-       */
-      first: function() {
-        if (this.game) {
-          this.game.first();
-          this.processPosition();
-        }
-      },
-
-      /**
-       * Go to a specific move number, tree path or named node
-       */
-      goto: function(target) {
-        if (this.game && target) {
-          this.game.goto(target);
-          this.processPosition();
-        }
-      },
-
       /**
        * Go to the previous fork
        */
-      previousFork: function() {
+      previousFork() {
         if (this.game) {
           this.game.previousFork();
           this.processPosition();
@@ -596,7 +601,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Go to the next fork
        */
-      nextFork: function() {
+      nextFork() {
         if (this.game) {
           this.game.nextFork();
           this.processPosition();
@@ -606,7 +611,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Go to the next position with a comment
        */
-      nextComment: function() {
+      nextComment() {
         if (this.game && this.game.node !== this.restrictNodeEnd) {
           this.game.nextComment();
           this.processPosition();
@@ -616,7 +621,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Go back to the previous position with a comment
        */
-      previousComment: function() {
+      previousComment() {
         if (this.game && this.game.node !== this.restrictNodeStart) {
           this.game.previousComment();
           this.processPosition();
@@ -626,7 +631,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Restrict navigation to the current node
        */
-      restrictNode: function(end) {
+      restrictNode(end) {
 
         //Must have game and node
         if (!this.game || !this.game.node) {
@@ -645,7 +650,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Process a new game position
        */
-      processPosition: function() {
+      processPosition() {
 
         //No game?
         if (!this.game || !this.game.isLoaded()) {
@@ -683,7 +688,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Show move numbers
        */
-      showMoveNumbers: function(fromMove, toMove) {
+      showMoveNumbers(fromMove, toMove) {
 
         //No game?
         if (!this.game || !this.game.isLoaded()) {
@@ -695,16 +700,16 @@ angular.module('ngGo.Player.Service', [
         toMove = toMove || this.game.getMove();
 
         //Get nodes for these moves
-        let nodes = this.game.getMoveNodes(fromMove, toMove);
+        const nodes = this.game.getMoveNodes(fromMove, toMove);
         let move = fromMove;
 
         //Loop nodes
-        angular.forEach(nodes, function(node) {
+        nodes.forEach(node => {
           this.board.add('markup', node.move.x, node.move.y, {
             type: MarkupTypes.LABEL,
             text: move++,
           });
-        }, this);
+        });
 
         //Redraw board markup
         this.board.redraw('markup');
@@ -746,13 +751,13 @@ angular.module('ngGo.Player.Service', [
         this.board.layers.markup.removeAll();
 
         //Draw markups
-        nodes.forEach(nodes, (node) => {
+        nodes.forEach(nodes, node => {
           this.board.add('markup', node.move.x, node.move.y, {
             type: MarkupTypes.LABEL,
             text: moveNum.toString(),
           });
           moveNum += 1;
-        }, this);
+        });
 
         //Redraw board markup
         this.board.redraw('markup');
@@ -765,7 +770,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Start a new game
        */
-      newGame: function() {
+      newGame() {
         this.game = new Game();
         this.processPosition();
       },
@@ -773,7 +778,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Score the current game position
        */
-      scoreGame: function() {
+      scoreGame() {
 
         //Calculate score
         GameScorer.calculate();
@@ -798,14 +803,14 @@ angular.module('ngGo.Player.Service', [
       /**
        * Get the board
        */
-      getBoard: function() {
+      getBoard() {
         return this.board;
       },
 
       /**
        * Set the board
        */
-      setBoard: function(Board) {
+      setBoard(Board) {
 
         //Set the board
         this.board = Board;
@@ -826,7 +831,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Update the board
        */
-      updateBoard: function(node, position, pathChanged) {
+      updateBoard(node, position, pathChanged) {
 
         //Must have board
         if (!this.board) {
@@ -852,7 +857,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Register an element event
        */
-      registerElementEvent: function(event, element) {
+      registerElementEvent(event, element) {
 
         //Which element to use
         if (typeof element === 'undefined' || !element.on) {
@@ -868,7 +873,7 @@ angular.module('ngGo.Player.Service', [
       /**
        * Event listener
        */
-      on: function(type, listener, mode, $scope) {
+      on(type, listener, mode, $scope) {
 
         //Must have valid listener
         if (typeof listener !== 'function') {
@@ -890,18 +895,17 @@ angular.module('ngGo.Player.Service', [
           return;
         }
 
-        //Get self and determine scope to use
-        let self = this;
+        //Determine scope to use
         let scope = $scope || $rootScope;
 
         //Create listener and return de-registration function
-        return scope.$on('ngGo.player.' + type, function() {
+        return scope.$on('ngGo.player.' + type, () => {
 
           //Filter on mode
           if (mode) {
             if (
-              (typeof mode === 'string' && mode !== self.mode) ||
-              mode.indexOf(self.mode) === -1
+              (typeof mode === 'string' && mode !== this.mode) ||
+              mode.indexOf(this.mode) === -1
             ) {
               return;
             }
@@ -914,42 +918,37 @@ angular.module('ngGo.Player.Service', [
 
           //Append grid coordinates for mouse events
           if (type === 'click' || type === 'hover' || type.substr(0, 5) === 'mouse') {
-            processMouseEvent.call(self, arguments[0], arguments[1]);
+            processMouseEvent.call(this, arguments[0], arguments[1]);
           }
 
           //Dragging? Prevent click events from firing
-          if (self.preventClickEvent && type === 'click') {
-            delete self.preventClickEvent;
+          if (this.preventClickEvent && type === 'click') {
+            delete this.preventClickEvent;
             return;
           }
           else if (type === 'mousedrag') {
-            self.preventClickEvent = true;
+            this.preventClickEvent = true;
           }
 
           //Call listener
-          listener.apply(self, arguments);
+          listener.apply(this, arguments);
         });
       },
 
       /**
        * Event broadcaster
        */
-      broadcast: function(type, args) {
+      broadcast(type, args) {
 
         //Must have type
         if (!type) {
           return;
         }
 
-        //Make sure we are in a digest cycle
-        if (!$rootScope.$$phase) {
-          $rootScope.$apply(function() {
-            $rootScope.$broadcast('ngGo.player.' + type, args);
-          });
-        }
-        else {
+        //Wrap in timeout
+        $timeout(() => {
           $rootScope.$broadcast('ngGo.player.' + type, args);
-        }
+        });
       },
     };
 

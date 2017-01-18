@@ -152,7 +152,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     /**
      * Handler for keydown events
      */
-    keyDown: function(event, keyboardEvent) {
+    keyDown(event, keyboardEvent) {
 
       //No game?
       if (!this.game || !this.game.isLoaded()) {
@@ -211,7 +211,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     /**
      * Handler for mousewheel events
      */
-    mouseWheel: function(event, mouseEvent) {
+    mouseWheel(event, mouseEvent) {
 
       //Disabled or not using move tool?
       if (!this.scrollWheelNavigation || this.tool !== PlayerTools.MOVE) {
@@ -254,7 +254,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     /**
      * Mouse out handler
      */
-    mouseOut: function() {
+    mouseOut() {
       if (this.board) {
         this.board.removeAll('hover');
       }
@@ -263,7 +263,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     /**
      * Mouse move handler
      */
-    mouseMove: function(event, mouseEvent) {
+    mouseMove(event, mouseEvent) {
 
       //Attach drag object to events
       if (
@@ -294,7 +294,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     /**
      * Mouse down handler
      */
-    mouseDown: function(event) {
+    mouseDown(event) {
       this.mouse.dragStart = {
         x: event.x,
         y: event.y,
@@ -304,7 +304,7 @@ angular.module('ngGo.Player.Mode.Common.Service', [
     /**
      * Mouse up handler
      */
-    mouseUp: function(event, mouseEvent) {
+    mouseUp(event, mouseEvent) {
       if (
         this.mouse.dragStart &&
         (this.mouse.dragStart.x !== event.x || this.mouse.dragStart.y !== event.y)
