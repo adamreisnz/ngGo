@@ -1,7 +1,7 @@
 describe('Game', function() {
-  var StoneColor;
-  var InvalidPositionError;
-  var Game;
+  let StoneColor;
+  let InvalidPositionError;
+  let Game;
 
   //Load modules
   beforeEach(module('ngGo'));
@@ -26,8 +26,8 @@ describe('Game', function() {
   });
 
   it('#clone', function() {
-    var game = new Game(this.sgfSimple);
-    var clonedGame = game.clone();
+    const game = new Game(this.sgfSimple);
+    const clonedGame = game.clone();
     expect(game).toEqual(clonedGame);
     expect(clonedGame.position).toBeDefined();
   });
@@ -49,7 +49,7 @@ describe('Game', function() {
 
       //Set config
       this.config = {
-        checkRepeat: null
+        checkRepeat: null,
       };
 
       //Create games
@@ -59,16 +59,19 @@ describe('Game', function() {
       goToLastMove.call(this);
 
       //Verify
-      expect(this.gameSimple.play.bind(this.gameSimple, 2, 2, StoneColor.BLACK)).not.toThrow();
-      expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.WHITE)).not.toThrow();
-      expect(this.gameRepeatingAll.play.bind(this.gameRepeatingAll, 2, 2, StoneColor.BLACK)).not.toThrow();
+      expect(this.gameSimple.play.bind(this.gameSimple, 2, 2, StoneColor.BLACK))
+        .not.toThrow();
+      expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.WHITE))
+        .not.toThrow();
+      expect(this.gameRepeatingAll.play.bind(this.gameRepeatingAll, 2, 2, StoneColor.BLACK))
+        .not.toThrow();
     });
 
     it('with Ko checking enabled', function() {
 
       //Set config
       this.config = {
-        checkRepeat: 'KO'
+        checkRepeat: 'KO',
       };
 
       //Create games
@@ -78,17 +81,19 @@ describe('Game', function() {
       goToLastMove.call(this);
 
       //Verify
-      expect(this.gameSimple.play.bind(this.gameSimple, 2, 2, StoneColor.BLACK)).not.toThrow();
+      expect(this.gameSimple.play.bind(this.gameSimple, 2, 2, StoneColor.BLACK))
+        .not.toThrow();
       expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.WHITE))
         .toThrowError(InvalidPositionError);
-      expect(this.gameRepeatingAll.play.bind(this.gameRepeatingAll, 2, 2, StoneColor.BLACK)).not.toThrow();
+      expect(this.gameRepeatingAll.play.bind(this.gameRepeatingAll, 2, 2, StoneColor.BLACK))
+        .not.toThrow();
     });
 
     it('with all checking enabled', function() {
 
       //Set config
       this.config = {
-        checkRepeat: 'ALL'
+        checkRepeat: 'ALL',
       };
 
       //Create games
@@ -98,7 +103,8 @@ describe('Game', function() {
       goToLastMove.call(this);
 
       //Verify
-      expect(this.gameSimple.play.bind(this.gameSimple, 2, 2, StoneColor.BLACK)).not.toThrow();
+      expect(this.gameSimple.play.bind(this.gameSimple, 2, 2, StoneColor.BLACK))
+        .not.toThrow();
       expect(this.gameRepeatingKo.play.bind(this.gameRepeatingKo, 3, 2, StoneColor.WHITE))
         .toThrowError(InvalidPositionError);
       expect(this.gameRepeatingAll.play.bind(this.gameRepeatingAll, 2, 2, StoneColor.BLACK))
@@ -117,7 +123,7 @@ describe('Game', function() {
       this.gameSimple.play(6, 2, StoneColor.WHITE);
 
       //Verify
-      var parentNode = this.gameSimple.node.parent;
+      const parentNode = this.gameSimple.node.parent;
       expect(parentNode.rememberedPath).toEqual(0);
       expect(parentNode.children.length).toEqual(1);
     });
@@ -133,7 +139,7 @@ describe('Game', function() {
       this.gameSimple.last();
 
       //Undo
-      var result = this.gameSimple.undo();
+      const result = this.gameSimple.undo();
 
       //Verify
       expect(result).toBe(true);
@@ -151,7 +157,7 @@ describe('Game', function() {
       this.gameSimple.goto(1);
 
       //Undo
-      var result = this.gameSimple.undo();
+      const result = this.gameSimple.undo();
 
       //Verify
       expect(result).toBe(false);
@@ -170,7 +176,7 @@ describe('Game', function() {
       this.gameSimple.play(2, 2, StoneColor.WHITE);
 
       //Undo
-      var result = this.gameSimple.undo();
+      const result = this.gameSimple.undo();
 
       //Verify
       expect(result).toBe(true);
