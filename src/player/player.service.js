@@ -748,7 +748,7 @@ angular.module('ngGo.Player.Service', [
         const nodes = this.game.getMoveNodes(startMoveNum, endMoveNum);
 
         //Draw markups
-        nodes.forEach(nodes, node => {
+        nodes.forEach(node => {
           this.board.add('markup', node.move.x, node.move.y, {
             type: MarkupTypes.LABEL,
             text: moveNum.toString(),
@@ -896,7 +896,7 @@ angular.module('ngGo.Player.Service', [
         let scope = $scope || $rootScope;
 
         //Create listener and return de-registration function
-        return scope.$on('ngGo.player.' + type, () => {
+        return scope.$on('ngGo.player.' + type, function() {
 
           //Filter on mode
           if (mode) {
@@ -929,7 +929,7 @@ angular.module('ngGo.Player.Service', [
 
           //Call listener
           listener.apply(this, arguments);
-        });
+        }.bind(this));
       },
 
       /**

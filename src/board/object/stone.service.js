@@ -144,7 +144,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
     const x = this.board.getAbsX(stone.x);
     const y = this.board.getAbsY(stone.y);
     const s = this.board.getCellSize();
-    const theme = this.board.them;
+    const theme = this.board.theme;
     const r = theme.get('stone.radius', s, stone.scale);
 
     //Get random seed
@@ -245,7 +245,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
     draw(stone) {
 
       //Can only draw when we have dimensions and context
-      if (!this.context || !this.board.hasDrawDimensions()) {
+      if (!this.context || !this.board.hasDrawSize()) {
         return;
       }
 
@@ -291,7 +291,7 @@ angular.module('ngGo.Board.Object.Stone.Service', [
     clear(stone) {
 
       //Can only draw when we have dimensions and context
-      if (!this.context || !this.board.hasDrawDimensions()) {
+      if (!this.context || !this.board.hasDrawSize()) {
         return;
       }
 
