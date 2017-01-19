@@ -888,7 +888,7 @@ angular.module('ngGo.Player.Service', [
 
         //Multiple events?
         if (type.indexOf(' ') !== -1) {
-          let types = type.split(' ');
+          const types = type.split(' ');
           for (let t = 0; t < types.length; t++) {
             this.on(types[t], listener, mode, $scope);
           }
@@ -896,7 +896,8 @@ angular.module('ngGo.Player.Service', [
         }
 
         //Determine scope to use
-        let scope = $scope || $rootScope;
+        const scope = $scope || $rootScope;
+        const self = this;
 
         //Create listener and return de-registration function
         return scope.$on('ngGo.player.' + type, function() {
@@ -904,8 +905,8 @@ angular.module('ngGo.Player.Service', [
           //Filter on mode
           if (mode) {
             if (
-              (typeof mode === 'string' && mode !== this.mode) ||
-              mode.indexOf(this.mode) === -1
+              (typeof mode === 'string' && mode !== self.mode) ||
+              mode.indexOf(self.mode) === -1
             ) {
               return;
             }
@@ -918,21 +919,21 @@ angular.module('ngGo.Player.Service', [
 
           //Append grid coordinates for mouse events
           if (type === 'click' || type === 'hover' || type.substr(0, 5) === 'mouse') {
-            processMouseEvent.call(this, arguments[0], arguments[1]);
+            processMouseEvent.call(self, arguments[0], arguments[1]);
           }
 
           //Dragging? Prevent click events from firing
-          if (this.preventClickEvent && type === 'click') {
-            delete this.preventClickEvent;
+          if (self.preventClickEvent && type === 'click') {
+            delete self.preventClickEvent;
             return;
           }
           else if (type === 'mousedrag') {
-            this.preventClickEvent = true;
+            self.preventClickEvent = true;
           }
 
           //Call listener
-          listener.apply(this, arguments);
-        }.bind(this));
+          listener.apply(self, arguments);
+        });
       },
 
       /**
