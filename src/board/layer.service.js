@@ -16,7 +16,7 @@ angular.module('ngGo.Board.Layer.Service', [
 /**
  * Factory definition
  */
-.factory('BoardLayer', function(BoardGrid) {
+.factory('BoardLayer', function($window, BoardGrid) {
 
   /**
    * Constructor
@@ -117,7 +117,7 @@ angular.module('ngGo.Board.Layer.Service', [
    */
   BoardLayer.prototype.clear = function() {
     if (this.context) {
-      const pixelRatio = window.devicePixelRatio || 1;
+      const pixelRatio = $window.devicePixelRatio || 1;
       const width = this.context.canvas.clientWidth * pixelRatio;
       const height = this.context.canvas.clientHeight * pixelRatio;
       this.context.clearRect(0, 0, width, height);

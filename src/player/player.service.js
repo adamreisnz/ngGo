@@ -21,7 +21,10 @@ angular.module('ngGo.Player.Service', [
 /**
  * Provider definition
  */
-.provider('Player', function(PlayerModes, PlayerTools, MarkupTypes) {
+.provider('Player', function($windowProvider, PlayerModes, PlayerTools, MarkupTypes) {
+
+  //Get window instance
+  const $window = $windowProvider.$get();
 
   /**
    * Default configuration
@@ -111,8 +114,8 @@ angular.module('ngGo.Player.Service', [
       }
 
       //Apply pixel ratio factor
-      x *= (window.devicePixelRatio || 1);
-      y *= (window.devicePixelRatio || 1);
+      x *= ($window.devicePixelRatio || 1);
+      y *= ($window.devicePixelRatio || 1);
 
       //Append coords
       broadcastEvent.x = this.board.getGridX(x);
