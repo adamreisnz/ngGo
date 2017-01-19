@@ -21,7 +21,10 @@ angular.module('ngGo.Player.Service', [
 /**
  * Provider definition
  */
-.provider('Player', function(PlayerModes, PlayerTools, MarkupTypes) {
+.provider('Player', function($windowProvider, PlayerModes, PlayerTools, MarkupTypes) {
+
+  //Get window instance
+  const $window = $windowProvider.$get();
 
   /**
    * Default configuration
@@ -111,8 +114,8 @@ angular.module('ngGo.Player.Service', [
       }
 
       //Apply pixel ratio factor
-      x *= (window.devicePixelRatio || 1);
-      y *= (window.devicePixelRatio || 1);
+      x *= ($window.devicePixelRatio || 1);
+      y *= ($window.devicePixelRatio || 1);
 
       //Append coords
       broadcastEvent.x = this.board.getGridX(x);
@@ -716,7 +719,7 @@ angular.module('ngGo.Player.Service', [
       },
 
       /**
-       * Show move numbers in branch lines.
+       * Show move numbers in branch paths.
        */
       showBranchMoveNumbers() {
 
@@ -747,11 +750,8 @@ angular.module('ngGo.Player.Service', [
         //Get nodes of the moves in the range
         const nodes = this.game.getMoveNodes(startMoveNum, endMoveNum);
 
-        //Clear previously added markups
-        this.board.layers.markup.removeAll();
-
         //Draw markups
-        nodes.forEach(nodes, node => {
+        nodes.forEach(node => {
           this.board.add('markup', node.move.x, node.move.y, {
             type: MarkupTypes.LABEL,
             text: moveNum.toString(),
@@ -899,7 +899,7 @@ angular.module('ngGo.Player.Service', [
         let scope = $scope || $rootScope;
 
         //Create listener and return de-registration function
-        return scope.$on('ngGo.player.' + type, () => {
+        return scope.$on('ngGo.player.' + type, function() {
 
           //Filter on mode
           if (mode) {
@@ -932,7 +932,7 @@ angular.module('ngGo.Player.Service', [
 
           //Call listener
           listener.apply(this, arguments);
-        });
+        }.bind(this));
       },
 
       /**

@@ -1,18 +1,17 @@
 describe('Game', function() {
-  var GamePath;
+  let GamePath;
 
   function getPopulatedPath(gamePath) {
-    var clonedGamePath = gamePath.clone();
-    var path = clonedGamePath.path;
-    var i;
-    for (i = 0; i < clonedGamePath.move; ++i) {
+    const clonedGamePath = gamePath.clone();
+    const path = clonedGamePath.path;
+    for (let i = 0; i < clonedGamePath.move; ++i) {
       path[i] = path[i] || 0;
     }
     return clonedGamePath;
   }
 
   function verifyInitialState(gamePath) {
-    var populatedGamePath = getPopulatedPath(gamePath);
+    const populatedGamePath = getPopulatedPath(gamePath);
     expect(populatedGamePath.move).toEqual(0);
     expect(populatedGamePath.branches).toEqual(0);
     expect(populatedGamePath.path).toEqual({});
@@ -28,52 +27,52 @@ describe('Game', function() {
 
   describe('#advance', function() {
     it('advances on the main line', function() {
-      var gamePath = new GamePath();
+      const gamePath = new GamePath();
 
       //Exercise
       gamePath.advance(0);
 
       //Verify
-      var populatedGamePath = getPopulatedPath(gamePath);
+      const populatedGamePath = getPopulatedPath(gamePath);
       expect(populatedGamePath.move).toEqual(1);
       expect(populatedGamePath.branches).toEqual(0);
       expect(populatedGamePath.path).toEqual({
-        0: 0
+        0: 0,
       });
     });
 
     it('advances on the 1st branch line', function() {
-      var gamePath = new GamePath();
+      const gamePath = new GamePath();
 
       //Exercise
       gamePath.advance(1);
 
       //Verify
-      var populatedGamePath = getPopulatedPath(gamePath);
+      const populatedGamePath = getPopulatedPath(gamePath);
       expect(populatedGamePath.move).toEqual(1);
       expect(populatedGamePath.branches).toEqual(1);
       expect(populatedGamePath.path).toEqual({
-        0: 1
+        0: 1,
       });
     });
 
     it('advances on the 2nd branch line', function() {
-      var gamePath = new GamePath();
+      const gamePath = new GamePath();
 
       //Exercise
       gamePath.advance(2);
 
       //Verify
-      var populatedGamePath = getPopulatedPath(gamePath);
+      const populatedGamePath = getPopulatedPath(gamePath);
       expect(populatedGamePath.move).toEqual(1);
       expect(populatedGamePath.branches).toEqual(1);
       expect(populatedGamePath.path).toEqual({
-        0: 2
+        0: 2,
       });
     });
 
     it('advances on the main line, then on the branches line', function() {
-      var gamePath = new GamePath();
+      const gamePath = new GamePath();
 
       //Exercise
       gamePath.advance(0);
@@ -81,20 +80,20 @@ describe('Game', function() {
       gamePath.advance(2);
 
       //Verify
-      var populatedGamePath = getPopulatedPath(gamePath);
+      const populatedGamePath = getPopulatedPath(gamePath);
       expect(populatedGamePath.move).toEqual(3);
       expect(populatedGamePath.branches).toEqual(2);
       expect(populatedGamePath.path).toEqual({
         0: 0,
         1: 1,
-        2: 2
+        2: 2,
       });
     });
   });
 
   describe('#retreat', function() {
     it('should be initial state when retreating on the main line', function() {
-      var gamePath = new GamePath();
+      const gamePath = new GamePath();
 
       //Exercise
       gamePath.advance(0);
@@ -105,7 +104,7 @@ describe('Game', function() {
     });
 
     it('should be initial state when retreating on the branch line', function() {
-      var gamePath = new GamePath();
+      const gamePath = new GamePath();
 
       //Exercise
       gamePath.advance(2);
@@ -122,7 +121,7 @@ describe('Game', function() {
 
   describe('#setMove', function() {
     it('should have no effect when setting invalid move number', function() {
-      var gamePath = new GamePath();
+      const gamePath = new GamePath();
 
       //Set negative low move number
       gamePath.setMove(-1);
@@ -132,7 +131,7 @@ describe('Game', function() {
     });
 
     it('should be back to initial state', function() {
-      var gamePath = new GamePath();
+      const gamePath = new GamePath();
 
       //Exercise
       gamePath.advance(2);
