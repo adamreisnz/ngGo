@@ -716,7 +716,7 @@ angular.module('ngGo.Player.Service', [
       },
 
       /**
-       * Show move numbers in branch lines.
+       * Show move numbers in branch paths.
        */
       showBranchMoveNumbers() {
 
@@ -746,9 +746,6 @@ angular.module('ngGo.Player.Service', [
 
         //Get nodes of the moves in the range
         const nodes = this.game.getMoveNodes(startMoveNum, endMoveNum);
-
-        //Clear previously added markups
-        this.board.layers.markup.removeAll();
 
         //Draw markups
         nodes.forEach(nodes, node => {
